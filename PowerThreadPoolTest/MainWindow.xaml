@@ -1,0 +1,21 @@
+﻿<Window x:Class="PowerThreadPoolTest.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PowerThreadPoolTest"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="auto"></RowDefinition>
+        </Grid.RowDefinitions>
+        <ScrollViewer x:Name="sv">
+            <TextBlock x:Name="tb" Grid.Row="0" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
+        </ScrollViewer>
+        
+        <Button x:Name="start" Grid.Row="1" Content="start" HorizontalAlignment="Left" VerticalAlignment="Top" Click="start_Click"/>
+        <Button x:Name="stop" Grid.Row="1" Content="stop" HorizontalAlignment="Left" VerticalAlignment="Top" Click="stop_Click" Margin="30, 0, 0, 0"/>
+    </Grid>
+</Window>
