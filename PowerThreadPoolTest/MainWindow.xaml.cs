@@ -55,6 +55,8 @@ namespace PowerThreadPoolTest
 
         private void start_Click(object sender, RoutedEventArgs e)
         {
+            log.Text = "";
+
             powerPool.QueueWorkItem(() =>
             {
                 OutputMsg("Thread0: START");
@@ -122,8 +124,10 @@ namespace PowerThreadPoolTest
 
         private async void wait_Click(object sender, RoutedEventArgs e)
         {
+            wait.IsEnabled = false;
             await powerPool.WaitAsync();
             OutputMsg("ALL Thread End");
+            wait.IsEnabled = true;
         }
     }
 }
