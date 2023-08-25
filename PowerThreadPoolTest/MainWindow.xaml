@@ -11,11 +11,16 @@
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="auto"></RowDefinition>
         </Grid.RowDefinitions>
-        <ScrollViewer x:Name="sv">
-            <TextBlock x:Name="tb" Grid.Row="0" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <ScrollViewer x:Name="sv" Grid.Row="0" Grid.Column="0">
+            <TextBlock x:Name="log" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
         </ScrollViewer>
-        
+        <TextBlock x:Name="count" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
         <Button x:Name="start" Grid.Row="1" Content="start" HorizontalAlignment="Left" VerticalAlignment="Top" Click="start_Click"/>
         <Button x:Name="stop" Grid.Row="1" Content="stop" HorizontalAlignment="Left" VerticalAlignment="Top" Click="stop_Click" Margin="30, 0, 0, 0"/>
+        <Button x:Name="wait" Grid.Row="1" Content="wait" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="60, 0, 0, 0" Click="wait_Click"/>
     </Grid>
 </Window>

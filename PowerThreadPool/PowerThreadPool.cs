@@ -90,18 +90,51 @@ namespace PowerThreadPool
             }
         }
 
-        public void StopAllThread()
-        { 
+        public void Wait()
+        {
+            while (true)
+            {
+                Thread threadToWait;
+
+                if (RunningThreadCount > 0)
+                {
+                    threadToWait = runningThreadDic.Values.First();
+                }
+                else
+                {
+                    break;
+                }
+
+                threadToWait.Join();
+            }
+        }
+
+        public async Task WaitAsync()
+        {
+            await Task.Run(() =>
+            {
+                Wait();
+            });
+        }
+
+
+        public void Stop()
+        {
+            waitingThreadQueue = new ConcurrentQueue<Thread>();
             foreach (Thread thread in runningThreadDic.Values) 
             {
                 thread.Interrupt();
                 thread.Join();
             }
+            runningThreadDic = new ConcurrentDictionary<string, Thread>();
         }
 
-        public async void StopAllThreadAsync()
+        public async Task StopAsync()
         {
-            await Task.Run(() => StopAllThread());
+            await Task.Run(() =>
+            {
+                Stop();
+            });
         }
     }
 }

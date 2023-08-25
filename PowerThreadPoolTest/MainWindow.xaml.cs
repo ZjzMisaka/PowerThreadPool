@@ -10,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
@@ -30,73 +31,99 @@ namespace PowerThreadPoolTest
 
         private void stop_Click(object sender, RoutedEventArgs e)
         {
-            powerPool.StopAllThread();
+            powerPool.Stop();
         }
 
-        private void Output(string msg)
+        private void OutputMsg(string msg)
         {
             this.Dispatcher.Invoke(() =>
             {
-                tb.Text += msg + "\n";
+                log.Text += msg + "\n";
                 sv.ScrollToEnd();
+            });
+            OutputCount();
+        }
+
+        private void OutputCount()
+        {
+            this.Dispatcher.Invoke(() =>
+            {
+                string countTxt = "waiting: " + powerPool.WaitingThreadCount + "\n" + "running: " + powerPool.RunningThreadCount;
+                count.Text = countTxt;
             });
         }
 
         private void start_Click(object sender, RoutedEventArgs e)
         {
+            powerPool.QueueWorkItem(() =>
+            {
+                OutputMsg("Thread0: START");
+                Thread.Sleep(10000);
+                OutputMsg("Thread0: END");
+            }, (res) =>
+            {
+                // OutputMsg("Thread4: End");
+            });
+
             powerPool.QueueWorkItem(() => 
             {
                 for (int i = 0; i < 20; ++i)
                 {
-                    Output("Thread1: " + i.ToString());
+                    OutputMsg("Thread1: " + i.ToString());
                     Thread.Sleep(1000);
                 }
-                Output("Thread1: END");
+                OutputMsg("Thread1: END");
                 return true;
             }, (res) => 
             {
-                // Output("Thread1: End");
+                // OutputMsg("Thread1: End");
             });
 
             powerPool.QueueWorkItem(() =>
             {
                 for (int i = 0; i < 20; ++i)
                 {
-                    Output("Thread2: " + i.ToString());
+                    OutputMsg("Thread2: " + i.ToString());
                     Thread.Sleep(700);
                 }
-                Output("Thread2: END");
+                OutputMsg("Thread2: END");
             }, (res) =>
             {
-                // Output("Thread2: End");
+                // OutputMsg("Thread2: End");
             });
 
             powerPool.QueueWorkItem(() =>
             {
                 for (int i = 0; i < 20; ++i)
                 {
-                    Output("Thread3: " + i.ToString());
+                    OutputMsg("Thread3: " + i.ToString());
                     Thread.Sleep(500);
                 }
-                Output("Thread3: END");
+                OutputMsg("Thread3: END");
                 return new ThreadPoolOption();
             }, (res) =>
             {
-                // Output("Thread3: End");
+                // OutputMsg("Thread3: End");
             });
 
             powerPool.QueueWorkItem(() =>
             {
                 for (int i = 0; i < 20; ++i)
                 {
-                    Output("Thread4: " + i.ToString());
+                    OutputMsg("Thread4: " + i.ToString());
                     Thread.Sleep(500);
                 }
-                Output("Thread4: END");
+                OutputMsg("Thread4: END");
             }, (res) =>
             {
-                // Output("Thread4: End");
+                // OutputMsg("Thread4: End");
             });
+        }
+
+        private async void wait_Click(object sender, RoutedEventArgs e)
+        {
+            await powerPool.WaitAsync();
+            OutputMsg("ALL Thread End");
         }
     }
 }
