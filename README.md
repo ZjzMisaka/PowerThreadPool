@@ -48,7 +48,6 @@ string id = powerPool.QueueWorkItem(() =>
         powerPool.PauseIfRequested();
         // DO SOMETHING
     }
-    return result;
 });
 // DO SOMETHING
 powerPool.Pause(id); // Pause by ID
