@@ -10,15 +10,15 @@ namespace PowerThreadPool
     public class ExcuteResult<TResult>
     {
         private TResult result;
-        public TResult Result { get => result; set => result = value; }
+        public TResult Result { get => result; internal set => result = value; }
         
         private Status status;
-        public Status Status { get => status; set => status = value; }
+        public Status Status { get => status; internal set => status = value; }
         
         private Exception exception;
-        public Exception Exception { get => exception; set => exception = value; }
+        public Exception Exception { get => exception; internal set => exception = value; }
 
-        public ExcuteResult()
+        internal ExcuteResult()
         { 
         
         }

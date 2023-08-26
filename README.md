@@ -157,9 +157,9 @@ bool Cancel(string id)
 ### ExcuteResult\<TResult>
 #### Properties
 ```csharp
-TResult Result; // Get, Set
-Status Status; // Get, Set
-Exception Exception; // Get, Set
+TResult Result; // Get
+Status Status; // Get
+Exception Exception; // Get
 ```
 ### Status
 ```csharp
