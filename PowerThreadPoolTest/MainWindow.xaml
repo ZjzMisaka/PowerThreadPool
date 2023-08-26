@@ -19,7 +19,9 @@
             <TextBlock x:Name="log" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
         </ScrollViewer>
         <TextBlock x:Name="count" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        <StackPanel Orientation="Horizontal" Grid.Row="1" FlowDirection="RightToLeft" >
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="2" FlowDirection="RightToLeft" >
+            <Button x:Name="resumeThread2" Content="resumeThread2" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="resumeThread2_Click"/>
+            <Button x:Name="pauseThread2" Content="pauseThread2" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="pauseThread2_Click"/>
             <Button x:Name="resume" Content="resume" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="resume_Click"/>
             <Button x:Name="pause" Content="pause" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="pause_Click"/>
             <Button x:Name="wait" Content="wait" HorizontalAlignment="Left" VerticalAlignment="Top" Click="wait_Click" Padding="3px" Margin="3px"/>

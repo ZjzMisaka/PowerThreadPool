@@ -7,13 +7,17 @@ namespace PowerThreadPool
     public class PowerPool
     {
         private ManualResetEvent manualResetEvent = new ManualResetEvent(true);
+        private ConcurrentDictionary<string, ManualResetEvent> manualResetEventDic = new ConcurrentDictionary<string, ManualResetEvent>();
         private ConcurrentQueue<Thread> waitingThreadQueue = new ConcurrentQueue<Thread>();
         private ConcurrentDictionary<string, Thread> runningThreadDic = new ConcurrentDictionary<string, Thread>();
         private ThreadPoolOption threadPoolOption;
         public ThreadPoolOption ThreadPoolOption { get => threadPoolOption; set => threadPoolOption = value; }
         public int WaitingThreadCount
         {
-            get { return waitingThreadQueue.Count; }
+            get 
+            { 
+                return waitingThreadQueue.Count; 
+            }
         }
         public int RunningThreadCount
         {
@@ -32,88 +36,88 @@ namespace PowerThreadPool
             ThreadPoolOption = threadPoolOption;
         }
 
-        public void QueueWorkItem(Action action, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem(Action action, Action<ExcuteResult<object>> callBack = null)
         {
             Func<object> func = () => { action(); return null; };
-            QueueWorkItem<object>(func, callBack);
+            return QueueWorkItem<object>(func, callBack);
         }
 
-        public void QueueWorkItem(Action<object[]> action, object[] param, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem(Action<object[]> action, object[] param, Action<ExcuteResult<object>> callBack = null)
         {
             Func<object[], object> func = (param) => { action(param); return null; };
-            QueueWorkItem<object>(func, param, callBack);
+            return QueueWorkItem<object>(func, param, callBack);
         }
 
-        public void QueueWorkItem<T1>(Action<T1> action, T1 param1, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem<T1>(Action<T1> action, T1 param1, Action<ExcuteResult<object>> callBack = null)
         {
             Func<T1, object> func = (param) => { action(param1); return null; };
-            QueueWorkItem<T1, object>(func, param1, callBack);
+            return QueueWorkItem<T1, object>(func, param1, callBack);
         }
 
-        public void QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, Action<ExcuteResult<object>> callBack = null)
         {
             Func<T1, T2, object> func = (param1, param2) => { action(param1, param2); return null; };
-            QueueWorkItem<T1, T2, object>(func, param1, param2, callBack);
+            return QueueWorkItem<T1, T2, object>(func, param1, param2, callBack);
         }
 
-        public void QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, Action<ExcuteResult<object>> callBack = null)
         {
             Func<T1, T2, T3, object> func = (param1, param2, param3) => { action(param1, param2, param3); return null; };
-            QueueWorkItem<T1, T2, T3, object>(func, param1, param2, param3, callBack);
+            return QueueWorkItem<T1, T2, T3, object>(func, param1, param2, param3, callBack);
         }
 
-        public void QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExcuteResult<object>> callBack = null)
         {
             Func<T1, T2, T3, T4, object> func = (param1, param2, param3, param4) => { action(param1, param2, param3, param4); return null; };
-            QueueWorkItem<T1, T2, T3, T4, object>(func, param1, param2, param3, param4, callBack);
+            return QueueWorkItem<T1, T2, T3, T4, object>(func, param1, param2, param3, param4, callBack);
         }
 
-        public void QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExcuteResult<object>> callBack = null)
         {
             Func<T1, T2, T3, T4, T5, object> func = (param1, param2, param3, param4, param5) => { action(param1, param2, param3, param4, param5); return null; };
-            QueueWorkItem<T1, T2, T3, T4, T5, object>(func, param1, param2, param3, param4, param5, callBack);
+            return QueueWorkItem<T1, T2, T3, T4, T5, object>(func, param1, param2, param3, param4, param5, callBack);
         }
 
 
-        public void QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, Action<ExcuteResult<TResult>> callBack = null)
         {
             Func<TResult> func = () => { return function(param1); };
-            QueueWorkItem<TResult>(func, callBack);
+            return QueueWorkItem<TResult>(func, callBack);
         }
 
-        public void QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, Action<ExcuteResult<TResult>> callBack = null)
         {
             Func<TResult> func = () => { return function(param1, param2); };
-            QueueWorkItem<TResult>(func, callBack);
+            return QueueWorkItem<TResult>(func, callBack);
         }
 
-        public void QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, Action<ExcuteResult<TResult>> callBack = null)
         {
             Func<TResult> func = () => { return function(param1, param2, param3); };
-            QueueWorkItem<TResult>(func, callBack);
+            return QueueWorkItem<TResult>(func, callBack);
         }
 
-        public void QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExcuteResult<TResult>> callBack = null)
         {
             Func<TResult> func = () => { return function(param1, param2, param3, param4); };
-            QueueWorkItem<TResult>(func, callBack);
+            return QueueWorkItem<TResult>(func, callBack);
         }
 
-        public void QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExcuteResult<TResult>> callBack = null)
         {
             Func<TResult> func = () => { return function(param1, param2, param3, param4, param5); };
-            QueueWorkItem<TResult>(func, callBack);
+            return QueueWorkItem<TResult>(func, callBack);
         }
 
 
-        public void QueueWorkItem<TResult>(Func<TResult> function, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<TResult>(Func<TResult> function, Action<ExcuteResult<TResult>> callBack = null)
         {
             Func<object[], TResult> func = (param) => { return function(); };
-            QueueWorkItem<TResult>(func, new object[0], callBack);
+            return QueueWorkItem<TResult>(func, new object[0], callBack);
         }
 
 
-        public void QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, Action<ExcuteResult<TResult>> callBack = null)
         {
             ExcuteResult<TResult> excuteResult = new ExcuteResult<TResult>();
             string guid = Guid.NewGuid().ToString();
@@ -136,9 +140,12 @@ namespace PowerThreadPool
                     callBack(excuteResult);
                 }
             });
+            manualResetEventDic[guid] = new ManualResetEvent(true);
             thread.Name = guid;
             waitingThreadQueue.Enqueue(thread);
             CheckAndRunThread();
+
+            return guid;
         }
 
         private void CheckAndRunThread()
@@ -205,6 +212,13 @@ namespace PowerThreadPool
         public void PauseIfRequested()
         {
             manualResetEvent.WaitOne();
+            foreach (string id in manualResetEventDic.Keys)
+            {
+                if (Thread.CurrentThread.Name == id)
+                {
+                    manualResetEventDic[id].WaitOne();
+                }
+            }
         }
 
         public void Pause()
@@ -212,9 +226,26 @@ namespace PowerThreadPool
             manualResetEvent.Reset();
         }
 
-        public void Resume()
+        public void Resume(bool resumeThreadPausedById = false)
         {
             manualResetEvent.Set();
+            if (resumeThreadPausedById)
+            {
+                foreach (ManualResetEvent manualResetEvent in manualResetEventDic.Values)
+                {
+                    manualResetEvent.Set();
+                }
+            }
+        }
+
+        public void Pause(string id)
+        {
+            manualResetEventDic[id].Reset();
+        }
+
+        public void Resume(string id)
+        {
+            manualResetEventDic[id].Set();
         }
     }
 }
