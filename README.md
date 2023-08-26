@@ -68,8 +68,8 @@ powerPool.Resume(true); // Resume all thread
 |Resume(bool resumeThreadPausedById = false)|Resume all threads|-|
 |Pause(string id)|Pause thread by id|-|
 |Resume(string id)|Resume thread by id|-|
-|Cancel()|Cancel all tasks in the waiting thread queue|-|
-|Cancel(string id)|Cancel a task by id if it isn't running|is succeed|
+|Cancel()|Cancel all tasks that have not started running|-|
+|Cancel(string id)|Cancel the task by id if the task has not started running|is succeed|
 ### **API List**
 ### PowerPool
 #### Properties

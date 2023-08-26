@@ -446,7 +446,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Cancel all tasks in the waiting thread queue
+        /// Cancel all tasks that have not started running
         /// </summary>
         public void Cancel()
         {
@@ -454,7 +454,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Cancel a task by id if it isn't running
+        /// Cancel the task by id if the task has not started running
         /// </summary>
         /// <param name="id">thread id</param>
         /// <returns>is succeed</returns>
