@@ -1,6 +1,7 @@
 ﻿using PowerThreadPool;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -29,6 +30,17 @@ namespace PowerThreadPoolTest
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void Sleep(int ms)
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            while (stopwatch.ElapsedMilliseconds < ms)
+            {
+            }
+
+            stopwatch.Stop();
         }
 
         private void stop_Click(object sender, RoutedEventArgs e)
@@ -62,7 +74,7 @@ namespace PowerThreadPoolTest
             powerPool.QueueWorkItem(() =>
             {
                 OutputMsg("Thread0: START");
-                Thread.Sleep(10000);
+                Sleep(10000);
                 powerPool.PauseIfRequested();
                 OutputMsg("Thread0: END");
             }, (res) =>
@@ -76,7 +88,7 @@ namespace PowerThreadPoolTest
                 {
                     powerPool.PauseIfRequested();
                     OutputMsg("Thread1: " + i.ToString());
-                    Thread.Sleep(1000);
+                    Sleep(1000);
                 }
                 OutputMsg("Thread1: END");
                 return true;
@@ -91,7 +103,7 @@ namespace PowerThreadPoolTest
                 {
                     powerPool.PauseIfRequested();
                     OutputMsg("Thread2: " + i.ToString());
-                    Thread.Sleep(700);
+                    Sleep(700);
                 }
                 OutputMsg("Thread2: END");
             }, (res) =>
@@ -105,7 +117,7 @@ namespace PowerThreadPoolTest
                 {
                     powerPool.PauseIfRequested();
                     OutputMsg("Thread3: " + i.ToString());
-                    Thread.Sleep(500);
+                    Sleep(500);
                 }
                 OutputMsg("Thread3: END");
                 return new ThreadPoolOption();
@@ -120,7 +132,7 @@ namespace PowerThreadPoolTest
                 {
                     powerPool.PauseIfRequested();
                     OutputMsg("Thread4: " + i.ToString());
-                    Thread.Sleep(500);
+                    Sleep(500);
                 }
                 OutputMsg("Thread4: END");
             }, (res) =>
