@@ -54,7 +54,23 @@ powerPool.Pause(id); // Pause by ID
 powerPool.Pause(); // Pause all running thread
 powerPool.Resume(true); // Resume all thread
 ```
-### **API**
+### **API Summary**
+### PowerPool
+|name|summary|result|
+|---|---|---|
+|QueueWorkItem<...>(...)|Queues a method for execution. The method executes when a thread pool thread becomes available.|thread id|
+|Wait()|Blocks the calling thread until all of the threads terminates.|-|
+|WaitAsync()|Blocks the calling thread until all of the threads terminates.|Task|
+|Stop()|Stop all threads|-|
+|StopAsync()|Stop all threads|Task|
+|PauseIfRequested()|Call this function inside the thread logic where you want to pause when user call Pause(...)|-|
+|Pause()|Pause all threads|-|
+|Resume(bool resumeThreadPausedById = false)|Resume all threads|-|
+|Pause(string id)|Pause thread by id|-|
+|Resume(string id)|Resume thread by id|-|
+|Cancel()|Cancel all tasks in the waiting thread queue|-|
+|Cancel(string id)|Cancel a task by id if it isn't running|is succeed|
+### **API List**
 ### PowerPool
 #### Properties
 ```csharp
@@ -121,7 +137,7 @@ async Task StopAsync()
 void PauseIfRequested()
 ```
 ```csharp
-public void Pause()
+void Pause()
 ```
 ```csharp
 void Resume(bool resumeThreadPausedById = false)
