@@ -80,11 +80,11 @@ void QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, Ac
 void Wait()
 ```
 ```csharp
-public async Task WaitAsync()
+async Task WaitAsync()
 ```
 ```csharp
 void Stop()
 ```
 ```csharp
-public async Task StopAsync()
+async Task StopAsync()
 ```
