@@ -139,6 +139,20 @@ namespace PowerThreadPoolTest
             {
                 // OutputMsg("Thread4: End");
             });
+
+            powerPool.QueueWorkItem<int, int, int>(T5Func, 10, 10);
+            powerPool.QueueWorkItem<int, int>(T6Action, 10, 10);
+        }
+
+        private int T5Func(int x, int y)
+        {
+            OutputMsg("T5Func: x + y :" + (x + y).ToString());
+            return x + y;
+        }
+
+        private void T6Action(int x, int y)
+        {
+            OutputMsg("T6Action: x + y :" + (x + y).ToString());
         }
 
         private async void wait_Click(object sender, RoutedEventArgs e)

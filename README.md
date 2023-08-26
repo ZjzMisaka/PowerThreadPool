@@ -76,7 +76,9 @@ powerPool.Resume(true); // Resume all thread
 ```csharp
 ThreadPoolOption ThreadPoolOption; // Get, Set
 int WaitingThreadCount; // Get
+int WaitingThreadList; // Get
 int RunningThreadCount; // Get
+int RunningThreadList; // Get
 ```
 #### Methods
 ```csharp

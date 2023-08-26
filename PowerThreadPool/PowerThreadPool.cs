@@ -20,6 +20,13 @@ namespace PowerThreadPool
                 return waitingThreadDic.Count; 
             }
         }
+        public IEnumerable<string> WaitingThreadList
+        {
+            get
+            {
+                return waitingThreadDic.Keys.ToList();
+            }
+        }
         public int RunningThreadCount
         {
             get 
@@ -27,7 +34,14 @@ namespace PowerThreadPool
                 return runningThreadDic.Count;
             }
         }
-        
+        public IEnumerable<string> RunningThreadList
+        {
+            get
+            {
+                return runningThreadDic.Keys.ToList();
+            }
+        }
+
         public PowerPool()
         {
         }
