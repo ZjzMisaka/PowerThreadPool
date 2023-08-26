@@ -3,11 +3,11 @@
 
 Enables efficient ThreadPool management. Features task queuing, thread control, and customizable concurrent execution. Supports diverse task submissions for complex concurrency requirements.
 
-### Download
+## Download
 PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/PowerThreadPool/) now.
 
-### Getting started
-#### Without callback
+## Getting started
+### Without callback
 ```csharp
 PowerPool powerPool = new PowerPool(new ThreadPoolOption() { MaxThreads = 3 });
 powerPool.QueueWorkItem(() => 
@@ -16,7 +16,7 @@ powerPool.QueueWorkItem(() =>
     return result;
 });
 ```
-#### With callback
+### With callback
 ```csharp
 PowerPool powerPool = new PowerPool(new ThreadPoolOption() { MaxThreads = 3 });
 powerPool.QueueWorkItem(() => 
@@ -29,15 +29,15 @@ powerPool.QueueWorkItem(() =>
     // running result: res.Result
 });
 ```
-#### Stop all threads
+### Stop all threads
 ```csharp
 powerPool.Stop();
 ```
-#### Blocks the calling thread until all of the threads terminates.
+### Blocks the calling thread until all of the threads terminates.
 ```csharp
 powerPool.Wait();
 ```
-#### Pause threads
+### Pause threads
 ```csharp
 PowerPool powerPool = new PowerPool(new ThreadPoolOption());
 string id = powerPool.QueueWorkItem(() => 
@@ -54,8 +54,15 @@ powerPool.Pause(id); // Pause by ID
 powerPool.Pause(); // Pause all running thread
 powerPool.Resume(true); // Resume all thread
 ```
-
-#### API
+### **API**
+### PowerPool
+#### Properties
+```csharp
+ThreadPoolOption ThreadPoolOption;
+int WaitingThreadCount;
+int RunningThreadCount;
+```
+#### Methods
 ```csharp
 string QueueWorkItem(Action action, Action<ExcuteResult<object>> callBack = null)
 ```
@@ -130,4 +137,20 @@ void Cancel()
 ```
 ```csharp
 bool Cancel(string id)
+```
+### ExcuteResult<TResult>
+#### Properties
+```csharp
+TResult Result;
+Status Status;
+Exception Exception;
+```
+### Status
+```csharp
+enum Status { Succeed, Failed }
+```
+### ThreadPoolOption
+#### Properties
+```csharp
+int MaxThreads;
 ```
