@@ -1,5 +1,5 @@
 # PowerThreadPool
-Provides a simple and flexible way to manage concurrent tasks through a configurable thread pool. Supports a variety of task queuing methods with optional parameters and callbacks. 
+Enables efficient ThreadPool management. Features task queuing, thread control, and customizable concurrent execution. Supports diverse task submissions for complex concurrency requirements.
 
 ### Getting started
 #### Without callback
