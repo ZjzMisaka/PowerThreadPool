@@ -19,8 +19,12 @@
             <TextBlock x:Name="log" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
         </ScrollViewer>
         <TextBlock x:Name="count" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
-        <Button x:Name="start" Grid.Row="1" Content="start" HorizontalAlignment="Left" VerticalAlignment="Top" Click="start_Click"/>
-        <Button x:Name="stop" Grid.Row="1" Content="stop" HorizontalAlignment="Left" VerticalAlignment="Top" Click="stop_Click" Margin="30, 0, 0, 0"/>
-        <Button x:Name="wait" Grid.Row="1" Content="wait" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="60, 0, 0, 0" Click="wait_Click"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="1" FlowDirection="RightToLeft" >
+            <Button x:Name="resume" Content="resume" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="resume_Click"/>
+            <Button x:Name="pause" Content="pause" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="pause_Click"/>
+            <Button x:Name="wait" Content="wait" HorizontalAlignment="Left" VerticalAlignment="Top" Click="wait_Click" Padding="3px" Margin="3px"/>
+            <Button x:Name="stop" Content="stop" HorizontalAlignment="Left" VerticalAlignment="Top" Click="stop_Click" Padding="3px" Margin="3px"/>
+            <Button x:Name="start" Content="start" HorizontalAlignment="Left" VerticalAlignment="Top" Click="start_Click" Padding="3px" Margin="3px"/>
+        </StackPanel>
     </Grid>
 </Window>

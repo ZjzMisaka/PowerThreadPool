@@ -61,6 +61,7 @@ namespace PowerThreadPoolTest
             {
                 OutputMsg("Thread0: START");
                 Thread.Sleep(10000);
+                powerPool.PauseIfRequested();
                 OutputMsg("Thread0: END");
             }, (res) =>
             {
@@ -71,6 +72,7 @@ namespace PowerThreadPoolTest
             {
                 for (int i = 0; i < 20; ++i)
                 {
+                    powerPool.PauseIfRequested();
                     OutputMsg("Thread1: " + i.ToString());
                     Thread.Sleep(1000);
                 }
@@ -85,6 +87,7 @@ namespace PowerThreadPoolTest
             {
                 for (int i = 0; i < 20; ++i)
                 {
+                    powerPool.PauseIfRequested();
                     OutputMsg("Thread2: " + i.ToString());
                     Thread.Sleep(700);
                 }
@@ -98,6 +101,7 @@ namespace PowerThreadPoolTest
             {
                 for (int i = 0; i < 20; ++i)
                 {
+                    powerPool.PauseIfRequested();
                     OutputMsg("Thread3: " + i.ToString());
                     Thread.Sleep(500);
                 }
@@ -112,6 +116,7 @@ namespace PowerThreadPoolTest
             {
                 for (int i = 0; i < 20; ++i)
                 {
+                    powerPool.PauseIfRequested();
                     OutputMsg("Thread4: " + i.ToString());
                     Thread.Sleep(500);
                 }
@@ -128,6 +133,16 @@ namespace PowerThreadPoolTest
             await powerPool.WaitAsync();
             OutputMsg("ALL Thread End");
             wait.IsEnabled = true;
+        }
+
+        private void pause_Click(object sender, RoutedEventArgs e)
+        {
+            powerPool.Pause();
+        }
+
+        private void resume_Click(object sender, RoutedEventArgs e)
+        {
+            powerPool.Resume();
         }
     }
 }

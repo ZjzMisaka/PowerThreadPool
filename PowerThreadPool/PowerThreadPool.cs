@@ -6,6 +6,7 @@ namespace PowerThreadPool
 {
     public class PowerPool
     {
+        private ManualResetEvent manualResetEvent = new ManualResetEvent(false);
         private ConcurrentQueue<Thread> waitingThreadQueue = new ConcurrentQueue<Thread>();
         private ConcurrentDictionary<string, Thread> runningThreadDic = new ConcurrentDictionary<string, Thread>();
         private ThreadPoolOption threadPoolOption;
@@ -24,10 +25,12 @@ namespace PowerThreadPool
         
         public PowerPool()
         {
+            manualResetEvent.Set();
         }
 
         public PowerPool(ThreadPoolOption threadPoolOption)
         {
+            manualResetEvent.Set();
             ThreadPoolOption = threadPoolOption;
         }
 
@@ -199,6 +202,21 @@ namespace PowerThreadPool
             {
                 Stop();
             });
+        }
+
+        public void PauseIfRequested()
+        {
+            manualResetEvent.WaitOne();
+        }
+
+        public void Pause()
+        {
+            manualResetEvent.Reset();
+        }
+
+        public void Resume()
+        {
+            manualResetEvent.Set();
         }
     }
 }
