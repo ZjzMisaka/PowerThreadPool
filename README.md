@@ -58,9 +58,9 @@ powerPool.Resume(true); // Resume all thread
 ### PowerPool
 #### Properties
 ```csharp
-ThreadPoolOption ThreadPoolOption;
-int WaitingThreadCount;
-int RunningThreadCount;
+ThreadPoolOption ThreadPoolOption; // Get, Set
+int WaitingThreadCount; // Get
+int RunningThreadCount; // Get
 ```
 #### Methods
 ```csharp
@@ -141,9 +141,9 @@ bool Cancel(string id)
 ### ExcuteResult<TResult>
 #### Properties
 ```csharp
-TResult Result;
-Status Status;
-Exception Exception;
+TResult Result; // Get, Set
+Status Status; // Get, Set
+Exception Exception; // Get, Set
 ```
 ### Status
 ```csharp
@@ -152,5 +152,5 @@ enum Status { Succeed, Failed }
 ### ThreadPoolOption
 #### Properties
 ```csharp
-int MaxThreads;
+int MaxThreads; // Get, Set
 ```
