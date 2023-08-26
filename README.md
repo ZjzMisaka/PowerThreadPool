@@ -138,7 +138,7 @@ void Cancel()
 ```csharp
 bool Cancel(string id)
 ```
-### ExcuteResult<TResult>
+### ExcuteResult\<TResult>
 #### Properties
 ```csharp
 TResult Result; // Get, Set
