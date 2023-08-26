@@ -6,7 +6,7 @@
     <Nullable>disable</Nullable>
 
     <PackageId>PowerThreadPool</PackageId>
-    <Description>Enables efficient ThreadPool management. Features task queuing, thread control, and customizable concurrent execution. Supports diverse task submissions for complex concurrency requirements. </Description>
+    <Description>Enables efficient ThreadPool management with callback implementation, granular control, customizable concurrency, and support for diverse task submissions.</Description>
     <PackageTags>csharp;net6;thread;thread-pool;</PackageTags>
     <Authors>ZjzMisaka</Authors>
     <RepositoryUrl>https://github.com/ZjzMisaka/PowerThreadPool</RepositoryUrl>
