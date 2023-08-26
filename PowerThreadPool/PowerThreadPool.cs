@@ -57,7 +57,7 @@ namespace PowerThreadPool
         /// <param name="action"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem(Action action, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem(Action action, Action<ExecuteResult<object>> callBack = null)
         {
             Func<object> func = () => { action(); return null; };
             return QueueWorkItem<object>(func, callBack);
@@ -70,7 +70,7 @@ namespace PowerThreadPool
         /// <param name="param"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem(Action<object[]> action, object[] param, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem(Action<object[]> action, object[] param, Action<ExecuteResult<object>> callBack = null)
         {
             Func<object[], object> func = (param) => { action(param); return null; };
             return QueueWorkItem<object>(func, param, callBack);
@@ -84,7 +84,7 @@ namespace PowerThreadPool
         /// <param name="param1"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem<T1>(Action<T1> action, T1 param1, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem<T1>(Action<T1> action, T1 param1, Action<ExecuteResult<object>> callBack = null)
         {
             Func<T1, object> func = (param) => { action(param1); return null; };
             return QueueWorkItem<T1, object>(func, param1, callBack);
@@ -100,7 +100,7 @@ namespace PowerThreadPool
         /// <param name="param2"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, Action<ExecuteResult<object>> callBack = null)
         {
             Func<T1, T2, object> func = (param1, param2) => { action(param1, param2); return null; };
             return QueueWorkItem<T1, T2, object>(func, param1, param2, callBack);
@@ -118,7 +118,7 @@ namespace PowerThreadPool
         /// <param name="param3"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<object>> callBack = null)
         {
             Func<T1, T2, T3, object> func = (param1, param2, param3) => { action(param1, param2, param3); return null; };
             return QueueWorkItem<T1, T2, T3, object>(func, param1, param2, param3, callBack);
@@ -138,7 +138,7 @@ namespace PowerThreadPool
         /// <param name="param4"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<object>> callBack = null)
         {
             Func<T1, T2, T3, T4, object> func = (param1, param2, param3, param4) => { action(param1, param2, param3, param4); return null; };
             return QueueWorkItem<T1, T2, T3, T4, object>(func, param1, param2, param3, param4, callBack);
@@ -160,7 +160,7 @@ namespace PowerThreadPool
         /// <param name="param5"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExcuteResult<object>> callBack = null)
+        public string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<object>> callBack = null)
         {
             Func<T1, T2, T3, T4, T5, object> func = (param1, param2, param3, param4, param5) => { action(param1, param2, param3, param4, param5); return null; };
             return QueueWorkItem<T1, T2, T3, T4, T5, object>(func, param1, param2, param3, param4, param5, callBack);
@@ -176,7 +176,7 @@ namespace PowerThreadPool
         /// <param name="param1"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, Action<ExecuteResult<TResult>> callBack = null)
         {
             Func<TResult> func = () => { return function(param1); };
             return QueueWorkItem<TResult>(func, callBack);
@@ -193,7 +193,7 @@ namespace PowerThreadPool
         /// <param name="param2"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, Action<ExecuteResult<TResult>> callBack = null)
         {
             Func<TResult> func = () => { return function(param1, param2); };
             return QueueWorkItem<TResult>(func, callBack);
@@ -212,7 +212,7 @@ namespace PowerThreadPool
         /// <param name="param3"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<TResult>> callBack = null)
         {
             Func<TResult> func = () => { return function(param1, param2, param3); };
             return QueueWorkItem<TResult>(func, callBack);
@@ -233,7 +233,7 @@ namespace PowerThreadPool
         /// <param name="param4"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<TResult>> callBack = null)
         {
             Func<TResult> func = () => { return function(param1, param2, param3, param4); };
             return QueueWorkItem<TResult>(func, callBack);
@@ -256,7 +256,7 @@ namespace PowerThreadPool
         /// <param name="param5"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<TResult>> callBack = null)
         {
             Func<TResult> func = () => { return function(param1, param2, param3, param4, param5); };
             return QueueWorkItem<TResult>(func, callBack);
@@ -270,7 +270,7 @@ namespace PowerThreadPool
         /// <param name="function"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem<TResult>(Func<TResult> function, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<TResult>(Func<TResult> function, Action<ExecuteResult<TResult>> callBack = null)
         {
             Func<object[], TResult> func = (param) => { return function(); };
             return QueueWorkItem<TResult>(func, new object[0], callBack);
@@ -285,9 +285,9 @@ namespace PowerThreadPool
         /// <param name="param"></param>
         /// <param name="callBack"></param>
         /// <returns>thread id</returns>
-        public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, Action<ExcuteResult<TResult>> callBack = null)
+        public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, Action<ExecuteResult<TResult>> callBack = null)
         {
-            ExcuteResult<TResult> excuteResult = new ExcuteResult<TResult>();
+            ExecuteResult<TResult> excuteResult = new ExecuteResult<TResult>();
             string guid = Guid.NewGuid().ToString();
             Thread thread = new Thread(() =>
             {

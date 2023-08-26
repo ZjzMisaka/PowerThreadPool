@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace PowerThreadPool
 {
     public enum Status { Succeed, Failed }
-    public class ExcuteResult<TResult>
+    public class ExecuteResult<TResult>
     {
         private TResult result;
         public TResult Result { get => result; internal set => result = value; }
@@ -18,7 +18,7 @@ namespace PowerThreadPool
         private Exception exception;
         public Exception Exception { get => exception; internal set => exception = value; }
 
-        internal ExcuteResult()
+        internal ExecuteResult()
         { 
         
         }
