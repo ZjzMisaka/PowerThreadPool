@@ -20,6 +20,8 @@
         </ScrollViewer>
         <TextBlock x:Name="count" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
         <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="2" FlowDirection="RightToLeft" >
+            <Button x:Name="cancelAllThread" Content="cancelAllThread" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="cancelAllThread_Click"/>
+            <Button x:Name="cancelThread4" Content="cancelThread4" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="cancelThread4_Click"/>
             <Button x:Name="resumeThread2" Content="resumeThread2" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="resumeThread2_Click"/>
             <Button x:Name="pauseThread2" Content="pauseThread2" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="pauseThread2_Click"/>
             <Button x:Name="resume" Content="resume" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="resume_Click"/>

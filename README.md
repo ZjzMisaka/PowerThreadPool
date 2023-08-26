@@ -103,3 +103,9 @@ void Pause(string id)
 ```csharp
 void Resume(string id)
 ```
+```csharp
+void Cancel()
+```
+```csharp
+bool Cancel(string id)
+```

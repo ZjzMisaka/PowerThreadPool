@@ -8,7 +8,8 @@ namespace PowerThreadPool
     {
         private ManualResetEvent manualResetEvent = new ManualResetEvent(true);
         private ConcurrentDictionary<string, ManualResetEvent> manualResetEventDic = new ConcurrentDictionary<string, ManualResetEvent>();
-        private ConcurrentQueue<Thread> waitingThreadQueue = new ConcurrentQueue<Thread>();
+        private ConcurrentQueue<string> waitingThreadIdQueue = new ConcurrentQueue<string>();
+        private ConcurrentDictionary<string, Thread> waitingThreadDic = new ConcurrentDictionary<string, Thread>();
         private ConcurrentDictionary<string, Thread> runningThreadDic = new ConcurrentDictionary<string, Thread>();
         private ThreadPoolOption threadPoolOption;
         public ThreadPoolOption ThreadPoolOption { get => threadPoolOption; set => threadPoolOption = value; }
@@ -16,7 +17,7 @@ namespace PowerThreadPool
         {
             get 
             { 
-                return waitingThreadQueue.Count; 
+                return waitingThreadDic.Count; 
             }
         }
         public int RunningThreadCount
@@ -134,6 +135,7 @@ namespace PowerThreadPool
                     excuteResult.Exception = ex;
                 }
                 runningThreadDic.Remove(guid, out _);
+                manualResetEventDic.Remove(guid, out _);
                 CheckAndRunThread();
                 if (callBack != null)
                 {
@@ -142,7 +144,9 @@ namespace PowerThreadPool
             });
             manualResetEventDic[guid] = new ManualResetEvent(true);
             thread.Name = guid;
-            waitingThreadQueue.Enqueue(thread);
+            waitingThreadIdQueue.Enqueue(guid);
+            waitingThreadDic[guid] = thread;
+            
             CheckAndRunThread();
 
             return guid;
@@ -152,12 +156,17 @@ namespace PowerThreadPool
         {
             while (RunningThreadCount < threadPoolOption.MaxThreads && WaitingThreadCount > 0)
             {
+                string id;
                 Thread thread;
-                bool dequeueRes = waitingThreadQueue.TryDequeue(out thread);
+                bool dequeueRes = waitingThreadIdQueue.TryDequeue(out id);
                 if (dequeueRes)
                 {
-                    runningThreadDic[thread.Name] = thread;
-                    thread.Start();
+                    dequeueRes = waitingThreadDic.Remove(id, out thread);
+                    if (dequeueRes)
+                    {
+                        runningThreadDic[thread.Name] = thread;
+                        thread.Start();
+                    }
                 }
             }
         }
@@ -192,7 +201,8 @@ namespace PowerThreadPool
 
         public void Stop()
         {
-            waitingThreadQueue = new ConcurrentQueue<Thread>();
+            waitingThreadIdQueue = new ConcurrentQueue<string>();
+            waitingThreadDic = new ConcurrentDictionary<string, Thread>();
             foreach (Thread thread in runningThreadDic.Values) 
             {
                 thread.Interrupt();
@@ -246,6 +256,16 @@ namespace PowerThreadPool
         public void Resume(string id)
         {
             manualResetEventDic[id].Set();
+        }
+
+        public void Cancel()
+        {
+            waitingThreadDic = new ConcurrentDictionary<string, Thread>();
+        }
+
+        public bool Cancel(string id)
+        {
+            return waitingThreadDic.Remove(id, out _);
         }
     }
 }

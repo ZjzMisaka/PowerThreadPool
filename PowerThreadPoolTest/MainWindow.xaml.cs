@@ -24,6 +24,7 @@ namespace PowerThreadPoolTest
     public partial class MainWindow : Window
     {
         PowerPool powerPool = new PowerPool(new ThreadPoolOption() { MaxThreads = 3 });
+        string t4Guid = "";
         string t2Guid = "";
         public MainWindow()
         {
@@ -113,7 +114,7 @@ namespace PowerThreadPoolTest
                 // OutputMsg("Thread3: End");
             });
 
-            powerPool.QueueWorkItem(() =>
+            t4Guid = powerPool.QueueWorkItem(() =>
             {
                 for (int i = 0; i < 20; ++i)
                 {
@@ -154,6 +155,23 @@ namespace PowerThreadPoolTest
         private void resumeThread2_Click(object sender, RoutedEventArgs e)
         {
             powerPool.Resume(t2Guid);
+        }
+
+        private void cancelThread4_Click(object sender, RoutedEventArgs e)
+        {
+            if (powerPool.Cancel(t4Guid))
+            {
+                OutputMsg("Cancel succeed");
+            }
+            else
+            {
+                OutputMsg("Cancel failed");
+            }
+        }
+
+        private void cancelAllThread_Click(object sender, RoutedEventArgs e)
+        {
+            powerPool.Cancel();
         }
     }
 }
