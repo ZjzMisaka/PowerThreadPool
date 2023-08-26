@@ -4,6 +4,20 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+
+    <PackageId>PowerThreadPool</PackageId>
+    <Description>Enables efficient ThreadPool management. Features task queuing, thread control, and customizable concurrent execution. Supports diverse task submissions for complex concurrency requirements. </Description>
+    <PackageTags>csharp;net6;thread;thread-pool;</PackageTags>
+    <Authors>ZjzMisaka</Authors>
+    <RepositoryUrl>https://github.com/ZjzMisaka/PowerThreadPool</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/ZjzMisaka/PowerThreadPool</PackageProjectUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
 </Project>
