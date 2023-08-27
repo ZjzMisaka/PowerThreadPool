@@ -84,6 +84,10 @@ int WaitingThreadList; // Get
 int RunningThreadCount; // Get
 int RunningThreadList; // Get
 ```
+#### Events
+```csharp
+event IdleEventHandler Idle;
+```
 #### Methods
 ```csharp
 string QueueWorkItem(Action action, Action<ExcuteResult<object>> callBack = null)

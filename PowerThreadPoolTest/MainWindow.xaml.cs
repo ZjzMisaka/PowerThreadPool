@@ -30,6 +30,11 @@ namespace PowerThreadPoolTest
         public MainWindow()
         {
             InitializeComponent();
+
+            powerPool.Idle += (e, s) =>
+            {
+                OutputMsg("ThreadPool Idle");
+            };
         }
 
         private void Sleep(int ms)
@@ -76,6 +81,7 @@ namespace PowerThreadPoolTest
                 OutputMsg("Thread0: START");
                 Sleep(10000);
                 powerPool.PauseIfRequested();
+                powerPool.StopIfRequested();
                 OutputMsg("Thread0: END");
             }, (res) =>
             {
@@ -87,6 +93,7 @@ namespace PowerThreadPoolTest
                 for (int i = 0; i < 20; ++i)
                 {
                     powerPool.PauseIfRequested();
+                    powerPool.StopIfRequested();
                     OutputMsg("Thread1: " + i.ToString());
                     Sleep(1000);
                 }
@@ -102,6 +109,7 @@ namespace PowerThreadPoolTest
                 for (int i = 0; i < 20; ++i)
                 {
                     powerPool.PauseIfRequested();
+                    powerPool.StopIfRequested();
                     OutputMsg("Thread2: " + i.ToString());
                     Sleep(700);
                 }
@@ -116,6 +124,7 @@ namespace PowerThreadPoolTest
                 for (int i = 0; i < 20; ++i)
                 {
                     powerPool.PauseIfRequested();
+                    powerPool.StopIfRequested();
                     OutputMsg("Thread3: " + i.ToString());
                     Sleep(500);
                 }
@@ -131,6 +140,7 @@ namespace PowerThreadPoolTest
                 for (int i = 0; i < 20; ++i)
                 {
                     powerPool.PauseIfRequested();
+                    powerPool.StopIfRequested();
                     OutputMsg("Thread4: " + i.ToString());
                     Sleep(500);
                 }

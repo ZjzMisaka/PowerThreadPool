@@ -16,6 +16,11 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, Thread> runningThreadDic = new ConcurrentDictionary<string, Thread>();
         private ThreadPoolOption threadPoolOption;
         public ThreadPoolOption ThreadPoolOption { get => threadPoolOption; set => threadPoolOption = value; }
+
+        public delegate void IdleEventHandler(object sender, EventArgs e);
+        public event IdleEventHandler Idle;
+
+
         public int WaitingThreadCount
         {
             get 
@@ -304,14 +309,17 @@ namespace PowerThreadPool
                     excuteResult.Status = Status.Failed;
                     excuteResult.Exception = ex;
                 }
-                runningThreadDic.Remove(guid, out _);
-                manualResetEventDic.Remove(guid, out _);
-                cancellationTokenSourceDic.Remove(guid, out _);
-                CheckAndRunThread();
+
                 if (callBack != null)
                 {
                     callBack(excuteResult);
                 }
+
+                runningThreadDic.Remove(guid, out _);
+                manualResetEventDic.Remove(guid, out _);
+                cancellationTokenSourceDic.Remove(guid, out _);
+                CheckAndRunThread();
+                CheckIdle();
             });
             manualResetEventDic[guid] = new ManualResetEvent(true);
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
@@ -344,6 +352,23 @@ namespace PowerThreadPool
                         thread.Start();
                     }
                 }
+            }
+        }
+
+        private void CheckIdle()
+        {
+            if (RunningThreadCount == 0 && WaitingThreadCount == 0)
+            {
+                Idle.Invoke(this, new EventArgs());
+
+                manualResetEvent = new ManualResetEvent(true);
+                manualResetEventDic = new ConcurrentDictionary<string, ManualResetEvent>();
+                cancellationTokenSource = new CancellationTokenSource();
+                cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
+
+                waitingThreadIdQueue = new ConcurrentQueue<string>();
+                waitingThreadDic = new ConcurrentDictionary<string, Thread>();
+                runningThreadDic = new ConcurrentDictionary<string, Thread>();
             }
         }
 
@@ -400,8 +425,6 @@ namespace PowerThreadPool
                     thread.Join();
                 }
             }
-            
-            runningThreadDic = new ConcurrentDictionary<string, Thread>();
         }
 
         /// <summary>
@@ -437,8 +460,6 @@ namespace PowerThreadPool
                         runningThreadDic[runningId].Interrupt();
                         runningThreadDic[runningId].Join();
                     }
-
-                    runningThreadDic.Remove(runningId, out _);
 
                     res = true;
                     break;
