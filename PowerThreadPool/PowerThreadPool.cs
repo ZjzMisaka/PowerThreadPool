@@ -520,7 +520,7 @@ namespace PowerThreadPool
         {
             if (cancellationTokenSource.Token.IsCancellationRequested)
             {
-                throw new ThreadInterruptedException();
+                throw new OperationCanceledException();
             }
             foreach (string id in cancellationTokenSourceDic.Keys)
             {
@@ -528,7 +528,7 @@ namespace PowerThreadPool
                 {
                     if (cancellationTokenSourceDic[id].Token.IsCancellationRequested)
                     {
-                        throw new ThreadInterruptedException();
+                        throw new OperationCanceledException();
                     }
                 }
             }
