@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Xml.Linq;
 
 namespace PowerThreadPool
@@ -8,6 +9,8 @@ namespace PowerThreadPool
     {
         private ManualResetEvent manualResetEvent = new ManualResetEvent(true);
         private ConcurrentDictionary<string, ManualResetEvent> manualResetEventDic = new ConcurrentDictionary<string, ManualResetEvent>();
+        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
         private ConcurrentQueue<string> waitingThreadIdQueue = new ConcurrentQueue<string>();
         private ConcurrentDictionary<string, Thread> waitingThreadDic = new ConcurrentDictionary<string, Thread>();
         private ConcurrentDictionary<string, Thread> runningThreadDic = new ConcurrentDictionary<string, Thread>();
@@ -303,6 +306,7 @@ namespace PowerThreadPool
                 }
                 runningThreadDic.Remove(guid, out _);
                 manualResetEventDic.Remove(guid, out _);
+                cancellationTokenSourceDic.Remove(guid, out _);
                 CheckAndRunThread();
                 if (callBack != null)
                 {
@@ -310,6 +314,8 @@ namespace PowerThreadPool
                 }
             });
             manualResetEventDic[guid] = new ManualResetEvent(true);
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSourceDic[guid] = cancellationTokenSource;
             thread.Name = guid;
             waitingThreadIdQueue.Enqueue(guid);
             waitingThreadDic[guid] = thread;
@@ -378,27 +384,80 @@ namespace PowerThreadPool
         /// <summary>
         /// Stop all threads
         /// </summary>
-        public void Stop()
+        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
+        public void Stop(bool forceStop = false)
         {
             waitingThreadIdQueue = new ConcurrentQueue<string>();
             waitingThreadDic = new ConcurrentDictionary<string, Thread>();
-            foreach (Thread thread in runningThreadDic.Values) 
+
+            cancellationTokenSource.Cancel();
+
+            if (forceStop)
             {
-                thread.Interrupt();
-                thread.Join();
+                foreach (Thread thread in runningThreadDic.Values)
+                {
+                    thread.Interrupt();
+                    thread.Join();
+                }
             }
+            
             runningThreadDic = new ConcurrentDictionary<string, Thread>();
         }
 
         /// <summary>
         /// Stop all threads
         /// </summary>
+        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
         /// <returns>A Task</returns>
-        public async Task StopAsync()
+        public async Task StopAsync(bool forceStop = false)
         {
             await Task.Run(() =>
             {
-                Stop();
+                Stop(forceStop);
+            });
+        }
+
+        /// <summary>
+        /// Stop thread by id
+        /// </summary>
+        /// <param name="id">thread id</param>
+        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
+        /// <returns>If thread is in progress during the invocation</returns>
+        public bool Stop(string id, bool forceStop = false)
+        {
+            bool res = false;
+            foreach (string runningId in runningThreadDic.Keys)
+            {
+                if (id == runningId)
+                {
+                    cancellationTokenSourceDic[runningId].Cancel();
+
+                    if (forceStop)
+                    {
+                        runningThreadDic[runningId].Interrupt();
+                        runningThreadDic[runningId].Join();
+                    }
+
+                    runningThreadDic.Remove(runningId, out _);
+
+                    res = true;
+                    break;
+                }
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Stop thread by id
+        /// </summary>
+        /// <param name="id">thread id</param>
+        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
+        /// <returns>If thread is in progress during the invocation</returns>
+        public async Task<bool> StopAsync(string id, bool forceStop = false)
+        {
+            return await Task.Run(() =>
+            {
+                return Stop(id, forceStop);
             });
         }
 
@@ -415,6 +474,50 @@ namespace PowerThreadPool
                     manualResetEventDic[id].WaitOne();
                 }
             }
+        }
+
+        /// <summary>
+        /// Call this function inside the thread logic where you want to stop when user call Stop(...)
+        /// </summary>
+        public void StopIfRequested()
+        {
+            if (cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                throw new ThreadInterruptedException();
+            }
+            foreach (string id in cancellationTokenSourceDic.Keys)
+            {
+                if (Thread.CurrentThread.Name == id)
+                {
+                    if (cancellationTokenSourceDic[id].Token.IsCancellationRequested)
+                    {
+                        throw new ThreadInterruptedException();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Call this function inside the thread logic where you want to check if requested stop (if user call Stop(...))
+        /// </summary>
+        /// <returns></returns>
+        public bool CheckIfRequestedStop()
+        {
+            if (cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                return true;
+            }
+            foreach (string id in cancellationTokenSourceDic.Keys)
+            {
+                if (Thread.CurrentThread.Name == id)
+                {
+                    if (cancellationTokenSourceDic[id].Token.IsCancellationRequested)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>

@@ -61,9 +61,13 @@ powerPool.Resume(true); // Resume all thread
 |QueueWorkItem<...>(...)|Queues a method for execution. The method executes when a thread pool thread becomes available.|thread id|
 |Wait()|Blocks the calling thread until all of the threads terminates.|-|
 |WaitAsync()|Blocks the calling thread until all of the threads terminates.|Task|
-|Stop()|Stop all threads|-|
-|StopAsync()|Stop all threads|Task|
+|Stop(bool forceStop = false)|Stop all threads|-|
+|StopAsync(bool forceStop = false)|Stop all threads|Task|
+|Stop(string id, bool forceStop = false)|Stop thread by id|If thread is in progress during the invocation|
+|StopAsync(string id, bool forceStop = false)|Stop thread by id|(Task) If thread is in progress during the invocation|
 |PauseIfRequested()|Call this function inside the thread logic where you want to pause when user call Pause(...)|-|
+|StopIfRequested()|Call this function inside the thread logic where you want to stop when user call Stop(...)|-|
+|CheckIfRequestedStop()|Call this function inside the thread logic where you want to check if requested stop (if user call Stop(...))|-|
 |Pause()|Pause all threads|-|
 |Resume(bool resumeThreadPausedById = false)|Resume all threads|-|
 |Pause(string id)|Pause thread by id|-|
@@ -130,13 +134,25 @@ void Wait()
 async Task WaitAsync()
 ```
 ```csharp
-void Stop()
+void Stop(bool forceStop = false)
 ```
 ```csharp
-async Task StopAsync()
+async Task StopAsync(bool forceStop = false)
+```
+```csharp
+bool Stop(string id, bool forceStop = false)
+```
+```csharp
+async Task<bool> StopAsync(string id, bool forceStop = false)
 ```
 ```csharp
 void PauseIfRequested()
+```
+```csharp
+void StopIfRequested()
+```
+```csharp
+bool CheckIfRequestedStop()
 ```
 ```csharp
 void Pause()
