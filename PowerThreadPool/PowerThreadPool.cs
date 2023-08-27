@@ -19,6 +19,10 @@ namespace PowerThreadPool
 
         public delegate void IdleEventHandler(object sender, EventArgs e);
         public event IdleEventHandler Idle;
+        public delegate void ThreadStartEventHandler(object sender, ThreadStartEventArgs e);
+        public event ThreadStartEventHandler ThreadStart;
+        public delegate void ThreadEndEventHandler(object sender, ThreadEndEventArgs e);
+        public event ThreadEndEventHandler ThreadEnd;
 
 
         public int WaitingThreadCount
@@ -310,6 +314,10 @@ namespace PowerThreadPool
                     excuteResult.Exception = ex;
                 }
 
+                if (ThreadEnd != null)
+                {
+                    ThreadEnd.Invoke(this, new ThreadEndEventArgs() { Exception = excuteResult.Exception, Result = excuteResult.Result, Status = excuteResult.Status });
+                }
                 if (callBack != null)
                 {
                     callBack(excuteResult);
@@ -350,6 +358,11 @@ namespace PowerThreadPool
                     {
                         runningThreadDic[thread.Name] = thread;
                         thread.Start();
+
+                        if (ThreadStart != null)
+                        {
+                            ThreadStart.Invoke(this, new ThreadStartEventArgs() { ThreadId = thread.Name });
+                        }
                     }
                 }
             }
@@ -359,7 +372,10 @@ namespace PowerThreadPool
         {
             if (RunningThreadCount == 0 && WaitingThreadCount == 0)
             {
-                Idle.Invoke(this, new EventArgs());
+                if (Idle != null)
+                {
+                    Idle.Invoke(this, new EventArgs());
+                }
 
                 manualResetEvent = new ManualResetEvent(true);
                 manualResetEventDic = new ConcurrentDictionary<string, ManualResetEvent>();
