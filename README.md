@@ -86,6 +86,7 @@ int RunningThreadList; // Get
 ```
 #### Events
 ```csharp
+event ThreadPoolStartEventHandler ThreadPoolStart;
 event IdleEventHandler Idle;
 event ThreadStartEventHandler ThreadStart;
 event ThreadEndEventHandler ThreadEnd;

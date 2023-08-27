@@ -31,9 +31,13 @@ namespace PowerThreadPoolTest
         {
             InitializeComponent();
 
+            powerPool.ThreadPoolStart += (s, e) =>
+            {
+                OutputMsg("ThreadPoolStart");
+            };
             powerPool.Idle += (s, e) =>
             {
-                OutputMsg("ThreadPool Idle");
+                OutputMsg("Idle");
             };
             powerPool.ThreadStart += (s, e) =>
             {

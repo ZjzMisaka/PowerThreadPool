@@ -17,6 +17,8 @@ namespace PowerThreadPool
         private ThreadPoolOption threadPoolOption;
         public ThreadPoolOption ThreadPoolOption { get => threadPoolOption; set => threadPoolOption = value; }
 
+        public delegate void ThreadPoolStartEventHandler(object sender, EventArgs e);
+        public event ThreadPoolStartEventHandler ThreadPoolStart;
         public delegate void IdleEventHandler(object sender, EventArgs e);
         public event IdleEventHandler Idle;
         public delegate void ThreadStartEventHandler(object sender, ThreadStartEventArgs e);
@@ -356,6 +358,7 @@ namespace PowerThreadPool
                     dequeueRes = waitingThreadDic.Remove(id, out thread);
                     if (dequeueRes)
                     {
+                        CheckThreadPoolStart();
                         runningThreadDic[thread.Name] = thread;
                         thread.Start();
 
@@ -368,6 +371,23 @@ namespace PowerThreadPool
             }
         }
 
+        /// <summary>
+        /// Check if it's the start of thread pool
+        /// </summary>
+        private void CheckThreadPoolStart()
+        {
+            if (RunningThreadCount == 0 && WaitingThreadCount == 0)
+            {
+                if (ThreadPoolStart != null)
+                {
+                    ThreadPoolStart.Invoke(this, new EventArgs());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Check if thread pool is idle
+        /// </summary>
         private void CheckIdle()
         {
             if (RunningThreadCount == 0 && WaitingThreadCount == 0)
