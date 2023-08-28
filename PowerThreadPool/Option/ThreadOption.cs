@@ -13,7 +13,7 @@ namespace PowerThreadPool.Option
         {
         }
 
-        public TimeoutOption Timeout { get; set; } = null; // TODO
+        public TimeoutOption Timeout { get; set; } = null;
 
         public Action<ExecuteResult<TResult>> Callback { get; set; } = null;
     }

@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using static System.Collections.Specialized.BitVector32;
 
 namespace PowerThreadPool
 {
@@ -31,6 +29,13 @@ namespace PowerThreadPool
         public event ThreadStartEventHandler ThreadStart;
         public delegate void ThreadEndEventHandler(object sender, ThreadEndEventArgs e);
         public event ThreadEndEventHandler ThreadEnd;
+        public delegate void ThreadPoolTimeoutEventHandler(object sender, EventArgs e);
+        public event ThreadPoolTimeoutEventHandler ThreadPoolTimeout;
+        public delegate void ThreadTimeoutEventHandler(object sender, ThreadTimeoutEventArgs e);
+        public event ThreadTimeoutEventHandler ThreadTimeout;
+
+        private System.Timers.Timer threadPoolTimer;
+        private ConcurrentDictionary<string, System.Timers.Timer> threadPoolTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
 
 
         public int WaitingThreadCount
@@ -69,6 +74,19 @@ namespace PowerThreadPool
         public PowerPool(ThreadPoolOption threadPoolOption)
         {
             ThreadPoolOption = threadPoolOption;
+
+            if (threadPoolOption.Timeout != null)
+            {
+                threadPoolTimer = new System.Timers.Timer(threadPoolOption.Timeout.Duration);
+                threadPoolTimer.Elapsed += (s, e) => 
+                {
+                    if (ThreadPoolTimeout != null)
+                    {
+                        ThreadPoolTimeout.Invoke(this, new EventArgs());
+                    }
+                    this.Stop(threadPoolOption.Timeout.ForceStop);
+                };
+            }
         }
 
         /// <summary>
@@ -547,6 +565,30 @@ namespace PowerThreadPool
         {
             ExecuteResult<TResult> excuteResult = new ExecuteResult<TResult>();
             string guid = Guid.NewGuid().ToString();
+
+            TimeoutOption threadTimeoutOption = null;
+            if (option.Timeout != null)
+            {
+                threadTimeoutOption = option.Timeout;
+            }
+            else if (threadPoolOption.DefaultThreadTimeout != null)
+            {
+                threadTimeoutOption = threadPoolOption.DefaultThreadTimeout;
+            }
+            if (threadTimeoutOption != null)
+            {
+                System.Timers.Timer timer = new System.Timers.Timer(threadTimeoutOption.Duration);
+                timer.Elapsed += (s, e) =>
+                {
+                    if (ThreadTimeout != null)
+                    {
+                        ThreadTimeout.Invoke(this, new ThreadTimeoutEventArgs() { ID = guid });
+                    }
+                    this.Stop(guid, threadTimeoutOption.ForceStop);
+                };
+                threadPoolTimerDic[guid] = timer;
+            }
+            
             Thread thread = new Thread(() =>
             {
                 try
@@ -608,6 +650,11 @@ namespace PowerThreadPool
                     {
                         CheckThreadPoolStart();
                         runningThreadDic[thread.Name] = thread;
+                        if (threadPoolTimerDic.ContainsKey(id))
+                        {
+                            threadPoolTimerDic[id].Start();
+                        }
+
                         thread.Start();
 
                         if (ThreadStart != null)
@@ -629,6 +676,10 @@ namespace PowerThreadPool
                 if (ThreadPoolStart != null)
                 {
                     ThreadPoolStart.Invoke(this, new EventArgs());
+                }
+                if (threadPoolTimer != null)
+                {
+                    threadPoolTimer.Start();
                 }
             }
         }
@@ -830,6 +881,10 @@ namespace PowerThreadPool
         /// </summary>
         public void Pause()
         {
+            if (threadPoolTimer != null)
+            {
+                threadPoolTimer.Stop();
+            }
             manualResetEvent.Reset();
         }
 
@@ -839,6 +894,10 @@ namespace PowerThreadPool
         /// <param name="resumeThreadPausedById"></param>
         public void Resume(bool resumeThreadPausedById = false)
         {
+            if (threadPoolTimer != null)
+            {
+                threadPoolTimer.Start();
+            }
             manualResetEvent.Set();
             if (resumeThreadPausedById)
             {
@@ -855,6 +914,10 @@ namespace PowerThreadPool
         /// <param name="id">thread id</param>
         public void Pause(string id)
         {
+            if (threadPoolTimerDic.ContainsKey(id))
+            {
+                threadPoolTimerDic[id].Stop();
+            }
             manualResetEventDic[id].Reset();
         }
 
@@ -864,6 +927,10 @@ namespace PowerThreadPool
         /// <param name="id">thread id</param>
         public void Resume(string id)
         {
+            if (threadPoolTimerDic.ContainsKey(id))
+            {
+                threadPoolTimerDic[id].Start();
+            }
             manualResetEventDic[id].Set();
         }
 
