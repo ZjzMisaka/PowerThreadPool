@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace PowerThreadPool.Option
 {
+
     public class ThreadPoolOption
     {
         public ThreadPoolOption()
@@ -15,5 +16,7 @@ namespace PowerThreadPool.Option
         public int MaxThreads { get; set; } = 10;
         public TimeoutOption Timeout { get; set; } = null;
         public TimeoutOption DefaultThreadTimeout { get; set; } = null;
+
+        public Action<ExecuteResult<object>> DefaultCallback { get; set; } = null;
     }
 }

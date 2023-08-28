@@ -317,6 +317,10 @@ namespace PowerThreadPool
                 {
                     callBack(excuteResult);
                 }
+                else if (threadPoolOption.DefaultCallback != null)
+                {
+                    threadPoolOption.DefaultCallback(excuteResult as ExecuteResult<object>);
+                }
 
                 runningThreadDic.TryRemove(guid, out _);
                 manualResetEventDic.TryRemove(guid, out _);

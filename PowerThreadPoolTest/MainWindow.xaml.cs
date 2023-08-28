@@ -25,12 +25,21 @@ namespace PowerThreadPoolTest
     /// </summary>
     public partial class MainWindow : Window
     {
-        PowerPool powerPool = new PowerPool(new ThreadPoolOption() { MaxThreads = 3 });
+        PowerPool powerPool = new PowerPool();
         string t4Guid = "";
         string t2Guid = "";
         public MainWindow()
         {
             InitializeComponent();
+
+            powerPool.ThreadPoolOption = new ThreadPoolOption()
+            {
+                MaxThreads = 3,
+                DefaultCallback = (res) =>
+                {
+                    OutputMsg("DefaultCallback");
+                }
+            };
 
             powerPool.ThreadPoolStart += (s, e) =>
             {
@@ -114,7 +123,7 @@ namespace PowerThreadPoolTest
                 return true;
             }, (res) => 
             {
-                // OutputMsg("Thread1: End");
+                OutputMsg("Thread1: Callback");
             });
 
             t2Guid = powerPool.QueueWorkItem(() =>
@@ -127,9 +136,6 @@ namespace PowerThreadPoolTest
                     Sleep(700);
                 }
                 OutputMsg("Thread2: END");
-            }, (res) =>
-            {
-                // OutputMsg("Thread2: End");
             });
 
             powerPool.QueueWorkItem(() =>
@@ -145,7 +151,7 @@ namespace PowerThreadPoolTest
                 return new ThreadPoolOption();
             }, (res) =>
             {
-                // OutputMsg("Thread3: End");
+                OutputMsg("Thread3: Callback");
             });
 
             t4Guid = powerPool.QueueWorkItem(() =>
@@ -160,7 +166,7 @@ namespace PowerThreadPoolTest
                 OutputMsg("Thread4: END");
             }, (res) =>
             {
-                // OutputMsg("Thread4: End");
+                OutputMsg("Thread4: Callback");
             });
 
             powerPool.QueueWorkItem<int, int, int>(T5Func, 10, 10);
