@@ -706,6 +706,8 @@ namespace PowerThreadPool
                 waitingThreadIdQueue = new PriorityQueue<string>();
                 waitingThreadDic = new ConcurrentDictionary<string, Thread>();
                 runningThreadDic = new ConcurrentDictionary<string, Thread>();
+
+                threadPoolTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
             }
         }
 
