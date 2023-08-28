@@ -16,6 +16,8 @@ namespace PowerThreadPool.Option
         public TimeoutOption Timeout { get; set; } = null;
 
         public Action<ExecuteResult<TResult>> Callback { get; set; } = null;
+
+        public int Priority { get; set; } = 0;
     }
 
     public class ThreadOption : ThreadOption<object>

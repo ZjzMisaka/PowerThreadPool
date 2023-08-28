@@ -15,7 +15,7 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, ManualResetEvent> manualResetEventDic = new ConcurrentDictionary<string, ManualResetEvent>();
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
-        private ConcurrentQueue<string> waitingThreadIdQueue = new ConcurrentQueue<string>();
+        private PriorityQueue<string> waitingThreadIdQueue = new PriorityQueue<string>();
         private ConcurrentDictionary<string, Thread> waitingThreadDic = new ConcurrentDictionary<string, Thread>();
         private ConcurrentDictionary<string, Thread> runningThreadDic = new ConcurrentDictionary<string, Thread>();
         private ThreadPoolOption threadPoolOption;
@@ -625,7 +625,7 @@ namespace PowerThreadPool
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSourceDic[guid] = cancellationTokenSource;
             thread.Name = guid;
-            waitingThreadIdQueue.Enqueue(guid);
+            waitingThreadIdQueue.Enqueue(guid, option.Priority);
             waitingThreadDic[guid] = thread;
             
             CheckAndRunThread();
@@ -640,12 +640,11 @@ namespace PowerThreadPool
         {
             while (RunningThreadCount < threadPoolOption.MaxThreads && WaitingThreadCount > 0)
             {
-                string id;
                 Thread thread;
-                bool dequeueRes = waitingThreadIdQueue.TryDequeue(out id);
-                if (dequeueRes)
+                string id = waitingThreadIdQueue.Dequeue();
+                if (id != null && id != default(string))
                 {
-                    dequeueRes = waitingThreadDic.TryRemove(id, out thread);
+                    bool dequeueRes = waitingThreadDic.TryRemove(id, out thread);
                     if (dequeueRes)
                     {
                         CheckThreadPoolStart();
@@ -701,7 +700,7 @@ namespace PowerThreadPool
                 cancellationTokenSource = new CancellationTokenSource();
                 cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
-                waitingThreadIdQueue = new ConcurrentQueue<string>();
+                waitingThreadIdQueue = new PriorityQueue<string>();
                 waitingThreadDic = new ConcurrentDictionary<string, Thread>();
                 runningThreadDic = new ConcurrentDictionary<string, Thread>();
             }
@@ -747,7 +746,7 @@ namespace PowerThreadPool
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
         public void Stop(bool forceStop = false)
         {
-            waitingThreadIdQueue = new ConcurrentQueue<string>();
+            waitingThreadIdQueue = new PriorityQueue<string>();
             waitingThreadDic = new ConcurrentDictionary<string, Thread>();
 
             cancellationTokenSource.Cancel();
