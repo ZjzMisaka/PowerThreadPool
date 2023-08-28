@@ -1,9 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net5.0;net6.0;net7.0;net46;net461;net472;net48;</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
 
     <PackageId>PowerThreadPool</PackageId>
     <Description>Enables efficient ThreadPool management with callback implementation, granular control, customizable concurrency, and support for diverse task submissions.</Description>

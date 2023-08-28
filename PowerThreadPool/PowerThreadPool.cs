@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace PowerThreadPool
@@ -86,7 +89,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem(Action<object[]> action, object[] param, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<object[], object> func = (param) => { action(param); return null; };
+            Func<object[], object> func = (p) => { action(p); return null; };
             return QueueWorkItem<object>(func, param, callBack);
         }
 
@@ -100,7 +103,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1>(Action<T1> action, T1 param1, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, object> func = (param) => { action(param1); return null; };
+            Func<T1, object> func = (p) => { action(p); return null; };
             return QueueWorkItem<T1, object>(func, param1, callBack);
         }
 
@@ -116,7 +119,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, T2, object> func = (param1, param2) => { action(param1, param2); return null; };
+            Func<T1, T2, object> func = (p1, p2) => { action(p1, p2); return null; };
             return QueueWorkItem<T1, T2, object>(func, param1, param2, callBack);
         }
 
@@ -134,7 +137,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, T2, T3, object> func = (param1, param2, param3) => { action(param1, param2, param3); return null; };
+            Func<T1, T2, T3, object> func = (p1, p2, p3) => { action(p1, p2, p3); return null; };
             return QueueWorkItem<T1, T2, T3, object>(func, param1, param2, param3, callBack);
         }
 
@@ -154,7 +157,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, T2, T3, T4, object> func = (param1, param2, param3, param4) => { action(param1, param2, param3, param4); return null; };
+            Func<T1, T2, T3, T4, object> func = (p1, p2, p3, p4) => { action(p1, p2, p3, p4); return null; };
             return QueueWorkItem<T1, T2, T3, T4, object>(func, param1, param2, param3, param4, callBack);
         }
 
@@ -176,7 +179,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, T2, T3, T4, T5, object> func = (param1, param2, param3, param4, param5) => { action(param1, param2, param3, param4, param5); return null; };
+            Func<T1, T2, T3, T4, T5, object> func = (p1, p2, p3, p4, p5) => { action(p1, p2, p3, p4, p5); return null; };
             return QueueWorkItem<T1, T2, T3, T4, T5, object>(func, param1, param2, param3, param4, param5, callBack);
         }
 
@@ -325,9 +328,9 @@ namespace PowerThreadPool
                     callBack(excuteResult);
                 }
 
-                runningThreadDic.Remove(guid, out _);
-                manualResetEventDic.Remove(guid, out _);
-                cancellationTokenSourceDic.Remove(guid, out _);
+                runningThreadDic.TryRemove(guid, out _);
+                manualResetEventDic.TryRemove(guid, out _);
+                cancellationTokenSourceDic.TryRemove(guid, out _);
                 CheckAndRunThread();
                 CheckIdle();
             });
@@ -355,7 +358,7 @@ namespace PowerThreadPool
                 bool dequeueRes = waitingThreadIdQueue.TryDequeue(out id);
                 if (dequeueRes)
                 {
-                    dequeueRes = waitingThreadDic.Remove(id, out thread);
+                    dequeueRes = waitingThreadDic.TryRemove(id, out thread);
                     if (dequeueRes)
                     {
                         CheckThreadPoolStart();
@@ -634,7 +637,7 @@ namespace PowerThreadPool
         /// <returns>is succeed</returns>
         public bool Cancel(string id)
         {
-            return waitingThreadDic.Remove(id, out _);
+            return waitingThreadDic.TryRemove(id, out _);
         }
     }
 }
