@@ -57,6 +57,10 @@ namespace PowerThreadPoolTest
             {
                 OutputMsg("ThreadEnd");
             };
+            powerPool.ThreadTimeout += (s, e) =>
+            {
+                OutputMsg("Thread" + e.ID + ": Timeout");
+            };
         }
 
         private void Sleep(int ms)
@@ -121,9 +125,13 @@ namespace PowerThreadPoolTest
                 }
                 OutputMsg("Thread1: END");
                 return true;
-            }, (res) => 
+            }, new ThreadOption()
             {
-                OutputMsg("Thread1: Callback");
+                Callback = (res) =>
+                {
+                    OutputMsg("Thread1: Callback");
+                },
+                Timeout = new TimeoutOption() { Duration = 2000 }
             });
 
             t2Guid = powerPool.QueueWorkItem(() =>

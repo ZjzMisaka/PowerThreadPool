@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace PowerThreadPool
 {
@@ -78,6 +79,7 @@ namespace PowerThreadPool
             if (threadPoolOption.Timeout != null)
             {
                 threadPoolTimer = new System.Timers.Timer(threadPoolOption.Timeout.Duration);
+                threadPoolTimer.AutoReset = false;
                 threadPoolTimer.Elapsed += (s, e) => 
                 {
                     if (ThreadPoolTimeout != null)
@@ -578,6 +580,7 @@ namespace PowerThreadPool
             if (threadTimeoutOption != null)
             {
                 System.Timers.Timer timer = new System.Timers.Timer(threadTimeoutOption.Duration);
+                timer.AutoReset = false;
                 timer.Elapsed += (s, e) =>
                 {
                     if (ThreadTimeout != null)

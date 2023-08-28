@@ -13,6 +13,6 @@ namespace PowerThreadPool.Option
         }
 
         public int Duration { get; set; }
-        public bool ForceStop { get; set; }
+        public bool ForceStop { get; set; } = false;
     }
 }
