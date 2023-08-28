@@ -42,7 +42,7 @@ namespace PowerThreadPool
                     return default;
                 }
 
-                var pair = queueDic.First();
+                var pair = queueDic.Last();
 
                 pair.Value.TryDequeue(out T item);
 
