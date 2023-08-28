@@ -61,10 +61,10 @@ powerPool.Resume(true); // Resume all thread
 |QueueWorkItem<...>(...)|Queues a method for execution. The method executes when a thread pool thread becomes available.|thread id|
 |Wait()|Blocks the calling thread until all of the threads terminates.|-|
 |WaitAsync()|Blocks the calling thread until all of the threads terminates.|Task|
-|Stop(bool forceStop = false)|Stop all threads|-|
-|StopAsync(bool forceStop = false)|Stop all threads|Task|
-|Stop(string id, bool forceStop = false)|Stop thread by id|If thread is in progress during the invocation|
-|StopAsync(string id, bool forceStop = false)|Stop thread by id|(Task) If thread is in progress during the invocation|
+|Stop(bool forceStop = false)|Stop all threads. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|-|
+|StopAsync(bool forceStop = false)|Stop all threads. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|Task|
+|Stop(string id, bool forceStop = false)|Stop thread by id. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|If thread is in progress during the invocation|
+|StopAsync(string id, bool forceStop = false)|Stop thread by id. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|(Task) If thread is in progress during the invocation|
 |PauseIfRequested()|Call this function inside the thread logic where you want to pause when user call Pause(...)|-|
 |StopIfRequested()|Call this function inside the thread logic where you want to stop when user call Stop(...)|-|
 |CheckIfRequestedStop()|Call this function inside the thread logic where you want to check if requested stop (if user call Stop(...))|-|
