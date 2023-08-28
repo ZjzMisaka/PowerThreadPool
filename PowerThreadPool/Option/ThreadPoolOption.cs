@@ -14,8 +14,8 @@ namespace PowerThreadPool.Option
         }
 
         public int MaxThreads { get; set; } = 10;
-        public TimeoutOption Timeout { get; set; } = null;
-        public TimeoutOption DefaultThreadTimeout { get; set; } = null;
+        public TimeoutOption Timeout { get; set; } = null; // TODO
+        public TimeoutOption DefaultThreadTimeout { get; set; } = null; // TODO
 
         public Action<ExecuteResult<object>> DefaultCallback { get; set; } = null;
     }
