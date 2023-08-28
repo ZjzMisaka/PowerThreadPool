@@ -4,15 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PowerThreadPool
+namespace PowerThreadPool.Option
 {
     public class ThreadPoolOption
     {
-        public ThreadPoolOption(int maxThreads = 10)
+        public ThreadPoolOption()
         {
-            MaxThreads = maxThreads;
         }
 
         public int MaxThreads { get; set; } = 10;
+        public TimeoutOption Timeout { get; set; } = null;
+        public TimeoutOption DefaultThreadTimeout { get; set; } = null;
     }
 }

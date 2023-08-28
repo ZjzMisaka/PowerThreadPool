@@ -1,10 +1,13 @@
-﻿using System;
+﻿using PowerThreadPool.Helper;
+using PowerThreadPool.Option;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using static System.Collections.Specialized.BitVector32;
 
 namespace PowerThreadPool
 {
@@ -76,8 +79,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem(Action action, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<object> func = () => { action(); return null; };
-            return QueueWorkItem<object>(func, callBack);
+            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), new object[0], callBack);
         }
 
         /// <summary>
@@ -89,8 +91,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem(Action<object[]> action, object[] param, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<object[], object> func = (p) => { action(p); return null; };
-            return QueueWorkItem<object>(func, param, callBack);
+            return QueueWorkItem<object>(DelegateHelper<object[]>.ToNormalFunc(action, param), param, callBack);
         }
 
         /// <summary>
@@ -103,8 +104,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1>(Action<T1> action, T1 param1, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, object> func = (p) => { action(p); return null; };
-            return QueueWorkItem<T1, object>(func, param1, callBack);
+            return QueueWorkItem<object>(DelegateHelper<T1, object>.ToNormalFunc(action, param1), new object[] { param1 }, callBack);
         }
 
         /// <summary>
@@ -119,8 +119,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, T2, object> func = (p1, p2) => { action(p1, p2); return null; };
-            return QueueWorkItem<T1, T2, object>(func, param1, param2, callBack);
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, object>.ToNormalFunc(action, param1, param2), new object[] { param1, param2 }, callBack);
         }
 
         /// <summary>
@@ -137,8 +136,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, T2, T3, object> func = (p1, p2, p3) => { action(p1, p2, p3); return null; };
-            return QueueWorkItem<T1, T2, T3, object>(func, param1, param2, param3, callBack);
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, object>.ToNormalFunc(action, param1, param2, param3), new object[] { param1, param2, param3 }, callBack);
         }
 
         /// <summary>
@@ -157,8 +155,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, T2, T3, T4, object> func = (p1, p2, p3, p4) => { action(p1, p2, p3, p4); return null; };
-            return QueueWorkItem<T1, T2, T3, T4, object>(func, param1, param2, param3, param4, callBack);
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, T4, object>.ToNormalFunc(action, param1, param2, param3, param4), new object[] { param1, param2, param3, param4 }, callBack);
         }
 
         /// <summary>
@@ -179,8 +176,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, T2, T3, T4, T5, object> func = (p1, p2, p3, p4, p5) => { action(p1, p2, p3, p4, p5); return null; };
-            return QueueWorkItem<T1, T2, T3, T4, T5, object>(func, param1, param2, param3, param4, param5, callBack);
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, T4, T5, object>.ToNormalFunc(action, param1, param2, param3, param4, param5), new object[] { param1, param2, param3, param4, param5 }, callBack);
         }
 
 
@@ -195,8 +191,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, Action<ExecuteResult<TResult>> callBack = null)
         {
-            Func<TResult> func = () => { return function(param1); };
-            return QueueWorkItem<TResult>(func, callBack);
+            return QueueWorkItem<TResult>(DelegateHelper<T1, TResult>.ToNormalFunc(function, param1), new object[] { param1 }, callBack);
         }
 
         /// <summary>
@@ -212,8 +207,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, Action<ExecuteResult<TResult>> callBack = null)
         {
-            Func<TResult> func = () => { return function(param1, param2); };
-            return QueueWorkItem<TResult>(func, callBack);
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, TResult>.ToNormalFunc(function, param1, param2), new object[] { param1, param2 }, callBack);
         }
 
         /// <summary>
@@ -231,8 +225,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<TResult>> callBack = null)
         {
-            Func<TResult> func = () => { return function(param1, param2, param3); };
-            return QueueWorkItem<TResult>(func, callBack);
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, TResult>.ToNormalFunc(function, param1, param2, param3), new object[] { param1, param2, param3 }, callBack);
         }
 
         /// <summary>
@@ -252,8 +245,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<TResult>> callBack = null)
         {
-            Func<TResult> func = () => { return function(param1, param2, param3, param4); };
-            return QueueWorkItem<TResult>(func, callBack);
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, T4, TResult>.ToNormalFunc(function, param1, param2, param3, param4), new object[] { param1, param2, param3, param4 }, callBack);
         }
 
         /// <summary>
@@ -275,8 +267,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<TResult>> callBack = null)
         {
-            Func<TResult> func = () => { return function(param1, param2, param3, param4, param5); };
-            return QueueWorkItem<TResult>(func, callBack);
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, T4, T5, TResult>.ToNormalFunc(function, param1, param2, param3, param4, param5), new object[] { param1, param2, param3, param4, param5 }, callBack);
         }
 
 
@@ -289,8 +280,7 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<TResult>(Func<TResult> function, Action<ExecuteResult<TResult>> callBack = null)
         {
-            Func<object[], TResult> func = (param) => { return function(); };
-            return QueueWorkItem<TResult>(func, new object[0], callBack);
+            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), new object[] { }, callBack);
         }
 
 
