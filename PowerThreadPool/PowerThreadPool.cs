@@ -1,10 +1,12 @@
-﻿using System;
+﻿using PowerThreadPool.Helper;
+using PowerThreadPool.Option;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+using System.Timers;
 
 namespace PowerThreadPool
 {
@@ -14,7 +16,7 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, ManualResetEvent> manualResetEventDic = new ConcurrentDictionary<string, ManualResetEvent>();
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
-        private ConcurrentQueue<string> waitingThreadIdQueue = new ConcurrentQueue<string>();
+        private PriorityQueue<string> waitingThreadIdQueue = new PriorityQueue<string>();
         private ConcurrentDictionary<string, Thread> waitingThreadDic = new ConcurrentDictionary<string, Thread>();
         private ConcurrentDictionary<string, Thread> runningThreadDic = new ConcurrentDictionary<string, Thread>();
         private ThreadPoolOption threadPoolOption;
@@ -28,6 +30,13 @@ namespace PowerThreadPool
         public event ThreadStartEventHandler ThreadStart;
         public delegate void ThreadEndEventHandler(object sender, ThreadEndEventArgs e);
         public event ThreadEndEventHandler ThreadEnd;
+        public delegate void ThreadPoolTimeoutEventHandler(object sender, EventArgs e);
+        public event ThreadPoolTimeoutEventHandler ThreadPoolTimeout;
+        public delegate void ThreadTimeoutEventHandler(object sender, ThreadTimeoutEventArgs e);
+        public event ThreadTimeoutEventHandler ThreadTimeout;
+
+        private System.Timers.Timer threadPoolTimer;
+        private ConcurrentDictionary<string, System.Timers.Timer> threadPoolTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
 
 
         public int WaitingThreadCount
@@ -66,6 +75,20 @@ namespace PowerThreadPool
         public PowerPool(ThreadPoolOption threadPoolOption)
         {
             ThreadPoolOption = threadPoolOption;
+
+            if (threadPoolOption.Timeout != null)
+            {
+                threadPoolTimer = new System.Timers.Timer(threadPoolOption.Timeout.Duration);
+                threadPoolTimer.AutoReset = false;
+                threadPoolTimer.Elapsed += (s, e) => 
+                {
+                    if (ThreadPoolTimeout != null)
+                    {
+                        ThreadPoolTimeout.Invoke(this, new EventArgs());
+                    }
+                    this.Stop(threadPoolOption.Timeout.ForceStop);
+                };
+            }
         }
 
         /// <summary>
@@ -76,8 +99,20 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem(Action action, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<object> func = () => { action(); return null; };
-            return QueueWorkItem<object>(func, callBack);
+            ThreadOption option = new ThreadOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), new object[0], option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem(Action action, ThreadOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), new object[0], option);
         }
 
         /// <summary>
@@ -89,8 +124,21 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem(Action<object[]> action, object[] param, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<object[], object> func = (p) => { action(p); return null; };
-            return QueueWorkItem<object>(func, param, callBack);
+            ThreadOption option = new ThreadOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<object[]>.ToNormalFunc(action, param), param, option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="param"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem(Action<object[]> action, object[] param, ThreadOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<object[]>.ToNormalFunc(action, param), param, option);
         }
 
         /// <summary>
@@ -103,8 +151,22 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1>(Action<T1> action, T1 param1, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, object> func = (p) => { action(p); return null; };
-            return QueueWorkItem<T1, object>(func, param1, callBack);
+            ThreadOption option = new ThreadOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<T1, object>.ToNormalFunc(action, param1), new object[] { param1 }, option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem<T1>(Action<T1> action, T1 param1, ThreadOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<T1, object>.ToNormalFunc(action, param1), new object[] { param1 }, option);
         }
 
         /// <summary>
@@ -119,8 +181,24 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, T2, object> func = (p1, p2) => { action(p1, p2); return null; };
-            return QueueWorkItem<T1, T2, object>(func, param1, param2, callBack);
+            ThreadOption option = new ThreadOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, object>.ToNormalFunc(action, param1, param2), new object[] { param1, param2 }, option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, ThreadOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, object>.ToNormalFunc(action, param1, param2), new object[] { param1, param2 }, option);
         }
 
         /// <summary>
@@ -137,8 +215,26 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, T2, T3, object> func = (p1, p2, p3) => { action(p1, p2, p3); return null; };
-            return QueueWorkItem<T1, T2, T3, object>(func, param1, param2, param3, callBack);
+            ThreadOption option = new ThreadOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, object>.ToNormalFunc(action, param1, param2, param3), new object[] { param1, param2, param3 }, option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, ThreadOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, object>.ToNormalFunc(action, param1, param2, param3), new object[] { param1, param2, param3 }, option);
         }
 
         /// <summary>
@@ -157,8 +253,28 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, T2, T3, T4, object> func = (p1, p2, p3, p4) => { action(p1, p2, p3, p4); return null; };
-            return QueueWorkItem<T1, T2, T3, T4, object>(func, param1, param2, param3, param4, callBack);
+            ThreadOption option = new ThreadOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, T4, object>.ToNormalFunc(action, param1, param2, param3, param4), new object[] { param1, param2, param3, param4 }, option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, ThreadOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, T4, object>.ToNormalFunc(action, param1, param2, param3, param4), new object[] { param1, param2, param3, param4 }, option);
         }
 
         /// <summary>
@@ -179,8 +295,30 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<object>> callBack = null)
         {
-            Func<T1, T2, T3, T4, T5, object> func = (p1, p2, p3, p4, p5) => { action(p1, p2, p3, p4, p5); return null; };
-            return QueueWorkItem<T1, T2, T3, T4, T5, object>(func, param1, param2, param3, param4, param5, callBack);
+            ThreadOption option = new ThreadOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, T4, T5, object>.ToNormalFunc(action, param1, param2, param3, param4, param5), new object[] { param1, param2, param3, param4, param5 }, option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="T5"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="param5"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, ThreadOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, T4, T5, object>.ToNormalFunc(action, param1, param2, param3, param4, param5), new object[] { param1, param2, param3, param4, param5 }, option);
         }
 
 
@@ -195,8 +333,23 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, Action<ExecuteResult<TResult>> callBack = null)
         {
-            Func<TResult> func = () => { return function(param1); };
-            return QueueWorkItem<TResult>(func, callBack);
+            ThreadOption<TResult> option = new ThreadOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(DelegateHelper<T1, TResult>.ToNormalFunc(function, param1), new object[] { param1 }, option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, ThreadOption<TResult> option)
+        {
+            return QueueWorkItem<TResult>(DelegateHelper<T1, TResult>.ToNormalFunc(function, param1), new object[] { param1 }, option);
         }
 
         /// <summary>
@@ -212,8 +365,25 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, Action<ExecuteResult<TResult>> callBack = null)
         {
-            Func<TResult> func = () => { return function(param1, param2); };
-            return QueueWorkItem<TResult>(func, callBack);
+            ThreadOption<TResult> option = new ThreadOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, TResult>.ToNormalFunc(function, param1, param2), new object[] { param1, param2 }, option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, ThreadOption<TResult> option)
+        {
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, TResult>.ToNormalFunc(function, param1, param2), new object[] { param1, param2 }, option);
         }
 
         /// <summary>
@@ -231,8 +401,27 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<TResult>> callBack = null)
         {
-            Func<TResult> func = () => { return function(param1, param2, param3); };
-            return QueueWorkItem<TResult>(func, callBack);
+            ThreadOption<TResult> option = new ThreadOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, TResult>.ToNormalFunc(function, param1, param2, param3), new object[] { param1, param2, param3 }, option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, ThreadOption<TResult> option)
+        {
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, TResult>.ToNormalFunc(function, param1, param2, param3), new object[] { param1, param2, param3 }, option);
         }
 
         /// <summary>
@@ -252,8 +441,29 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<TResult>> callBack = null)
         {
-            Func<TResult> func = () => { return function(param1, param2, param3, param4); };
-            return QueueWorkItem<TResult>(func, callBack);
+            ThreadOption<TResult> option = new ThreadOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, T4, TResult>.ToNormalFunc(function, param1, param2, param3, param4), new object[] { param1, param2, param3, param4 }, option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, ThreadOption<TResult> option)
+        {
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, T4, TResult>.ToNormalFunc(function, param1, param2, param3, param4), new object[] { param1, param2, param3, param4 }, option);
         }
 
         /// <summary>
@@ -275,8 +485,31 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<TResult>> callBack = null)
         {
-            Func<TResult> func = () => { return function(param1, param2, param3, param4, param5); };
-            return QueueWorkItem<TResult>(func, callBack);
+            ThreadOption<TResult> option = new ThreadOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, T4, T5, TResult>.ToNormalFunc(function, param1, param2, param3, param4, param5), new object[] { param1, param2, param3, param4, param5 }, option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="T5"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="param5"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, ThreadOption<TResult> option)
+        {
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, T4, T5, TResult>.ToNormalFunc(function, param1, param2, param3, param4, param5), new object[] { param1, param2, param3, param4, param5 }, option);
         }
 
 
@@ -289,10 +522,22 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<TResult>(Func<TResult> function, Action<ExecuteResult<TResult>> callBack = null)
         {
-            Func<object[], TResult> func = (param) => { return function(); };
-            return QueueWorkItem<TResult>(func, new object[0], callBack);
+            ThreadOption<TResult> option = new ThreadOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), new object[] { }, option);
         }
 
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="option"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem<TResult>(Func<TResult> function, ThreadOption<TResult> option)
+        {
+            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), new object[] { }, option);
+        }
 
         /// <summary>
         /// Queues a method for execution. The method executes when a thread pool thread becomes available.
@@ -304,8 +549,49 @@ namespace PowerThreadPool
         /// <returns>thread id</returns>
         public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, Action<ExecuteResult<TResult>> callBack = null)
         {
+            ThreadOption<TResult> option = new ThreadOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(function, param, option);
+        }
+
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param"></param>
+        /// <param name="callBack"></param>
+        /// <returns>thread id</returns>
+        public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, ThreadOption<TResult> option)
+        {
             ExecuteResult<TResult> excuteResult = new ExecuteResult<TResult>();
             string guid = Guid.NewGuid().ToString();
+
+            TimeoutOption threadTimeoutOption = null;
+            if (option.Timeout != null)
+            {
+                threadTimeoutOption = option.Timeout;
+            }
+            else if (threadPoolOption.DefaultThreadTimeout != null)
+            {
+                threadTimeoutOption = threadPoolOption.DefaultThreadTimeout;
+            }
+            if (threadTimeoutOption != null)
+            {
+                System.Timers.Timer timer = new System.Timers.Timer(threadTimeoutOption.Duration);
+                timer.AutoReset = false;
+                timer.Elapsed += (s, e) =>
+                {
+                    if (ThreadTimeout != null)
+                    {
+                        ThreadTimeout.Invoke(this, new ThreadTimeoutEventArgs() { ID = guid });
+                    }
+                    this.Stop(guid, threadTimeoutOption.ForceStop);
+                };
+                threadPoolTimerDic[guid] = timer;
+            }
+            
             Thread thread = new Thread(() =>
             {
                 try
@@ -323,9 +609,13 @@ namespace PowerThreadPool
                 {
                     ThreadEnd.Invoke(this, new ThreadEndEventArgs() { Exception = excuteResult.Exception, Result = excuteResult.Result, Status = excuteResult.Status });
                 }
-                if (callBack != null)
+                if (option.Callback != null)
                 {
-                    callBack(excuteResult);
+                    option.Callback(excuteResult);
+                }
+                else if (threadPoolOption.DefaultCallback != null)
+                {
+                    threadPoolOption.DefaultCallback(excuteResult as ExecuteResult<object>);
                 }
 
                 runningThreadDic.TryRemove(guid, out _);
@@ -338,7 +628,7 @@ namespace PowerThreadPool
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSourceDic[guid] = cancellationTokenSource;
             thread.Name = guid;
-            waitingThreadIdQueue.Enqueue(guid);
+            waitingThreadIdQueue.Enqueue(guid, option.Priority);
             waitingThreadDic[guid] = thread;
             
             CheckAndRunThread();
@@ -353,16 +643,20 @@ namespace PowerThreadPool
         {
             while (RunningThreadCount < threadPoolOption.MaxThreads && WaitingThreadCount > 0)
             {
-                string id;
                 Thread thread;
-                bool dequeueRes = waitingThreadIdQueue.TryDequeue(out id);
-                if (dequeueRes)
+                string id = waitingThreadIdQueue.Dequeue();
+                if (id != null && id != default(string))
                 {
-                    dequeueRes = waitingThreadDic.TryRemove(id, out thread);
+                    bool dequeueRes = waitingThreadDic.TryRemove(id, out thread);
                     if (dequeueRes)
                     {
                         CheckThreadPoolStart();
                         runningThreadDic[thread.Name] = thread;
+                        if (threadPoolTimerDic.ContainsKey(id))
+                        {
+                            threadPoolTimerDic[id].Start();
+                        }
+
                         thread.Start();
 
                         if (ThreadStart != null)
@@ -385,6 +679,10 @@ namespace PowerThreadPool
                 {
                     ThreadPoolStart.Invoke(this, new EventArgs());
                 }
+                if (threadPoolTimer != null)
+                {
+                    threadPoolTimer.Start();
+                }
             }
         }
 
@@ -405,7 +703,7 @@ namespace PowerThreadPool
                 cancellationTokenSource = new CancellationTokenSource();
                 cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
-                waitingThreadIdQueue = new ConcurrentQueue<string>();
+                waitingThreadIdQueue = new PriorityQueue<string>();
                 waitingThreadDic = new ConcurrentDictionary<string, Thread>();
                 runningThreadDic = new ConcurrentDictionary<string, Thread>();
             }
@@ -451,7 +749,7 @@ namespace PowerThreadPool
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
         public void Stop(bool forceStop = false)
         {
-            waitingThreadIdQueue = new ConcurrentQueue<string>();
+            waitingThreadIdQueue = new PriorityQueue<string>();
             waitingThreadDic = new ConcurrentDictionary<string, Thread>();
 
             cancellationTokenSource.Cancel();
@@ -585,6 +883,10 @@ namespace PowerThreadPool
         /// </summary>
         public void Pause()
         {
+            if (threadPoolTimer != null)
+            {
+                threadPoolTimer.Stop();
+            }
             manualResetEvent.Reset();
         }
 
@@ -594,6 +896,10 @@ namespace PowerThreadPool
         /// <param name="resumeThreadPausedById"></param>
         public void Resume(bool resumeThreadPausedById = false)
         {
+            if (threadPoolTimer != null)
+            {
+                threadPoolTimer.Start();
+            }
             manualResetEvent.Set();
             if (resumeThreadPausedById)
             {
@@ -610,6 +916,10 @@ namespace PowerThreadPool
         /// <param name="id">thread id</param>
         public void Pause(string id)
         {
+            if (threadPoolTimerDic.ContainsKey(id))
+            {
+                threadPoolTimerDic[id].Stop();
+            }
             manualResetEventDic[id].Reset();
         }
 
@@ -619,6 +929,10 @@ namespace PowerThreadPool
         /// <param name="id">thread id</param>
         public void Resume(string id)
         {
+            if (threadPoolTimerDic.ContainsKey(id))
+            {
+                threadPoolTimerDic[id].Start();
+            }
             manualResetEventDic[id].Set();
         }
 
