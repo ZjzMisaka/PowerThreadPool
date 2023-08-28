@@ -164,9 +164,13 @@ namespace PowerThreadPoolTest
                     Sleep(500);
                 }
                 OutputMsg("Thread4: END");
-            }, (res) =>
+            }, new ThreadOption()
             {
-                OutputMsg("Thread4: Callback");
+                Callback = (res) =>
+                {
+                    OutputMsg("Thread4: Callback");
+                },
+                Priority = 10
             });
 
             powerPool.QueueWorkItem<int, int, int>(T5Func, 10, 10);
