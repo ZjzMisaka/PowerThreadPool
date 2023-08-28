@@ -9,6 +9,8 @@ namespace PowerThreadPool
     public class ThreadStartEventArgs : EventArgs
     {
         public ThreadStartEventArgs() { }
-        public string ThreadId { get; set; }
+
+        private string id;
+        public string ID { get => id; internal set => id = value; }
     }
 }

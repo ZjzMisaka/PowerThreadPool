@@ -142,6 +142,7 @@ bool Cancel(string id);
 ### ExcuteResult\<TResult>
 #### Properties
 ```csharp
+string ID // Get
 TResult Result; // Get
 Status Status; // Get
 Exception Exception; // Get

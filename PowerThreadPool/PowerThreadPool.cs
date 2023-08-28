@@ -567,6 +567,7 @@ namespace PowerThreadPool
         {
             ExecuteResult<TResult> excuteResult = new ExecuteResult<TResult>();
             string guid = Guid.NewGuid().ToString();
+            excuteResult.ID = guid;
 
             TimeoutOption threadTimeoutOption = null;
             if (option.Timeout != null)
@@ -607,7 +608,13 @@ namespace PowerThreadPool
 
                 if (ThreadEnd != null)
                 {
-                    ThreadEnd.Invoke(this, new ThreadEndEventArgs() { Exception = excuteResult.Exception, Result = excuteResult.Result, Status = excuteResult.Status });
+                    ThreadEnd.Invoke(this, new ThreadEndEventArgs() 
+                    { 
+                        ID = excuteResult.ID, 
+                        Exception = excuteResult.Exception, 
+                        Result = excuteResult.Result, 
+                        Status = excuteResult.Status 
+                    });
                 }
                 if (option.Callback != null)
                 {
@@ -661,7 +668,7 @@ namespace PowerThreadPool
 
                         if (ThreadStart != null)
                         {
-                            ThreadStart.Invoke(this, new ThreadStartEventArgs() { ThreadId = thread.Name });
+                            ThreadStart.Invoke(this, new ThreadStartEventArgs() { ID = thread.Name });
                         }
                     }
                 }

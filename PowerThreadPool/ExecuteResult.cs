@@ -9,6 +9,9 @@ namespace PowerThreadPool
     public enum Status { Succeed, Failed }
     public class ExecuteResult<TResult>
     {
+        private string id;
+        public string ID { get => id; set => id = value; }
+
         private TResult result;
         public TResult Result { get => result; internal set => result = value; }
         
