@@ -623,11 +623,28 @@ namespace PowerThreadPool
 
         public void WorkEnd(string guid)
         {
-            runningWorkerDic.TryRemove(guid, out _);
+            Worker worker;
+            if (runningWorkerDic.TryRemove(guid, out worker))
+            {
+                idleWorkerQueue.Enqueue(worker);
+            }
             manualResetEventDic.TryRemove(guid, out _);
             cancellationTokenSourceDic.TryRemove(guid, out _);
             CheckAndRunThread();
             CheckIdle();
+        }
+
+        private void ManageIdleWorkerQueue()
+        {
+            while (idleWorkerQueue.Count < threadPoolOption.MaxThreads)
+            {
+                idleWorkerQueue.Enqueue(new Worker(this));
+            }
+
+            while (idleWorkerQueue.Count > threadPoolOption.MaxThreads)
+            {
+                idleWorkerQueue.TryDequeue(out _);
+            }
         }
 
         /// <summary>
@@ -635,6 +652,8 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckAndRunThread()
         {
+            ManageIdleWorkerQueue();
+
             while (RunningThreadCount < threadPoolOption.MaxThreads && WaitingThreadCount > 0)
             {
                 WorkBase work;
@@ -645,7 +664,13 @@ namespace PowerThreadPool
                     if (dequeueRes)
                     {
                         CheckThreadPoolStart();
-                        Worker worker = new Worker(this);
+                        Worker worker;
+                        if (!idleWorkerQueue.TryDequeue(out worker))
+                        {
+                            // TODO what should I do?
+                            //worker = new Worker(this);
+                            //idleWorkerQueue.Enqueue(worker);
+                        }
                         worker.AssignTask(work);
                         runningWorkerDic[work.ID] = worker;
                         if (threadPoolTimerDic.ContainsKey(id))
