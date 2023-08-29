@@ -181,7 +181,7 @@ namespace PowerThreadPoolTest
                 Priority = 10
             });
 
-            powerPool.QueueWorkItem<int, int, int>(T5Func, 10, 10);
+            powerPool.QueueWorkItem<int, int, int>(T5Func, 10, 10, T5Callback);
             powerPool.QueueWorkItem<int, int>(T6Action, 10, 10);
         }
 
@@ -189,6 +189,11 @@ namespace PowerThreadPoolTest
         {
             OutputMsg("T5Func: x + y :" + (x + y).ToString());
             return x + y;
+        }
+
+        private void T5Callback(ExecuteResult<int> res)
+        {
+            OutputMsg("T5Func callback: x + y :" + res.Result.ToString());
         }
 
         private void T6Action(int x, int y)
