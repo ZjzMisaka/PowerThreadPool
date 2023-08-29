@@ -7,7 +7,8 @@ public class Worker
 {
     private Thread thread;
 
-    private AutoResetEvent signal = new AutoResetEvent(false);
+    private AutoResetEvent runSignal = new AutoResetEvent(false);
+    private AutoResetEvent waitSignal = new AutoResetEvent(false);
     private string guid;
     private WorkBase work;
 
@@ -17,8 +18,7 @@ public class Worker
         {
             while (true)
             {
-                signal.WaitOne();
-
+                runSignal.WaitOne();
 
                 ExecuteResultBase executeResult;
                 try
@@ -35,6 +35,8 @@ public class Worker
                 work.InvokeCallback(executeResult, powerPool.ThreadPoolOption);
 
                 powerPool.WorkEnd(guid);
+
+                waitSignal.Set();
             }
         });
         thread.Start();
@@ -42,7 +44,7 @@ public class Worker
 
     public void Wait()
     {
-        thread.Join();
+        waitSignal.WaitOne();
     }
 
     public void ForceStop()
@@ -55,6 +57,6 @@ public class Worker
     {
         this.work = work;
         this.guid = work.ID;
-        signal.Set();
+        runSignal.Set();
     }
 }
