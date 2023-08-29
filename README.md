@@ -89,7 +89,7 @@ IEnumerable<string> RunningThreadList; // Get
 #### Events
 ```csharp
 event ThreadPoolStartEventHandler ThreadPoolStart;
-event IdleEventHandler Idle;
+event ThreadPoolIdleEventHandler ThreadPoolIdle;
 event ThreadStartEventHandler ThreadStart;
 event ThreadEndEventHandler ThreadEnd;
 event ThreadPoolTimeoutEventHandler ThreadPoolTimeout;

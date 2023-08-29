@@ -607,6 +607,10 @@ namespace PowerThreadPool
             return guid;
         }
 
+        /// <summary>
+        /// Invoke thread end event
+        /// </summary>
+        /// <param name="executeResult"></param>
         public void InvokeThreadEndEvent(ExecuteResultBase executeResult)
         {
             if (ThreadEnd != null)
@@ -621,6 +625,10 @@ namespace PowerThreadPool
             }
         }
 
+        /// <summary>
+        /// Work end
+        /// </summary>
+        /// <param name="guid"></param>
         public void WorkEnd(string guid)
         {
             Worker worker;
@@ -634,6 +642,9 @@ namespace PowerThreadPool
             CheckIdle();
         }
 
+        /// <summary>
+        /// Manage idle worker queue
+        /// </summary>
         private void ManageIdleWorkerQueue()
         {
             while (idleWorkerQueue.Count < threadPoolOption.MaxThreads)
