@@ -60,7 +60,9 @@ powerPool.Resume(true); // Resume all thread
 |---|---|---|
 |QueueWorkItem<...>(...)|Queues a method for execution. The method executes when a thread pool thread becomes available.|thread id|
 |Wait()|Blocks the calling thread until all of the threads terminates.|-|
+|Wait(string id)|Blocks the calling thread until the thread terminates.|Return false if the thread isn't running|
 |WaitAsync()|Blocks the calling thread until all of the threads terminates.|Task|
+|WaitAsync(string id)|Blocks the calling thread until the thread terminates.|Return false if the thread isn't running|
 |Stop(bool forceStop = false)|Stop all threads. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|-|
 |StopAsync(bool forceStop = false)|Stop all threads. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|Task|
 |Stop(string id, bool forceStop = false)|Stop thread by id. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|If thread is in progress during the invocation|
@@ -124,7 +126,9 @@ string QueueWorkItem<TResult>(Func<TResult> function, ThreadOption option);
 string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, Action<ExcuteResult<TResult>> callBack = null);
 string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, ThreadOption option);
 void Wait();
+bool Wait(string id)
 async Task WaitAsync();
+async Task<bool> WaitAsync(string id)
 void Stop(bool forceStop = false);
 async Task StopAsync(bool forceStop = false);
 bool Stop(string id, bool forceStop = false);

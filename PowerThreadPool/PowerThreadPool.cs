@@ -741,6 +741,21 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Blocks the calling thread until the thread terminates.
+        /// </summary>
+        /// <param name="id">thread id</param>
+        /// <returns>Return false if the thread isn't running</returns>
+        public bool Wait(string id)
+        {
+            if (runningThreadDic.ContainsKey(id))
+            {
+                runningThreadDic[id].Join();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Blocks the calling thread until all of the threads terminates.
         /// </summary>
         /// <returns>A Task</returns>
@@ -749,6 +764,19 @@ namespace PowerThreadPool
             await Task.Run(() =>
             {
                 Wait();
+            });
+        }
+
+        /// <summary>
+        /// Blocks the calling thread until the thread terminates.
+        /// </summary>
+        /// <param name="id">thread id</param>
+        /// <returns>Return false if the thread isn't running</returns>
+        public async Task<bool> WaitAsync(string id)
+        {
+            return await Task.Run(() =>
+            {
+                return Wait(id);
             });
         }
 
