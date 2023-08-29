@@ -42,14 +42,5 @@ namespace PowerThreadPool
         {
             return result;
         }
-
-        public static ExecuteResult<TResult> FromBase(ExecuteResultBase executeResultBase)
-        {
-            ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
-            executeResult.Result = (TResult)executeResultBase.GetResult();
-            executeResult.Status = executeResultBase.Status;
-            executeResult.Exception = executeResultBase.Exception;
-            return executeResult;
-        }
     }
 }

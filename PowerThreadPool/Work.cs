@@ -13,6 +13,7 @@ namespace PowerThreadPool
         public string ID { get => id; set => id = value; }
         public abstract object Execute();
         public abstract void InvokeCallback(ExecuteResultBase executeResult, ThreadPoolOption threadPoolOption);
+        internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
     }
     internal class Work<TResult> : WorkBase
     {
@@ -38,12 +39,19 @@ namespace PowerThreadPool
         {
             if (Option.Callback != null)
             {
-                Option.Callback(ExecuteResult<TResult>.FromBase(executeResult));
+                Option.Callback((ExecuteResult<TResult>)executeResult);
             }
             else if (threadPoolOption.DefaultCallback != null)
             {
                 threadPoolOption.DefaultCallback(executeResult as ExecuteResult<object>);
             }
+        }
+
+        internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status)
+        {
+            ExecuteResultBase executeResult = new ExecuteResult<TResult>();
+            executeResult.SetExecuteResult(result, exception, status);
+            return executeResult;
         }
     }
 }

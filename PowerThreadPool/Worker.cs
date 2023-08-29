@@ -9,7 +9,6 @@ public class Worker
 
     private AutoResetEvent signal = new AutoResetEvent(false);
     private string guid;
-    private ExecuteResultBase executeResult;
     private WorkBase work;
 
     internal Worker(PowerPool powerPool)
@@ -21,15 +20,15 @@ public class Worker
                 signal.WaitOne();
 
 
-                executeResult = new ExecuteResult<object>();
+                ExecuteResultBase executeResult;
                 try
                 {
                     object result = work.Execute();
-                    executeResult.SetExecuteResult(result, null, Status.Succeed);
+                    executeResult = work.SetExecuteResult(result, null, Status.Succeed);
                 }
                 catch (Exception ex)
                 {
-                    executeResult.SetExecuteResult(null, ex, Status.Failed);
+                    executeResult = work.SetExecuteResult(null, ex, Status.Failed);
                 }
 
                 powerPool.InvokeThreadEndEvent(executeResult);
