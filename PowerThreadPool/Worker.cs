@@ -12,7 +12,7 @@ public class Worker
     private ExecuteResultBase executeResult;
     private WorkBase work;
 
-    public Worker(PowerPool powerPool)
+    internal Worker(PowerPool powerPool)
     {
         thread = new Thread(() =>
         {
@@ -52,7 +52,7 @@ public class Worker
         thread.Join();
     }
 
-    public void AssignTask(WorkBase work)
+    internal void AssignTask(WorkBase work)
     {
         this.work = work;
         this.guid = work.ID;

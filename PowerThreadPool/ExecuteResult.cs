@@ -18,8 +18,8 @@ namespace PowerThreadPool
 
         private Exception exception;
         public Exception Exception { get => exception; internal set => exception = value; }
-        public abstract void SetExecuteResult(object result, Exception exception, Status status);
-        public abstract object GetResult();
+        internal abstract void SetExecuteResult(object result, Exception exception, Status status);
+        internal abstract object GetResult();
     }
     public class ExecuteResult<TResult> : ExecuteResultBase
     {
@@ -31,14 +31,14 @@ namespace PowerThreadPool
         
         }
 
-        public override void SetExecuteResult(object result, Exception exception, Status status)
+        internal override void SetExecuteResult(object result, Exception exception, Status status)
         {
             this.result = (TResult)result;
             this.Exception = exception;
             this.Status = status;
         }
 
-        public override object GetResult()
+        internal override object GetResult()
         {
             return result;
         }

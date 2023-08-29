@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace PowerThreadPool
 {
-    public abstract class WorkBase
+    internal abstract class WorkBase
     {
         private string id;
         public string ID { get => id; set => id = value; }
         public abstract object Execute();
         public abstract void InvokeCallback(ExecuteResultBase executeResult, ThreadPoolOption threadPoolOption);
     }
-    public class Work<TResult> : WorkBase
+    internal class Work<TResult> : WorkBase
     {
         private Func<object[], TResult> function;
         private object[] param;
