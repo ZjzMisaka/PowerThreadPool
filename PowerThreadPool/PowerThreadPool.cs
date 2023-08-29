@@ -676,22 +676,19 @@ namespace PowerThreadPool
                     {
                         CheckThreadPoolStart();
                         Worker worker;
-                        if (!idleWorkerQueue.TryDequeue(out worker))
+                        if (idleWorkerQueue.TryDequeue(out worker))
                         {
-                            // TODO what should I do?
-                            //worker = new Worker(this);
-                            //idleWorkerQueue.Enqueue(worker);
-                        }
-                        worker.AssignTask(work);
-                        runningWorkerDic[work.ID] = worker;
-                        if (threadPoolTimerDic.ContainsKey(id))
-                        {
-                            threadPoolTimerDic[id].Start();
-                        }
+                            worker.AssignTask(work);
+                            runningWorkerDic[work.ID] = worker;
+                            if (threadPoolTimerDic.ContainsKey(id))
+                            {
+                                threadPoolTimerDic[id].Start();
+                            }
 
-                        if (ThreadStart != null)
-                        {
-                            ThreadStart.Invoke(this, new ThreadStartEventArgs() { ID = work.ID });
+                            if (ThreadStart != null)
+                            {
+                                ThreadStart.Invoke(this, new ThreadStartEventArgs() { ID = work.ID });
+                            }
                         }
                     }
                 }
