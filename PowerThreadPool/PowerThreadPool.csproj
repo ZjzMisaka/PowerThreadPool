@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net5.0;net6.0;net7.0;net46;net461;net472;net48;</TargetFrameworks>
@@ -8,7 +8,7 @@
 
     <PackageId>PowerThreadPool</PackageId>
     <Description>Enables efficient ThreadPool management with callback implementation, granular control, customizable concurrency, and support for diverse task submissions.</Description>
-    <PackageTags>csharp;net6;thread;thread-pool;</PackageTags>
+    <PackageTags>csharp;net6;thread;thread-pool;threadpool;</PackageTags>
     <Authors>ZjzMisaka</Authors>
     <RepositoryUrl>https://github.com/ZjzMisaka/PowerThreadPool</RepositoryUrl>
     <PackageProjectUrl>https://github.com/ZjzMisaka/PowerThreadPool</PackageProjectUrl>
