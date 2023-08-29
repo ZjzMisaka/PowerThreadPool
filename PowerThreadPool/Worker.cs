@@ -3,23 +3,10 @@ using System;
 using PowerThreadPool;
 using PowerThreadPool.Option;
 
-public class WorkerBase
+public class Worker
 {
-    protected Thread thread;
-    public void Wait()
-    {
-        thread.Join();
-    }
+    private Thread thread;
 
-    public void ForceStop()
-    {
-        thread.Interrupt();
-        thread.Join();
-    }
-}
-
-public class Worker : WorkerBase
-{
     private AutoResetEvent signal = new AutoResetEvent(false);
     private string guid;
     private ExecuteResultBase executeResult;
@@ -52,6 +39,17 @@ public class Worker : WorkerBase
             }
         });
         thread.Start();
+    }
+
+    public void Wait()
+    {
+        thread.Join();
+    }
+
+    public void ForceStop()
+    {
+        thread.Interrupt();
+        thread.Join();
     }
 
     public void AssignTask(WorkBase work)

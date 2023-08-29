@@ -16,16 +16,18 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, ManualResetEvent> manualResetEventDic = new ConcurrentDictionary<string, ManualResetEvent>();
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
+
+        private ConcurrentQueue<Worker> idleWorkerQueue = new ConcurrentQueue<Worker>();
         private PriorityQueue<string> waitingThreadIdQueue = new PriorityQueue<string>();
         private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
-        private ConcurrentDictionary<string, WorkerBase> runningWorkerDic = new ConcurrentDictionary<string, WorkerBase>();
+        private ConcurrentDictionary<string, Worker> runningWorkerDic = new ConcurrentDictionary<string, Worker>();
         private ThreadPoolOption threadPoolOption;
         public ThreadPoolOption ThreadPoolOption { get => threadPoolOption; set => threadPoolOption = value; }
 
         public delegate void ThreadPoolStartEventHandler(object sender, EventArgs e);
         public event ThreadPoolStartEventHandler ThreadPoolStart;
-        public delegate void IdleEventHandler(object sender, EventArgs e);
-        public event IdleEventHandler Idle;
+        public delegate void ThreadPoolIdleEventHandler(object sender, EventArgs e);
+        public event ThreadPoolIdleEventHandler ThreadPoolIdle;
         public delegate void ThreadStartEventHandler(object sender, ThreadStartEventArgs e);
         public event ThreadStartEventHandler ThreadStart;
         public delegate void ThreadEndEventHandler(object sender, ThreadEndEventArgs e);
@@ -685,9 +687,9 @@ namespace PowerThreadPool
         {
             if (RunningThreadCount == 0 && WaitingThreadCount == 0)
             {
-                if (Idle != null)
+                if (ThreadPoolIdle != null)
                 {
-                    Idle.Invoke(this, new EventArgs());
+                    ThreadPoolIdle.Invoke(this, new EventArgs());
                 }
 
                 manualResetEvent = new ManualResetEvent(true);
@@ -697,7 +699,7 @@ namespace PowerThreadPool
 
                 waitingThreadIdQueue = new PriorityQueue<string>();
                 waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
-                runningWorkerDic = new ConcurrentDictionary<string, WorkerBase>();
+                runningWorkerDic = new ConcurrentDictionary<string, Worker>();
 
                 threadPoolTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
             }
@@ -774,7 +776,7 @@ namespace PowerThreadPool
 
             if (forceStop)
             {
-                foreach (WorkerBase worker in runningWorkerDic.Values)
+                foreach (Worker worker in runningWorkerDic.Values)
                 {
                     worker.ForceStop();
                 }
