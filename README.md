@@ -7,18 +7,17 @@ Enables efficient ThreadPool management with callback implementation, granular c
 PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/PowerThreadPool/) now.
 
 ## Getting started
-### Without callback
+### Basic
 ```csharp
-PowerPool powerPool = new PowerPool(new ThreadPoolOption() { MaxThreads = 3 });
+PowerPool powerPool = new PowerPool(new ThreadPoolOption() { /* Some options */ });
 powerPool.QueueWorkItem(() => 
 {
     // DO SOMETHING
-    return result;
 });
 ```
 ### With callback
 ```csharp
-PowerPool powerPool = new PowerPool(new ThreadPoolOption() { MaxThreads = 3 });
+PowerPool powerPool = new PowerPool(new ThreadPoolOption() { /* Some options */ });
 powerPool.QueueWorkItem(() => 
 {
     // DO SOMETHING
@@ -27,6 +26,18 @@ powerPool.QueueWorkItem(() =>
 {
     // this callback of thread
     // running result: res.Result
+});
+```
+### With callback
+```csharp
+PowerPool powerPool = new PowerPool(new ThreadPoolOption() { /* Some options */ });
+powerPool.QueueWorkItem(() => 
+{
+    // DO SOMETHING
+    return result;
+}, new ThreadOption()
+{
+    // Some options
 });
 ```
 ### Stop all threads
@@ -80,16 +91,17 @@ powerPool.Resume(true); // Resume all thread
 ### PowerPool
 #### Properties
 ```csharp
+int IdleThreadCount; // Get
 ThreadPoolOption ThreadPoolOption; // Get, Set
-int WaitingThreadCount; // Get
-IEnumerable<string> WaitingThreadList; // Get
-int RunningThreadCount; // Get
-IEnumerable<string> RunningThreadList; // Get
+int WaitingWorkCount; // Get
+IEnumerable<string> WaitingWorkerList; // Get
+int RunningWorkerCount; // Get
+IEnumerable<string> RunningWorkList; // Get
 ```
 #### Events
 ```csharp
 event ThreadPoolStartEventHandler ThreadPoolStart;
-event IdleEventHandler Idle;
+event ThreadPoolIdleEventHandler ThreadPoolIdle;
 event ThreadStartEventHandler ThreadStart;
 event ThreadEndEventHandler ThreadEnd;
 event ThreadPoolTimeoutEventHandler ThreadPoolTimeout;
@@ -169,4 +181,11 @@ Action<ExecuteResult<object>> DefaultCallback; // Get, Set
 TimeoutOption Timeout; // Get, Set
 Action<ExecuteResult<TResult>> Callback; // Get, Set
 int Priority; // Get, Set
+DestroyThreadOption DestroyThreadOption // Get, Set
+```
+### DestroyThreadOption
+#### Properties
+```csharp
+int KeepAliveTime; // Get, Set
+int MinThreads; // Get, Set
 ```

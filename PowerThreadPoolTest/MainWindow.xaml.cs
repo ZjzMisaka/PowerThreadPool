@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -28,9 +29,16 @@ namespace PowerThreadPoolTest
         PowerPool powerPool = new PowerPool();
         string t4Guid = "";
         string t2Guid = "";
+        System.Timers.Timer timer = new System.Timers.Timer(500);
         public MainWindow()
         {
             InitializeComponent();
+
+            timer.Elapsed += (s, e) =>
+            {
+                OutputCount();
+            };
+            timer.Start();
 
             powerPool.ThreadPoolOption = new ThreadPoolOption()
             {
@@ -38,16 +46,17 @@ namespace PowerThreadPoolTest
                 DefaultCallback = (res) =>
                 {
                     OutputMsg("DefaultCallback");
-                }
+                },
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 1000 }
             };
 
             powerPool.ThreadPoolStart += (s, e) =>
             {
                 OutputMsg("ThreadPoolStart");
             };
-            powerPool.Idle += (s, e) =>
+            powerPool.ThreadPoolIdle += (s, e) =>
             {
-                OutputMsg("Idle");
+                OutputMsg("ThreadPoolIdle");
             };
             powerPool.ThreadStart += (s, e) =>
             {
@@ -93,7 +102,7 @@ namespace PowerThreadPoolTest
         {
             this.Dispatcher.Invoke(() =>
             {
-                string countTxt = "waiting: " + powerPool.WaitingThreadCount + "\n" + "running: " + powerPool.RunningThreadCount;
+                string countTxt = "waiting: " + powerPool.WaitingWorkCount + "\n" + "running: " + powerPool.RunningWorkerCount +"\n" + "Idle: " + powerPool.IdleThreadCount;
                 count.Text = countTxt;
             });
         }
@@ -181,19 +190,19 @@ namespace PowerThreadPoolTest
                 Priority = 10
             });
 
-            powerPool.QueueWorkItem<int, int, int>(T5Func, 10, 10, T5Callback);
+            powerPool.QueueWorkItem<int, int, Random>(T5Func, 10, 10, T5Callback);
             powerPool.QueueWorkItem<int, int>(T6Action, 10, 10);
         }
 
-        private int T5Func(int x, int y)
+        private Random T5Func(int x, int y)
         {
             OutputMsg("T5Func: x + y :" + (x + y).ToString());
-            return x + y;
+            return new Random();
         }
 
-        private void T5Callback(ExecuteResult<int> res)
+        private void T5Callback(ExecuteResult<Random> res)
         {
-            OutputMsg("T5Func callback: x + y :" + res.Result.ToString());
+            OutputMsg("Random :" + res.Result.Next());
         }
 
         private void T6Action(int x, int y)

@@ -13,7 +13,8 @@ namespace PowerThreadPool.Option
         {
         }
 
-        public int MaxThreads { get; set; } = 10;
+        public int MaxThreads { get; set; } = Environment.ProcessorCount * 2;
+        public DestroyThreadOption DestroyThreadOption { get; set; } = null;
         public TimeoutOption Timeout { get; set; } = null;
         public TimeoutOption DefaultThreadTimeout { get; set; } = null;
         public Action<ExecuteResult<object>> DefaultCallback { get; set; } = null;
