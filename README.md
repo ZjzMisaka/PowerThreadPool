@@ -7,18 +7,17 @@ Enables efficient ThreadPool management with callback implementation, granular c
 PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/PowerThreadPool/) now.
 
 ## Getting started
-### Without callback
+### Basic
 ```csharp
-PowerPool powerPool = new PowerPool(new ThreadPoolOption() { MaxThreads = 3 });
+PowerPool powerPool = new PowerPool(new ThreadPoolOption() { /* Some options */ });
 powerPool.QueueWorkItem(() => 
 {
     // DO SOMETHING
-    return result;
 });
 ```
 ### With callback
 ```csharp
-PowerPool powerPool = new PowerPool(new ThreadPoolOption() { MaxThreads = 3 });
+PowerPool powerPool = new PowerPool(new ThreadPoolOption() { /* Some options */ });
 powerPool.QueueWorkItem(() => 
 {
     // DO SOMETHING
@@ -27,6 +26,18 @@ powerPool.QueueWorkItem(() =>
 {
     // this callback of thread
     // running result: res.Result
+});
+```
+### With callback
+```csharp
+PowerPool powerPool = new PowerPool(new ThreadPoolOption() { /* Some options */ });
+powerPool.QueueWorkItem(() => 
+{
+    // DO SOMETHING
+    return result;
+}, new ThreadOption()
+{
+    // Some options
 });
 ```
 ### Stop all threads
