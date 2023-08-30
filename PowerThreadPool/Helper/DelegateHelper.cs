@@ -23,8 +23,8 @@ namespace PowerThreadPool.Helper
 
         public static Func<object[], TResult> ToNormalFunc(Action<object[]> action, object[] param)
         {
-            Func<object[], object> func = (p) => { action(p); return null; };
-            return func as Func<object[], TResult>;
+            Func<object[], TResult> func = (p) => { action(p); return default(TResult); };
+            return func;
         }
     }
 
