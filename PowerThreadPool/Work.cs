@@ -43,7 +43,7 @@ namespace PowerThreadPool
             }
             else if (threadPoolOption.DefaultCallback != null)
             {
-                threadPoolOption.DefaultCallback(executeResult as ExecuteResult<object>);
+                threadPoolOption.DefaultCallback(executeResult);
             }
         }
 

@@ -118,9 +118,8 @@ namespace PowerThreadPoolTest
                 powerPool.PauseIfRequested();
                 powerPool.StopIfRequested();
                 OutputMsg("Thread0: END");
-            }, (res) =>
-            {
-                // OutputMsg("Thread4: End");
+
+                return new Exception("11223344");
             });
 
             powerPool.QueueWorkItem(() => 

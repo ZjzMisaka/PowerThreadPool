@@ -17,6 +17,6 @@ namespace PowerThreadPool.Option
         public DestroyThreadOption DestroyThreadOption { get; set; } = null;
         public TimeoutOption Timeout { get; set; } = null;
         public TimeoutOption DefaultThreadTimeout { get; set; } = null;
-        public Action<ExecuteResult<object>> DefaultCallback { get; set; } = null;
+        public Action<ExecuteResultBase> DefaultCallback { get; set; } = null;
     }
 }
