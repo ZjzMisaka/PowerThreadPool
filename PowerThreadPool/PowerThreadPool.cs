@@ -745,8 +745,9 @@ namespace PowerThreadPool
                         Worker worker;
                         if (idleWorkerQueue.TryDequeue(out worker))
                         {
-                            worker.AssignTask(work);
                             runningWorkerDic[work.ID] = worker;
+                            worker.AssignTask(work);
+                            
                             if (threadPoolTimerDic.ContainsKey(id))
                             {
                                 threadPoolTimerDic[id].Start();
