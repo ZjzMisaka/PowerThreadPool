@@ -26,6 +26,8 @@ public class Worker
                     return;
                 }
 
+                thread.Name = work.ID;
+
                 ExecuteResultBase executeResult;
                 try
                 {
