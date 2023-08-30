@@ -39,30 +39,38 @@ namespace PowerThreadPool
 
         private System.Timers.Timer threadPoolTimer;
         private ConcurrentDictionary<string, System.Timers.Timer> threadPoolTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
+        private List<System.Timers.Timer> idleWorkerTimerList = new List<System.Timers.Timer>();
+        private object idleWorkerTimerListLock = new object();
 
-
-        public int WaitingThreadCount
+        public int IdleThreadCount
+        {
+            get
+            {
+                return idleWorkerQueue.Count;
+            }
+        }
+        public int WaitingWorkCount
         {
             get 
             { 
                 return waitingWorkDic.Count; 
             }
         }
-        public IEnumerable<string> WaitingThreadList
+        public IEnumerable<string> WaitingWorkList
         {
             get
             {
                 return waitingWorkDic.Keys.ToList();
             }
         }
-        public int RunningThreadCount
+        public int RunningWorkerCount
         {
             get 
             {
                 return runningWorkerDic.Count;
             }
         }
-        public IEnumerable<string> RunningThreadList
+        public IEnumerable<string> RunningWorkerList
         {
             get
             {
@@ -635,6 +643,7 @@ namespace PowerThreadPool
             if (runningWorkerDic.TryRemove(guid, out worker))
             {
                 idleWorkerQueue.Enqueue(worker);
+                SetDestroyTimerForIdleWorker();
             }
             manualResetEventDic.TryRemove(guid, out _);
             cancellationTokenSourceDic.TryRemove(guid, out _);
@@ -647,14 +656,61 @@ namespace PowerThreadPool
         /// </summary>
         private void ManageIdleWorkerQueue()
         {
-            while (idleWorkerQueue.Count < threadPoolOption.MaxThreads)
+            if (threadPoolOption.DestroyThreadOption != null)
             {
-                idleWorkerQueue.Enqueue(new Worker(this));
+                if (threadPoolOption.DestroyThreadOption.MinThreads > threadPoolOption.MaxThreads)
+                {
+                    throw new ArgumentException("The minimum number of threads cannot be greater than the maximum number of threads.");
+                }
             }
 
-            while (idleWorkerQueue.Count > threadPoolOption.MaxThreads)
+            while (IdleThreadCount + RunningWorkerCount < threadPoolOption.DestroyThreadOption.MinThreads)
+            {
+                idleWorkerQueue.Enqueue(new Worker(this));
+                SetDestroyTimerForIdleWorker();
+            }
+
+            while (WaitingWorkCount > 0 && IdleThreadCount < 1 && IdleThreadCount + RunningWorkerCount < threadPoolOption.MaxThreads)
+            {
+                idleWorkerQueue.Enqueue(new Worker(this));
+                SetDestroyTimerForIdleWorker();
+            }
+
+            while (IdleThreadCount + RunningWorkerCount > threadPoolOption.MaxThreads)
             {
                 idleWorkerQueue.TryDequeue(out _);
+            }
+        }
+
+        /// <summary>
+        /// Set destroy timer for idle worker
+        /// </summary>
+        private void SetDestroyTimerForIdleWorker()
+        {
+            if (threadPoolOption.DestroyThreadOption != null)
+            {
+                System.Timers.Timer timer = new System.Timers.Timer(threadPoolOption.DestroyThreadOption.KeepAliveTime);
+                timer.AutoReset = false;
+                timer.Elapsed += (s, e) =>
+                {
+                    if (IdleThreadCount > threadPoolOption.DestroyThreadOption.MinThreads)
+                    {
+                        Worker worker;
+                        idleWorkerQueue.TryDequeue(out worker);
+                        worker.Kill();
+
+                        timer.Stop();
+                        lock (idleWorkerTimerListLock)
+                        {
+                            idleWorkerTimerList.Remove(timer);
+                        }
+                    }
+                };
+                timer.Start();
+                lock (idleWorkerTimerListLock)
+                {
+                    idleWorkerTimerList.Add(timer);
+                }
             }
         }
 
@@ -665,9 +721,13 @@ namespace PowerThreadPool
         {
             ManageIdleWorkerQueue();
 
-            while (RunningThreadCount < threadPoolOption.MaxThreads && WaitingThreadCount > 0)
+            while (RunningWorkerCount < threadPoolOption.MaxThreads && WaitingWorkCount > 0)
             {
                 WorkBase work;
+                if (IdleThreadCount == 0)
+                {
+                    return;
+                }
                 string id = waitingThreadIdQueue.Dequeue();
                 if (id != null && id != default(string))
                 {
@@ -700,7 +760,7 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckThreadPoolStart()
         {
-            if (RunningThreadCount == 0 && WaitingThreadCount == 0)
+            if (RunningWorkerCount == 0 && WaitingWorkCount == 0)
             {
                 if (ThreadPoolStart != null)
                 {
@@ -718,7 +778,7 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckIdle()
         {
-            if (RunningThreadCount == 0 && WaitingThreadCount == 0)
+            if (RunningWorkerCount == 0 && WaitingWorkCount == 0)
             {
                 if (ThreadPoolIdle != null)
                 {
@@ -745,7 +805,7 @@ namespace PowerThreadPool
         {
             while (true)
             {
-                if (RunningThreadCount > 0)
+                if (RunningWorkerCount > 0)
                 {
                     runningWorkerDic.Values.First().Wait();
                 }

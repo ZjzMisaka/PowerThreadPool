@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -28,9 +29,16 @@ namespace PowerThreadPoolTest
         PowerPool powerPool = new PowerPool();
         string t4Guid = "";
         string t2Guid = "";
+        System.Timers.Timer timer = new System.Timers.Timer(500);
         public MainWindow()
         {
             InitializeComponent();
+
+            timer.Elapsed += (s, e) =>
+            {
+                OutputCount();
+            };
+            timer.Start();
 
             powerPool.ThreadPoolOption = new ThreadPoolOption()
             {
@@ -38,7 +46,8 @@ namespace PowerThreadPoolTest
                 DefaultCallback = (res) =>
                 {
                     OutputMsg("DefaultCallback");
-                }
+                },
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 1000 }
             };
 
             powerPool.ThreadPoolStart += (s, e) =>
@@ -93,7 +102,7 @@ namespace PowerThreadPoolTest
         {
             this.Dispatcher.Invoke(() =>
             {
-                string countTxt = "waiting: " + powerPool.WaitingThreadCount + "\n" + "running: " + powerPool.RunningThreadCount;
+                string countTxt = "waiting: " + powerPool.WaitingWorkCount + "\n" + "running: " + powerPool.RunningWorkerCount +"\n" + "Idle: " + powerPool.IdleThreadCount;
                 count.Text = countTxt;
             });
         }

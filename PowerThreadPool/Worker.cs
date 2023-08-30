@@ -11,6 +11,7 @@ public class Worker
     private AutoResetEvent waitSignal = new AutoResetEvent(false);
     private string guid;
     private WorkBase work;
+    private bool killFlag = false;
 
     internal Worker(PowerPool powerPool)
     {
@@ -19,6 +20,11 @@ public class Worker
             while (true)
             {
                 runSignal.WaitOne();
+
+                if (killFlag)
+                {
+                    return;
+                }
 
                 ExecuteResultBase executeResult;
                 try
@@ -57,6 +63,12 @@ public class Worker
     {
         this.work = work;
         this.guid = work.ID;
+        runSignal.Set();
+    }
+
+    internal void Kill()
+    {
+        killFlag = true;
         runSignal.Set();
     }
 }

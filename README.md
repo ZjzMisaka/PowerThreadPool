@@ -80,11 +80,12 @@ powerPool.Resume(true); // Resume all thread
 ### PowerPool
 #### Properties
 ```csharp
+int IdleThreadCount; // Get
 ThreadPoolOption ThreadPoolOption; // Get, Set
-int WaitingThreadCount; // Get
-IEnumerable<string> WaitingThreadList; // Get
-int RunningThreadCount; // Get
-IEnumerable<string> RunningThreadList; // Get
+int WaitingWorkCount; // Get
+IEnumerable<string> WaitingWorkerList; // Get
+int RunningWorkerCount; // Get
+IEnumerable<string> RunningWorkList; // Get
 ```
 #### Events
 ```csharp
@@ -169,4 +170,11 @@ Action<ExecuteResult<object>> DefaultCallback; // Get, Set
 TimeoutOption Timeout; // Get, Set
 Action<ExecuteResult<TResult>> Callback; // Get, Set
 int Priority; // Get, Set
+DestroyThreadOption DestroyThreadOption // Get, Set
+```
+### DestroyThreadOption
+#### Properties
+```csharp
+int KeepAliveTime; // Get, Set
+int MinThreads; // Get, Set
 ```
