@@ -155,7 +155,7 @@ Action<ExecuteResult<object>> DefaultCallback; // Get, Set
 TimeoutOption Timeout; // Get, Set
 Action<ExecuteResult<TResult>> Callback; // Get, Set
 int Priority; // Get, Set
-DestroyThreadOption DestroyThreadOption // Get, Set
+DestroyThreadOption DestroyThreadOption; // Get, Set
 ```
 ### DestroyThreadOption
 #### Properties
