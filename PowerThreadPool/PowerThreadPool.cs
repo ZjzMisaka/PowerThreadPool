@@ -701,13 +701,15 @@ namespace PowerThreadPool
                     if (IdleThreadCount > threadPoolOption.DestroyThreadOption.MinThreads)
                     {
                         Worker worker;
-                        idleWorkerQueue.TryDequeue(out worker);
-                        worker.Kill();
-
-                        timer.Stop();
-                        lock (idleWorkerTimerListLock)
+                        if (idleWorkerQueue.TryDequeue(out worker))
                         {
-                            idleWorkerTimerList.Remove(timer);
+                            worker.Kill();
+
+                            timer.Stop();
+                            lock (idleWorkerTimerListLock)
+                            {
+                                idleWorkerTimerList.Remove(timer);
+                            }
                         }
                     }
                 };
