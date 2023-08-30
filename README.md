@@ -39,31 +39,6 @@ powerPool.QueueWorkItem(() =>
     // Some options
 });
 ```
-### Stop all threads
-```csharp
-powerPool.Stop();
-```
-### Blocks the calling thread until all of the threads terminates.
-```csharp
-powerPool.Wait();
-```
-### Pause threads
-```csharp
-PowerPool powerPool = new PowerPool(new ThreadPoolOption());
-string id = powerPool.QueueWorkItem(() => 
-{
-    while (true)
-    {
-        // Pause here when user call Pause()
-        powerPool.PauseIfRequested();
-        // DO SOMETHING
-    }
-});
-// DO SOMETHING
-powerPool.Pause(id); // Pause by ID
-powerPool.Pause(); // Pause all running thread
-powerPool.Resume(true); // Resume all thread
-```
 ### **API Summary**
 ### PowerPool
 |name|summary|result|
