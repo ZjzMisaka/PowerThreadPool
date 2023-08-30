@@ -112,9 +112,9 @@ string QueueWorkItem<TResult>(Func<TResult> function, ThreadOption option);
 string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, Action<ExcuteResult<TResult>> callBack = null);
 string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, ThreadOption option);
 void Wait();
-bool Wait(string id)
+bool Wait(string id);
 async Task WaitAsync();
-async Task<bool> WaitAsync(string id)
+async Task<bool> WaitAsync(string id);
 void Stop(bool forceStop = false);
 async Task StopAsync(bool forceStop = false);
 bool Stop(string id, bool forceStop = false);
@@ -132,7 +132,7 @@ bool Cancel(string id);
 ### ExcuteResult\<TResult>
 #### Properties
 ```csharp
-string ID // Get
+string ID; // Get
 TResult Result; // Get
 Status Status; // Get
 Exception Exception; // Get
