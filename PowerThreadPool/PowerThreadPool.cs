@@ -664,7 +664,12 @@ namespace PowerThreadPool
                 }
             }
 
-            while (IdleThreadCount + RunningWorkerCount < threadPoolOption.DestroyThreadOption.MinThreads)
+            int minThreads = threadPoolOption.MaxThreads;
+            if (threadPoolOption.DestroyThreadOption != null)
+            {
+                minThreads = threadPoolOption.DestroyThreadOption.MinThreads;
+            }
+            while (IdleThreadCount + RunningWorkerCount < minThreads)
             {
                 idleWorkerQueue.Enqueue(new Worker(this));
                 SetDestroyTimerForIdleWorker();
