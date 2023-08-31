@@ -16,9 +16,9 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <ScrollViewer x:Name="sv" Grid.Row="0" Grid.Column="0">
-            <TextBlock x:Name="log" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
+            <TextBlock x:Name="log" HorizontalAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
         </ScrollViewer>
-        <TextBlock x:Name="count" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top"/>
+        <TextBlock x:Name="count" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Top"/>
         <StackPanel Orientation="Horizontal" Grid.Row="1" Grid.ColumnSpan="2" FlowDirection="RightToLeft" >
             <Button x:Name="cancelAllThread" Content="cancelAllThread" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="cancelAllThread_Click"/>
             <Button x:Name="cancelThread4" Content="cancelThread4" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="cancelThread4_Click"/>
@@ -27,6 +27,7 @@
             <Button x:Name="resume" Content="resume" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="resume_Click"/>
             <Button x:Name="pause" Content="pause" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="pause_Click"/>
             <Button x:Name="wait" Content="wait" HorizontalAlignment="Left" VerticalAlignment="Top" Click="wait_Click" Padding="3px" Margin="3px"/>
+            <Button x:Name="stopThread2" Content="stopThread2" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="stopThread2_Click"/>
             <Button x:Name="stop" Content="stop" HorizontalAlignment="Left" VerticalAlignment="Top" Click="stop_Click" Padding="3px" Margin="3px"/>
             <Button x:Name="start" Content="start" HorizontalAlignment="Left" VerticalAlignment="Top" Click="start_Click" Padding="3px" Margin="3px"/>
         </StackPanel>

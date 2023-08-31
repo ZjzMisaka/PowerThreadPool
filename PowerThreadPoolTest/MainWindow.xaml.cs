@@ -88,6 +88,18 @@ namespace PowerThreadPoolTest
             powerPool.Stop();
         }
 
+        private void stopThread2_Click(object sender, RoutedEventArgs e)
+        {
+            if (powerPool.Stop(t2Guid))
+            {
+                OutputMsg("stopThread2 succees");
+            }
+            else 
+            {
+                OutputMsg("stopThread2 failed");
+            }
+        }
+
         private void OutputMsg(string msg)
         {
             this.Dispatcher.Invoke(() =>
