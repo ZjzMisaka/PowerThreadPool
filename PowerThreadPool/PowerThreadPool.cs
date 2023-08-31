@@ -910,7 +910,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="id">thread id</param>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
-        /// <returns>If thread is in progress during the invocation</returns>
+        /// <returns>Return false if the thread isn't running</returns>
         public bool Stop(string id, bool forceStop = false)
         {
             bool res = false;
@@ -937,7 +937,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="id">thread id</param>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
-        /// <returns>If thread is in progress during the invocation</returns>
+        /// <returns>Return false if the thread isn't running</returns>
         public async Task<bool> StopAsync(string id, bool forceStop = false)
         {
             return await Task.Run(() =>

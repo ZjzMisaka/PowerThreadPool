@@ -50,8 +50,8 @@ powerPool.QueueWorkItem(() =>
 |WaitAsync(string id)|Blocks the calling thread until the thread terminates.|Return false if the thread isn't running|
 |Stop(bool forceStop = false)|Stop all threads. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|Return false if no thread running|
 |StopAsync(bool forceStop = false)|Stop all threads. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|(Task) Return false if no thread running|
-|Stop(string id, bool forceStop = false)|Stop thread by id. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|If thread is in progress during the invocation|
-|StopAsync(string id, bool forceStop = false)|Stop thread by id. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|(Task) If thread is in progress during the invocation|
+|Stop(string id, bool forceStop = false)|Stop thread by id. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|Return false if the thread isn't running|
+|StopAsync(string id, bool forceStop = false)|Stop thread by id. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|(Task) Return false if the thread isn't running|
 |PauseIfRequested()|Call this function inside the thread logic where you want to pause when user call Pause(...)|-|
 |StopIfRequested()|Call this function inside the thread logic where you want to stop when user call Stop(...)|-|
 |CheckIfRequestedStop()|Call this function inside the thread logic where you want to check if requested stop (if user call Stop(...))|-|
