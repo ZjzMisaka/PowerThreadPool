@@ -48,8 +48,8 @@ powerPool.QueueWorkItem(() =>
 |Wait(string id)|Blocks the calling thread until the thread terminates.|Return false if the thread isn't running|
 |WaitAsync()|Blocks the calling thread until all of the threads terminates.|Task|
 |WaitAsync(string id)|Blocks the calling thread until the thread terminates.|Return false if the thread isn't running|
-|Stop(bool forceStop = false)|Stop all threads. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|-|
-|StopAsync(bool forceStop = false)|Stop all threads. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|Task|
+|Stop(bool forceStop = false)|Stop all threads. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|Return false if no thread running|
+|StopAsync(bool forceStop = false)|Stop all threads. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|(Task) Return false if no thread running|
 |Stop(string id, bool forceStop = false)|Stop thread by id. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|If thread is in progress during the invocation|
 |StopAsync(string id, bool forceStop = false)|Stop thread by id. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|(Task) If thread is in progress during the invocation|
 |PauseIfRequested()|Call this function inside the thread logic where you want to pause when user call Pause(...)|-|
@@ -115,8 +115,8 @@ void Wait();
 bool Wait(string id);
 async Task WaitAsync();
 async Task<bool> WaitAsync(string id);
-void Stop(bool forceStop = false);
-async Task StopAsync(bool forceStop = false);
+bool Stop(bool forceStop = false);
+async Task<bool> StopAsync(bool forceStop = false);
 bool Stop(string id, bool forceStop = false);
 async Task<bool> StopAsync(string id, bool forceStop = false);
 void PauseIfRequested();

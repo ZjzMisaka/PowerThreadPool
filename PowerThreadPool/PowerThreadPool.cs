@@ -868,8 +868,14 @@ namespace PowerThreadPool
         /// ForceStop all threads
         /// </summary>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
-        public void Stop(bool forceStop = false)
+        /// <returns>Return false if no thread running</returns>
+        public bool Stop(bool forceStop = false)
         {
+            if (RunningWorkerCount == 0 && WaitingWorkCount == 0)
+            {
+                return false;
+            }
+
             waitingThreadIdQueue = new PriorityQueue<string>();
             waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
 
@@ -882,18 +888,20 @@ namespace PowerThreadPool
                     worker.ForceStop();
                 }
             }
+
+            return true;
         }
 
         /// <summary>
         /// ForceStop all threads
         /// </summary>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
-        /// <returns>A Task</returns>
-        public async Task StopAsync(bool forceStop = false)
+        /// <returns>Return false if no thread running</returns>
+        public async Task<bool> StopAsync(bool forceStop = false)
         {
-            await Task.Run(() =>
+            return await Task.Run(() =>
             {
-                Stop(forceStop);
+                return Stop(forceStop);
             });
         }
 
