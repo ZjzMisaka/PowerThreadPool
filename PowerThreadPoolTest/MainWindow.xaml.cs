@@ -42,12 +42,12 @@ namespace PowerThreadPoolTest
 
             powerPool.ThreadPoolOption = new ThreadPoolOption()
             {
-                MaxThreads = 3,
+                MaxThreads = 8,
                 DefaultCallback = (res) =>
                 {
                     OutputMsg("DefaultCallback");
                 },
-                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 1000 }
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
             };
 
             powerPool.ThreadPoolStart += (s, e) =>
@@ -101,6 +101,51 @@ namespace PowerThreadPoolTest
             }
         }
 
+        private async void wait_Click(object sender, RoutedEventArgs e)
+        {
+            wait.IsEnabled = false;
+            await powerPool.WaitAsync();
+            OutputMsg("ALL Thread End");
+            wait.IsEnabled = true;
+        }
+
+        private void pause_Click(object sender, RoutedEventArgs e)
+        {
+            powerPool.Pause();
+        }
+
+        private void resume_Click(object sender, RoutedEventArgs e)
+        {
+            powerPool.Resume();
+        }
+
+        private void pauseThread2_Click(object sender, RoutedEventArgs e)
+        {
+            powerPool.Pause(t2Guid);
+        }
+
+        private void resumeThread2_Click(object sender, RoutedEventArgs e)
+        {
+            powerPool.Resume(t2Guid);
+        }
+
+        private void cancelThread4_Click(object sender, RoutedEventArgs e)
+        {
+            if (powerPool.Cancel(t4Guid))
+            {
+                OutputMsg("Cancel succeed");
+            }
+            else
+            {
+                OutputMsg("Cancel failed");
+            }
+        }
+
+        private void cancelAllThread_Click(object sender, RoutedEventArgs e)
+        {
+            powerPool.Cancel();
+        }
+
         private void OutputMsg(string msg)
         {
             this.Dispatcher.Invoke(() =>
@@ -119,6 +164,12 @@ namespace PowerThreadPoolTest
                 count.Text = countTxt;
             });
         }
+
+
+
+
+
+
 
         private void start_Click(object sender, RoutedEventArgs e)
         {
@@ -218,51 +269,6 @@ namespace PowerThreadPoolTest
         private void T6Action(int x, int y)
         {
             OutputMsg("T6Action: x + y :" + (x + y).ToString());
-        }
-
-        private async void wait_Click(object sender, RoutedEventArgs e)
-        {
-            wait.IsEnabled = false;
-            await powerPool.WaitAsync();
-            OutputMsg("ALL Thread End");
-            wait.IsEnabled = true;
-        }
-
-        private void pause_Click(object sender, RoutedEventArgs e)
-        {
-            powerPool.Pause();
-        }
-
-        private void resume_Click(object sender, RoutedEventArgs e)
-        {
-            powerPool.Resume();
-        }
-
-        private void pauseThread2_Click(object sender, RoutedEventArgs e)
-        {
-            powerPool.Pause(t2Guid);
-        }
-
-        private void resumeThread2_Click(object sender, RoutedEventArgs e)
-        {
-            powerPool.Resume(t2Guid);
-        }
-
-        private void cancelThread4_Click(object sender, RoutedEventArgs e)
-        {
-            if (powerPool.Cancel(t4Guid))
-            {
-                OutputMsg("Cancel succeed");
-            }
-            else
-            {
-                OutputMsg("Cancel failed");
-            }
-        }
-
-        private void cancelAllThread_Click(object sender, RoutedEventArgs e)
-        {
-            powerPool.Cancel();
         }
     }
 }
