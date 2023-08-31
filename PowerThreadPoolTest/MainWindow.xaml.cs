@@ -52,6 +52,7 @@ namespace PowerThreadPoolTest
 
             powerPool.ThreadPoolStart += (s, e) =>
             {
+                log.Text = "";
                 OutputMsg("ThreadPoolStart");
             };
             powerPool.ThreadPoolIdle += (s, e) =>
@@ -121,8 +122,6 @@ namespace PowerThreadPoolTest
 
         private void start_Click(object sender, RoutedEventArgs e)
         {
-            log.Text = "";
-
             powerPool.QueueWorkItem(() =>
             {
                 OutputMsg("Thread0: START");
