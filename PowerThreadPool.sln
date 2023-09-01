@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerThreadPoolTest", "Powe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerThreadPool", "PowerThreadPool\PowerThreadPool.csproj", "{D94DD0FD-9E6C-4817-8BE4-57C23235AC2B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTest", "UnitTest\UnitTest.csproj", "{A71B326B-A525-4381-9278-09E298055B4D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D94DD0FD-9E6C-4817-8BE4-57C23235AC2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D94DD0FD-9E6C-4817-8BE4-57C23235AC2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D94DD0FD-9E6C-4817-8BE4-57C23235AC2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A71B326B-A525-4381-9278-09E298055B4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A71B326B-A525-4381-9278-09E298055B4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A71B326B-A525-4381-9278-09E298055B4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A71B326B-A525-4381-9278-09E298055B4D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
