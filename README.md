@@ -27,7 +27,7 @@ powerPool.QueueWorkItem(() =>
     // running result: res.Result
 });
 ```
-### With Option
+### With option
 ```csharp
 PowerPool powerPool = new PowerPool(new ThreadPoolOption() { /* Some options */ });
 powerPool.QueueWorkItem(() => 
