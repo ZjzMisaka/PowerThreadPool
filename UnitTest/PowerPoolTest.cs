@@ -7,7 +7,7 @@ namespace UnitTest
     {
         PowerPool powerPool;
         [Fact]
-        public void Test1()
+        public void TestOrder()
         {
             List<string> logList = new List<string>();
             powerPool = new PowerPool();
@@ -47,13 +47,14 @@ namespace UnitTest
                 logList.Add("ThreadPoolTimeout");
             };
 
-            powerPool.QueueWorkItem(() => { });
+            powerPool.QueueWorkItem(() => { logList.Add("RUNNING"); });
 
             powerPool.Wait();
 
             Assert.Collection<string>(logList,
                 item => Assert.Equal("ThreadPoolStart", item),
                 item => Assert.Equal("ThreadStart", item),
+                item => Assert.Equal("RUNNING", item),
                 item => Assert.Equal("ThreadEnd", item),
                 item => Assert.Equal("DefaultCallback", item),
                 item => Assert.Equal("ThreadPoolIdle", item)
