@@ -82,11 +82,14 @@ namespace UnitTest
                 DefaultThreadTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
             };
 
-            powerPool.QueueWorkItem(() =>
+            string id = "";
+            id = powerPool.QueueWorkItem(() =>
             {
                 return 1024;
             }, (res) => 
             {
+                Assert.Equal(Status.Succeed, res.Status);
+                Assert.Equal(id, res.ID);
                 Assert.Equal(1024, res.Result);
             });
         }
@@ -181,6 +184,32 @@ namespace UnitTest
             Assert.Collection<string>(logList,
                 item => Assert.Equal("ThreadPoolTimeout", item)
                 );
+        }
+
+        [Fact]
+        public void TestError()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.ThreadPoolOption = new ThreadPoolOption()
+            {
+                MaxThreads = 8,
+                DefaultCallback = (res) =>
+                {
+                    Assert.Fail("Should not run DefaultCallback");
+                },
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
+                Timeout = new TimeoutOption() { Duration = 10000, ForceStop = false },
+                DefaultThreadTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                throw new Exception("custom error");
+            }, (res) =>
+            {
+                Assert.Equal("custom error", res.Exception.Message);
+                Assert.Equal(Status.Failed, res.Status);
+            });
         }
     }
 }
