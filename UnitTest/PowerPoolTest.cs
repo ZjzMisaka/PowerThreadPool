@@ -10,6 +10,7 @@ namespace UnitTest
         public void TestOrder()
         {
             List<string> logList = new List<string>();
+            string result = "";
             powerPool = new PowerPool();
             powerPool.ThreadPoolOption = new ThreadPoolOption()
             {
@@ -17,6 +18,7 @@ namespace UnitTest
                 DefaultCallback = (res) =>
                 {
                     logList.Add("DefaultCallback");
+                    result = (res as ExecuteResult<string>).Result;
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
                 Timeout = new TimeoutOption() { Duration = 60000, ForceStop = false },
@@ -47,7 +49,11 @@ namespace UnitTest
                 logList.Add("ThreadPoolTimeout");
             };
 
-            powerPool.QueueWorkItem(() => { logList.Add("RUNNING"); });
+            powerPool.QueueWorkItem(() => 
+            { 
+                logList.Add("RUNNING");
+                return "TestOrder Result";
+            });
 
             powerPool.Wait();
 
@@ -59,6 +65,8 @@ namespace UnitTest
                 item => Assert.Equal("DefaultCallback", item),
                 item => Assert.Equal("ThreadPoolIdle", item)
                 );
+
+            Assert.Equal("TestOrder Result", result);
         }
     }
 }
