@@ -68,5 +68,30 @@ namespace UnitTest
 
             Assert.Equal("TestOrder Result", result);
         }
+
+        [Fact]
+        public void TestCallback()
+        {
+            powerPool = new PowerPool();
+            powerPool.ThreadPoolOption = new ThreadPoolOption()
+            {
+                MaxThreads = 8,
+                DefaultCallback = (res) =>
+                {
+                    Assert.Fail("Should not run DefaultCallback");
+                },
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
+                Timeout = new TimeoutOption() { Duration = 60000, ForceStop = false },
+                DefaultThreadTimeout = new TimeoutOption() { Duration = 10000, ForceStop = false },
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                return 1024;
+            }, (res) => 
+            {
+                Assert.Equal(1024, res.Result);
+            });
+        }
     }
 }

@@ -31,6 +31,7 @@ namespace PowerThreadPool
             this.param = param;
             this.option = option;
         }
+
         public override object Execute()
         {
             return function(param);
