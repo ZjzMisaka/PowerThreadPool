@@ -18,7 +18,7 @@ namespace UnitTest
                 DefaultCallback = (res) =>
                 {
                     logList.Add("DefaultCallback");
-                    result = (res as ExecuteResult<string>).Result;
+                    result = (string)res.Result;
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
                 Timeout = new TimeoutOption() { Duration = 60000, ForceStop = false },

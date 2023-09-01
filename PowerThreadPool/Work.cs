@@ -35,6 +35,7 @@ namespace PowerThreadPool
         {
             return function(param);
         }
+
         public override void InvokeCallback(ExecuteResultBase executeResult, ThreadPoolOption threadPoolOption)
         {
             if (Option.Callback != null)
@@ -43,13 +44,13 @@ namespace PowerThreadPool
             }
             else if (threadPoolOption.DefaultCallback != null)
             {
-                threadPoolOption.DefaultCallback(executeResult);
+                threadPoolOption.DefaultCallback(executeResult.ToObjResult());
             }
         }
 
         internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status)
         {
-            ExecuteResultBase executeResult = new ExecuteResult<TResult>();
+            ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
             executeResult.SetExecuteResult(result, exception, status);
             return executeResult;
         }
