@@ -7,7 +7,7 @@ namespace UnitTest
     {
         PowerPool powerPool;
         [Fact]
-        public void TestOrder()
+        public void TestOrderAndDefaultCallback()
         {
             List<string> logList = new List<string>();
             string result = "";
