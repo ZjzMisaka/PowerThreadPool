@@ -1,7 +1,7 @@
 # PowerThreadPool
 <img src="https://www.nuget.org/Content/gallery/img/logo-header.svg?sanitize=true" height="30px">
 
-Enables efficient ThreadPool management with callback implementation, granular control, customizable concurrency, and support for diverse task submissions.
+Enables efficient thread pool management with callback implementation, granular control, customizable concurrency, and support for diverse task submissions.
 
 ## Download
 PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/PowerThreadPool/) now.
