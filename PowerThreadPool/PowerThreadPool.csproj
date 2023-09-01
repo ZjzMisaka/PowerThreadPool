@@ -7,7 +7,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
 
     <PackageId>PowerThreadPool</PackageId>
-    <Description>Enables efficient ThreadPool management with callback implementation, granular control, customizable concurrency, and support for diverse task submissions.</Description>
+    <Description>Enables efficient thread pool management with callback implementation, granular control, customizable concurrency, and support for diverse task submissions.</Description>
     <PackageTags>csharp;net6;thread;thread-pool;threadpool;</PackageTags>
     <Authors>ZjzMisaka</Authors>
     <RepositoryUrl>https://github.com/ZjzMisaka/PowerThreadPool</RepositoryUrl>

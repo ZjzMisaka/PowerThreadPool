@@ -85,20 +85,6 @@ namespace PowerThreadPool
         public PowerPool(ThreadPoolOption threadPoolOption)
         {
             ThreadPoolOption = threadPoolOption;
-
-            if (threadPoolOption.Timeout != null)
-            {
-                threadPoolTimer = new System.Timers.Timer(threadPoolOption.Timeout.Duration);
-                threadPoolTimer.AutoReset = false;
-                threadPoolTimer.Elapsed += (s, e) => 
-                {
-                    if (ThreadPoolTimeout != null)
-                    {
-                        ThreadPoolTimeout.Invoke(this, new EventArgs());
-                    }
-                    this.Stop(threadPoolOption.Timeout.ForceStop);
-                };
-            }
         }
 
         /// <summary>
@@ -615,11 +601,28 @@ namespace PowerThreadPool
             return guid;
         }
 
+
+        /// <summary>
+        /// One thread end
+        /// </summary>
+        /// <param name="executeResult"></param>
+        public void OneThreadEnd(ExecuteResultBase executeResult)
+        {
+            if (threadPoolTimerDic.ContainsKey(executeResult.ID))
+            {
+                threadPoolTimerDic[executeResult.ID].Stop();
+                threadPoolTimerDic[executeResult.ID].Enabled = false;
+                threadPoolTimerDic.TryRemove(executeResult.ID, out _);
+            }
+
+            InvokeThreadEndEvent(executeResult);
+        }
+
         /// <summary>
         /// Invoke thread end event
         /// </summary>
         /// <param name="executeResult"></param>
-        public void InvokeThreadEndEvent(ExecuteResultBase executeResult)
+        private void InvokeThreadEndEvent(ExecuteResultBase executeResult)
         {
             if (ThreadEnd != null)
             {
@@ -774,8 +777,19 @@ namespace PowerThreadPool
                 {
                     ThreadPoolStart.Invoke(this, new EventArgs());
                 }
-                if (threadPoolTimer != null)
+
+                if (threadPoolOption.Timeout != null)
                 {
+                    threadPoolTimer = new System.Timers.Timer(threadPoolOption.Timeout.Duration);
+                    threadPoolTimer.AutoReset = false;
+                    threadPoolTimer.Elapsed += (s, e) =>
+                    {
+                        if (ThreadPoolTimeout != null)
+                        {
+                            ThreadPoolTimeout.Invoke(this, new EventArgs());
+                        }
+                        this.Stop(threadPoolOption.Timeout.ForceStop);
+                    };
                     threadPoolTimer.Start();
                 }
             }
@@ -791,6 +805,12 @@ namespace PowerThreadPool
                 if (ThreadPoolIdle != null)
                 {
                     ThreadPoolIdle.Invoke(this, new EventArgs());
+                }
+
+                if (threadPoolTimer != null)
+                {
+                    threadPoolTimer.Stop();
+                    threadPoolTimer.Enabled = false;
                 }
 
                 manualResetEvent = new ManualResetEvent(true);

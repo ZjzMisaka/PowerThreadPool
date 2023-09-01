@@ -38,8 +38,9 @@ public class Worker
                 {
                     executeResult = work.SetExecuteResult(null, ex, Status.Failed);
                 }
+                executeResult.ID = work.ID;
 
-                powerPool.InvokeThreadEndEvent(executeResult);
+                powerPool.OneThreadEnd(executeResult);
                 work.InvokeCallback(executeResult, powerPool.ThreadPoolOption);
 
                 powerPool.WorkEnd(guid);
