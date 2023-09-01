@@ -606,7 +606,7 @@ namespace PowerThreadPool
         /// One thread end
         /// </summary>
         /// <param name="executeResult"></param>
-        public void OneThreadEnd(ExecuteResultBase executeResult)
+        internal void OneThreadEnd(ExecuteResultBase executeResult)
         {
             if (threadPoolTimerDic.ContainsKey(executeResult.ID))
             {
@@ -640,7 +640,7 @@ namespace PowerThreadPool
         /// Work end
         /// </summary>
         /// <param name="guid"></param>
-        public void WorkEnd(string guid)
+        internal void WorkEnd(string guid)
         {
             Worker worker;
             if (runningWorkerDic.TryRemove(guid, out worker))
