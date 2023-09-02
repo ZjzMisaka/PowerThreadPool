@@ -614,6 +614,11 @@ namespace PowerThreadPool
             return guid;
         }
 
+        /// <summary>
+        /// Set work into waiting queue
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="workId"></param>
         internal void SetWorkIntoWaitingQueue<TResult>(string workId)
         {
             int priority;
