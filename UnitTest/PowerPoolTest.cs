@@ -211,5 +211,64 @@ namespace UnitTest
                 Assert.Equal(Status.Failed, res.Status);
             });
         }
+
+        [Fact]
+        public void TestDependents()
+        {
+            PowerPool powerPool = new PowerPool();
+            List<string> logList = new List<string>();
+            powerPool.ThreadPoolOption = new ThreadPoolOption()
+            {
+                MaxThreads = 8,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
+                Timeout = new TimeoutOption() { Duration = 10000, ForceStop = false },
+                DefaultThreadTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
+            };
+            powerPool.ThreadPoolStart += (s, e) =>
+            {
+                logList.Add("ThreadPoolStart");
+            };
+            powerPool.ThreadPoolIdle += (s, e) =>
+            {
+                logList.Add("ThreadPoolIdle");
+            };
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                logList.Add("Work0 END");
+            }, (res) =>
+            {
+                Thread.Sleep(1000);
+                logList.Add("Work0 callback END");
+            });
+
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1500);
+                logList.Add("Work1 END");
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                logList.Add("Work2 END");
+            },
+            new ThreadOption()
+            {
+                Dependents = new HashSet<string>() { id0, id1 }
+            }
+            );
+
+            powerPool.Wait();
+
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("ThreadPoolStart", item),
+                item => Assert.Equal("Work0 END", item),
+                item => Assert.Equal("Work1 END", item),
+                item => Assert.Equal("Work0 callback END", item),
+                item => Assert.Equal("Work2 END", item),
+                item => Assert.Equal("ThreadPoolIdle", item)
+                );
+        }
     }
 }
