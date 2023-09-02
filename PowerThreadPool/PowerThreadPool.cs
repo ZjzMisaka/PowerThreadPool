@@ -761,8 +761,7 @@ namespace PowerThreadPool
                 string id = waitingThreadIdQueue.Dequeue();
                 if (id != null && id != default(string))
                 {
-                    bool dequeueRes = waitingWorkDic.TryRemove(id, out work);
-                    if (dequeueRes)
+                    if (waitingWorkDic.TryRemove(id, out work))
                     {
                         CheckThreadPoolStart();
                         Worker worker;
