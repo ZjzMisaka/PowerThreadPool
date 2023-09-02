@@ -180,3 +180,11 @@ int Priority; // Get, Set
 // A set of threads that this thread depends on. This thread will not start until all dependent threads have completed execution.
 HashSet<string> Dependents; // Get, Set
 ```
+### TimeoutOption
+#### Properties
+```csharp
+// The maximum amount of time (ms)
+int Duration;
+// If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.
+bool ForceStop;
+```
