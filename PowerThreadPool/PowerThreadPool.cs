@@ -39,8 +39,7 @@ namespace PowerThreadPool
 
         private System.Timers.Timer threadPoolTimer;
         private ConcurrentDictionary<string, System.Timers.Timer> threadPoolTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
-        private List<System.Timers.Timer> idleWorkerTimerList = new List<System.Timers.Timer>();
-        private object idleWorkerTimerListLock = new object();
+        private ConcurrentDictionary<string, System.Timers.Timer> idleWorkerTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
 
         public int IdleThreadCount
         {
@@ -646,7 +645,7 @@ namespace PowerThreadPool
             if (runningWorkerDic.TryRemove(guid, out worker))
             {
                 idleWorkerQueue.Enqueue(worker);
-                SetDestroyTimerForIdleWorker();
+                SetDestroyTimerForIdleWorker(worker.Id);
             }
             manualResetEventDic.TryRemove(guid, out _);
             cancellationTokenSourceDic.TryRemove(guid, out _);
@@ -674,14 +673,16 @@ namespace PowerThreadPool
             }
             while (IdleThreadCount + RunningWorkerCount < minThreads)
             {
-                idleWorkerQueue.Enqueue(new Worker(this));
-                SetDestroyTimerForIdleWorker();
+                Worker worker = new Worker(this);
+                idleWorkerQueue.Enqueue(worker);
+                SetDestroyTimerForIdleWorker(worker.Id);
             }
 
             while (WaitingWorkCount > 0 && IdleThreadCount < 1 && IdleThreadCount + RunningWorkerCount < threadPoolOption.MaxThreads)
             {
-                idleWorkerQueue.Enqueue(new Worker(this));
-                SetDestroyTimerForIdleWorker();
+                Worker worker = new Worker(this);
+                idleWorkerQueue.Enqueue(worker);
+                SetDestroyTimerForIdleWorker(worker.Id);
             }
 
             while (IdleThreadCount + RunningWorkerCount > threadPoolOption.MaxThreads)
@@ -693,7 +694,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Set destroy timer for idle worker
         /// </summary>
-        private void SetDestroyTimerForIdleWorker()
+        private void SetDestroyTimerForIdleWorker(string workerID)
         {
             if (threadPoolOption.DestroyThreadOption != null)
             {
@@ -709,18 +710,12 @@ namespace PowerThreadPool
                             worker.Kill();
 
                             timer.Stop();
-                            lock (idleWorkerTimerListLock)
-                            {
-                                idleWorkerTimerList.Remove(timer);
-                            }
+                            idleWorkerTimerDic.TryRemove(workerID, out _);
                         }
                     }
                 };
                 timer.Start();
-                lock (idleWorkerTimerListLock)
-                {
-                    idleWorkerTimerList.Add(timer);
-                }
+                idleWorkerTimerDic[workerID] = timer;
             }
         }
 

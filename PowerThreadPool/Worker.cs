@@ -7,14 +7,18 @@ public class Worker
 {
     private Thread thread;
 
+    private string id;
+    public string Id { get => id; set => id = value; }
+
     private AutoResetEvent runSignal = new AutoResetEvent(false);
     private AutoResetEvent waitSignal = new AutoResetEvent(false);
-    private string guid;
+    private string workID;
     private WorkBase work;
     private bool killFlag = false;
 
     internal Worker(PowerPool powerPool)
     {
+        this.Id = Guid.NewGuid().ToString();
         thread = new Thread(() =>
         {
             while (true)
@@ -43,7 +47,7 @@ public class Worker
                 powerPool.OneThreadEnd(executeResult);
                 work.InvokeCallback(executeResult, powerPool.ThreadPoolOption);
 
-                powerPool.WorkEnd(guid);
+                powerPool.WorkEnd(workID);
 
                 waitSignal.Set();
             }
@@ -65,7 +69,7 @@ public class Worker
     internal void AssignTask(WorkBase work)
     {
         this.work = work;
-        this.guid = work.ID;
+        this.workID = work.ID;
         runSignal.Set();
     }
 
