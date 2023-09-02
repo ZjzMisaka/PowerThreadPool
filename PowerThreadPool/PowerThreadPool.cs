@@ -627,11 +627,11 @@ namespace PowerThreadPool
         /// <param name="executeResult"></param>
         internal void OneThreadEnd(ExecuteResultBase executeResult)
         {
-            if (threadPoolTimerDic.ContainsKey(executeResult.ID))
+            System.Timers.Timer timer;
+            if (threadPoolTimerDic.TryRemove(executeResult.ID, out timer))
             {
-                threadPoolTimerDic[executeResult.ID].Stop();
-                threadPoolTimerDic[executeResult.ID].Enabled = false;
-                threadPoolTimerDic.TryRemove(executeResult.ID, out _);
+                timer.Stop();
+                timer.Enabled = false;
             }
 
             InvokeThreadEndEvent(executeResult);
@@ -840,6 +840,7 @@ namespace PowerThreadPool
 
                 waitingThreadIdQueue = new PriorityQueue<string>();
                 waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+                waitingDependentDic = new ConcurrentDictionary<string, int>();
                 runningWorkerDic = new ConcurrentDictionary<string, Worker>();
 
                 threadPoolTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
@@ -918,6 +919,7 @@ namespace PowerThreadPool
 
             waitingThreadIdQueue = new PriorityQueue<string>();
             waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+            waitingDependentDic = new ConcurrentDictionary<string, int>();
 
             cancellationTokenSource.Cancel();
 
