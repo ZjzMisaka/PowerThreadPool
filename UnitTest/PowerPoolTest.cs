@@ -49,7 +49,8 @@ namespace UnitTest
             };
 
             powerPool.QueueWorkItem(() => 
-            { 
+            {
+                Thread.Sleep(500);
                 return "TestOrder Result";
             });
 
@@ -220,9 +221,7 @@ namespace UnitTest
             powerPool.ThreadPoolOption = new ThreadPoolOption()
             {
                 MaxThreads = 8,
-                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
-                Timeout = new TimeoutOption() { Duration = 10000, ForceStop = false },
-                DefaultThreadTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
             };
             powerPool.ThreadPoolStart += (s, e) =>
             {
@@ -251,6 +250,7 @@ namespace UnitTest
 
             powerPool.QueueWorkItem(() =>
             {
+                Thread.Sleep(500);
                 logList.Add("Work2 END");
             },
             new ThreadOption()

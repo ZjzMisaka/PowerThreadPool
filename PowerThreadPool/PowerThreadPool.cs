@@ -44,6 +44,9 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, System.Timers.Timer> threadPoolTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
         private ConcurrentDictionary<string, System.Timers.Timer> idleWorkerTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
 
+        private bool threadPoolRunning = false;
+        public bool ThreadPoolRunning { get => threadPoolRunning; }
+
         public int IdleThreadCount
         {
             get
@@ -751,7 +754,7 @@ namespace PowerThreadPool
         {
             ManageIdleWorkerQueue();
 
-            while (RunningWorkerCount < threadPoolOption.MaxThreads && WaitingWorkCount > 0)
+            while (RunningWorkerCount < threadPoolOption.MaxThreads && waitingThreadIdQueue.Count > 0)
             {
                 WorkBase work;
                 if (IdleThreadCount == 0)
@@ -790,8 +793,10 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckThreadPoolStart()
         {
-            if (RunningWorkerCount == 0 && WaitingWorkCount == 0)
+            if (RunningWorkerCount == 0 && WaitingWorkCount == 0 && !ThreadPoolRunning)
             {
+                threadPoolRunning = true;
+
                 if (ThreadPoolStart != null)
                 {
                     ThreadPoolStart.Invoke(this, new EventArgs());
@@ -821,6 +826,8 @@ namespace PowerThreadPool
         {
             if (RunningWorkerCount == 0 && WaitingWorkCount == 0)
             {
+                threadPoolRunning = false;
+
                 if (ThreadPoolIdle != null)
                 {
                     ThreadPoolIdle.Invoke(this, new EventArgs());
