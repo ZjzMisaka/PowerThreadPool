@@ -18,6 +18,8 @@ namespace PowerThreadPool.Option
         public Action<ExecuteResult<TResult>> Callback { get; set; } = null;
 
         public int Priority { get; set; } = 0;
+
+        public HashSet<string> Dependents { get; set; } = null;
     }
 
     public class ThreadOption : ThreadOption<object>

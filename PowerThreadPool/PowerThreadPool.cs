@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace PowerThreadPool
 {
@@ -18,6 +17,7 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
         private ConcurrentQueue<Worker> idleWorkerQueue = new ConcurrentQueue<Worker>();
+        private ConcurrentDictionary<string, int> waitingDependentDic = new ConcurrentDictionary<string, int>();
         private PriorityQueue<string> waitingThreadIdQueue = new PriorityQueue<string>();
         private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
         private ConcurrentDictionary<string, Worker> runningWorkerDic = new ConcurrentDictionary<string, Worker>();
@@ -36,6 +36,9 @@ namespace PowerThreadPool
         public event ThreadPoolTimeoutEventHandler ThreadPoolTimeout;
         public delegate void ThreadTimeoutEventHandler(object sender, ThreadTimeoutEventArgs e);
         public event ThreadTimeoutEventHandler ThreadTimeout;
+
+        internal delegate void CallbackEndEventHandler(string id);
+        internal event CallbackEndEventHandler CallbackEnd;
 
         private System.Timers.Timer threadPoolTimer;
         private ConcurrentDictionary<string, System.Timers.Timer> threadPoolTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
@@ -588,16 +591,33 @@ namespace PowerThreadPool
                 threadPoolTimerDic[guid] = timer;
             }
 
-            Work<TResult> work = new Work<TResult>(guid, function, param, option);
+            Work<TResult> work = new Work<TResult>(this, guid, function, param, option);
             manualResetEventDic[guid] = new ManualResetEvent(true);
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSourceDic[guid] = cancellationTokenSource;
-            waitingThreadIdQueue.Enqueue(guid, option.Priority);
+            if (option.Dependents == null || option.Dependents.Count() == 0)
+            {
+                waitingThreadIdQueue.Enqueue(guid, option.Priority);
+            }
+            else
+            {
+                waitingDependentDic[guid] = option.Priority;
+            }
+            
             waitingWorkDic[guid] = work;
             
             CheckAndRunThread();
 
             return guid;
+        }
+
+        internal void SetWorkIntoWaitingQueue<TResult>(string workId)
+        {
+            int priority;
+            if (waitingDependentDic.TryRemove(workId, out priority))
+            {
+                waitingThreadIdQueue.Enqueue(workId, priority);
+            }
         }
 
 
@@ -641,6 +661,11 @@ namespace PowerThreadPool
         /// <param name="guid"></param>
         internal void WorkEnd(string guid)
         {
+            if (CallbackEnd != null)
+            {
+                CallbackEnd.Invoke(guid);
+            }
+
             Worker worker;
             if (runningWorkerDic.TryRemove(guid, out worker))
             {
