@@ -85,6 +85,7 @@ namespace PowerThreadPool
 
         public PowerPool()
         {
+            ThreadPoolOption = new ThreadPoolOption();
         }
 
         public PowerPool(ThreadPoolOption threadPoolOption)
@@ -571,6 +572,7 @@ namespace PowerThreadPool
             excuteResult.ID = guid;
 
             TimeoutOption threadTimeoutOption = null;
+
             if (option.Timeout != null)
             {
                 threadTimeoutOption = option.Timeout;
