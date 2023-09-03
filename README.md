@@ -171,6 +171,8 @@ int MinThreads; // Get, Set
 ### ThreadOption
 #### Properties
 ```csharp
+// The custom work ID. If set to null, the thread pool will use a Guid as the work ID.
+string CustomWorkID; // Get, Set
 // The maximum amount of time the thread is allowed to run before it is terminated.
 TimeoutOption Timeout; // Get, Set
 // The callback function that is called when the thread finishes execution.
