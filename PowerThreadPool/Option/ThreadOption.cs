@@ -14,6 +14,11 @@ namespace PowerThreadPool.Option
         }
 
         /// <summary>
+        /// The custom work ID. If set to null, the thread pool will use a Guid as the work ID.
+        /// </summary>
+        public string CustomWorkID { get; set; } = null;
+
+        /// <summary>
         /// The maximum amount of time the thread is allowed to run before it is terminated.
         /// </summary>
         public TimeoutOption Timeout { get; set; } = null;

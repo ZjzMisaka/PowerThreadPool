@@ -568,8 +568,17 @@ namespace PowerThreadPool
         public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, ThreadOption<TResult> option)
         {
             ExecuteResult<TResult> excuteResult = new ExecuteResult<TResult>();
-            string guid = Guid.NewGuid().ToString();
-            excuteResult.ID = guid;
+
+            string workID = null;
+            if (option.CustomWorkID != null)
+            {
+                workID = option.CustomWorkID;
+            }
+            else
+            {
+                workID = Guid.NewGuid().ToString();
+            }
+            excuteResult.ID = workID;
 
             TimeoutOption threadTimeoutOption = null;
 
@@ -589,31 +598,31 @@ namespace PowerThreadPool
                 {
                     if (ThreadTimeout != null)
                     {
-                        ThreadTimeout.Invoke(this, new ThreadTimeoutEventArgs() { ID = guid });
+                        ThreadTimeout.Invoke(this, new ThreadTimeoutEventArgs() { ID = workID });
                     }
-                    this.Stop(guid, threadTimeoutOption.ForceStop);
+                    this.Stop(workID, threadTimeoutOption.ForceStop);
                 };
-                threadPoolTimerDic[guid] = timer;
+                threadPoolTimerDic[workID] = timer;
             }
 
-            Work<TResult> work = new Work<TResult>(this, guid, function, param, option);
-            manualResetEventDic[guid] = new ManualResetEvent(true);
+            Work<TResult> work = new Work<TResult>(this, workID, function, param, option);
+            manualResetEventDic[workID] = new ManualResetEvent(true);
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSourceDic[guid] = cancellationTokenSource;
+            cancellationTokenSourceDic[workID] = cancellationTokenSource;
             if (option.Dependents == null || option.Dependents.Count() == 0)
             {
-                waitingWorkIdQueue.Enqueue(guid, option.Priority);
+                waitingWorkIdQueue.Enqueue(workID, option.Priority);
             }
             else
             {
-                waitingDependentDic[guid] = option.Priority;
+                waitingDependentDic[workID] = option.Priority;
             }
             
-            waitingWorkDic[guid] = work;
+            waitingWorkDic[workID] = work;
             
             CheckAndRunThread();
 
-            return guid;
+            return workID;
         }
 
         /// <summary>
