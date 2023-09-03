@@ -1030,19 +1030,9 @@ namespace PowerThreadPool
         /// </summary>
         public void StopIfRequested()
         {
-            if (cancellationTokenSource.Token.IsCancellationRequested)
+            if (CheckIfRequestedStop())
             {
                 throw new OperationCanceledException();
-            }
-            foreach (string id in cancellationTokenSourceDic.Keys)
-            {
-                if (Thread.CurrentThread.Name == id)
-                {
-                    if (cancellationTokenSourceDic[id].Token.IsCancellationRequested)
-                    {
-                        throw new OperationCanceledException();
-                    }
-                }
             }
         }
 
