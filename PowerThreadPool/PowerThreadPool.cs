@@ -1109,26 +1109,44 @@ namespace PowerThreadPool
         /// Pause thread by id
         /// </summary>
         /// <param name="id">work id</param>
-        public void Pause(string id)
+        /// <returns>If the work id exists</returns>
+        public bool Pause(string id)
         {
             if (threadPoolTimerDic.TryGetValue(id, out System.Timers.Timer timer))
             {
                 timer.Stop();
             }
-            manualResetEventDic[id].Reset();
+            if (manualResetEventDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
+            {
+                manualResetEvent.Reset();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
         /// Resume thread by id
         /// </summary>
         /// <param name="id">work id</param>
-        public void Resume(string id)
+        /// <returns>If the work id exists</returns>
+        public bool Resume(string id)
         {
             if (threadPoolTimerDic.TryGetValue(id, out System.Timers.Timer timer))
             {
                 timer.Start();
             }
-            manualResetEventDic[id].Set();
+            if (manualResetEventDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
+            {
+                manualResetEvent.Set();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>

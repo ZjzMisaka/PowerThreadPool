@@ -116,7 +116,7 @@ namespace PowerThreadPoolTest
 
         private void resume_Click(object sender, RoutedEventArgs e)
         {
-            powerPool.Resume();
+            powerPool.Resume(true);
         }
 
         private void pauseThread2_Click(object sender, RoutedEventArgs e)
