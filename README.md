@@ -57,15 +57,16 @@ powerPool.QueueWorkItem(() =>
 |CheckIfRequestedStop()|Call this function inside the thread logic where you want to check if requested stop (if user call Stop(...))|-|
 |Pause()|Pause all threads|-|
 |Resume(bool resumeThreadPausedById = false)|Resume all threads|-|
-|Pause(string id)|Pause thread by id|-|
-|Resume(string id)|Resume thread by id|-|
+|Pause(string id)|Pause thread by id|If the work id exists|
+|Resume(string id)|Resume thread by id|If the work id exists|
 |Cancel()|Cancel all tasks that have not started running|-|
 |Cancel(string id)|Cancel the task by id if the task has not started running|is succeed|
 ### **API List**
 ### PowerPool
 #### Properties
 ```csharp
-bool ThreadPoolRunning // Get
+bool ThreadPoolRunning; // Get
+bool ThreadPoolStopping; // Get
 int IdleThreadCount; // Get
 ThreadPoolOption ThreadPoolOption; // Get, Set
 int WaitingWorkCount; // Get
@@ -125,8 +126,8 @@ void StopIfRequested();
 bool CheckIfRequestedStop();
 void Pause();
 void Resume(bool resumeThreadPausedById = false);
-void Pause(string id);
-void Resume(string id);
+bool Pause(string id);
+bool Resume(string id);
 void Cancel();
 bool Cancel(string id);
 ```
