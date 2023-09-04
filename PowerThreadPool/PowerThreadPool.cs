@@ -796,10 +796,10 @@ namespace PowerThreadPool
                         {
                             runningWorkerDic[work.ID] = worker;
                             worker.AssignTask(work);
-                            
-                            if (threadPoolTimerDic.ContainsKey(id))
+
+                            if (threadPoolTimerDic.TryGetValue(id, out System.Timers.Timer timer))
                             {
-                                threadPoolTimerDic[id].Start();
+                                timer.Start();
                             }
 
                             if (ThreadStart != null)
@@ -906,9 +906,9 @@ namespace PowerThreadPool
         /// <returns>Return false if the thread isn't running</returns>
         public bool Wait(string id)
         {
-            if (runningWorkerDic.ContainsKey(id))
+            if (runningWorkerDic.TryGetValue(id, out Worker worker))
             {
-                runningWorkerDic[id].Wait();
+                worker.Wait();
                 return true;
             }
             return false;
@@ -1111,9 +1111,9 @@ namespace PowerThreadPool
         /// <param name="id">work id</param>
         public void Pause(string id)
         {
-            if (threadPoolTimerDic.ContainsKey(id))
+            if (threadPoolTimerDic.TryGetValue(id, out System.Timers.Timer timer))
             {
-                threadPoolTimerDic[id].Stop();
+                timer.Stop();
             }
             manualResetEventDic[id].Reset();
         }
