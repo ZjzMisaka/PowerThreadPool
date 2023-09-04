@@ -47,6 +47,9 @@ namespace PowerThreadPool
         private bool threadPoolRunning = false;
         public bool ThreadPoolRunning { get => threadPoolRunning; }
 
+        private bool threadPoolStopping = false;
+        public bool ThreadPoolStopping { get => threadPoolStopping; }
+
         public int IdleThreadCount
         {
             get
@@ -567,6 +570,11 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, ThreadOption<TResult> option)
         {
+            if (ThreadPoolStopping)
+            {
+                return null;
+            }
+
             ExecuteResult<TResult> excuteResult = new ExecuteResult<TResult>();
 
             string workID = null;
@@ -843,6 +851,10 @@ namespace PowerThreadPool
             if (RunningWorkerCount == 0 && WaitingWorkCount == 0)
             {
                 threadPoolRunning = false;
+                if (threadPoolStopping)
+                {
+                    threadPoolStopping = false;
+                }
 
                 if (ThreadPoolIdle != null)
                 {
@@ -938,6 +950,8 @@ namespace PowerThreadPool
             {
                 return false;
             }
+
+            threadPoolStopping = true;
 
             waitingWorkIdQueue = new PriorityQueue<string>();
             waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
