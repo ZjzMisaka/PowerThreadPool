@@ -1124,9 +1124,9 @@ namespace PowerThreadPool
         /// <param name="id">work id</param>
         public void Resume(string id)
         {
-            if (threadPoolTimerDic.ContainsKey(id))
+            if (threadPoolTimerDic.TryGetValue(id, out System.Timers.Timer timer))
             {
-                threadPoolTimerDic[id].Start();
+                timer.Start();
             }
             manualResetEventDic[id].Set();
         }
