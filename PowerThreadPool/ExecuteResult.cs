@@ -46,7 +46,10 @@ namespace PowerThreadPool
 
         internal override void SetExecuteResult(object result, Exception exception, Status status)
         {
-            this.result = (TResult)result;
+            if (result != null)
+            {
+                this.result = (TResult)result;
+            }
             this.Exception = exception;
             this.Status = status;
         }
