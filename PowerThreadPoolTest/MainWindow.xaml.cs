@@ -89,6 +89,11 @@ namespace PowerThreadPoolTest
             powerPool.Stop();
         }
 
+        private void forceStop_Click(object sender, RoutedEventArgs e)
+        {
+            powerPool.Stop(true);
+        }
+
         private void stopThread2_Click(object sender, RoutedEventArgs e)
         {
             if (powerPool.Stop(t2Guid))

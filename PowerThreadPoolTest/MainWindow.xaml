@@ -28,6 +28,7 @@
             <Button x:Name="pause" Content="pause" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="pause_Click"/>
             <Button x:Name="wait" Content="wait" HorizontalAlignment="Left" VerticalAlignment="Top" Click="wait_Click" Padding="3px" Margin="3px"/>
             <Button x:Name="stopThread2" Content="stopThread2" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="stopThread2_Click"/>
+            <Button x:Name="forceStop" Content="force stop" HorizontalAlignment="Left" VerticalAlignment="Top" Padding="3px" Margin="3px" Click="forceStop_Click"/>
             <Button x:Name="stop" Content="stop" HorizontalAlignment="Left" VerticalAlignment="Top" Click="stop_Click" Padding="3px" Margin="3px"/>
             <Button x:Name="start" Content="start" HorizontalAlignment="Left" VerticalAlignment="Top" Click="start_Click" Padding="3px" Margin="3px"/>
         </StackPanel>

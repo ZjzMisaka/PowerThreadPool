@@ -980,14 +980,16 @@ namespace PowerThreadPool
             waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
             waitingDependentDic = new ConcurrentDictionary<string, int>();
 
-            cancellationTokenSource.Cancel();
-
             if (forceStop)
             {
                 foreach (Worker worker in runningWorkerDic.Values)
                 {
                     worker.ForceStop();
                 }
+            }
+            else
+            {
+                cancellationTokenSource.Cancel();
             }
 
             return true;
@@ -1019,11 +1021,13 @@ namespace PowerThreadPool
             {
                 if (id == runningId)
                 {
-                    cancellationTokenSourceDic[runningId].Cancel();
-
                     if (forceStop)
                     {
                         runningWorkerDic[runningId].ForceStop();
+                    }
+                    else
+                    {
+                        cancellationTokenSourceDic[runningId].Cancel();
                     }
 
                     res = true;
