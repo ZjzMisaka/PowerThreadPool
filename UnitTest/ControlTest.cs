@@ -234,6 +234,33 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestForceStopAfterExecuteEnd()
+        {
+            string resId = null;
+            PowerPool powerPool = new PowerPool();
+            string id = null;
+            powerPool.ThreadEnd += (s, e) =>
+            {
+                powerPool.Stop(id, true);
+            };
+            powerPool.ThreadForceStop += (s, e) =>
+            {
+                resId = e.ID;
+            };
+            id = powerPool.QueueWorkItem(() =>
+            {
+            }, (res) =>
+            {
+                for (int i = 0; i < 10000; ++i)
+                {
+                    Thread.Sleep(100);
+                }
+            });
+            powerPool.Wait();
+            Assert.Equal(resId, id);
+        }
+
+        [Fact]
         public void TestStopAll()
         {
             PowerPool powerPool = new PowerPool();
