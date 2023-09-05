@@ -83,6 +83,7 @@ event ThreadStartEventHandler ThreadStart;
 event ThreadEndEventHandler ThreadEnd;
 event ThreadPoolTimeoutEventHandler ThreadPoolTimeout;
 event ThreadTimeoutEventHandler ThreadTimeout;
+event ThreadForceStopEventHandler ThreadForceStop;
 ```
 #### Methods
 ```csharp
