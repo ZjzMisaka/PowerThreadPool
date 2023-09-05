@@ -21,40 +21,51 @@ public class Worker
         this.Id = Guid.NewGuid().ToString();
         thread = new Thread(() =>
         {
-            while (true)
+            try
             {
-                runSignal.WaitOne();
-
-                if (killFlag)
+                while (true)
                 {
-                    return;
-                }
+                    runSignal.WaitOne();
 
-                thread.Name = work.ID;
+                    if (killFlag)
+                    {
+                        return;
+                    }
 
-                ExecuteResultBase executeResult;
-                try
-                {
-                    object result = work.Execute();
-                    executeResult = work.SetExecuteResult(result, null, Status.Succeed);
-                }
-                catch (ThreadInterruptedException ex)
-                { 
-                    executeResult = work.SetExecuteResult(null, ex, Status.Failed);
-                    Kill();
-                }
-                catch (Exception ex)
-                {
-                    executeResult = work.SetExecuteResult(null, ex, Status.Failed);
-                }
-                executeResult.ID = work.ID;
+                    thread.Name = work.ID;
 
-                powerPool.OneThreadEnd(executeResult);
-                work.InvokeCallback(executeResult, powerPool.ThreadPoolOption);
+                    ExecuteResultBase executeResult;
+                    try
+                    {
+                        object result = work.Execute();
+                        executeResult = work.SetExecuteResult(result, null, Status.Succeed);
+                    }
+                    catch (ThreadInterruptedException ex)
+                    {
+                        executeResult = work.SetExecuteResult(null, ex, Status.Failed);
+                        throw ex;
+                    }
+                    catch (Exception ex)
+                    {
+                        executeResult = work.SetExecuteResult(null, ex, Status.Failed);
+                    }
+                    executeResult.ID = work.ID;
 
+                    powerPool.OneThreadEnd(executeResult);
+                    work.InvokeCallback(executeResult, powerPool.ThreadPoolOption);
+
+                    powerPool.WorkEnd(workID);
+
+                    waitSignal.Set();
+                }
+            }
+            catch (ThreadInterruptedException)
+            {
+                powerPool.OneThreadEndByForceStop(work.ID);
                 powerPool.WorkEnd(workID);
 
                 waitSignal.Set();
+                return;
             }
         });
         thread.Start();

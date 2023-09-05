@@ -665,6 +665,20 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// One thread end error
+        /// </summary>
+        /// <param name="executeResult"></param>
+        internal void OneThreadEndByForceStop(string id)
+        {
+            System.Timers.Timer timer;
+            if (threadPoolTimerDic.TryRemove(id, out timer))
+            {
+                timer.Stop();
+                timer.Enabled = false;
+            }
+        }
+
+        /// <summary>
         /// Invoke thread end event
         /// </summary>
         /// <param name="executeResult"></param>
