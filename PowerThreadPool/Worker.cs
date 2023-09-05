@@ -30,8 +30,6 @@ public class Worker
                     return;
                 }
 
-                bool threadInterrupted = false;
-
                 thread.Name = work.ID;
 
                 ExecuteResultBase executeResult;
@@ -43,7 +41,7 @@ public class Worker
                 catch (ThreadInterruptedException ex)
                 { 
                     executeResult = work.SetExecuteResult(null, ex, Status.Failed);
-                    threadInterrupted = true;
+                    Kill();
                 }
                 catch (Exception ex)
                 {
@@ -57,11 +55,6 @@ public class Worker
                 powerPool.WorkEnd(workID);
 
                 waitSignal.Set();
-
-                if (threadInterrupted)
-                {
-                    return;
-                }
             }
         });
         thread.Start();
