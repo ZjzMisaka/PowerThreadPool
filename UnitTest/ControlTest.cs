@@ -187,7 +187,9 @@ namespace UnitTest
         public void TestForceStop()
         {
             PowerPool powerPool = new PowerPool();
-            List<string> logList = new List<string>();
+            object res0 = null;
+            object res1 = null;
+            object res2 = null;
             powerPool.QueueWorkItem(() =>
             {
                 for (int i = 0; i < 10000; ++i)
@@ -196,7 +198,7 @@ namespace UnitTest
                 }
             }, (res) =>
             {
-                logList.Add("Work0 END");
+                res0 = res.Exception;
             });
             Thread.Sleep(100);
             string id = powerPool.QueueWorkItem(() =>
@@ -207,7 +209,7 @@ namespace UnitTest
                 }
             }, (res) =>
             {
-                logList.Add("Work1 END");
+                res1 = res.Exception;
             });
             Thread.Sleep(100);
             powerPool.QueueWorkItem(() =>
@@ -218,7 +220,7 @@ namespace UnitTest
                 }
             }, (res) =>
             {
-                logList.Add("Work2 END");
+                res2 = res.Exception;
             });
             long start = GetNowSs();
             Thread.Sleep(50);
@@ -226,6 +228,9 @@ namespace UnitTest
             long end = GetNowSs() - start;
 
             Assert.True(end > 50 && end < 350);
+            Assert.IsType<ThreadInterruptedException>(res0);
+            Assert.IsType<ThreadInterruptedException>(res1);
+            Assert.IsType<ThreadInterruptedException>(res2);
         }
 
         [Fact]
