@@ -42,7 +42,7 @@ public class Worker
                     }
                     catch (ThreadInterruptedException ex)
                     {
-                        executeResult = work.SetExecuteResult(null, ex, Status.Failed);
+                        ex.Data.Add("ThrowedWhenExecuting", true);
                         throw ex;
                     }
                     catch (Exception ex)
@@ -59,9 +59,21 @@ public class Worker
                     waitSignal.Set();
                 }
             }
-            catch (ThreadInterruptedException)
+            catch (ThreadInterruptedException ex)
             {
                 powerPool.OneThreadEndByForceStop(work.ID);
+
+                if (!ex.Data.Contains("ThrowedWhenExecuting"))
+                {
+                    ex.Data.Add("ThrowedWhenExecuting", false);
+                }
+                else
+                {
+                    ExecuteResultBase executeResult = work.SetExecuteResult(null, ex, Status.Failed);
+                    executeResult.ID = work.ID;
+                    work.InvokeCallback(executeResult, powerPool.ThreadPoolOption);
+                }
+
                 powerPool.WorkEnd(workID);
 
                 waitSignal.Set();

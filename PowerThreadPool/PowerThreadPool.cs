@@ -36,6 +36,8 @@ namespace PowerThreadPool
         public event ThreadPoolTimeoutEventHandler ThreadPoolTimeout;
         public delegate void ThreadTimeoutEventHandler(object sender, ThreadTimeoutEventArgs e);
         public event ThreadTimeoutEventHandler ThreadTimeout;
+        public delegate void ThreadForceStopEventHandler(object sender, ThreadForceStopEventArgs e);
+        public event ThreadForceStopEventHandler ThreadForceStop;
 
         internal delegate void CallbackEndEventHandler(string id);
         internal event CallbackEndEventHandler CallbackEnd;
@@ -675,6 +677,13 @@ namespace PowerThreadPool
             {
                 timer.Stop();
                 timer.Enabled = false;
+            }
+            if (ThreadForceStop != null)
+            {
+                ThreadForceStop.Invoke(this, new ThreadForceStopEventArgs()
+                {
+                    ID = id
+                });
             }
         }
 
