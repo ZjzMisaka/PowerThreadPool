@@ -1,6 +1,7 @@
 # PowerThreadPool
 <img src="https://www.nuget.org/Content/gallery/img/logo-header.svg?sanitize=true" height="30px">
 
+![Nuget](https://img.shields.io/nuget/v/PowerThreadPool) ![Nuget](https://img.shields.io/nuget/dt/PowerThreadPool)  
 Enables efficient thread pool management with callback implementation, granular control, customizable concurrency, and support for diverse task submissions.
 
 ## Download
