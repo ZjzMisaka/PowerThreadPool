@@ -72,6 +72,10 @@ namespace PowerThreadPoolTest
             {
                 OutputMsg("Thread" + e.ID + ": Timeout");
             };
+            powerPool.ThreadForceStop += (s, e) =>
+            {
+                OutputMsg("Thread" + e.ID + ": ThreadForceStop");
+            };
         }
 
         private void Sleep(int ms)
@@ -168,7 +172,12 @@ namespace PowerThreadPoolTest
                     sv.ScrollToEnd();
                 }
 
-                string countTxt = "waiting: " + powerPool.WaitingWorkCount + "\n" + "running: " + powerPool.RunningWorkerCount +"\n" + "Idle: " + powerPool.IdleThreadCount;
+                string countTxt =
+                "waiting: " + powerPool.WaitingWorkCount + "\n" +
+                "running: " + powerPool.RunningWorkerCount + "\n" +
+                "Idle: " + powerPool.IdleThreadCount + "\n" +
+                "Running: " + powerPool.ThreadPoolRunning.ToString() + "\n" +
+                "Stopping: " + powerPool.ThreadPoolStopping.ToString();
                 count.Text = countTxt;
             });
         }
