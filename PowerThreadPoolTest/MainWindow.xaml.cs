@@ -29,7 +29,8 @@ namespace PowerThreadPoolTest
         PowerPool powerPool = new PowerPool();
         string t4Guid = "";
         string t2Guid = "";
-        System.Timers.Timer timer = new System.Timers.Timer(500);
+        System.Timers.Timer timer = new System.Timers.Timer(100);
+        string msg = "";
         public MainWindow()
         {
             InitializeComponent();
@@ -153,18 +154,20 @@ namespace PowerThreadPoolTest
 
         private void OutputMsg(string msg)
         {
-            this.Dispatcher.Invoke(() =>
-            {
-                log.Text += msg + "\n";
-                sv.ScrollToEnd();
-            });
-            OutputCount();
+            this.msg += msg + "\n";
         }
 
         private void OutputCount()
         {
             this.Dispatcher.Invoke(() =>
             {
+                if (msg != "")
+                {
+                    log.Text += msg;
+                    msg = "";
+                    sv.ScrollToEnd();
+                }
+
                 string countTxt = "waiting: " + powerPool.WaitingWorkCount + "\n" + "running: " + powerPool.RunningWorkerCount +"\n" + "Idle: " + powerPool.IdleThreadCount;
                 count.Text = countTxt;
             });
