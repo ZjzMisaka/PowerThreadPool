@@ -721,10 +721,8 @@ namespace PowerThreadPool
             {
                 if (runningWorkerDic.TryRemove(guid, out worker))
                 {
-
                     idleWorkerQueue.Enqueue(worker);
                     SetDestroyTimerForIdleWorker(worker.Id);
-
                 }
             }
             manualResetEventDic.TryRemove(guid, out _);
@@ -1033,14 +1031,15 @@ namespace PowerThreadPool
                         if (runningWorkerDic.TryRemove(runningId, out Worker workerTpStop))
                         {
                             workerTpStop.ForceStop();
+                            res = true;
                         }
                     }
                     else
                     {
                         cancellationTokenSourceDic[runningId].Cancel();
+                        res = true;
                     }
-
-                    res = true;
+                    
                     break;
                 }
             }
