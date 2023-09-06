@@ -54,7 +54,7 @@ public class Worker
                     powerPool.OneThreadEnd(executeResult);
                     work.InvokeCallback(executeResult, powerPool.ThreadPoolOption);
 
-                    powerPool.WorkEnd(workID);
+                    powerPool.WorkEnd(workID, false);
 
                     waitSignal.Set();
                 }
@@ -74,7 +74,7 @@ public class Worker
                     work.InvokeCallback(executeResult, powerPool.ThreadPoolOption);
                 }
 
-                powerPool.WorkEnd(workID);
+                powerPool.WorkEnd(workID, true);
 
                 waitSignal.Set();
                 return;

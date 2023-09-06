@@ -709,7 +709,7 @@ namespace PowerThreadPool
         /// Work end
         /// </summary>
         /// <param name="guid"></param>
-        internal void WorkEnd(string guid)
+        internal void WorkEnd(string guid, bool isForceStop)
         {
             if (CallbackEnd != null)
             {
@@ -719,8 +719,11 @@ namespace PowerThreadPool
             Worker worker;
             if (runningWorkerDic.TryRemove(guid, out worker))
             {
-                idleWorkerQueue.Enqueue(worker);
-                SetDestroyTimerForIdleWorker(worker.Id);
+                if (!isForceStop)
+                {
+                    idleWorkerQueue.Enqueue(worker);
+                    SetDestroyTimerForIdleWorker(worker.Id);
+                }
             }
             manualResetEventDic.TryRemove(guid, out _);
             cancellationTokenSourceDic.TryRemove(guid, out _);
