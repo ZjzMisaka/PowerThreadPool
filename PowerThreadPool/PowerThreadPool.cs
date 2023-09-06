@@ -717,12 +717,14 @@ namespace PowerThreadPool
             }
 
             Worker worker;
-            if (runningWorkerDic.TryRemove(guid, out worker))
+            if (!isForceStop)
             {
-                if (!isForceStop)
+                if (runningWorkerDic.TryRemove(guid, out worker))
                 {
+
                     idleWorkerQueue.Enqueue(worker);
                     SetDestroyTimerForIdleWorker(worker.Id);
+
                 }
             }
             manualResetEventDic.TryRemove(guid, out _);
@@ -874,7 +876,7 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckIdle()
         {
-            if (RunningWorkerCount == 0 && WaitingWorkCount == 0)
+            if (RunningWorkerCount == 0 && WaitingWorkCount == 0 && threadPoolRunning)
             {
                 threadPoolRunning = false;
                 if (threadPoolStopping)
@@ -985,7 +987,9 @@ namespace PowerThreadPool
 
             if (forceStop)
             {
-                foreach (Worker worker in runningWorkerDic.Values)
+                List<Worker> workersToStop = new List<Worker>(runningWorkerDic.Values);
+                runningWorkerDic.Clear();
+                foreach (Worker worker in workersToStop)
                 {
                     worker.ForceStop();
                 }
@@ -1026,7 +1030,10 @@ namespace PowerThreadPool
                 {
                     if (forceStop)
                     {
-                        runningWorkerDic[runningId].ForceStop();
+                        if (runningWorkerDic.TryRemove(runningId, out Worker workerTpStop))
+                        {
+                            workerTpStop.ForceStop();
+                        }
                     }
                     else
                     {
