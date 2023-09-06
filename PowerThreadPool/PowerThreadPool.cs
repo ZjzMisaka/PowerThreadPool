@@ -619,7 +619,7 @@ namespace PowerThreadPool
             manualResetEventDic[workID] = new ManualResetEvent(true);
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSourceDic[workID] = cancellationTokenSource;
-            if (option.Dependents == null || option.Dependents.Count() == 0)
+            if (option.Dependents == null || option.Dependents.Count == 0)
             {
                 waitingWorkIdQueue.Enqueue(workID, option.Priority);
             }

@@ -255,7 +255,7 @@ namespace UnitTest
             },
             new ThreadOption()
             {
-                Dependents = new HashSet<string>() { id0, id1 }
+                Dependents = new ConcurrentSet<string>() { id0, id1 }
             }
             );
 

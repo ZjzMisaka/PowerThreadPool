@@ -36,7 +36,7 @@ namespace PowerThreadPool.Option
         /// <summary>
         /// A set of threads that this thread depends on. This thread will not start until all dependent threads have completed execution.
         /// </summary>
-        public HashSet<string> Dependents { get; set; } = null;
+        public ConcurrentSet<string> Dependents { get; set; } = null;
     }
 
     public class ThreadOption : ThreadOption<object>

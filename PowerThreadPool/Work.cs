@@ -33,15 +33,15 @@ namespace PowerThreadPool
             this.param = param;
             this.option = option;
 
-            if (this.option != null && this.option.Dependents != null && this.option.Dependents.Count() != 0)
+            if (this.option != null && this.option.Dependents != null && this.option.Dependents.Count != 0)
             {
                 powerPool.CallbackEnd += (workId) =>
                 {
                     lock (lockObj)
                     {
-                        if (this.option.Dependents.Remove(workId))
+                        if (this.option.Dependents.TryRemove(workId))
                         {
-                            if (this.option.Dependents.Count() == 0)
+                            if (this.option.Dependents.Count == 0)
                             {
                                 powerPool.SetWorkIntoWaitingQueue<TResult>(id);
                             }
