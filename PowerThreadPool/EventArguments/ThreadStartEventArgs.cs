@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PowerThreadPool
+namespace PowerThreadPool.EventArguments
 {
     public class ThreadStartEventArgs : EventArgs
     {

@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-namespace PowerThreadPool
+namespace PowerThreadPool.Collections
 {
     public class ConcurrentSet<T> : IEnumerable<T>
     {

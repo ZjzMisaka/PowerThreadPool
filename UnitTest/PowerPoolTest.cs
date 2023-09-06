@@ -1,4 +1,5 @@
 using PowerThreadPool;
+using PowerThreadPool.Collections;
 using PowerThreadPool.Option;
 
 namespace UnitTest

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace PowerThreadPool
+namespace PowerThreadPool.Collections
 {
     public class PriorityQueue<T>
     {
@@ -13,7 +13,7 @@ namespace PowerThreadPool
 
         public PriorityQueue()
         {
-            this.queueDic = new SortedDictionary<int, ConcurrentQueue<T>>();
+            queueDic = new SortedDictionary<int, ConcurrentQueue<T>>();
         }
 
         public void Enqueue(T item, int priority)

@@ -1,4 +1,6 @@
-﻿using PowerThreadPool.Helper;
+﻿using PowerThreadPool.Collections;
+using PowerThreadPool.EventArguments;
+using PowerThreadPool.Helper;
 using PowerThreadPool.Option;
 using System;
 using System.Collections.Concurrent;
