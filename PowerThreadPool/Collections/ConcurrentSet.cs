@@ -29,7 +29,7 @@ namespace PowerThreadPool.Collections
             dictionary.TryAdd(item, DummyValue);
         }
 
-        public bool TryRemove(T item)
+        internal bool TryRemove(T item)
         {
             return dictionary.TryRemove(item, out _);
         }

@@ -183,7 +183,7 @@ Action<ExecuteResult<TResult>> Callback; // Get, Set
 // The priority level of the thread. Higher priority threads are executed before lower priority threads.
 int Priority; // Get, Set
 // A set of threads that this thread depends on. This thread will not start until all dependent threads have completed execution.
-HashSet<string> Dependents; // Get, Set
+ConcurrentSet<string> Dependents; // Get, Set
 ```
 ### TimeoutOption
 #### Properties
