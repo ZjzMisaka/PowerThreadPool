@@ -7,6 +7,10 @@ Enables efficient thread pool management with callback implementation, granular 
 ## Download
 PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/PowerThreadPool/) now.
 
+## Features
+|Work Control|Work Dependency|Thread Pool Sizing|Thread Reuse|Idle Thread Timeout|Work Priority|Thread Priority|Work Timeout|Cumulative Work Timeout|Callback|Error Handling|Runtime Status|
+|----|----|----|----|----|----|----|----|----|----|----|----|
+
 ## Getting started
 ```csharp
 PowerPool powerPool = new PowerPool(new ThreadPoolOption() { /* Some options */ });
