@@ -263,7 +263,7 @@ namespace UnitTest
             {
                 logList.Add("Work2 denpend on work0, work1 END");
             },
-            new ThreadOption()
+            new WorkOption()
             {
                 Dependents = new ConcurrentSet<string>() { id0, id1 }
             }
@@ -296,7 +296,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(2000);
-            }, new ThreadOption()
+            }, new WorkOption()
             {
                 Callback = (res) => 
                 {
@@ -306,7 +306,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(2000);
-            }, new ThreadOption()
+            }, new WorkOption()
             {
                 Callback = (res) =>
                 {
@@ -317,7 +317,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(2000);
-            }, new ThreadOption()
+            }, new WorkOption()
             {
                 Callback = (res) =>
                 {
@@ -328,7 +328,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(2000);
-            }, new ThreadOption()
+            }, new WorkOption()
             {
                 Callback = (res) =>
                 {
@@ -338,7 +338,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(2000);
-            }, new ThreadOption()
+            }, new WorkOption()
             {
                 Callback = (res) =>
                 {
@@ -349,7 +349,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(2000);
-            }, new ThreadOption()
+            }, new WorkOption()
             {
                 Callback = (res) =>
                 {

@@ -21,7 +21,7 @@ namespace UnitTest
         public void Test2()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(() => { }, new ThreadOption());
+            powerPool.QueueWorkItem(() => { }, new WorkOption());
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace UnitTest
         public void Test4()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem((object[] param) => { }, new object[0], new ThreadOption());
+            powerPool.QueueWorkItem((object[] param) => { }, new object[0], new WorkOption());
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace UnitTest
         public void Test6()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string>((string param) => { }, "", new ThreadOption());
+            powerPool.QueueWorkItem<string>((string param) => { }, "", new WorkOption());
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace UnitTest
         public void Test8()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string>((string param1, string param2) => { }, "", "", new ThreadOption());
+            powerPool.QueueWorkItem<string, string>((string param1, string param2) => { }, "", "", new WorkOption());
         }
 
         [Fact]
@@ -77,7 +77,7 @@ namespace UnitTest
         public void Test10()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string>((string param1, string param2, string param3) => { }, "", "", "", new ThreadOption());
+            powerPool.QueueWorkItem<string, string, string>((string param1, string param2, string param3) => { }, "", "", "", new WorkOption());
         }
 
         [Fact]
@@ -91,7 +91,7 @@ namespace UnitTest
         public void Test12()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string>((string param1, string param2, string param3, string param4) => { }, "", "", "", "", new ThreadOption());
+            powerPool.QueueWorkItem<string, string, string, string>((string param1, string param2, string param3, string param4) => { }, "", "", "", "", new WorkOption());
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace UnitTest
         public void Test14()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, string>((string param1, string param2, string param3, string param4, string param5) => { }, "", "", "", "", "", new ThreadOption());
+            powerPool.QueueWorkItem<string, string, string, string, string>((string param1, string param2, string param3, string param4, string param5) => { }, "", "", "", "", "", new WorkOption());
         }
 
         [Fact]
@@ -119,7 +119,7 @@ namespace UnitTest
         public void Test16()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, int>((string param) => { return 0; }, "", new ThreadOption<int>());
+            powerPool.QueueWorkItem<string, int>((string param) => { return 0; }, "", new WorkOption<int>());
         }
 
         [Fact]
@@ -133,7 +133,7 @@ namespace UnitTest
         public void Test18()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, int>((string param1, string param2) => { return 0; }, "", "", new ThreadOption<int>());
+            powerPool.QueueWorkItem<string, string, int>((string param1, string param2) => { return 0; }, "", "", new WorkOption<int>());
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace UnitTest
         public void Test20()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, int>((string param1, string param2, string param3) => { return 0; }, "", "", "", new ThreadOption<int>());
+            powerPool.QueueWorkItem<string, string, string, int>((string param1, string param2, string param3) => { return 0; }, "", "", "", new WorkOption<int>());
         }
 
         [Fact]
@@ -161,7 +161,7 @@ namespace UnitTest
         public void Test22()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, int>((string param1, string param2, string param3, string param4) => { return 0; }, "", "", "", "", new ThreadOption<int>());
+            powerPool.QueueWorkItem<string, string, string, string, int>((string param1, string param2, string param3, string param4) => { return 0; }, "", "", "", "", new WorkOption<int>());
         }
 
         [Fact]
@@ -175,7 +175,7 @@ namespace UnitTest
         public void Test24()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, string, int>((string param1, string param2, string param3, string param4, string param5) => { return 0; }, "", "", "", "", "", new ThreadOption<int>());
+            powerPool.QueueWorkItem<string, string, string, string, string, int>((string param1, string param2, string param3, string param4, string param5) => { return 0; }, "", "", "", "", "", new WorkOption<int>());
         }
 
         [Fact]
@@ -189,7 +189,7 @@ namespace UnitTest
         public void Test26()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<int>(() => { return 0; }, new ThreadOption<int>());
+            powerPool.QueueWorkItem<int>(() => { return 0; }, new WorkOption<int>());
         }
 
         [Fact]
@@ -203,7 +203,7 @@ namespace UnitTest
         public void Test28()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<int>((param) => { return 0; }, new object[0], new ThreadOption<int>());
+            powerPool.QueueWorkItem<int>((param) => { return 0; }, new object[0], new WorkOption<int>());
         }
     }
 }

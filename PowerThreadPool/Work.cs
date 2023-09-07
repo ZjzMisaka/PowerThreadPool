@@ -19,14 +19,14 @@ namespace PowerThreadPool
     {
         private Func<object[], TResult> function;
         private object[] param;
-        private ThreadOption<TResult> option;
+        private WorkOption<TResult> option;
         public Func<object[], TResult> Function { get => function; set => function = value; }
         public object[] Param { get => param; set => param = value; }
-        public ThreadOption<TResult> Option { get => option; set => option = value; }
+        public WorkOption<TResult> Option { get => option; set => option = value; }
 
         private object lockObj = new object();
 
-        public Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, ThreadOption<TResult> option)
+        public Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
         {
             this.ID = id;
             this.function = function;

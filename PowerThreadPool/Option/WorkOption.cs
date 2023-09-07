@@ -8,9 +8,9 @@ using PowerThreadPool.Collections;
 namespace PowerThreadPool.Option
 {
 
-    public class ThreadOption<TResult>
+    public class WorkOption<TResult>
     {
-        public ThreadOption()
+        public WorkOption()
         {
         }
 
@@ -40,9 +40,9 @@ namespace PowerThreadPool.Option
         public ConcurrentSet<string> Dependents { get; set; } = null;
     }
 
-    public class ThreadOption : ThreadOption<object>
+    public class WorkOption : WorkOption<object>
     {
-        public ThreadOption()
+        public WorkOption()
         {
         }
     }

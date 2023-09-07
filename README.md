@@ -35,7 +35,7 @@ powerPool.QueueWorkItem(() =>
 {
     // DO SOMETHING
     return result;
-}, new ThreadOption()
+}, new WorkOption()
 {
     // Some options
 });
@@ -88,33 +88,33 @@ event ThreadForceStopEventHandler ThreadForceStop;
 #### Methods
 ```csharp
 string QueueWorkItem(Action action, Action<ExcuteResult<object>> callBack = null);
-string QueueWorkItem(Action action, ThreadOption option);
+string QueueWorkItem(Action action, WorkOption option);
 string QueueWorkItem(Action<object[]> action, object[] param, Action<ExcuteResult<object>> callBack = null);
-string QueueWorkItem(Action<object[]> action, object[] param, ThreadOption option);
+string QueueWorkItem(Action<object[]> action, object[] param, WorkOption option);
 string QueueWorkItem<T1>(Action<T1> action, T1 param1, Action<ExcuteResult<object>> callBack = null);
-string QueueWorkItem<T1>(Action<T1> action, T1 param1, ThreadOption option);
+string QueueWorkItem<T1>(Action<T1> action, T1 param1, WorkOption option);
 string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, Action<ExcuteResult<object>> callBack = null);
-string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, ThreadOption option);
+string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, WorkOption option);
 string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, Action<ExcuteResult<object>> callBack = null);
-string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, ThreadOption option);
+string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, WorkOption option);
 string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExcuteResult<object>> callBack = null);
-string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, ThreadOption option);
+string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption option);
 string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExcuteResult<object>> callBack = null);
-string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, ThreadOption option);
+string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption option);
 string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, Action<ExcuteResult<TResult>> callBack = null);
-string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, ThreadOption option);
+string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, WorkOption option);
 string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, Action<ExcuteResult<TResult>> callBack = null);
-string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, ThreadOption option);
+string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, WorkOption option);
 string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, Action<ExcuteResult<TResult>> callBack = null);
-string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, ThreadOption option);
+string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, WorkOption option);
 string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExcuteResult<TResult>> callBack = null);
-string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, ThreadOption option);
+string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption option);
 string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExcuteResult<TResult>> callBack = null);
-string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, ThreadOption option);
+string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption option);
 string QueueWorkItem<TResult>(Func<TResult> function, Action<ExcuteResult<TResult>> callBack = null);
-string QueueWorkItem<TResult>(Func<TResult> function, ThreadOption option);
+string QueueWorkItem<TResult>(Func<TResult> function, WorkOption option);
 string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, Action<ExcuteResult<TResult>> callBack = null);
-string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, ThreadOption option);
+string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption option);
 void Wait();
 bool Wait(string id);
 async Task WaitAsync();
@@ -171,7 +171,7 @@ int KeepAliveTime; // Get, Set
 // The minimum number of threads that the thread pool should maintain at all times.
 int MinThreads; // Get, Set
 ```
-### ThreadOption
+### WorkOption
 #### Properties
 ```csharp
 // The custom work ID. If set to null, the thread pool will use a Guid as the work ID.

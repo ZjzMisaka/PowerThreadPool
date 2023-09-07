@@ -212,7 +212,7 @@ namespace PowerThreadPoolTest
                 }
                 OutputMsg("Thread1: END");
                 return true;
-            }, new ThreadOption()
+            }, new WorkOption()
             {
                 Callback = (res) =>
                 {
@@ -259,7 +259,7 @@ namespace PowerThreadPoolTest
                     Sleep(500);
                 }
                 OutputMsg("Thread4: END");
-            }, new ThreadOption()
+            }, new WorkOption()
             {
                 Callback = (res) =>
                 {
