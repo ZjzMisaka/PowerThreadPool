@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PowerThreadPool
@@ -14,6 +15,7 @@ namespace PowerThreadPool
         public abstract object Execute();
         public abstract void InvokeCallback(ExecuteResultBase executeResult, ThreadPoolOption threadPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
+        internal abstract ThreadPriority GetThreadPriority();
     }
     internal class Work<TResult> : WorkBase
     {
@@ -73,6 +75,11 @@ namespace PowerThreadPool
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
             executeResult.SetExecuteResult(result, exception, status);
             return executeResult;
+        }
+
+        internal override ThreadPriority GetThreadPriority()
+        {
+            return option.ThreadPriority;
         }
     }
 }

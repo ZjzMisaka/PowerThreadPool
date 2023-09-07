@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using PowerThreadPool.Collections;
 
@@ -20,22 +21,27 @@ namespace PowerThreadPool.Option
         public string CustomWorkID { get; set; } = null;
 
         /// <summary>
-        /// The maximum amount of time the thread is allowed to run before it is terminated.
+        /// The maximum amount of time the work is allowed to run before it is terminated.
         /// </summary>
         public TimeoutOption Timeout { get; set; } = null;
 
         /// <summary>
-        /// The callback function that is called when the thread finishes execution.
+        /// The callback function that is called when the work finishes execution.
         /// </summary>
         public Action<ExecuteResult<TResult>> Callback { get; set; } = null;
 
         /// <summary>
-        /// The priority level of the thread. Higher priority threads are executed before lower priority threads.
+        /// The priority level of the work. Higher priority works are executed before lower priority works.
         /// </summary>
-        public int Priority { get; set; } = 0;
+        public int WorkPriority { get; set; } = 0;
 
         /// <summary>
-        /// A set of threads that this thread depends on. This thread will not start until all dependent threads have completed execution.
+        /// Specifies the scheduling priority of a System.Threading.Thread.
+        /// </summary>
+        public ThreadPriority ThreadPriority { get; set; } = ThreadPriority.Normal;
+
+        /// <summary>
+        /// A set of works that this work depends on. This work will not start until all dependent works have completed execution.
         /// </summary>
         public ConcurrentSet<string> Dependents { get; set; } = null;
     }

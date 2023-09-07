@@ -623,11 +623,11 @@ namespace PowerThreadPool
             cancellationTokenSourceDic[workID] = cancellationTokenSource;
             if (option.Dependents == null || option.Dependents.Count == 0)
             {
-                waitingWorkIdQueue.Enqueue(workID, option.Priority);
+                waitingWorkIdQueue.Enqueue(workID, option.WorkPriority);
             }
             else
             {
-                waitingDependentDic[workID] = option.Priority;
+                waitingDependentDic[workID] = option.WorkPriority;
             }
             
             waitingWorkDic[workID] = work;

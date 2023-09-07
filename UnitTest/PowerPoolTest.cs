@@ -312,7 +312,7 @@ namespace UnitTest
                 {
                     logList.Add("Work1 Priority1 END");
                 },
-                Priority = 1,
+                WorkPriority = 1,
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -323,7 +323,7 @@ namespace UnitTest
                 {
                     logList.Add("Work2 Priority2 END");
                 },
-                Priority = 2,
+                WorkPriority = 2,
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -344,7 +344,7 @@ namespace UnitTest
                 {
                     logList.Add("Work4 Priority1 END");
                 },
-                Priority = 1,
+                WorkPriority = 1,
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -355,7 +355,7 @@ namespace UnitTest
                 {
                     logList.Add("Work5 Priority2 END");
                 },
-                Priority = 2,
+                WorkPriority = 2,
             });
 
             powerPool.Wait();

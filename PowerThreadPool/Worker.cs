@@ -98,6 +98,8 @@ public class Worker
     {
         this.work = work;
         this.workID = work.ID;
+        ThreadPriority threadPriority = work.GetThreadPriority();
+        thread.Priority = threadPriority;
         runSignal.Set();
     }
 

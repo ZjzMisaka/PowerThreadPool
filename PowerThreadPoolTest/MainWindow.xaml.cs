@@ -265,7 +265,7 @@ namespace PowerThreadPoolTest
                 {
                     OutputMsg("Thread4: Callback");
                 },
-                Priority = 10
+                WorkPriority = 10
             });
 
             powerPool.QueueWorkItem<int, int, Random>(T5Func, 10, 10, T5Callback);

@@ -176,13 +176,15 @@ int MinThreads; // Get, Set
 ```csharp
 // The custom work ID. If set to null, the thread pool will use a Guid as the work ID.
 string CustomWorkID; // Get, Set
-// The maximum amount of time the thread is allowed to run before it is terminated.
+// The maximum amount of time the work is allowed to run before it is terminated.
 TimeoutOption Timeout; // Get, Set
-// The callback function that is called when the thread finishes execution.
+// The callback function that is called when the work finishes execution.
 Action<ExecuteResult<TResult>> Callback; // Get, Set
-// The priority level of the thread. Higher priority threads are executed before lower priority threads.
-int Priority; // Get, Set
-// A set of threads that this thread depends on. This thread will not start until all dependent threads have completed execution.
+// The priority level of the work. Higher priority works are executed before lower priority works.
+int WorkPriority; // Get, Set
+// Specifies the scheduling priority of a System.Threading.Thread.
+ThreadPriority ThreadPriority; // Get, Set
+// A set of works that this work depends on. This work will not start until all dependent works have completed execution.
 ConcurrentSet<string> Dependents; // Get, Set
 ```
 ### TimeoutOption
