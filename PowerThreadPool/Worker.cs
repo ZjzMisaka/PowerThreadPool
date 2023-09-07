@@ -52,7 +52,7 @@ public class Worker
                     executeResult.ID = work.ID;
 
                     powerPool.OneThreadEnd(executeResult);
-                    work.InvokeCallback(executeResult, powerPool.ThreadPoolOption);
+                    work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
 
                     powerPool.WorkEnd(workID, false);
 
@@ -71,7 +71,7 @@ public class Worker
                 {
                     ExecuteResultBase executeResult = work.SetExecuteResult(null, ex, Status.Failed);
                     executeResult.ID = work.ID;
-                    work.InvokeCallback(executeResult, powerPool.ThreadPoolOption);
+                    work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
                 }
 
                 powerPool.WorkEnd(workID, true);

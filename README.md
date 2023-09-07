@@ -29,7 +29,7 @@ PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/P
 
 ## Getting started
 ```csharp
-PowerPool powerPool = new PowerPool(new ThreadPoolOption() { /* Some options */ });
+PowerPool powerPool = new PowerPool(new PowerPoolOption() { /* Some options */ });
 powerPool.QueueWorkItem(() => 
 {
     // DO SOMETHING
@@ -37,7 +37,7 @@ powerPool.QueueWorkItem(() =>
 ```
 ### With callback
 ```csharp
-PowerPool powerPool = new PowerPool(new ThreadPoolOption() { /* Some options */ });
+PowerPool powerPool = new PowerPool(new PowerPoolOption() { /* Some options */ });
 powerPool.QueueWorkItem(() => 
 {
     // DO SOMETHING
@@ -50,7 +50,7 @@ powerPool.QueueWorkItem(() =>
 ```
 ### With option
 ```csharp
-PowerPool powerPool = new PowerPool(new ThreadPoolOption() { /* Some options */ });
+PowerPool powerPool = new PowerPool(new PowerPoolOption() { /* Some options */ });
 powerPool.QueueWorkItem(() => 
 {
     // DO SOMETHING
@@ -89,7 +89,7 @@ powerPool.QueueWorkItem(() =>
 bool ThreadPoolRunning; // Get
 bool ThreadPoolStopping; // Get
 int IdleThreadCount; // Get
-ThreadPoolOption ThreadPoolOption; // Get, Set
+PowerPoolOption ThreadPoolOption; // Get, Set
 int WaitingWorkCount; // Get
 IEnumerable<string> WaitingWorkerList; // Get
 int RunningWorkerCount; // Get
@@ -169,7 +169,7 @@ Exception Exception; // Get
 ```csharp
 enum Status { Succeed, Failed }
 ```
-### ThreadPoolOption
+### PowerPoolOption
 #### Properties
 ```csharp
 // The maximum number of threads that the thread pool can support.

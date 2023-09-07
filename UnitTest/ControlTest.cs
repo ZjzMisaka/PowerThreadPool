@@ -370,7 +370,7 @@ namespace UnitTest
         [Fact]
         public void TestCancel()
         {
-            PowerPool powerPool = new PowerPool(new ThreadPoolOption() { MaxThreads = 2 });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
             List<long> logList = new List<long>();
             powerPool.QueueWorkItem(() =>
             {

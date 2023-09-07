@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace PowerThreadPool.Option
 {
 
-    public class ThreadPoolOption
+    public class PowerPoolOption
     {
-        public ThreadPoolOption()
+        public PowerPoolOption()
         {
         }
 

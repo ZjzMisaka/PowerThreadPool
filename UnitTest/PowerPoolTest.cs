@@ -12,7 +12,7 @@ namespace UnitTest
             List<string> logList = new List<string>();
             string result = "";
             PowerPool powerPool = new PowerPool();
-            powerPool.ThreadPoolOption = new ThreadPoolOption()
+            powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 8,
                 DefaultCallback = (res) =>
@@ -72,7 +72,7 @@ namespace UnitTest
         public void TestCallback()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.ThreadPoolOption = new ThreadPoolOption()
+            powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 8,
                 DefaultCallback = (res) =>
@@ -101,7 +101,7 @@ namespace UnitTest
         {
             List<string> logList = new List<string>();
             PowerPool powerPool = new PowerPool();
-            powerPool.ThreadPoolOption = new ThreadPoolOption()
+            powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 8,
                 DefaultCallback = (res) =>
@@ -141,7 +141,7 @@ namespace UnitTest
         {
             List<string> logList = new List<string>();
             PowerPool powerPool = new PowerPool();
-            powerPool.ThreadPoolOption = new ThreadPoolOption()
+            powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 8,
                 DefaultCallback = (res) =>
@@ -192,7 +192,7 @@ namespace UnitTest
         public void TestError()
         {
             PowerPool powerPool = new PowerPool();
-            powerPool.ThreadPoolOption = new ThreadPoolOption()
+            powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 8,
                 DefaultCallback = (res) =>
@@ -219,7 +219,7 @@ namespace UnitTest
         {
             PowerPool powerPool = new PowerPool();
             List<string> logList = new List<string>();
-            powerPool.ThreadPoolOption = new ThreadPoolOption()
+            powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 8,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
@@ -288,7 +288,7 @@ namespace UnitTest
         {
             PowerPool powerPool = new PowerPool();
             List<string> logList = new List<string>();
-            powerPool.ThreadPoolOption = new ThreadPoolOption()
+            powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 1,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 0, KeepAliveTime = 3000 }

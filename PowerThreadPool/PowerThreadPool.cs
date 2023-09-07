@@ -23,8 +23,8 @@ namespace PowerThreadPool
         private PriorityQueue<string> waitingWorkIdQueue = new PriorityQueue<string>();
         private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
         private ConcurrentDictionary<string, Worker> runningWorkerDic = new ConcurrentDictionary<string, Worker>();
-        private ThreadPoolOption threadPoolOption;
-        public ThreadPoolOption ThreadPoolOption { get => threadPoolOption; set => threadPoolOption = value; }
+        private PowerPoolOption powerPoolOption;
+        public PowerPoolOption PowerPoolOption { get => powerPoolOption; set => powerPoolOption = value; }
 
         public delegate void ThreadPoolStartEventHandler(object sender, EventArgs e);
         public event ThreadPoolStartEventHandler ThreadPoolStart;
@@ -92,12 +92,12 @@ namespace PowerThreadPool
 
         public PowerPool()
         {
-            ThreadPoolOption = new ThreadPoolOption();
+            PowerPoolOption = new PowerPoolOption();
         }
 
-        public PowerPool(ThreadPoolOption threadPoolOption)
+        public PowerPool(PowerPoolOption powerPoolOption)
         {
-            ThreadPoolOption = threadPoolOption;
+            PowerPoolOption = powerPoolOption;
         }
 
         /// <summary>
@@ -598,9 +598,9 @@ namespace PowerThreadPool
             {
                 threadTimeoutOption = option.Timeout;
             }
-            else if (threadPoolOption.DefaultThreadTimeout != null)
+            else if (powerPoolOption.DefaultThreadTimeout != null)
             {
-                threadTimeoutOption = threadPoolOption.DefaultThreadTimeout;
+                threadTimeoutOption = powerPoolOption.DefaultThreadTimeout;
             }
             if (threadTimeoutOption != null)
             {
@@ -738,18 +738,18 @@ namespace PowerThreadPool
         /// </summary>
         private void ManageIdleWorkerQueue()
         {
-            if (threadPoolOption.DestroyThreadOption != null)
+            if (powerPoolOption.DestroyThreadOption != null)
             {
-                if (threadPoolOption.DestroyThreadOption.MinThreads > threadPoolOption.MaxThreads)
+                if (powerPoolOption.DestroyThreadOption.MinThreads > powerPoolOption.MaxThreads)
                 {
                     throw new ArgumentException("The minimum number of threads cannot be greater than the maximum number of threads.");
                 }
             }
 
-            int minThreads = threadPoolOption.MaxThreads;
-            if (threadPoolOption.DestroyThreadOption != null)
+            int minThreads = powerPoolOption.MaxThreads;
+            if (powerPoolOption.DestroyThreadOption != null)
             {
-                minThreads = threadPoolOption.DestroyThreadOption.MinThreads;
+                minThreads = powerPoolOption.DestroyThreadOption.MinThreads;
             }
             while (IdleThreadCount + RunningWorkerCount < minThreads)
             {
@@ -758,14 +758,14 @@ namespace PowerThreadPool
                 SetDestroyTimerForIdleWorker(worker.Id);
             }
 
-            while (WaitingWorkCount > 0 && IdleThreadCount < 1 && IdleThreadCount + RunningWorkerCount < threadPoolOption.MaxThreads)
+            while (WaitingWorkCount > 0 && IdleThreadCount < 1 && IdleThreadCount + RunningWorkerCount < powerPoolOption.MaxThreads)
             {
                 Worker worker = new Worker(this);
                 idleWorkerQueue.Enqueue(worker);
                 SetDestroyTimerForIdleWorker(worker.Id);
             }
 
-            while (IdleThreadCount + RunningWorkerCount > threadPoolOption.MaxThreads)
+            while (IdleThreadCount + RunningWorkerCount > powerPoolOption.MaxThreads)
             {
                 idleWorkerQueue.TryDequeue(out _);
             }
@@ -776,13 +776,13 @@ namespace PowerThreadPool
         /// </summary>
         private void SetDestroyTimerForIdleWorker(string workerID)
         {
-            if (threadPoolOption.DestroyThreadOption != null)
+            if (powerPoolOption.DestroyThreadOption != null)
             {
-                System.Timers.Timer timer = new System.Timers.Timer(threadPoolOption.DestroyThreadOption.KeepAliveTime);
+                System.Timers.Timer timer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
                 timer.AutoReset = false;
                 timer.Elapsed += (s, e) =>
                 {
-                    if (IdleThreadCount > threadPoolOption.DestroyThreadOption.MinThreads)
+                    if (IdleThreadCount > powerPoolOption.DestroyThreadOption.MinThreads)
                     {
                         Worker worker;
                         if (idleWorkerQueue.TryDequeue(out worker))
@@ -806,7 +806,7 @@ namespace PowerThreadPool
         {
             ManageIdleWorkerQueue();
 
-            while (RunningWorkerCount < threadPoolOption.MaxThreads && waitingWorkIdQueue.Count > 0)
+            while (RunningWorkerCount < powerPoolOption.MaxThreads && waitingWorkIdQueue.Count > 0)
             {
                 WorkBase work;
                 if (IdleThreadCount == 0)
@@ -854,9 +854,9 @@ namespace PowerThreadPool
                     ThreadPoolStart.Invoke(this, new EventArgs());
                 }
 
-                if (threadPoolOption.Timeout != null)
+                if (powerPoolOption.Timeout != null)
                 {
-                    threadPoolTimer = new System.Timers.Timer(threadPoolOption.Timeout.Duration);
+                    threadPoolTimer = new System.Timers.Timer(powerPoolOption.Timeout.Duration);
                     threadPoolTimer.AutoReset = false;
                     threadPoolTimer.Elapsed += (s, e) =>
                     {
@@ -864,7 +864,7 @@ namespace PowerThreadPool
                         {
                             ThreadPoolTimeout.Invoke(this, new EventArgs());
                         }
-                        this.Stop(threadPoolOption.Timeout.ForceStop);
+                        this.Stop(powerPoolOption.Timeout.ForceStop);
                     };
                     threadPoolTimer.Start();
                 }

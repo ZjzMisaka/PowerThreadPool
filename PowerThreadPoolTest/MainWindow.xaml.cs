@@ -41,7 +41,7 @@ namespace PowerThreadPoolTest
             };
             timer.Start();
 
-            powerPool.ThreadPoolOption = new ThreadPoolOption()
+            powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 8,
                 DefaultCallback = (res) =>
@@ -243,7 +243,7 @@ namespace PowerThreadPoolTest
                     Sleep(500);
                 }
                 OutputMsg("Thread3: END");
-                return new ThreadPoolOption();
+                return new PowerPoolOption();
             }, (res) =>
             {
                 OutputMsg("Thread3: Callback");

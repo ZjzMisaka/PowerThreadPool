@@ -13,7 +13,7 @@ namespace PowerThreadPool
         private string id;
         public string ID { get => id; set => id = value; }
         public abstract object Execute();
-        public abstract void InvokeCallback(ExecuteResultBase executeResult, ThreadPoolOption threadPoolOption);
+        public abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
         internal abstract ThreadPriority GetThreadPriority();
     }
@@ -58,15 +58,15 @@ namespace PowerThreadPool
             return function(param);
         }
 
-        public override void InvokeCallback(ExecuteResultBase executeResult, ThreadPoolOption threadPoolOption)
+        public override void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
             if (Option.Callback != null)
             {
                 Option.Callback((ExecuteResult<TResult>)executeResult);
             }
-            else if (threadPoolOption.DefaultCallback != null)
+            else if (powerPoolOption.DefaultCallback != null)
             {
-                threadPoolOption.DefaultCallback(executeResult.ToObjResult());
+                powerPoolOption.DefaultCallback(executeResult.ToObjResult());
             }
         }
 
