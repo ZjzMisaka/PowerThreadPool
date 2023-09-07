@@ -233,6 +233,16 @@ namespace UnitTest
                 logList.Add("ThreadPoolIdle");
             };
 
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1700);
+                logList.Add("Work3 END");
+            }, (res) =>
+            {
+                Thread.Sleep(1300);
+                logList.Add("Work3 callback END");
+            });
+
             string id0 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
@@ -251,7 +261,7 @@ namespace UnitTest
 
             powerPool.QueueWorkItem(() =>
             {
-                logList.Add("Work2 END");
+                logList.Add("Work2 denpend on work0, work1 END");
             },
             new ThreadOption()
             {
@@ -265,8 +275,10 @@ namespace UnitTest
                 item => Assert.Equal("ThreadPoolStart", item),
                 item => Assert.Equal("Work0 END", item),
                 item => Assert.Equal("Work1 END", item),
+                item => Assert.Equal("Work3 END", item),
                 item => Assert.Equal("Work0 callback END", item),
-                item => Assert.Equal("Work2 END", item),
+                item => Assert.Equal("Work2 denpend on work0, work1 END", item),
+                item => Assert.Equal("Work3 callback END", item),
                 item => Assert.Equal("ThreadPoolIdle", item)
                 );
         }
