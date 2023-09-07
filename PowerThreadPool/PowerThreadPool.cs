@@ -13,10 +13,10 @@ namespace PowerThreadPool
 {
     public class PowerPool
     {
-        private ManualResetEvent manualResetEvent = new ManualResetEvent(true);
-        private ConcurrentDictionary<string, ManualResetEvent> manualResetEventDic = new ConcurrentDictionary<string, ManualResetEvent>();
-        private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
+        internal ManualResetEvent manualResetEvent = new ManualResetEvent(true);
+        internal ConcurrentDictionary<string, ManualResetEvent> manualResetEventDic = new ConcurrentDictionary<string, ManualResetEvent>();
+        internal CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+        internal ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
         private ConcurrentQueue<Worker> idleWorkerQueue = new ConcurrentQueue<Worker>();
         private ConcurrentDictionary<string, int> waitingDependentDic = new ConcurrentDictionary<string, int>();
