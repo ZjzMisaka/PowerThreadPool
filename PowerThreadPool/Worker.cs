@@ -99,7 +99,10 @@ public class Worker
         this.work = work;
         this.workID = work.ID;
         ThreadPriority threadPriority = work.GetThreadPriority();
-        thread.Priority = threadPriority;
+        if (thread.Priority != threadPriority)
+        {
+            thread.Priority = threadPriority;
+        }
         runSignal.Set();
     }
 
