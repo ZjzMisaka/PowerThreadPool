@@ -251,7 +251,6 @@ namespace UnitTest
 
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(500);
                 logList.Add("Work2 END");
             },
             new ThreadOption()
