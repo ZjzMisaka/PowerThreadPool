@@ -8,8 +8,24 @@ Enables efficient thread pool management with callback implementation, granular 
 PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/PowerThreadPool/) now.
 
 ## Features
-|Work Control|Work Dependency|Thread Pool Sizing|Thread Reuse|Idle Thread Timeout|Work Priority|Thread Priority|Work Timeout|Cumulative Work Timeout|Callback|Error Handling|Runtime Status|
-|----|----|----|----|----|----|----|----|----|----|----|----|
+1. Work Control
+    - Wait
+    - Stop
+    - Force Stop
+    - Pause
+    - Resume
+    - Cancel
+2. Work Dependency
+3. Thread Pool Sizing
+4. Thread Reuse
+5. Idle Thread Timeout
+6. Work Priority
+7. Thread Priority
+8. Work Timeout
+9. Cumulative Work Timeout
+10. Callback
+11. Error Handling
+12. Runtime Status
 
 ## Getting started
 ```csharp
