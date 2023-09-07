@@ -89,6 +89,41 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Call this function inside the thread logic where you want to pause when user call Pause(...)
+        /// </summary>
+        public static void PauseIfRequested()
+        {
+            foreach (string id in ManagedList)
+            {
+                if (instanceDic.TryGetValue(id, out PowerPool powerPool))
+                {
+                    powerPool.manualResetEvent.WaitOne();
+                    foreach (string workID in powerPool.manualResetEventDic.Keys)
+                    {
+                        if (Thread.CurrentThread.Name == workID)
+                        {
+                            powerPool.manualResetEventDic[workID].WaitOne();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Call this function inside the thread logic where you want to stop when user call ForceStop(...)
+        /// </summary>
+        public static void StopIfRequested()
+        {
+            foreach (string id in ManagedList)
+            {
+                if (CheckIfRequestedStop(id))
+                {
+                    throw new OperationCanceledException();
+                }
+            }
+        }
+
+        /// <summary>
         /// Call this function inside the thread logic where you want to check if requested stop (if user call ForceStop(...))
         /// </summary>
         /// <param name="id">Power pool id</param>
