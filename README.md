@@ -46,8 +46,7 @@ powerPool.QueueWorkItem(() =>
     return result;
 }, (res) => 
 {
-    // this callback of thread
-    // running result: res.Result
+    // Callback of the work
 });
 ```
 ### With option
