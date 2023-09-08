@@ -65,10 +65,10 @@ powerPool.QueueWorkItem(() =>
 |name|summary|result|
 |---|---|---|
 |QueueWorkItem<...>(...)|Queues a method for execution. The method executes when a thread pool thread becomes available.|work id|
-|Wait()|Blocks the calling thread until all of the threads terminates.|-|
-|Wait(string id)|Blocks the calling thread until the thread terminates.|Return false if the thread isn't running|
-|WaitAsync()|Blocks the calling thread until all of the threads terminates.|Task|
-|WaitAsync(string id)|Blocks the calling thread until the thread terminates.|Return false if the thread isn't running|
+|Wait()|Blocks the calling thread until all of the works terminates.|-|
+|Wait(string id)|Blocks the calling thread until the work terminates.|Return false if the work isn't running|
+|WaitAsync()|Blocks the calling thread until all of the works terminates.|Task|
+|WaitAsync(string id)|Blocks the calling thread until the work terminates.|Return false if the work isn't running|
 |Stop(bool forceStop = false)|Stop all threads. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|Return false if no thread running|
 |StopAsync(bool forceStop = false)|Stop all threads. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|(Task) Return false if no thread running|
 |Stop(string id, bool forceStop = false)|Stop thread by id. If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.|Return false if the thread isn't running|

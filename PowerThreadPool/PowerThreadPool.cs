@@ -910,7 +910,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Blocks the calling thread until all of the threads terminates.
+        /// Blocks the calling thread until all of the works terminates.
         /// </summary>
         public void Wait()
         {
@@ -928,10 +928,10 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Blocks the calling thread until the thread terminates.
+        /// Blocks the calling thread until the work terminates.
         /// </summary>
         /// <param name="id">work id</param>
-        /// <returns>Return false if the thread isn't running</returns>
+        /// <returns>Return false if the work isn't running</returns>
         public bool Wait(string id)
         {
             if (runningWorkerDic.TryGetValue(id, out Worker worker))
@@ -943,7 +943,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Blocks the calling thread until all of the threads terminates.
+        /// Blocks the calling thread until all of the works terminates.
         /// </summary>
         /// <returns>A Task</returns>
         public async Task WaitAsync()
@@ -955,10 +955,10 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Blocks the calling thread until the thread terminates.
+        /// Blocks the calling thread until the work terminates.
         /// </summary>
         /// <param name="id">work id</param>
-        /// <returns>Return false if the thread isn't running</returns>
+        /// <returns>Return false if the work isn't running</returns>
         public async Task<bool> WaitAsync(string id)
         {
             return await Task.Run(() =>
