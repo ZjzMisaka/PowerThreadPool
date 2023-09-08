@@ -24,17 +24,17 @@ namespace PowerThreadPool.Option
         public DestroyThreadOption DestroyThreadOption { get; set; } = null;
 
         /// <summary>
-        /// The total maximum amount of time that all threads in the thread pool are permitted to run collectively before they are terminated.
+        /// The total maximum amount of time that all works in the thread pool are permitted to run collectively before they are terminated.
         /// </summary>
         public TimeoutOption Timeout { get; set; } = null;
 
         /// <summary>
-        /// The default maximum amount of time a thread in the pool is allowed to run before it is terminated.
+        /// The default maximum amount of time a work in the pool is allowed to run before it is terminated.
         /// </summary>
-        public TimeoutOption DefaultThreadTimeout { get; set; } = null;
+        public TimeoutOption DefaultWorkTimeout { get; set; } = null;
 
         /// <summary>
-        /// The default callback function that is called when a thread finishes execution.
+        /// The default callback function that is called when a work finishes execution.
         /// </summary>
         public Action<ExecuteResult<object>> DefaultCallback { get; set; } = null;
     }

@@ -598,9 +598,9 @@ namespace PowerThreadPool
             {
                 threadTimeoutOption = option.Timeout;
             }
-            else if (powerPoolOption.DefaultThreadTimeout != null)
+            else if (powerPoolOption.DefaultWorkTimeout != null)
             {
-                threadTimeoutOption = powerPoolOption.DefaultThreadTimeout;
+                threadTimeoutOption = powerPoolOption.DefaultWorkTimeout;
             }
             if (threadTimeoutOption != null)
             {

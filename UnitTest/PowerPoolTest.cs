@@ -22,7 +22,7 @@ namespace UnitTest
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
                 Timeout = new TimeoutOption() { Duration = 10000, ForceStop = false },
-                DefaultThreadTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
+                DefaultWorkTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
             };
             powerPool.ThreadPoolStart += (s, e) =>
             {
@@ -81,7 +81,7 @@ namespace UnitTest
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
                 Timeout = new TimeoutOption() { Duration = 10000, ForceStop = false },
-                DefaultThreadTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
+                DefaultWorkTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
             };
 
             string id = "";
@@ -110,7 +110,7 @@ namespace UnitTest
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
                 Timeout = new TimeoutOption() { Duration = 10000, ForceStop = true },
-                DefaultThreadTimeout = new TimeoutOption() { Duration = 3000, ForceStop = true },
+                DefaultWorkTimeout = new TimeoutOption() { Duration = 3000, ForceStop = true },
             };
             powerPool.ThreadTimeout += (s, e) =>
             {
@@ -150,7 +150,7 @@ namespace UnitTest
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
                 Timeout = new TimeoutOption() { Duration = 10000, ForceStop = true },
-                DefaultThreadTimeout = new TimeoutOption() { Duration = 3000, ForceStop = true },
+                DefaultWorkTimeout = new TimeoutOption() { Duration = 3000, ForceStop = true },
             };
             bool timeOut = false;
             powerPool.ThreadTimeout += (s, e) =>
@@ -201,7 +201,7 @@ namespace UnitTest
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
                 Timeout = new TimeoutOption() { Duration = 10000, ForceStop = false },
-                DefaultThreadTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
+                DefaultWorkTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
             };
 
             powerPool.QueueWorkItem(() =>

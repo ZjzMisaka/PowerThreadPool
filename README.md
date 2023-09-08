@@ -176,11 +176,11 @@ enum Status { Succeed, Failed }
 int MaxThreads; // Get, Set
 // The option for destroying threads in the thread pool.
 DestroyThreadOption DestroyThreadOption; // Get, Set
-// The total maximum amount of time that all threads in the thread pool are permitted to run collectively before they are terminated.
+// The total maximum amount of time that all works in the thread pool are permitted to run collectively before they are terminated.
 TimeoutOption Timeout; // Get, Set
-// The default maximum amount of time a thread in the pool is allowed to run before it is terminated.
-TimeoutOption DefaultThreadTimeout; // Get, Set
-// The default callback function that is called when a thread finishes execution.
+// The default maximum amount of time a work in the pool is allowed to run before it is terminated.
+TimeoutOption DefaultWorkTimeout; // Get, Set
+// The default callback function that is called when a work finishes execution.
 Action<ExecuteResult<object>> DefaultCallback; // Get, Set
 ```
 ### DestroyThreadOption
