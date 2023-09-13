@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
-      - run: dotnet test UnitTest/UnitTest.csproj
+      - run: dotnet test UnitTest/UnitTest.csproj --logger "trx;LogFileName=test-results.trx"
 
   generate-reports:
     needs: tests
@@ -46,5 +46,5 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         name: 'Unit Test Results'
         reporter: 'dotnet-trx'
-        path: 'test-reports/**/*.xml'
+        path: 'test-results.trx'
         fail_on_error: false
