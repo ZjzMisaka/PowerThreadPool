@@ -42,9 +42,13 @@ jobs:
       - uses: actions/checkout@v3
       - name: XUnit Viewer
         id: xunit-viewer
-        uses: AutoModality/action-xunit-viewer@v1  
+        uses: AutoModality/action-xunit-viewer@v1
+        with:
+          results: ${{ env.RESULTS_PATH }}
+      - name: The generated report
+        run: echo "The report is ${{ steps.xunit-viewer.outputs.report-file }}"    
       - name: Attach the report
         uses: actions/upload-artifact@v1
         with:
-          name: ${{ steps.xunit-viewer.outputs.report-name }}
-          path: ${{ steps.xunit-viewer.outputs.report-dir }}
+          name: alternate-results-path-reports
+          path: ${{ env.RESULTS_PATH }}
