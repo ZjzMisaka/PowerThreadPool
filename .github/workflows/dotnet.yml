@@ -45,6 +45,6 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         name: 'Unit Test Results'
-        reporter: 'xunit'
+        reporter: 'dotnet-trx'
         path: 'test-reports/**/*.xml'
         fail_on_error: false
