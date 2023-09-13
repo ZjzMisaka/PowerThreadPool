@@ -36,6 +36,7 @@ jobs:
 
   generate-reports:
     needs: tests
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
