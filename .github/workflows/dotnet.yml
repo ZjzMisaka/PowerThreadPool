@@ -23,7 +23,7 @@ jobs:
     - name: Build
       run: dotnet build PowerThreadPool/PowerThreadPool.csproj --no-restore
 
-  tests:
+  tests-and-reports:
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -32,28 +32,13 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: 6.0.x
-      - run: dotnet test UnitTest/UnitTest.csproj --logger "trx;LogFileName=test-results.trx"
-      - name: Upload test results
-        uses: actions/upload-artifact@v2
+      - name: Run Tests and Generate TRX Report
+        run: dotnet test UnitTest/UnitTest.csproj --logger "trx;LogFileName=test-results.trx"
+      - name: Publish Unit Test Results
+        uses: dorny/test-reporter@v1
         with:
-          name: Test results
-          path: UnitTest/test-results.trx
-
-  generate-reports:
-    needs: tests
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Download test results
-      uses: actions/download-artifact@v2
-      with:
-        name: Test results
-    - name: Publish Unit Test Results
-      uses: dorny/test-reporter@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        name: 'Unit Test Results'
-        reporter: 'dotnet-trx'
-        path: 'test-results.trx'
-        fail_on_error: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: 'Unit Test Results'
+          reporter: 'dotnet-trx'
+          path: '**/test-results.trx'
+          fail_on_error: false
