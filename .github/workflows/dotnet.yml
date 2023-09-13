@@ -3,6 +3,13 @@
 
 name: .NET
 
+permissions:
+  statuses: write
+  checks: write
+  contents: write
+  pull-requests: write
+  actions: write
+
 on:
   push:
     branches: [ "main" ]
