@@ -20,20 +20,22 @@ namespace UnitTest
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
 
-            for (int i = 0; i < totalTasks; ++i)
-            {
-                string workId = powerPool.QueueWorkItem(() =>
+            var tasks = Enumerable.Range(0, totalTasks).Select(i =>
+                Task.Run(() =>
                 {
-                    // DO SOMETHING
-                }, (res) =>
-                {
-                    lock (doneCountLock)
+                    string workId = powerPool.QueueWorkItem(() =>
+                    {
+                    }, (res) =>
                     {
                         ++doneCount;
-                    }
-                });
-                Assert.NotNull(workId);
-            }
+                    });
+
+                    Assert.NotNull(workId);
+                }
+                )
+            ).ToArray();
+
+            await Task.WhenAll(tasks);
 
             await Task.Delay(100);
 
