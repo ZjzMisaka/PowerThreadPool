@@ -73,11 +73,6 @@ namespace UnitTest
                             {
                                 powerPool.QueueWorkItem(() =>
                                 {
-                                    if (k < 5)
-                                    {
-                                        return true;
-                                    }
-                                    return false;
                                 }, (res) =>
                                 {
                                     for (int j = 0; j < 5; ++j)
