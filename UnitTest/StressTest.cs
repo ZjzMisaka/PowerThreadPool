@@ -27,7 +27,10 @@ namespace UnitTest
                     {
                     }, (res) =>
                     {
-                        ++doneCount;
+                        lock (doneCountLock)
+                        {
+                            ++doneCount;
+                        }
                     });
 
                     Assert.NotNull(workId);
