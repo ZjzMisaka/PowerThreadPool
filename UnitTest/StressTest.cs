@@ -10,47 +10,50 @@ namespace UnitTest
 {
     public class StressTest
     {
-        private const int totalTasks = 10000;
+        private const int totalTasks = 100000;
 
-        private int doneCount = 0;
         private object doneCountLock = new object();
 
         [Fact]
          public async Task StressTestAsync()
         {
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
+            for (int i = 0; i < 10; ++i)
+            {
+                int doneCount = 0;
+                PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
 
-            var tasks = Enumerable.Range(0, totalTasks).Select(i =>
-                Task.Run(() =>
-                {
-                    string workId = powerPool.QueueWorkItem(() =>
+                var tasks = Enumerable.Range(0, totalTasks).Select(i =>
+                    Task.Run(() =>
                     {
-                    }, (res) =>
-                    {
-                        lock (doneCountLock)
+                        string workId = powerPool.QueueWorkItem(() =>
                         {
-                            ++doneCount;
-                        }
-                    });
+                        }, (res) =>
+                        {
+                            lock (doneCountLock)
+                            {
+                                ++doneCount;
+                            }
+                        });
 
-                    Assert.NotNull(workId);
-                }
-                )
-            ).ToArray();
+                        Assert.NotNull(workId);
+                    }
+                    )
+                ).ToArray();
 
-            await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks);
 
-            await Task.Delay(100);
+                await Task.Delay(100);
 
-            Assert.Equal(totalTasks, powerPool.RunningWorkerCount + powerPool.WaitingWorkCount + doneCount);
+                Assert.Equal(totalTasks, powerPool.RunningWorkerCount + powerPool.WaitingWorkCount + doneCount);
 
-            await powerPool.WaitAsync();
-            powerPool.Wait();
-            Assert.Equal(totalTasks, powerPool.RunningWorkerCount + powerPool.WaitingWorkCount + doneCount);
-            Assert.Equal(0, powerPool.RunningWorkerCount);
-            Assert.Equal(0, powerPool.WaitingWorkCount);
+                await powerPool.WaitAsync();
+                powerPool.Wait();
+                Assert.Equal(totalTasks, powerPool.RunningWorkerCount + powerPool.WaitingWorkCount + doneCount);
+                Assert.Equal(0, powerPool.RunningWorkerCount);
+                Assert.Equal(0, powerPool.WaitingWorkCount);
 
-            Assert.True(powerPool.IdleThreadCount > 0);
+                Assert.True(powerPool.IdleThreadCount > 0);
+            }
         }
     }
 }
