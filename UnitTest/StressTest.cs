@@ -12,24 +12,24 @@ namespace UnitTest
     {
         private const int totalTasks = 100000;
 
-        private object doneCountLock = new object();
+        private object lockObj = new object();
 
         [Fact]
-         public async Task StressTestAsync()
+         public async Task StressTest1()
         {
             for (int i = 0; i < 10; ++i)
             {
                 int doneCount = 0;
                 PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
 
-                var tasks = Enumerable.Range(0, totalTasks).Select(i =>
+                Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
                     Task.Run(() =>
                     {
                         string workId = powerPool.QueueWorkItem(() =>
                         {
                         }, (res) =>
                         {
-                            lock (doneCountLock)
+                            lock (lockObj)
                             {
                                 ++doneCount;
                             }
@@ -54,6 +54,71 @@ namespace UnitTest
 
                 Assert.True(powerPool.IdleThreadCount > 0);
             }
+        }
+
+        [Fact]
+        public void StressTest2()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
+            int doneCount = 0;
+            for (int i = 0; i < 100; ++i)
+            {
+                powerPool.QueueWorkItem(() =>
+                {
+                    for (int j = 0; j < 100; ++j)
+                    {
+                        powerPool.QueueWorkItem(() =>
+                        {
+                            for (int k = 0; k < 100; ++k)
+                            {
+                                powerPool.QueueWorkItem(() =>
+                                {
+                                    if (k < 5)
+                                    {
+                                        return true;
+                                    }
+                                    return false;
+                                }, (res) =>
+                                {
+                                    for (int j = 0; j < 5; ++j)
+                                    {
+                                        powerPool.QueueWorkItem(() =>
+                                        {
+
+                                        }, (res) =>
+                                        {
+                                            lock (lockObj)
+                                            {
+                                                ++doneCount;
+                                            }
+                                        });
+                                    }
+                                    lock (lockObj)
+                                    {
+                                        ++doneCount;
+                                    }
+                                });
+                            }
+                        }, (res) =>
+                        {
+                            lock (lockObj)
+                            {
+                                ++doneCount;
+                            }
+                        });
+                    }
+                }, (res) =>
+                {
+                    lock (lockObj) 
+                    {
+                        ++doneCount;
+                    }
+                });
+            }
+
+            powerPool.Wait();
+
+            Assert.Equal(6010100, doneCount);
         }
     }
 }
