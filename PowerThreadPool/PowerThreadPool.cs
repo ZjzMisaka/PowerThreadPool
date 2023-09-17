@@ -30,15 +30,15 @@ namespace PowerThreadPool
         public event ThreadPoolStartEventHandler ThreadPoolStart;
         public delegate void ThreadPoolIdleEventHandler(object sender, EventArgs e);
         public event ThreadPoolIdleEventHandler ThreadPoolIdle;
-        public delegate void ThreadStartEventHandler(object sender, ThreadStartEventArgs e);
+        public delegate void ThreadStartEventHandler(object sender, WorkStartEventArgs e);
         public event ThreadStartEventHandler ThreadStart;
-        public delegate void ThreadEndEventHandler(object sender, ThreadEndEventArgs e);
+        public delegate void ThreadEndEventHandler(object sender, WorkEndEventArgs e);
         public event ThreadEndEventHandler ThreadEnd;
         public delegate void ThreadPoolTimeoutEventHandler(object sender, EventArgs e);
         public event ThreadPoolTimeoutEventHandler ThreadPoolTimeout;
-        public delegate void ThreadTimeoutEventHandler(object sender, ThreadTimeoutEventArgs e);
+        public delegate void ThreadTimeoutEventHandler(object sender, TimeoutEventArgs e);
         public event ThreadTimeoutEventHandler ThreadTimeout;
-        public delegate void ThreadForceStopEventHandler(object sender, ThreadForceStopEventArgs e);
+        public delegate void ThreadForceStopEventHandler(object sender, ForceStopEventArgs e);
         public event ThreadForceStopEventHandler ThreadForceStop;
 
         internal delegate void CallbackEndEventHandler(string id);
@@ -613,7 +613,7 @@ namespace PowerThreadPool
                 {
                     if (ThreadTimeout != null)
                     {
-                        ThreadTimeout.Invoke(this, new ThreadTimeoutEventArgs() { ID = workID });
+                        ThreadTimeout.Invoke(this, new TimeoutEventArgs() { ID = workID });
                     }
                     this.Stop(workID, threadTimeoutOption.ForceStop);
                 };
@@ -690,7 +690,7 @@ namespace PowerThreadPool
             }
             if (ThreadForceStop != null)
             {
-                ThreadForceStop.Invoke(this, new ThreadForceStopEventArgs()
+                ThreadForceStop.Invoke(this, new ForceStopEventArgs()
                 {
                     ID = id
                 });
@@ -705,7 +705,7 @@ namespace PowerThreadPool
         {
             if (ThreadEnd != null)
             {
-                ThreadEnd.Invoke(this, new ThreadEndEventArgs()
+                ThreadEnd.Invoke(this, new WorkEndEventArgs()
                 {
                     ID = executeResult.ID,
                     Exception = executeResult.Exception,
@@ -846,7 +846,7 @@ namespace PowerThreadPool
 
                             if (ThreadStart != null)
                             {
-                                ThreadStart.Invoke(this, new ThreadStartEventArgs() { ID = work.ID });
+                                ThreadStart.Invoke(this, new WorkStartEventArgs() { ID = work.ID });
                             }
                         }
                     }

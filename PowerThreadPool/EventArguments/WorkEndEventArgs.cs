@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace PowerThreadPool.EventArguments
 {
-    public class ThreadEndEventArgs : EventArgs
+    public class WorkEndEventArgs : EventArgs
     {
-        public ThreadEndEventArgs() { }
+        public WorkEndEventArgs() { }
 
         private string id;
         public string ID { get => id; set => id = value; }

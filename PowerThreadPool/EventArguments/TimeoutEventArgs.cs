@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace PowerThreadPool.EventArguments
 {
-    public class ThreadTimeoutEventArgs : EventArgs
+    public class TimeoutEventArgs : EventArgs
     {
-        public ThreadTimeoutEventArgs() { }
+        public TimeoutEventArgs() { }
 
         private string id;
         public string ID { get => id; internal set => id = value; }
