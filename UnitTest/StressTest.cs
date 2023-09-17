@@ -77,6 +77,7 @@ namespace UnitTest
                 lock (lockObj) 
                 {
                     ++idleCount;
+                    Assert.Equal(1, idleCount);
                     Assert.Equal(6010100, doneCount);
                 } 
             };
@@ -134,7 +135,6 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(1, startCount);
-            Assert.Equal(1, idleCount);
         }
     }
 }
