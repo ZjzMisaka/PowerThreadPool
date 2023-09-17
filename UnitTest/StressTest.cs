@@ -59,6 +59,12 @@ namespace UnitTest
         public void StressTest2()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
+            int startCount = 0;
+            int idleCount = 0;
+            
+            powerPool.ThreadPoolStart += (s, e) => { lock (lockObj) { ++startCount; } };
+            powerPool.ThreadPoolIdle += (s, e) => { lock (lockObj) { ++idleCount; } };
+
             int doneCount = 0;
             for (int i = 0; i < 100; ++i)
             {
@@ -112,6 +118,8 @@ namespace UnitTest
 
             powerPool.Wait();
 
+            Assert.Equal(1, startCount);
+            Assert.Equal(1, idleCount);
             Assert.Equal(6010100, doneCount);
         }
     }
