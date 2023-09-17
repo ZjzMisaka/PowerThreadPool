@@ -948,6 +948,10 @@ namespace PowerThreadPool
         /// <returns>Return false if the work isn't running</returns>
         public bool Wait(string id)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                return false;
+            }
             if (runningWorkerDic.TryGetValue(id, out Worker worker))
             {
                 worker.Wait();
@@ -1037,6 +1041,11 @@ namespace PowerThreadPool
         /// <returns>Return false if the thread isn't running</returns>
         public bool Stop(string id, bool forceStop = false)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                return false;
+            }
+
             bool res = false;
             foreach (string runningId in runningWorkerDic.Keys)
             {
@@ -1164,6 +1173,10 @@ namespace PowerThreadPool
         /// <returns>If the work id exists</returns>
         public bool Pause(string id)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                return false;
+            }
             if (threadPoolTimerDic.TryGetValue(id, out System.Timers.Timer timer))
             {
                 timer.Stop();
@@ -1186,6 +1199,10 @@ namespace PowerThreadPool
         /// <returns>If the work id exists</returns>
         public bool Resume(string id)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                return false;
+            }
             if (threadPoolTimerDic.TryGetValue(id, out System.Timers.Timer timer))
             {
                 timer.Start();
@@ -1216,6 +1233,10 @@ namespace PowerThreadPool
         /// <returns>is succeed</returns>
         public bool Cancel(string id)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                return false;
+            }
             return waitingWorkDic.TryRemove(id, out _);
         }
     }
