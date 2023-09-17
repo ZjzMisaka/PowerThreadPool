@@ -61,11 +61,26 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
             int startCount = 0;
             int idleCount = 0;
-            
-            powerPool.ThreadPoolStart += (s, e) => { lock (lockObj) { ++startCount; } };
-            powerPool.ThreadPoolIdle += (s, e) => { lock (lockObj) { ++idleCount; } };
 
             int doneCount = 0;
+
+            powerPool.ThreadPoolStart += (s, e) => 
+            { 
+                lock (lockObj) 
+                { 
+                    ++startCount; 
+                    doneCount = 0; 
+                } 
+            };
+            powerPool.ThreadPoolIdle += (s, e) => 
+            { 
+                lock (lockObj) 
+                {
+                    ++idleCount;
+                    Assert.Equal(6010100, doneCount);
+                } 
+            };
+            
             for (int i = 0; i < 100; ++i)
             {
                 powerPool.QueueWorkItem(() =>
@@ -120,7 +135,6 @@ namespace UnitTest
 
             Assert.Equal(1, startCount);
             Assert.Equal(1, idleCount);
-            Assert.Equal(6010100, doneCount);
         }
     }
 }
