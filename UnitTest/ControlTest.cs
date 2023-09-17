@@ -251,11 +251,10 @@ namespace UnitTest
             {
             }, (res) =>
             {
-                for (int i = 0; i < 100; ++i)
+                while (true)
                 {
                     Thread.Sleep(100);
                 }
-                resId = "";
             });
             powerPool.Wait();
             Assert.Equal(resId, id);
