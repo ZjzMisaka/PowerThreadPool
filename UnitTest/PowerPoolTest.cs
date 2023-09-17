@@ -85,15 +85,19 @@ namespace UnitTest
             };
 
             string id = "";
+            string resId = "";
             id = powerPool.QueueWorkItem(() =>
             {
                 return 1024;
             }, (res) =>
             {
+                resId = res.ID;
                 Assert.Equal(Status.Succeed, res.Status);
-                Assert.Equal(id, res.ID);
                 Assert.Equal(1024, res.Result);
             });
+            powerPool.Wait();
+            Assert.NotEqual("", id);
+            Assert.Equal(id, resId);
         }
 
         [Fact]
