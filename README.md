@@ -61,10 +61,10 @@ powerPool.QueueWorkItem(() =>
 });
 ```
 ### APIs
-#### [API Summary](API-Summary)  
-- ##### [PowerPool](PowerPool)  
-- ##### [ExcuteResult](ExcuteResult)  
-- ##### [PowerPoolOption](PowerPoolOption)  
-- ##### [DestroyThreadOption](DestroyThreadOption)  
-- ##### [WorkOption](WorkOption)  
-- ##### [TimeoutOption](TimeoutOption)  
+#### [API Summary](https://github.com/ZjzMisaka/PowerThreadPool/wiki/API-Summary)  
+- ##### [PowerPool](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPool)  
+- ##### [ExcuteResult](https://github.com/ZjzMisaka/PowerThreadPool/wiki/ExcuteResult)  
+- ##### [PowerPoolOption](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPoolOption)  
+- ##### [DestroyThreadOption](https://github.com/ZjzMisaka/PowerThreadPool/wiki/DestroyThreadOption)  
+- ##### [WorkOption](https://github.com/ZjzMisaka/PowerThreadPool/wiki/WorkOption)  
+- ##### [TimeoutOption](https://github.com/ZjzMisaka/PowerThreadPool/wiki/TimeoutOption)  
