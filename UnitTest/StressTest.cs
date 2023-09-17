@@ -15,7 +15,7 @@ namespace UnitTest
         private object lockObj = new object();
 
         [Fact]
-         public async Task StressTest1()
+        public async Task StressTest1()
         {
             for (int i = 0; i < 10; ++i)
             {
