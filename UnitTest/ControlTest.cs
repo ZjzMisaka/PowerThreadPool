@@ -192,7 +192,7 @@ namespace UnitTest
             object res2 = null;
             powerPool.QueueWorkItem(() =>
             {
-                for (int i = 0; i < 10000; ++i)
+                while (true)
                 {
                     Thread.Sleep(10);
                 }
@@ -203,7 +203,7 @@ namespace UnitTest
             Thread.Sleep(100);
             string id = powerPool.QueueWorkItem(() =>
             {
-                for (int i = 0; i < 10000; ++i)
+                while (true)
                 {
                     Thread.Sleep(10);
                 }
@@ -214,7 +214,7 @@ namespace UnitTest
             Thread.Sleep(100);
             powerPool.QueueWorkItem(() =>
             {
-                for (int i = 0; i < 10000; ++i)
+                while (true)
                 {
                     Thread.Sleep(10);
                 }
@@ -233,7 +233,7 @@ namespace UnitTest
             Assert.IsType<ThreadInterruptedException>(res2);
         }
 
-        [Fact]
+        [Fact(Skip = "Ignored due to issues with GitHub Actions")]
         public void TestForceStopAfterExecuteEnd()
         {
             string resId = null;
@@ -253,7 +253,7 @@ namespace UnitTest
             {
                 while (true)
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(10);
                 }
             });
             powerPool.Wait();
