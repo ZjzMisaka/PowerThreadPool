@@ -241,7 +241,10 @@ namespace UnitTest
             string id = null;
             powerPool.ThreadEnd += (s, e) =>
             {
-                powerPool.Stop(id, true);
+                if (!powerPool.Stop(id, true))
+                {
+                    Assert.Fail("ID is empty");
+                }
             };
             powerPool.ThreadForceStop += (s, e) =>
             {
