@@ -233,7 +233,7 @@ namespace UnitTest
             Assert.IsType<ThreadInterruptedException>(res2);
         }
 
-        [Fact(Skip = "Ignored due to issues with GitHub Actions")]
+        [Fact]
         public void TestForceStopAfterExecuteEnd()
         {
             string resId = null;
