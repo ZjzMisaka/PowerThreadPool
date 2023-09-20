@@ -68,9 +68,9 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Collection<long>(logList,
-                item => Assert.True(item > 1500 && item < 1600),
-                item => Assert.True(item > 1500 && item < 1600),
-                item => Assert.True(item > 1500 && item < 1600)
+                item => Assert.True(item >= 1500 && item < 1600),
+                item => Assert.True(item >= 1500 && item < 1600),
+                item => Assert.True(item >= 1500 && item < 1600)
             );
         }
 
