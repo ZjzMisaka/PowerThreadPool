@@ -1,7 +1,12 @@
 # PowerThreadPool
 ![Logo](icon.png "Logo")
 
-![Nuget](https://img.shields.io/nuget/v/PowerThreadPool) ![Nuget](https://img.shields.io/nuget/dt/PowerThreadPool)  
+![Nuget](https://img.shields.io/nuget/v/PowerThreadPool)
+![Nuget](https://img.shields.io/nuget/dt/PowerThreadPool)
+![GitHub release (with filter)](https://img.shields.io/github/v/release/ZjzMisaka/PowerThreadPool)
+![GitHub Repo stars](https://img.shields.io/github/stars/ZjzMisaka/PowerThreadPool)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/ZjzMisaka/PowerThreadPool/dotnet.yml)
+
 Enables efficient thread pool management with callback implementation, granular control, customizable concurrency, and support for diverse task submissions.  
 
 Read the [Wiki](https://github.com/ZjzMisaka/PowerThreadPool/wiki) here.  
