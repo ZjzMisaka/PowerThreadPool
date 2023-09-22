@@ -1,4 +1,7 @@
-name: test
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
 
 permissions:
   statuses: write
@@ -37,7 +40,7 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Run Tests and Generate TRX Report
-        run: dotnet test UnitTest/UnitTest.csproj --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
+        run: dotnet test UnitTest/UnitTest.csproj --logger "trx;LogFileName=test-results.trx"
       - name: Publish Unit Test Results
         uses: dorny/test-reporter@v1
         with:
@@ -46,12 +49,9 @@ jobs:
           reporter: 'dotnet-trx'
           path: '**/test-results.trx'
           fail_on_error: false
-      - name: Install ReportGenerator tool
-        run: dotnet tool install --global dotnet-reportgenerator-globaltool
-      - name: Create reports
-        run: reportgenerator "-reports:**/coverage.cobertura.xml" "-targetdir:coverage" -reporttypes:"HtmlInline_AzurePipelines;Cobertura"
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: '**/coverage.cobertura.xml'
+          reporter: 'dotnet-trx'
+          path: '**/test-results.trx'
