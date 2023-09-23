@@ -1,5 +1,6 @@
 ﻿using PowerThreadPool.Collections;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,14 +13,14 @@ namespace UnitTest
         [Fact]
         public void TestDefaultConstructor()
         {
-            var set = new ConcurrentSet<int>();
+            ConcurrentSet<int> set = new ConcurrentSet<int>();
             Assert.Equal(0, set.Count);
         }
 
         [Fact]
         public void TestAddAndCountMethods()
         {
-            var set = new ConcurrentSet<int>();
+            ConcurrentSet<int> set = new ConcurrentSet<int>();
             set.Add(1);
             set.Add(2);
             set.Add(3);
@@ -30,7 +31,7 @@ namespace UnitTest
         [Fact]
         public void TestTryRemoveMethod()
         {
-            var set = new ConcurrentSet<int>();
+            ConcurrentSet<int> set = new ConcurrentSet<int>();
             set.Add(1);
             set.Add(2);
             set.Remove(1);
@@ -42,8 +43,8 @@ namespace UnitTest
         [Fact]
         public void TestConstructorWithItems()
         {
-            var items = Enumerable.Range(1, 3);
-            var set = new ConcurrentSet<int>(items);
+            IEnumerable<int> items = Enumerable.Range(1, 3);
+            ConcurrentSet<int> set = new ConcurrentSet<int>(items);
 
             Assert.Equal(3, set.Count);
             Assert.All(items, item => Assert.Contains(item, set));
@@ -52,13 +53,29 @@ namespace UnitTest
         [Fact]
         public void TestGetEnumerator()
         {
-            var items = Enumerable.Range(1, 3);
-            var set = new ConcurrentSet<int>(items);
+            IEnumerable<int> items = Enumerable.Range(1, 3);
+            ConcurrentSet<int> set = new ConcurrentSet<int>(items);
 
-            var enumeratedItems = new List<int>();
-            foreach (var item in set)
+            List<int> enumeratedItems = new List<int>();
+            foreach (int item in set)
             {
                 enumeratedItems.Add(item);
+            }
+
+            Assert.Equal(items, enumeratedItems);
+        }
+
+        [Fact]
+        public void TestNonGenericGetEnumerator()
+        {
+            IEnumerable<int> items = Enumerable.Range(1, 3);
+            ConcurrentSet<int> set = new ConcurrentSet<int>(items);
+
+            IEnumerable nonGenericSet = set;
+            List<int> enumeratedItems = new List<int>();
+            foreach (int item in nonGenericSet)
+            {
+                enumeratedItems.Add((int)item);
             }
 
             Assert.Equal(items, enumeratedItems);
