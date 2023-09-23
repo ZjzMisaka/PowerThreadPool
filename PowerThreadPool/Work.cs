@@ -22,9 +22,6 @@ namespace PowerThreadPool
         private Func<object[], TResult> function;
         private object[] param;
         private WorkOption<TResult> option;
-        public Func<object[], TResult> Function { get => function; set => function = value; }
-        public object[] Param { get => param; set => param = value; }
-        public WorkOption<TResult> Option { get => option; set => option = value; }
 
         private object lockObj = new object();
 
@@ -60,9 +57,9 @@ namespace PowerThreadPool
 
         public override void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
-            if (Option.Callback != null)
+            if (option.Callback != null)
             {
-                Option.Callback((ExecuteResult<TResult>)executeResult);
+                option.Callback((ExecuteResult<TResult>)executeResult);
             }
             else if (powerPoolOption.DefaultCallback != null)
             {

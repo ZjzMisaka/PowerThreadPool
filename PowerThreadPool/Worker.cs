@@ -8,7 +8,7 @@ public class Worker
     private Thread thread;
 
     private string id;
-    public string Id { get => id; set => id = value; }
+    internal string Id { get => id; set => id = value; }
 
     private AutoResetEvent runSignal = new AutoResetEvent(false);
     private AutoResetEvent waitSignal = new AutoResetEvent(false);
