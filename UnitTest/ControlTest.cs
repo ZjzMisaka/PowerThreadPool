@@ -535,5 +535,32 @@ namespace UnitTest
 
             Assert.False(powerPool.ThreadPoolRunning);
         }
+
+        [Fact]
+        public void TestPauseTimer()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeout = new TimeoutOption() { Duration = 2000, ForceStop = true } });
+            List<long> logList = new List<long>();
+            object lockObj = new object();
+            long start = GetNowSs();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(100);
+                }
+            });
+            Thread.Sleep(500);
+            powerPool.Pause();
+            Thread.Sleep(500);
+            powerPool.Resume();
+            powerPool.Pause(id);
+            Thread.Sleep(500);
+            powerPool.Resume(id);
+            powerPool.Wait();
+            long duration = GetNowSs() - start;
+
+            Assert.True(duration > 3000);
+        }
     }
 }
