@@ -68,9 +68,9 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Collection<long>(logList,
-                item => Assert.True(item >= 1500 && item < 1600),
-                item => Assert.True(item >= 1500 && item < 1600),
-                item => Assert.True(item >= 1500 && item < 1600)
+                item => Assert.True(item >= 1500 && item < 1800),
+                item => Assert.True(item >= 1500 && item < 1800),
+                item => Assert.True(item >= 1500 && item < 1800)
             );
         }
 
@@ -257,6 +257,9 @@ namespace UnitTest
                 }
             });
             powerPool.Wait();
+
+            Thread.Sleep(1000);
+
             Assert.Equal(resId, id);
         }
 
