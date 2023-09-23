@@ -30,16 +30,16 @@ namespace PowerThreadPool
         public event ThreadPoolStartEventHandler ThreadPoolStart;
         public delegate void ThreadPoolIdleEventHandler(object sender, EventArgs e);
         public event ThreadPoolIdleEventHandler ThreadPoolIdle;
-        public delegate void ThreadStartEventHandler(object sender, WorkStartEventArgs e);
-        public event ThreadStartEventHandler ThreadStart;
-        public delegate void ThreadEndEventHandler(object sender, WorkEndEventArgs e);
-        public event ThreadEndEventHandler ThreadEnd;
+        public delegate void WorkStartEventHandler(object sender, WorkStartEventArgs e);
+        public event WorkStartEventHandler WorkStart;
+        public delegate void WorkEndEventHandler(object sender, WorkEndEventArgs e);
+        public event WorkEndEventHandler WorkEnd;
         public delegate void ThreadPoolTimeoutEventHandler(object sender, EventArgs e);
         public event ThreadPoolTimeoutEventHandler ThreadPoolTimeout;
-        public delegate void ThreadTimeoutEventHandler(object sender, TimeoutEventArgs e);
-        public event ThreadTimeoutEventHandler ThreadTimeout;
-        public delegate void ThreadForceStopEventHandler(object sender, ForceStopEventArgs e);
-        public event ThreadForceStopEventHandler ThreadForceStop;
+        public delegate void WorkTimeoutEventHandler(object sender, TimeoutEventArgs e);
+        public event WorkTimeoutEventHandler WorkTimeout;
+        public delegate void ForceStopEventHandler(object sender, ForceStopEventArgs e);
+        public event ForceStopEventHandler ForceStop;
 
         internal delegate void CallbackEndEventHandler(string id);
         internal event CallbackEndEventHandler CallbackEnd;
@@ -611,9 +611,9 @@ namespace PowerThreadPool
                 timer.AutoReset = false;
                 timer.Elapsed += (s, e) =>
                 {
-                    if (ThreadTimeout != null)
+                    if (WorkTimeout != null)
                     {
-                        ThreadTimeout.Invoke(this, new TimeoutEventArgs() { ID = workID });
+                        WorkTimeout.Invoke(this, new TimeoutEventArgs() { ID = workID });
                     }
                     this.Stop(workID, threadTimeoutOption.ForceStop);
                 };
@@ -664,7 +664,7 @@ namespace PowerThreadPool
         /// One thread end
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void OneThreadEnd(ExecuteResultBase executeResult)
+        internal void OneWorkEnd(ExecuteResultBase executeResult)
         {
             System.Timers.Timer timer;
             if (threadPoolTimerDic.TryRemove(executeResult.ID, out timer))
@@ -673,7 +673,7 @@ namespace PowerThreadPool
                 timer.Enabled = false;
             }
 
-            InvokeThreadEndEvent(executeResult);
+            InvokeWorkEndEvent(executeResult);
         }
 
         /// <summary>
@@ -688,9 +688,9 @@ namespace PowerThreadPool
                 timer.Stop();
                 timer.Enabled = false;
             }
-            if (ThreadForceStop != null)
+            if (ForceStop != null)
             {
-                ThreadForceStop.Invoke(this, new ForceStopEventArgs()
+                ForceStop.Invoke(this, new ForceStopEventArgs()
                 {
                     ID = id
                 });
@@ -701,11 +701,11 @@ namespace PowerThreadPool
         /// Invoke thread end event
         /// </summary>
         /// <param name="executeResult"></param>
-        private void InvokeThreadEndEvent(ExecuteResultBase executeResult)
+        private void InvokeWorkEndEvent(ExecuteResultBase executeResult)
         {
-            if (ThreadEnd != null)
+            if (WorkEnd != null)
             {
-                ThreadEnd.Invoke(this, new WorkEndEventArgs()
+                WorkEnd.Invoke(this, new WorkEndEventArgs()
                 {
                     ID = executeResult.ID,
                     Exception = executeResult.Exception,
@@ -719,7 +719,7 @@ namespace PowerThreadPool
         /// Work end
         /// </summary>
         /// <param name="guid"></param>
-        internal void WorkEnd(string guid, bool isForceStop)
+        internal void WorkCallbackEnd(string guid, bool isForceStop)
         {
             if (CallbackEnd != null)
             {
@@ -844,9 +844,9 @@ namespace PowerThreadPool
                                 timer.Start();
                             }
 
-                            if (ThreadStart != null)
+                            if (WorkStart != null)
                             {
-                                ThreadStart.Invoke(this, new WorkStartEventArgs() { ID = work.ID });
+                                WorkStart.Invoke(this, new WorkStartEventArgs() { ID = work.ID });
                             }
                         }
                     }

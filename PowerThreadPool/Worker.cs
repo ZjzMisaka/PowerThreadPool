@@ -51,10 +51,10 @@ public class Worker
                     }
                     executeResult.ID = work.ID;
 
-                    powerPool.OneThreadEnd(executeResult);
+                    powerPool.OneWorkEnd(executeResult);
                     work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
 
-                    powerPool.WorkEnd(workID, false);
+                    powerPool.WorkCallbackEnd(workID, false);
 
                     waitSignal.Set();
                 }
@@ -74,7 +74,7 @@ public class Worker
                     work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
                 }
 
-                powerPool.WorkEnd(workID, true);
+                powerPool.WorkCallbackEnd(workID, true);
 
                 waitSignal.Set();
                 return;

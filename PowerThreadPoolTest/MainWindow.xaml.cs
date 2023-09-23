@@ -60,21 +60,21 @@ namespace PowerThreadPoolTest
             {
                 OutputMsg("ThreadPoolIdle");
             };
-            powerPool.ThreadStart += (s, e) =>
+            powerPool.WorkStart += (s, e) =>
             {
-                OutputMsg("ThreadStart");
+                OutputMsg("WorkStart");
             };
-            powerPool.ThreadEnd += (s, e) =>
+            powerPool.WorkEnd += (s, e) =>
             {
-                OutputMsg("ThreadEnd");
+                OutputMsg("WorkEnd");
             };
-            powerPool.ThreadTimeout += (s, e) =>
+            powerPool.WorkTimeout += (s, e) =>
             {
                 OutputMsg("Thread" + e.ID + ": Timeout");
             };
-            powerPool.ThreadForceStop += (s, e) =>
+            powerPool.ForceStop += (s, e) =>
             {
-                OutputMsg("Thread" + e.ID + ": ThreadForceStop");
+                OutputMsg("Thread" + e.ID + ": ForceStop");
             };
         }
 
