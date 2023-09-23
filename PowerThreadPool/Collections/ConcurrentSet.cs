@@ -24,12 +24,12 @@ namespace PowerThreadPool.Collections
             }
         }
 
-        public void Add(T item)
+        public bool Add(T item)
         {
-            dictionary.TryAdd(item, DummyValue);
+            return dictionary.TryAdd(item, DummyValue);
         }
 
-        internal bool TryRemove(T item)
+        public bool Remove(T item)
         {
             return dictionary.TryRemove(item, out _);
         }
