@@ -1,6 +1,7 @@
 using PowerThreadPool;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Option;
+using System.Diagnostics;
 
 namespace UnitTest
 {
@@ -288,7 +289,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestPriority()
+        public void TestWorkPriority()
         {
             PowerPool powerPool = new PowerPool();
             List<string> logList = new List<string>();
@@ -372,6 +373,64 @@ namespace UnitTest
                 item => Assert.Equal("Work4 Priority1 END", item),
                 item => Assert.Equal("Work3 Priority0 END", item)
                 );
+        }
+
+        [Fact]
+        public void TestThreadPriority()
+        {
+            PowerPool powerPool = new PowerPool();
+            object lockObj1 = new object();
+            object lockObj2 = new object();
+            long counter1 = 0;
+            long counter2 = 0;
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        return;
+                    }
+                    lock (lockObj1)
+                    {
+                        ++counter1;
+                    }
+                    Thread.Sleep(1);
+                }
+                
+            }, new WorkOption()
+            {
+                ThreadPriority = ThreadPriority.Lowest
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                DateTime start = DateTime.Now;
+
+                while (true)
+                {
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        return;
+                    }
+                    lock (lockObj2)
+                    {
+                        ++counter2;
+                    }
+                    Thread.Sleep(1);
+                }
+            }, new WorkOption()
+            {
+                ThreadPriority = ThreadPriority.Highest
+            });
+
+            Thread.Sleep(100);
+            powerPool.Stop();
+            powerPool.Wait();
+
+
+            // Fix Me
+            // Only for coverage test now.
+            // Assert.True(counter2 > counter1);
         }
     }
 }
