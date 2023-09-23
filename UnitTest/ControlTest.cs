@@ -537,7 +537,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestPauseTimer()
+        public void TestPauseWorkTimer()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeout = new TimeoutOption() { Duration = 2000, ForceStop = true } });
             List<long> logList = new List<long>();
@@ -551,12 +551,33 @@ namespace UnitTest
                 }
             });
             Thread.Sleep(500);
-            powerPool.Pause();
-            Thread.Sleep(500);
-            powerPool.Resume();
             powerPool.Pause(id);
-            Thread.Sleep(500);
+            Thread.Sleep(1000);
             powerPool.Resume(id);
+            powerPool.Wait();
+            long duration = GetNowSs() - start;
+
+            Assert.True(duration > 3000);
+        }
+
+        [Fact]
+        public void TestPauseThreadTimer()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { Timeout = new TimeoutOption() { Duration = 2000, ForceStop = true } });
+            List<long> logList = new List<long>();
+            object lockObj = new object();
+            long start = GetNowSs();
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(100);
+                }
+            });
+            Thread.Sleep(500);
+            powerPool.Pause();
+            Thread.Sleep(1000);
+            powerPool.Resume();
             powerPool.Wait();
             long duration = GetNowSs() - start;
 

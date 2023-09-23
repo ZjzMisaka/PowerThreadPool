@@ -1143,13 +1143,6 @@ namespace PowerThreadPool
             {
                 threadPoolTimer.Stop();
             }
-            foreach (string id in threadPoolTimerDic.Keys)
-            {
-                if (threadPoolTimerDic.TryGetValue(id, out System.Timers.Timer timer))
-                {
-                    timer.Stop();
-                }
-            }
             manualResetEvent.Reset();
         }
 
@@ -1162,13 +1155,6 @@ namespace PowerThreadPool
             if (threadPoolTimer != null)
             {
                 threadPoolTimer.Start();
-            }
-            foreach (string id in threadPoolTimerDic.Keys)
-            {
-                if (threadPoolTimerDic.TryGetValue(id, out System.Timers.Timer timer))
-                {
-                    timer.Start();
-                }
             }
             manualResetEvent.Set();
             if (resumeThreadPausedById)
