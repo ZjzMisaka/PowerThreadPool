@@ -313,7 +313,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestStopByID()
+        public async void TestStopByID()
         {
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
@@ -360,8 +360,8 @@ namespace UnitTest
             });
             
             Thread.Sleep(150);
-            powerPool.Stop(id);
-            powerPool.Wait();
+            await powerPool.StopAsync(id);
+            await powerPool.WaitAsync();
 
             Assert.Collection<long>(logList,
                 item => Assert.Equal(0, item),
@@ -371,7 +371,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestCancel()
+        public void TestCancelByID()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
             List<long> logList = new List<long>();
@@ -421,6 +421,119 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(2, logList.Count);
+        }
+
+        [Fact]
+        public void TestCancelAll()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 1 });
+            List<long> logList = new List<long>();
+            powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+                return GetNowSs() - start;
+            }, (res) =>
+            {
+                logList.Add(res.Result);
+            });
+            Thread.Sleep(100);
+            powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+                return GetNowSs() - start;
+            }, (res) =>
+            {
+                logList.Add(res.Result);
+            });
+            Thread.Sleep(100);
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+                return GetNowSs() - start;
+            }, (res) =>
+            {
+                logList.Add(res.Result);
+            });
+
+            powerPool.Cancel();
+            powerPool.Wait();
+
+            Assert.Single(logList);
+        }
+
+        [Fact]
+        public void TestIDEmpty()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            Assert.False(powerPool.Wait(""));
+            Assert.False(powerPool.Pause(""));
+            Assert.False(powerPool.Resume(""));
+            Assert.False(powerPool.Stop(""));
+            Assert.False(powerPool.Cancel(""));
+        }
+
+        [Fact]
+        public void TestStopAfterIdle()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(() =>
+            {
+            });
+
+            Thread.Sleep(1000);
+            Assert.False(powerPool.Stop());
+        }
+
+        [Fact]
+        public void TestWaitByAll()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            powerPool.Wait();
+
+            Assert.False(powerPool.ThreadPoolRunning);
+        }
+
+        [Fact]
+        public void TestWaitByID()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            powerPool.Wait(id);
+
+            Assert.False(powerPool.ThreadPoolRunning);
         }
     }
 }
