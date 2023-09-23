@@ -594,20 +594,20 @@ namespace PowerThreadPool
             }
             excuteResult.ID = workID;
 
-            TimeoutOption threadTimeoutOption = null;
+            TimeoutOption workTimeoutOption = null;
 
             
             if (option.Timeout != null)
             {
-                threadTimeoutOption = option.Timeout;
+                workTimeoutOption = option.Timeout;
             }
             else if (powerPoolOption.DefaultWorkTimeout != null)
             {
-                threadTimeoutOption = powerPoolOption.DefaultWorkTimeout;
+                workTimeoutOption = powerPoolOption.DefaultWorkTimeout;
             }
-            if (threadTimeoutOption != null)
+            if (workTimeoutOption != null)
             {
-                System.Timers.Timer timer = new System.Timers.Timer(threadTimeoutOption.Duration);
+                System.Timers.Timer timer = new System.Timers.Timer(workTimeoutOption.Duration);
                 timer.AutoReset = false;
                 timer.Elapsed += (s, e) =>
                 {
@@ -615,7 +615,7 @@ namespace PowerThreadPool
                     {
                         WorkTimeout.Invoke(this, new TimeoutEventArgs() { ID = workID });
                     }
-                    this.Stop(workID, threadTimeoutOption.ForceStop);
+                    this.Stop(workID, workTimeoutOption.ForceStop);
                 };
 
                 threadPoolTimerDic[workID] = timer;
