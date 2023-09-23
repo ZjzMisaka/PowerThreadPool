@@ -239,11 +239,11 @@ namespace UnitTest
             string resId = null;
             PowerPool powerPool = new PowerPool();
             string id = null;
-            powerPool.ThreadEnd += (s, e) =>
+            powerPool.WorkEnd += (s, e) =>
             {
                 powerPool.Stop(true);
             };
-            powerPool.ThreadForceStop += (s, e) =>
+            powerPool.ForceStop += (s, e) =>
             {
                 resId = e.ID;
             };
