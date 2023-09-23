@@ -41,7 +41,7 @@ namespace PowerThreadPool
                 {
                     lock (lockObj)
                     {
-                        if (this.option.Dependents.TryRemove(workId))
+                        if (this.option.Dependents.Remove(workId))
                         {
                             if (this.option.Dependents.Count == 0)
                             {
