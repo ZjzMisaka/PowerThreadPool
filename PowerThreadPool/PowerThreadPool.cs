@@ -930,9 +930,11 @@ namespace PowerThreadPool
         {
             while (true)
             {
-                if (RunningWorkerCount > 0)
+                Worker worker = runningWorkerDic.Values.FirstOrDefault();
+
+                if (worker != null)
                 {
-                    runningWorkerDic.Values.First().Wait();
+                    worker.Wait();
                 }
                 else
                 {
