@@ -2,13 +2,20 @@
 using System;
 using PowerThreadPool;
 using PowerThreadPool.Option;
+using System.Collections.Concurrent;
+using PowerThreadPool.Collections;
 
 public class Worker
 {
     private Thread thread;
 
     private string id;
-    internal string Id { get => id; set => id = value; }
+    internal string ID { get => id; set => id = value; }
+
+    private PriorityQueue<string> waitingWorkIdQueue = new PriorityQueue<string>();
+    private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+
+    private ConcurrentDictionary<string, System.Timers.Timer> threadPoolTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
 
     private AutoResetEvent runSignal = new AutoResetEvent(false);
     private AutoResetEvent waitSignal = new AutoResetEvent(false);
@@ -18,7 +25,7 @@ public class Worker
 
     internal Worker(PowerPool powerPool)
     {
-        this.Id = Guid.NewGuid().ToString();
+        this.ID = Guid.NewGuid().ToString();
         thread = new Thread(() =>
         {
             try
@@ -98,7 +105,7 @@ public class Worker
     {
         this.work = work;
         this.workID = work.ID;
-        ThreadPriority threadPriority = work.GetThreadPriority();
+        ThreadPriority threadPriority = work.ThreadPriority;
         if (thread.Priority != threadPriority)
         {
             thread.Priority = threadPriority;
@@ -110,5 +117,17 @@ public class Worker
     {
         killFlag = true;
         runSignal.Set();
+    }
+
+    internal bool Pause(string id)
+    {
+        // TODO
+        throw new NotImplementedException();
+    }
+
+    internal bool Resume(string id)
+    {
+        // TODO
+        throw new NotImplementedException();
     }
 }
