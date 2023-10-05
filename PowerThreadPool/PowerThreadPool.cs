@@ -62,32 +62,38 @@ namespace PowerThreadPool
                 return idleWorkerQueue.Count;
             }
         }
-        //public int WaitingWorkCount
-        //{
-        //    get 
-        //    { 
-        //        return waitingWorkDic.Count; 
-        //    }
-        //}
-        //public IEnumerable<string> WaitingWorkList
-        //{
-        //    get
-        //    {
-        //        return waitingWorkDic.Keys.ToList();
-        //    }
-        //}
+        public int WaitingWorkCount
+        {
+            get
+            {
+                return settedWorkDic.Count - runningWorkerDic.Count;
+            }
+        }
+        public IEnumerable<string> WaitingWorkList
+        {
+            get
+            {
+                List<string> list = settedWorkDic.Keys.ToList();
+                List<Worker> workerList = runningWorkerDic.Values.ToList();
+                foreach (Worker worker in workerList) 
+                {
+                    list.Remove(worker.WorkID);
+                }
+                return list;
+            }
+        }
         public int RunningWorkerCount
         {
             get 
             {
-                return settedWorkDic.Count;
+                return runningWorkerDic.Count;
             }
         }
         public IEnumerable<string> RunningWorkerList
         {
             get
             {
-                return settedWorkDic.Keys.ToList();
+                return runningWorkerDic.Keys.ToList();
             }
         }
 

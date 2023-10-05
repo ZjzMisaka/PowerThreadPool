@@ -23,6 +23,7 @@ public class Worker
     private AutoResetEvent runSignal = new AutoResetEvent(false);
     private ConcurrentDictionary<string, AutoResetEvent> waitSignalDic = new ConcurrentDictionary<string, AutoResetEvent>();
     private string workID;
+    internal string WorkID { get => workID; set => workID = value; }
     private WorkBase work;
     private bool killFlag = false;
 
