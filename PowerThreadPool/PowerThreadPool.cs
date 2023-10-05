@@ -602,8 +602,6 @@ namespace PowerThreadPool
             }
             excuteResult.ID = workID;
 
-            TimeoutOption workTimeoutOption = null;
-
             
             if (option.Timeout == null && powerPoolOption.DefaultWorkTimeout != null)
             {

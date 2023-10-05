@@ -10,7 +10,6 @@ using System.Linq;
 public class Worker
 {
     private Thread thread;
-    object lockObj = new object();
 
     private string id;
     internal string ID { get => id; set => id = value; }
@@ -121,15 +120,12 @@ public class Worker
 
     public bool Wait(string workID)
     {
-        lock (lockObj)
+        if (waitSignalDic.TryGetValue(workID, out AutoResetEvent autoResetEvent))
         {
-            if (this.workID == workID)
-            {
-                waitSignalDic[workID].WaitOne();
-                return true;
-            }
-            return false;
+            autoResetEvent.WaitOne();
+            return true;
         }
+        return false;
     }
 
     public void ForceStop()
