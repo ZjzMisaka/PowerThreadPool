@@ -18,7 +18,7 @@ namespace PowerThreadPool
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
-        private ConcurrentQueue<Worker> idleWorkerQueue = new ConcurrentQueue<Worker>();
+        internal ConcurrentQueue<Worker> idleWorkerQueue = new ConcurrentQueue<Worker>();
         private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
         
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
@@ -45,7 +45,6 @@ namespace PowerThreadPool
         internal event CallbackEndEventHandler CallbackEnd;
 
         private System.Timers.Timer threadPoolTimer;
-        private ConcurrentDictionary<string, System.Timers.Timer> idleWorkerTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
 
         private object lockObj = new object();
 
@@ -729,34 +728,6 @@ namespace PowerThreadPool
                 runningWorkerDic[worker.ID] = worker;
                 idleWorkerQueue.Enqueue(worker);
                 // SetDestroyTimerForIdleWorker(worker.Id);
-            }
-        }
-
-        /// <summary>
-        /// Set destroy timer for idle worker
-        /// </summary>
-        private void SetDestroyTimerForIdleWorker(string workerID)
-        {
-            if (powerPoolOption.DestroyThreadOption != null)
-            {
-                System.Timers.Timer timer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
-                timer.AutoReset = false;
-                timer.Elapsed += (s, e) =>
-                {
-                    if (IdleThreadCount > powerPoolOption.DestroyThreadOption.MinThreads)
-                    {
-                        Worker worker;
-                        if (idleWorkerQueue.TryDequeue(out worker))
-                        {
-                            worker.Kill();
-
-                            timer.Stop();
-                            idleWorkerTimerDic.TryRemove(workerID, out _);
-                        }
-                    }
-                };
-                timer.Start();
-                idleWorkerTimerDic[workerID] = timer;
             }
         }
 

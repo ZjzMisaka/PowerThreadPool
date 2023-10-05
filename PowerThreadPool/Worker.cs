@@ -151,7 +151,28 @@ public class Worker
 
     private void AssignWork(PowerPool powerPool)
     {
-        WorkBase work = waitingWorkDic[waitingWorkIdQueue.Dequeue()];
+        string waitingWorkId = waitingWorkIdQueue.Dequeue();
+        if (waitingWorkId == null)
+        {
+            PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
+            if (powerPoolOption.DestroyThreadOption != null)
+            {
+                System.Timers.Timer timer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
+                timer.AutoReset = false;
+                timer.Elapsed += (s, e) =>
+                {
+                    if (powerPool.idleWorkerQueue.TryDequeue(out _))
+                    {
+                        Kill();
+
+                        timer.Stop();
+                    }
+                };
+                timer.Start();
+            }
+        }
+
+        WorkBase work = waitingWorkDic[waitingWorkId];
 
         TimeoutOption workTimeoutOption = work.WorkTimeoutOption;
         if (workTimeoutOption != null)
