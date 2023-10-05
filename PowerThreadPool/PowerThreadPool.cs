@@ -986,21 +986,21 @@ namespace PowerThreadPool
             }
 
             bool res = false;
-            foreach (string runningId in settedWorkDic.Keys)
+            foreach (string settedID in settedWorkDic.Keys)
             {
-                if (id == runningId)
+                if (id == settedID)
                 {
                     if (forceStop)
                     {
-                        if (settedWorkDic.TryRemove(runningId, out Worker workerTpStop))
+                        if (settedWorkDic.TryRemove(settedID, out Worker workerToStop))
                         {
-                            workerTpStop.ForceStop();
+                            workerToStop.ForceStop();
                             res = true;
                         }
                     }
                     else
                     {
-                        cancellationTokenSourceDic[runningId].Cancel();
+                        cancellationTokenSourceDic[settedID].Cancel();
                         res = true;
                     }
                     
