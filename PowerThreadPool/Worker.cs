@@ -4,6 +4,7 @@ using PowerThreadPool;
 using PowerThreadPool.Option;
 using System.Collections.Concurrent;
 using PowerThreadPool.Collections;
+using PowerThreadPool.EventArguments;
 
 public class Worker
 {
@@ -15,13 +16,15 @@ public class Worker
     private PriorityQueue<string> waitingWorkIdQueue = new PriorityQueue<string>();
     private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
 
-    private ConcurrentDictionary<string, System.Timers.Timer> threadPoolTimerDic = new ConcurrentDictionary<string, System.Timers.Timer>();
+    private System.Timers.Timer timer;
 
     private AutoResetEvent runSignal = new AutoResetEvent(false);
     private AutoResetEvent waitSignal = new AutoResetEvent(false);
     private string workID;
     private WorkBase work;
     private bool killFlag = false;
+
+    private bool running = false;
 
     internal Worker(PowerPool powerPool)
     {
@@ -38,6 +41,8 @@ public class Worker
                     {
                         return;
                     }
+
+                    running = true;
 
                     thread.Name = work.ID;
 
@@ -64,6 +69,10 @@ public class Worker
                     powerPool.WorkCallbackEnd(workID, false);
 
                     waitSignal.Set();
+
+                    running = false;
+
+                    AssignWork(powerPool);
                 }
             }
             catch (ThreadInterruptedException ex)
@@ -101,8 +110,38 @@ public class Worker
         thread.Join();
     }
 
-    internal void AssignTask(WorkBase work)
+    internal void SetWork(WorkBase work, PowerPool powerPool)
     {
+        waitingWorkIdQueue.Enqueue(work.ID, work.WorkPriority);
+        waitingWorkDic[work.ID] = work;
+
+        if (!running)
+        {
+            AssignWork(powerPool);
+        }
+    }
+
+    private void AssignWork(PowerPool powerPool)
+    {
+        WorkBase work = waitingWorkDic[waitingWorkIdQueue.Dequeue()];
+
+        TimeoutOption workTimeoutOption = work.WorkTimeoutOption;
+        if (workTimeoutOption != null)
+        {
+            System.Timers.Timer timer = new System.Timers.Timer(workTimeoutOption.Duration);
+            timer.AutoReset = false;
+            timer.Elapsed += (s, e) =>
+            {
+                powerPool.OnWorkTimeout(powerPool, new TimeoutEventArgs() { ID = workID });
+                powerPool.Stop(workID, workTimeoutOption.ForceStop);
+            };
+
+            this.timer = timer;
+        }
+
+
+
+
         this.work = work;
         this.workID = work.ID;
         ThreadPriority threadPriority = work.ThreadPriority;

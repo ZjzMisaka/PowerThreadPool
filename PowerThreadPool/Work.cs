@@ -17,6 +17,7 @@ namespace PowerThreadPool
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
         internal abstract ThreadPriority ThreadPriority { get; }
         internal abstract int WorkPriority { get; }
+        internal abstract TimeoutOption WorkTimeoutOption { get; }
     }
     internal class Work<TResult> : WorkBase
     {
@@ -28,6 +29,7 @@ namespace PowerThreadPool
 
         internal override int WorkPriority { get => option.WorkPriority; }
         internal override ThreadPriority ThreadPriority { get => option.ThreadPriority; }
+        internal override TimeoutOption WorkTimeoutOption { get => option.Timeout; }
 
         public Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
         {

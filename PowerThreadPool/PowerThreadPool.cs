@@ -600,29 +600,10 @@ namespace PowerThreadPool
             TimeoutOption workTimeoutOption = null;
 
             
-            if (option.Timeout != null)
+            if (option.Timeout == null && powerPoolOption.DefaultWorkTimeout != null)
             {
-                workTimeoutOption = option.Timeout;
+                option.Timeout = powerPoolOption.DefaultWorkTimeout;
             }
-            else if (powerPoolOption.DefaultWorkTimeout != null)
-            {
-                workTimeoutOption = powerPoolOption.DefaultWorkTimeout;
-            }
-            //if (workTimeoutOption != null)
-            //{
-            //    System.Timers.Timer timer = new System.Timers.Timer(workTimeoutOption.Duration);
-            //    timer.AutoReset = false;
-            //    timer.Elapsed += (s, e) =>
-            //    {
-            //        if (WorkTimeout != null)
-            //        {
-            //            WorkTimeout.Invoke(this, new TimeoutEventArgs() { ID = workID });
-            //        }
-            //        this.Stop(workID, workTimeoutOption.ForceStop);
-            //    };
-
-            //    threadPoolTimerDic[workID] = timer;
-            //}
             
             Work<TResult> work = new Work<TResult>(this, workID, function, param, option);
             manualResetEventDic[workID] = new ManualResetEvent(true);
@@ -782,7 +763,7 @@ namespace PowerThreadPool
             Worker worker = GetWorker();
 
             settedWorkDic[work.ID] = worker;
-            worker.AssignTask(work);
+            worker.SetWork(work, this);
 
             //if (threadPoolTimerDic.TryGetValue(work.ID, out System.Timers.Timer timer))
             //{
@@ -1183,6 +1164,14 @@ namespace PowerThreadPool
         {
             // TODO
             return true;
+        }
+
+        public void OnWorkTimeout(object sender, TimeoutEventArgs e)
+        {
+            if (WorkTimeout != null)
+            {
+                WorkTimeout.Invoke(this, e);
+            }
         }
     }
 }
