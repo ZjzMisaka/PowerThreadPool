@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using PowerThreadPool.Collections;
 using PowerThreadPool.EventArguments;
 using System.Linq;
+using System.Collections.Generic;
 
 public class Worker
 {
@@ -14,8 +15,8 @@ public class Worker
     private string id;
     internal string ID { get => id; set => id = value; }
 
-    private PriorityQueue<string> waitingWorkIdQueue = new PriorityQueue<string>();
-    private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+    internal PriorityQueue<string> waitingWorkIdQueue = new PriorityQueue<string>();
+    internal ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
 
     private System.Timers.Timer timer;
 
@@ -27,6 +28,16 @@ public class Worker
     private bool killFlag = false;
 
     private bool running = false;
+
+    private AutoResetEvent stealSignal = new AutoResetEvent(false);
+
+    internal int WaittingWorkCount
+    {
+        get 
+        { 
+            return waitingWorkIdQueue.Count;
+        }
+    }
 
     internal Worker(PowerPool powerPool)
     {
@@ -147,11 +158,32 @@ public class Worker
 
     private void AssignWork(PowerPool powerPool)
     {
+        stealSignal.WaitOne();
+        waitingWorkIdQueue.assignSignal.Reset();
         string waitingWorkId = waitingWorkIdQueue.Dequeue();
+        waitingWorkIdQueue.assignSignal.Set();
 
         if (waitingWorkId == null)
         {
-            // TODO Work stealing
+            Worker worker = null;
+            List<Worker> workerList = powerPool.runningWorkerDic.Values.ToList();
+            int max = 0;
+            foreach (Worker runningWorker in workerList)
+            {
+                if (runningWorker.WaittingWorkCount > max)
+                {
+                    max = runningWorker.WaittingWorkCount;
+                    worker = runningWorker;
+                }
+            }
+            if (worker != null) 
+            {
+                string stolenWorkID = worker.waitingWorkIdQueue.Steal(worker.stealSignal, 1);
+                if (worker.waitingWorkDic.TryRemove(workID, out WorkBase stolenWork))
+                {
+                    SetWork(stolenWork, powerPool);
+                }
+            }
         }
 
         if (waitingWorkId == null)

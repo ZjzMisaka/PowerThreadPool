@@ -22,7 +22,7 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
         
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
-        private ConcurrentDictionary<string, Worker> runningWorkerDic = new ConcurrentDictionary<string, Worker>(); // new
+        internal ConcurrentDictionary<string, Worker> runningWorkerDic = new ConcurrentDictionary<string, Worker>(); // new
         private PowerPoolOption powerPoolOption;
         public PowerPoolOption PowerPoolOption { get => powerPoolOption; set => powerPoolOption = value; }
 
@@ -762,8 +762,17 @@ namespace PowerThreadPool
                     runningWorkerDic[worker.ID] = worker;
                 }
                 else
-                { 
-                    // TODO Get low waitting worker
+                {
+                    List<Worker> workerList = runningWorkerDic.Values.ToList();
+                    int min = int.MaxValue;
+                    foreach (Worker runningWorker in workerList)
+                    {
+                        if (runningWorker.WaittingWorkCount < min)
+                        { 
+                            min = runningWorker.WaittingWorkCount;
+                            worker = runningWorker;
+                        }
+                    }
                 }
             }
 
