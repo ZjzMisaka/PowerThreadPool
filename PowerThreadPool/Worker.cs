@@ -152,6 +152,12 @@ public class Worker
     private void AssignWork(PowerPool powerPool)
     {
         string waitingWorkId = waitingWorkIdQueue.Dequeue();
+
+        if (waitingWorkId == null)
+        {
+            // TODO Work stealing
+        }
+
         if (waitingWorkId == null)
         {
             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
