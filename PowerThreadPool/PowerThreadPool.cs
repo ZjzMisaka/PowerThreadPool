@@ -868,7 +868,7 @@ namespace PowerThreadPool
         {
             while (true)
             {
-                Worker worker = settedWorkDic.Values.FirstOrDefault();
+                Worker worker = runningWorkerDic.Values.FirstOrDefault();
 
                 if (worker != null)
                 {
@@ -894,8 +894,7 @@ namespace PowerThreadPool
             }
             if (settedWorkDic.TryGetValue(id, out Worker worker))
             {
-                worker.Wait();
-                return true;
+                return worker.Wait(id);
             }
             return false;
         }
@@ -1034,7 +1033,9 @@ namespace PowerThreadPool
             {
                 if (Thread.CurrentThread.Name == id)
                 {
+                    settedWorkDic[id].PauseTimer();
                     manualResetEventDic[id].WaitOne();
+                    settedWorkDic[id].ResumeTimer();
                 }
             }
         }
@@ -1116,9 +1117,10 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            if (settedWorkDic.TryGetValue(id, out Worker worker))
+            if (manualResetEventDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
             {
-                return worker.Pause(id);
+                manualResetEvent.Reset();
+                return true;
             }
             else
             {
@@ -1137,9 +1139,10 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            if (settedWorkDic.TryGetValue(id, out Worker worker))
+            if (manualResetEventDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
             {
-                return worker.Resume(id);
+                manualResetEvent.Set();
+                return true;
             }
             else
             {

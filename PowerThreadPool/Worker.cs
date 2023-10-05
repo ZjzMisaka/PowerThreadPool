@@ -5,10 +5,12 @@ using PowerThreadPool.Option;
 using System.Collections.Concurrent;
 using PowerThreadPool.Collections;
 using PowerThreadPool.EventArguments;
+using System.Linq;
 
 public class Worker
 {
     private Thread thread;
+    object lockObj = new object();
 
     private string id;
     internal string ID { get => id; set => id = value; }
@@ -19,7 +21,7 @@ public class Worker
     private System.Timers.Timer timer;
 
     private AutoResetEvent runSignal = new AutoResetEvent(false);
-    private AutoResetEvent waitSignal = new AutoResetEvent(false);
+    private ConcurrentDictionary<string, AutoResetEvent> waitSignalDic = new ConcurrentDictionary<string, AutoResetEvent>();
     private string workID;
     private WorkBase work;
     private bool killFlag = false;
@@ -68,7 +70,7 @@ public class Worker
 
                     powerPool.WorkCallbackEnd(workID, false);
 
-                    waitSignal.Set();
+                    waitSignalDic[workID].Set();
 
                     running = false;
 
@@ -92,7 +94,7 @@ public class Worker
 
                 powerPool.WorkCallbackEnd(workID, true);
 
-                waitSignal.Set();
+                waitSignalDic[workID].Set();
                 return;
             }
         });
@@ -101,7 +103,32 @@ public class Worker
 
     public void Wait()
     {
-        waitSignal.WaitOne();
+        while (true)
+        {
+            AutoResetEvent autoResetEvent = waitSignalDic.Values.FirstOrDefault();
+
+            if (autoResetEvent != null)
+            {
+                autoResetEvent.WaitOne();
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+
+    public bool Wait(string workID)
+    {
+        lock (lockObj)
+        {
+            if (this.workID == workID)
+            {
+                waitSignalDic[workID].WaitOne();
+                return true;
+            }
+            return false;
+        }
     }
 
     public void ForceStop()
@@ -139,9 +166,6 @@ public class Worker
             this.timer = timer;
         }
 
-
-
-
         this.work = work;
         this.workID = work.ID;
         ThreadPriority threadPriority = work.ThreadPriority;
@@ -158,15 +182,13 @@ public class Worker
         runSignal.Set();
     }
 
-    internal bool Pause(string id)
-    {
-        // TODO
-        throw new NotImplementedException();
+    internal void PauseTimer()
+    { 
+        timer.Stop();
     }
 
-    internal bool Resume(string id)
+    internal void ResumeTimer()
     {
-        // TODO
-        throw new NotImplementedException();
+        timer.Start();
     }
 }
