@@ -472,11 +472,6 @@ namespace UnitTest
             Thread.Sleep(100);
             powerPool.Stop();
             powerPool.Wait();
-
-
-            // Fix Me
-            // Only for coverage test now.
-            // Assert.True(counter2 > counter1);
         }
 
         [Fact]

@@ -58,6 +58,7 @@ public class Worker
                     running = true;
 
                     thread.Name = work.ID;
+                    powerPool.OnWorkStart(work.ID);
 
                     ExecuteResultBase executeResult;
                     try
@@ -119,23 +120,6 @@ public class Worker
         });
         thread.Start();
     }
-
-    //public void Wait()
-    //{
-    //    while (true)
-    //    {
-    //        AutoResetEvent autoResetEvent = waitSignalDic.Values.FirstOrDefault();
-
-    //        if (autoResetEvent != null)
-    //        {
-    //            autoResetEvent.WaitOne();
-    //        }
-    //        else
-    //        {
-    //            break;
-    //        }
-    //    }
-    //}
 
     public bool Wait(string workID)
     {

@@ -738,16 +738,6 @@ namespace PowerThreadPool
 
             settedWorkDic[work.ID] = worker;
             worker.SetWork(work, this);
-
-            //if (threadPoolTimerDic.TryGetValue(work.ID, out System.Timers.Timer timer))
-            //{
-            //    timer.Start();
-            //}
-
-            //if (WorkStart != null)
-            //{
-            //    WorkStart.Invoke(this, new WorkStartEventArgs() { ID = work.ID });
-            //}
         }
 
         private Worker GetWorker()
@@ -1150,6 +1140,14 @@ namespace PowerThreadPool
             if (WorkTimeout != null)
             {
                 WorkTimeout.Invoke(this, e);
+            }
+        }
+
+        internal void OnWorkStart(string workID)
+        {
+            if (WorkStart != null)
+            {
+                WorkStart.Invoke(this, new WorkStartEventArgs() { ID = workID });
             }
         }
     }
