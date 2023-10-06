@@ -29,7 +29,7 @@ public class Worker
 
     private bool running = false;
 
-    private AutoResetEvent stealSignal = new AutoResetEvent(false);
+    private AutoResetEvent stealSignal = new AutoResetEvent(true);
 
     internal int WaittingWorkCount
     {

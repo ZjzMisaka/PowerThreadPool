@@ -10,7 +10,7 @@ namespace PowerThreadPool.Collections
     {
         private SortedDictionary<int, ConcurrentQueue<T>> queueDic;
 
-        internal AutoResetEvent assignSignal = new AutoResetEvent(false);
+        internal AutoResetEvent assignSignal = new AutoResetEvent(true);
 
         public PriorityQueue()
         {
