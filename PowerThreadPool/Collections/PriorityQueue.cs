@@ -39,6 +39,7 @@ namespace PowerThreadPool.Collections
             }
 
             assignSignal.WaitOne();
+            assignSignal.Set();
 
             stealSignal.Reset();
 

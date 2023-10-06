@@ -81,7 +81,10 @@ public class Worker
 
                     powerPool.WorkCallbackEnd(workID, false);
 
-                    waitSignalDic[workID].Set();
+                    if (waitSignalDic.TryRemove(workID, out AutoResetEvent waitSignal))
+                    {
+                        waitSignal.Set();
+                    }
 
                     running = false;
 
@@ -105,7 +108,10 @@ public class Worker
 
                 powerPool.WorkCallbackEnd(workID, true);
 
-                waitSignalDic[workID].Set();
+                if (waitSignalDic.TryRemove(workID, out AutoResetEvent waitSignal))
+                {
+                    waitSignal.Set();
+                }
                 return;
             }
         });
@@ -150,6 +156,8 @@ public class Worker
         waitingWorkIdQueue.Enqueue(work.ID, work.WorkPriority);
         waitingWorkDic[work.ID] = work;
 
+        waitSignalDic[work.ID] = new AutoResetEvent(false);
+
         if (!running)
         {
             AssignWork(powerPool);
@@ -159,6 +167,7 @@ public class Worker
     private void AssignWork(PowerPool powerPool)
     {
         stealSignal.WaitOne();
+        stealSignal.Set();
         waitingWorkIdQueue.assignSignal.Reset();
         string waitingWorkId = waitingWorkIdQueue.Dequeue();
         waitingWorkIdQueue.assignSignal.Set();
@@ -191,6 +200,7 @@ public class Worker
             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
             if (powerPoolOption.DestroyThreadOption != null)
             {
+                powerPool.idleWorkerQueue.Enqueue(this);
                 System.Timers.Timer timer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
                 timer.AutoReset = false;
                 timer.Elapsed += (s, e) =>
@@ -204,6 +214,10 @@ public class Worker
                 };
                 timer.Start();
             }
+
+            powerPool.runningWorkerDic.TryRemove(ID, out _);
+
+            return;
         }
 
         WorkBase work = waitingWorkDic[waitingWorkId];

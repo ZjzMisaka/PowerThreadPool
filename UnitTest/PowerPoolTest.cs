@@ -499,6 +499,8 @@ namespace UnitTest
 
             powerPool.Wait();
 
+            Thread.Sleep(10);
+
             Assert.Equal(1, powerPool.IdleThreadCount);
         }
 
