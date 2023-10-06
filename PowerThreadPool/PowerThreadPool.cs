@@ -13,8 +13,9 @@ namespace PowerThreadPool
 {
     public class PowerPool
     {
-        private ManualResetEvent manualResetEvent = new ManualResetEvent(true);
-        private ConcurrentDictionary<string, ManualResetEvent> manualResetEventDic = new ConcurrentDictionary<string, ManualResetEvent>();
+        private ManualResetEvent waitAllSignal = new ManualResetEvent(false);
+        private ManualResetEvent pauseSignal = new ManualResetEvent(true);
+        private ConcurrentDictionary<string, ManualResetEvent> pauseSignalDic = new ConcurrentDictionary<string, ManualResetEvent>();
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
@@ -609,7 +610,7 @@ namespace PowerThreadPool
             }
             
             Work<TResult> work = new Work<TResult>(this, workID, function, param, option);
-            manualResetEventDic[workID] = new ManualResetEvent(true);
+            pauseSignalDic[workID] = new ManualResetEvent(true);
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSourceDic[workID] = cancellationTokenSource;
 
@@ -696,10 +697,8 @@ namespace PowerThreadPool
 
             settedWorkDic.TryRemove(guid, out _);
 
-            manualResetEventDic.TryRemove(guid, out _);
+            pauseSignalDic.TryRemove(guid, out _);
             cancellationTokenSourceDic.TryRemove(guid, out _);
-
-            CheckIdle();
         }
 
         /// <summary>
@@ -813,10 +812,11 @@ namespace PowerThreadPool
         /// <summary>
         /// Check if thread pool is idle
         /// </summary>
-        private void CheckIdle()
+        internal void CheckIdle()
         {
             if (RunningWorkerCount == 0 && threadPoolRunning)
             {
+                waitAllSignal.Set();
                 threadPoolRunning = false;
                 if (threadPoolStopping)
                 {
@@ -834,8 +834,8 @@ namespace PowerThreadPool
                     threadPoolTimer.Enabled = false;
                 }
 
-                manualResetEvent = new ManualResetEvent(true);
-                manualResetEventDic = new ConcurrentDictionary<string, ManualResetEvent>();
+                pauseSignal = new ManualResetEvent(true);
+                pauseSignalDic = new ConcurrentDictionary<string, ManualResetEvent>();
                 cancellationTokenSource = new CancellationTokenSource();
                 cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
@@ -850,19 +850,11 @@ namespace PowerThreadPool
         /// </summary>
         public void Wait()
         {
-            while (true)
+            if (!ThreadPoolRunning)
             {
-                Worker worker = runningWorkerDic.Values.FirstOrDefault();
-
-                if (worker != null)
-                {
-                    worker.Wait();
-                }
-                else
-                {
-                    break;
-                }
+                return;
             }
+            waitAllSignal.WaitOne();
         }
 
         /// <summary>
@@ -1012,13 +1004,13 @@ namespace PowerThreadPool
         /// </summary>
         public void PauseIfRequested()
         {
-            manualResetEvent.WaitOne();
-            foreach (string id in manualResetEventDic.Keys)
+            pauseSignal.WaitOne();
+            foreach (string id in pauseSignalDic.Keys)
             {
                 if (Thread.CurrentThread.Name == id)
                 {
                     settedWorkDic[id].PauseTimer();
-                    manualResetEventDic[id].WaitOne();
+                    pauseSignalDic[id].WaitOne();
                     settedWorkDic[id].ResumeTimer();
                 }
             }
@@ -1067,7 +1059,7 @@ namespace PowerThreadPool
             {
                 threadPoolTimer.Stop();
             }
-            manualResetEvent.Reset();
+            pauseSignal.Reset();
         }
 
         /// <summary>
@@ -1080,10 +1072,10 @@ namespace PowerThreadPool
             {
                 threadPoolTimer.Start();
             }
-            manualResetEvent.Set();
+            pauseSignal.Set();
             if (resumeThreadPausedById)
             {
-                foreach (ManualResetEvent manualResetEvent in manualResetEventDic.Values)
+                foreach (ManualResetEvent manualResetEvent in pauseSignalDic.Values)
                 {
                     manualResetEvent.Set();
                 }
@@ -1101,7 +1093,7 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            if (manualResetEventDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
+            if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
             {
                 manualResetEvent.Reset();
                 return true;
@@ -1123,7 +1115,7 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            if (manualResetEventDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
+            if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
             {
                 manualResetEvent.Set();
                 return true;

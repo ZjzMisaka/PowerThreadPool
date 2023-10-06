@@ -89,6 +89,8 @@ public class Worker
                     running = false;
 
                     AssignWork(powerPool);
+
+                    powerPool.CheckIdle();
                 }
             }
             catch (ThreadInterruptedException ex)
@@ -118,22 +120,22 @@ public class Worker
         thread.Start();
     }
 
-    public void Wait()
-    {
-        while (true)
-        {
-            AutoResetEvent autoResetEvent = waitSignalDic.Values.FirstOrDefault();
+    //public void Wait()
+    //{
+    //    while (true)
+    //    {
+    //        AutoResetEvent autoResetEvent = waitSignalDic.Values.FirstOrDefault();
 
-            if (autoResetEvent != null)
-            {
-                autoResetEvent.WaitOne();
-            }
-            else
-            {
-                break;
-            }
-        }
-    }
+    //        if (autoResetEvent != null)
+    //        {
+    //            autoResetEvent.WaitOne();
+    //        }
+    //        else
+    //        {
+    //            break;
+    //        }
+    //    }
+    //}
 
     public bool Wait(string workID)
     {
