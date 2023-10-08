@@ -90,6 +90,7 @@ public class Worker
                     running = false;
 
                     AssignWork(powerPool);
+                    powerPool.runningWorkerDic.TryRemove(ID, out _);
 
                     powerPool.CheckIdle();
                 }
@@ -115,6 +116,11 @@ public class Worker
                 {
                     waitSignal.Set();
                 }
+
+                powerPool.runningWorkerDic.TryRemove(ID, out _);
+
+                powerPool.CheckIdle();
+
                 return;
             }
         });
@@ -201,8 +207,6 @@ public class Worker
                 timer.Start();
             }
 
-            powerPool.runningWorkerDic.TryRemove(ID, out _);
-
             return;
         }
 
@@ -218,6 +222,7 @@ public class Worker
                 powerPool.OnWorkTimeout(powerPool, new TimeoutEventArgs() { ID = workID });
                 powerPool.Stop(workID, workTimeoutOption.ForceStop);
             };
+            timer.Start();
 
             this.timer = timer;
         }

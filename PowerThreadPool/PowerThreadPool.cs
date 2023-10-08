@@ -614,13 +614,12 @@ namespace PowerThreadPool
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSourceDic[workID] = cancellationTokenSource;
 
-            lock (lockObj)
+            if (option.Dependents != null && option.Dependents.Count > 0)
             {
-                if (option.Dependents != null && option.Dependents.Count > 0)
-                {
-                    waitingDependentDic[workID] = work;
-                }
-
+                waitingDependentDic[workID] = work;
+            }
+            else
+            {
                 CheckThreadPoolStart();
                 SetWork(work);
             }
@@ -722,7 +721,6 @@ namespace PowerThreadPool
             while (IdleThreadCount < minThreads)
             {
                 Worker worker = new Worker(this);
-                runningWorkerDic[worker.ID] = worker;
                 idleWorkerQueue.Enqueue(worker);
                 // SetDestroyTimerForIdleWorker(worker.Id);
             }
@@ -737,6 +735,8 @@ namespace PowerThreadPool
             Worker worker = GetWorker();
 
             settedWorkDic[work.ID] = worker;
+            runningWorkerDic[worker.ID] = worker;
+
             worker.SetWork(work, this);
         }
 
@@ -748,7 +748,6 @@ namespace PowerThreadPool
                 if (runningWorkerDic.Count < powerPoolOption.MaxThreads)
                 {
                     worker = new Worker(this);
-                    runningWorkerDic[worker.ID] = worker;
                 }
                 else
                 {
