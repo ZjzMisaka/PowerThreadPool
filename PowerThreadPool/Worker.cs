@@ -244,12 +244,18 @@ public class Worker
     }
 
     internal void PauseTimer()
-    { 
-        timer.Stop();
+    {
+        if (timer != null)
+        {
+            timer.Stop();
+        }
     }
 
     internal void ResumeTimer()
     {
-        timer.Start();
+        if (timer != null)
+        {
+            timer.Start();
+        }
     }
 }

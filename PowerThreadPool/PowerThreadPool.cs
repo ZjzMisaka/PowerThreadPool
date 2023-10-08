@@ -994,13 +994,16 @@ namespace PowerThreadPool
         public void PauseIfRequested()
         {
             pauseSignal.WaitOne();
-            foreach (string id in pauseSignalDic.Keys)
+            ICollection<string> workIDs = pauseSignalDic.Keys;
+            foreach (string id in workIDs)
             {
                 if (Thread.CurrentThread.Name == id)
                 {
-                    settedWorkDic[id].PauseTimer();
-                    pauseSignalDic[id].WaitOne();
-                    settedWorkDic[id].ResumeTimer();
+                    settedWorkDic.TryGetValue(id, out Worker worker);
+                    pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent);
+                    worker.PauseTimer();
+                    manualResetEvent.WaitOne();
+                    worker.ResumeTimer();
                 }
             }
         }
@@ -1130,6 +1133,10 @@ namespace PowerThreadPool
         /// <returns>is succeed</returns>
         public bool Cancel(string id)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                return false;
+            }
             // TODO
             return true;
         }
