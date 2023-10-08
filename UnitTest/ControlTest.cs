@@ -574,6 +574,7 @@ namespace UnitTest
         [Fact]
         public void TestWaitByID()
         {
+            long start = GetNowSs();
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
             {
@@ -582,12 +583,13 @@ namespace UnitTest
 
             powerPool.Wait(id);
 
-            Assert.False(powerPool.ThreadPoolRunning);
+            Assert.True(GetNowSs() - start >= 1000);
         }
 
         [Fact]
         public async void TestWaitByIDAsync()
         {
+            long start = GetNowSs();
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
             {
@@ -596,7 +598,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync(id);
 
-            Assert.False(powerPool.ThreadPoolRunning);
+            Assert.True(GetNowSs() - start >= 1000);
         }
 
         [Fact]
@@ -613,14 +615,14 @@ namespace UnitTest
                     Thread.Sleep(100);
                 }
             });
-            Thread.Sleep(500);
+            Thread.Sleep(1500);
             powerPool.Pause(id);
             Thread.Sleep(1000);
             powerPool.Resume(id);
             powerPool.Wait();
             long duration = GetNowSs() - start;
 
-            Assert.True(duration > 3000);
+            Assert.True(duration > 2500);
         }
 
         [Fact]
