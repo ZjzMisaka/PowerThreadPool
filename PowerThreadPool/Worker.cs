@@ -196,13 +196,13 @@ public class Worker
         {
             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
             powerPool.idleWorkerDic[this.ID] = this;
-            if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleThreadCount > powerPoolOption.DestroyThreadOption.MinThreads)
+            if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
             {
                 System.Timers.Timer timer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
                 timer.AutoReset = false;
                 timer.Elapsed += (s, e) =>
                 {
-                    if (powerPool.IdleThreadCount > powerPoolOption.DestroyThreadOption.MinThreads && powerPool.idleWorkerDic.TryRemove(ID, out _))
+                    if (powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads && powerPool.idleWorkerDic.TryRemove(ID, out _))
                     {
                         Kill();
 

@@ -55,7 +55,7 @@ namespace PowerThreadPool
         private bool threadPoolStopping = false;
         public bool ThreadPoolStopping { get => threadPoolStopping; }
 
-        public int IdleThreadCount
+        public int IdleWorkerCount
         {
             get
             {
@@ -718,7 +718,7 @@ namespace PowerThreadPool
             {
                 minThreads = powerPoolOption.DestroyThreadOption.MinThreads;
             }
-            while (IdleThreadCount < minThreads)
+            while (IdleWorkerCount + RunningWorkerCount < minThreads)
             {
                 Worker worker = new Worker(this);
                 idleWorkerDic[worker.ID] = worker;

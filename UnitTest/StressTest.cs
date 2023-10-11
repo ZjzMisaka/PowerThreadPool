@@ -51,7 +51,7 @@ namespace UnitTest
                 Assert.Equal(0, powerPool.RunningWorkerCount);
                 Assert.Equal(0, powerPool.WaitingWorkCount);
 
-                Assert.True(powerPool.IdleThreadCount > 0);
+                Assert.True(powerPool.IdleWorkerCount > 0);
             }
         }
 

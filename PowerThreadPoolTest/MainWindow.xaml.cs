@@ -173,9 +173,9 @@ namespace PowerThreadPoolTest
                 }
 
                 string countTxt =
-                "waiting: " + powerPool.WaitingWorkCount + "\n" +
-                "running: " + powerPool.RunningWorkerCount + "\n" +
-                "Idle: " + powerPool.IdleThreadCount + "\n" +
+                "WaitingWorkCount: " + powerPool.WaitingWorkCount + "\n" +
+                "RunningWorkerCount: " + powerPool.RunningWorkerCount + "\n" +
+                "IdleWorkerCount: " + powerPool.IdleWorkerCount + "\n" +
                 "Running: " + powerPool.ThreadPoolRunning.ToString() + "\n" +
                 "Stopping: " + powerPool.ThreadPoolStopping.ToString();
                 count.Text = countTxt;

@@ -487,7 +487,7 @@ namespace UnitTest
             {
             });
             Thread.Sleep(10);
-            Assert.Equal(0, powerPool.IdleThreadCount);
+            Assert.Equal(0, powerPool.IdleWorkerCount);
             Assert.Equal(1, powerPool.RunningWorkerCount);
             Assert.Equal(1, powerPool.WaitingWorkCount);
             Assert.Single(powerPool.RunningWorkerList);
@@ -497,7 +497,7 @@ namespace UnitTest
 
             Thread.Sleep(10);
 
-            Assert.Equal(1, powerPool.IdleThreadCount);
+            Assert.Equal(1, powerPool.IdleWorkerCount);
         }
 
         [Fact]
