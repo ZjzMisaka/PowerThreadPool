@@ -19,7 +19,7 @@ namespace PowerThreadPool
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
-        internal ConcurrentQueue<Worker> idleWorkerQueue = new ConcurrentQueue<Worker>();
+        internal ConcurrentDictionary<string, Worker> idleWorkerDic = new ConcurrentDictionary<string, Worker>();
         private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
         
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
@@ -59,7 +59,7 @@ namespace PowerThreadPool
         {
             get
             {
-                return idleWorkerQueue.Count;
+                return idleWorkerDic.Count;
             }
         }
         public int WaitingWorkCount
@@ -721,7 +721,7 @@ namespace PowerThreadPool
             while (IdleThreadCount < minThreads)
             {
                 Worker worker = new Worker(this);
-                idleWorkerQueue.Enqueue(worker);
+                idleWorkerDic[worker.ID] = worker;
                 // SetDestroyTimerForIdleWorker(worker.Id);
             }
         }
@@ -742,8 +742,10 @@ namespace PowerThreadPool
 
         private Worker GetWorker()
         {
-            Worker worker;
-            if (!idleWorkerQueue.TryDequeue(out worker))
+            Worker worker = null;
+            string firstWorkerID = idleWorkerDic.Keys.FirstOrDefault<string>();
+            firstWorkerID = firstWorkerID == null ? "" : firstWorkerID;
+            if (!idleWorkerDic.TryRemove(firstWorkerID, out worker))
             {
                 if (runningWorkerDic.Count < powerPoolOption.MaxThreads)
                 {
@@ -805,7 +807,6 @@ namespace PowerThreadPool
         {
             if (RunningWorkerCount == 0 && threadPoolRunning)
             {
-                waitAllSignal.Set();
                 threadPoolRunning = false;
                 if (threadPoolStopping)
                 {
@@ -816,6 +817,8 @@ namespace PowerThreadPool
                 {
                     ThreadPoolIdle.Invoke(this, new EventArgs());
                 }
+
+                waitAllSignal.Set();
 
                 if (threadPoolTimer != null)
                 {
@@ -830,6 +833,7 @@ namespace PowerThreadPool
 
                 waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
                 settedWorkDic = new ConcurrentDictionary<string, Worker>();
+                runningWorkerDic = new ConcurrentDictionary<string, Worker>();
                 // TODO
             }
         }

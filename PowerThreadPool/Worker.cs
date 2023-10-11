@@ -190,14 +190,14 @@ public class Worker
         if (waitingWorkId == null)
         {
             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
-            if (powerPoolOption.DestroyThreadOption != null)
+            powerPool.idleWorkerDic[this.ID] = this;
+            if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleThreadCount > powerPoolOption.DestroyThreadOption.MinThreads)
             {
-                powerPool.idleWorkerQueue.Enqueue(this);
                 System.Timers.Timer timer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
                 timer.AutoReset = false;
                 timer.Elapsed += (s, e) =>
                 {
-                    if (powerPool.idleWorkerQueue.TryDequeue(out _))
+                    if (powerPool.IdleThreadCount > powerPoolOption.DestroyThreadOption.MinThreads && powerPool.idleWorkerDic.TryRemove(ID, out _))
                     {
                         Kill();
 
