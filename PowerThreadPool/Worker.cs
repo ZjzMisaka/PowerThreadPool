@@ -35,7 +35,7 @@ public class Worker
     {
         get 
         { 
-            return waitingWorkIdQueue.Count;
+            return waitingWorkDic.Count;
         }
     }
 
