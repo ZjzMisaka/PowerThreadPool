@@ -179,10 +179,15 @@ public class Worker
             }
             if (worker != null) 
             {
-                string stolenWorkID = worker.waitingWorkIdQueue.Steal(worker.stealSignal, 1);
-                if (worker.waitingWorkDic.TryRemove(workID, out WorkBase stolenWork))
+                int count = max / 2;
+                count = count < 1 ? 1 : count;
+                List<string> stolenWorkIDList = worker.waitingWorkIdQueue.Steal(worker.stealSignal, count);
+                foreach (string stolenWorkID in stolenWorkIDList)
                 {
-                    SetWork(stolenWork, powerPool);
+                    if (worker.waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
+                    {
+                        SetWork(stolenWork, powerPool);
+                    }
                 }
             }
         }

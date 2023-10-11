@@ -31,11 +31,13 @@ namespace PowerThreadPool.Collections
             }
         }
 
-        public T Steal(AutoResetEvent stealSignal, int count)
+        public List<T> Steal(AutoResetEvent stealSignal, int count)
         {
+            var stolenItems = new List<T>();
+
             if (queueDic.Count == 0)
             {
-                return default;
+                return stolenItems;
             }
 
             assignSignal.WaitOne();
@@ -43,18 +45,29 @@ namespace PowerThreadPool.Collections
 
             stealSignal.Reset();
 
-            var pair = queueDic.Last();
-
-            pair.Value.TryDequeue(out T item);
-
-            if (!pair.Value.Any())
+            for (int i = 0; i < count; i++)
             {
-                queueDic.Remove(pair.Key);
+                if (queueDic.Count == 0)
+                {
+                    break;
+                }
+
+                var pair = queueDic.Last();
+
+                if (pair.Value.TryDequeue(out T item))
+                {
+                    stolenItems.Add(item);
+                }
+
+                if (!pair.Value.Any())
+                {
+                    queueDic.Remove(pair.Key);
+                }
             }
 
             stealSignal.Set();
 
-            return item;
+            return stolenItems;
         }
 
         public T Dequeue()
