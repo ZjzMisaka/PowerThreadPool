@@ -12,6 +12,8 @@ namespace PowerThreadPool.Collections
 
         internal AutoResetEvent assignSignal = new AutoResetEvent(true);
 
+        object lockObj = new object();
+
         public PriorityQueue()
         {
             queueDic = new SortedDictionary<int, ConcurrentQueue<T>>();
@@ -19,74 +21,83 @@ namespace PowerThreadPool.Collections
 
         public void Enqueue(T item, int priority)
         {
-            if (queueDic.ContainsKey(priority))
+            lock (lockObj)
             {
-                queueDic[priority].Enqueue(item);
-            }
-            else
-            {
-                var queue = new ConcurrentQueue<T>();
-                queue.Enqueue(item);
-                queueDic.Add(priority, queue);
+                if (queueDic.ContainsKey(priority))
+                {
+                    queueDic[priority].Enqueue(item);
+                }
+                else
+                {
+                    var queue = new ConcurrentQueue<T>();
+                    queue.Enqueue(item);
+                    queueDic.Add(priority, queue);
+                }
             }
         }
 
         public List<T> Steal(AutoResetEvent stealSignal, int count)
         {
-            var stolenItems = new List<T>();
-
-            if (queueDic.Count == 0)
+            lock (lockObj)
             {
-                return stolenItems;
-            }
+                var stolenItems = new List<T>();
 
-            assignSignal.WaitOne();
-            assignSignal.Set();
-
-            stealSignal.Reset();
-
-            for (int i = 0; i < count; i++)
-            {
                 if (queueDic.Count == 0)
                 {
-                    break;
+                    return stolenItems;
+                }
+
+                assignSignal.WaitOne();
+                assignSignal.Set();
+
+                stealSignal.Reset();
+
+                for (int i = 0; i < count; i++)
+                {
+                    if (queueDic.Count <= 0)
+                    {
+                        break;
+                    }
+
+                    var pair = queueDic.Last();
+
+                    if (pair.Value.TryDequeue(out T item))
+                    {
+                        stolenItems.Add(item);
+                    }
+
+                    if (!pair.Value.Any())
+                    {
+                        queueDic.Remove(pair.Key);
+                    }
+                }
+
+                stealSignal.Set();
+
+                return stolenItems;
+            }
+        }
+
+        public T Dequeue()
+        {
+            lock (lockObj)
+            {
+                if (queueDic.Count <= 0)
+                {
+                    return default;
                 }
 
                 var pair = queueDic.Last();
 
-                if (pair.Value.TryDequeue(out T item))
-                {
-                    stolenItems.Add(item);
-                }
+                pair.Value.TryDequeue(out T item);
 
                 if (!pair.Value.Any())
                 {
                     queueDic.Remove(pair.Key);
                 }
+
+                return item;
             }
-
-            stealSignal.Set();
-
-            return stolenItems;
-        }
-
-        public T Dequeue()
-        {
-            if (queueDic.Count == 0)
-            {
-                return default;
-            }
-
-            var pair = queueDic.Last();
-
-            pair.Value.TryDequeue(out T item);
-
-            if (!pair.Value.Any())
-            {
-                queueDic.Remove(pair.Key);
-            }
-
-            return item;
         }
 
         public int Count

@@ -146,6 +146,7 @@ public class Worker
     internal void SetWork(WorkBase work, PowerPool powerPool)
     {
         waitingWorkIdQueue.Enqueue(work.ID, work.WorkPriority);
+
         waitingWorkDic[work.ID] = work;
 
         waitSignalDic[work.ID] = new AutoResetEvent(false);
@@ -192,7 +193,13 @@ public class Worker
             }
         }
 
-        if (waitingWorkId == null)
+        WorkBase work = null;
+        if (waitingWorkId != null)
+        {
+            waitingWorkDic.TryRemove(waitingWorkId, out work);
+        }
+
+        if (waitingWorkId == null || work == null)
         {
             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
             powerPool.idleWorkerDic[this.ID] = this;
@@ -214,8 +221,6 @@ public class Worker
 
             return;
         }
-
-        WorkBase work = waitingWorkDic[waitingWorkId];
 
         TimeoutOption workTimeoutOption = work.WorkTimeoutOption;
         if (workTimeoutOption != null)
