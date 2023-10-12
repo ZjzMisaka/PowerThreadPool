@@ -38,20 +38,20 @@ namespace PowerThreadPool.Collections
 
         public List<T> Steal(AutoResetEvent stealSignal, int count)
         {
+            var stolenItems = new List<T>();
+
+            if (queueDic.Count == 0)
+            {
+                return stolenItems;
+            }
+
+            assignSignal.WaitOne();
+            assignSignal.Set();
+
+            stealSignal.Reset();
+
             lock (lockObj)
             {
-                var stolenItems = new List<T>();
-
-                if (queueDic.Count == 0)
-                {
-                    return stolenItems;
-                }
-
-                assignSignal.WaitOne();
-                assignSignal.Set();
-
-                stealSignal.Reset();
-
                 for (int i = 0; i < count; i++)
                 {
                     if (queueDic.Count <= 0)
@@ -71,11 +71,11 @@ namespace PowerThreadPool.Collections
                         queueDic.Remove(pair.Key);
                     }
                 }
-
-                stealSignal.Set();
-
-                return stolenItems;
             }
+           
+            stealSignal.Set();
+
+            return stolenItems;
         }
 
         public T Dequeue()

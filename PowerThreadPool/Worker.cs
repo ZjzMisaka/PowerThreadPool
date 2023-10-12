@@ -80,7 +80,7 @@ public class Worker
                     powerPool.OneWorkEnd(executeResult);
                     work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
 
-                    powerPool.WorkCallbackEnd(workID, false);
+                    powerPool.WorkCallbackEnd(workID);
 
                     if (waitSignalDic.TryRemove(workID, out AutoResetEvent waitSignal))
                     {
@@ -110,7 +110,7 @@ public class Worker
                     work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
                 }
 
-                powerPool.WorkCallbackEnd(workID, true);
+                powerPool.WorkCallbackEnd(workID);
 
                 if (waitSignalDic.TryRemove(workID, out AutoResetEvent waitSignal))
                 {

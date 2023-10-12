@@ -20,7 +20,7 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
         internal ConcurrentDictionary<string, Worker> idleWorkerDic = new ConcurrentDictionary<string, Worker>();
-        private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
+        private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>(); // TODO
         
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentDictionary<string, Worker> runningWorkerDic = new ConcurrentDictionary<string, Worker>(); // new
@@ -687,7 +687,7 @@ namespace PowerThreadPool
         /// Work end
         /// </summary>
         /// <param name="guid"></param>
-        internal void WorkCallbackEnd(string guid, bool isForceStop)
+        internal void WorkCallbackEnd(string guid)
         {
             if (CallbackEnd != null)
             {
@@ -752,6 +752,7 @@ namespace PowerThreadPool
                     worker = new Worker(this);
                 }
                 else
+
                 {
                     List<Worker> workerList = runningWorkerDic.Values.ToList();
                     int min = int.MaxValue;
