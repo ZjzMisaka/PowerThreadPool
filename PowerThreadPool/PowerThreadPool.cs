@@ -3,6 +3,7 @@ using PowerThreadPool.EventArguments;
 using PowerThreadPool.Helper;
 using PowerThreadPool.Option;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,7 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
         internal ConcurrentDictionary<string, Worker> idleWorkerDic = new ConcurrentDictionary<string, Worker>();
+        internal ConcurrentQueue<string> idleWorkerQueue = new ConcurrentQueue<string>();
         private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>(); // TODO
         
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
@@ -721,6 +723,7 @@ namespace PowerThreadPool
             while (IdleWorkerCount + RunningWorkerCount < minThreads)
             {
                 Worker worker = new Worker(this);
+                idleWorkerQueue.Enqueue(worker.ID);
                 idleWorkerDic[worker.ID] = worker;
                 // SetDestroyTimerForIdleWorker(worker.Id);
             }
@@ -743,26 +746,28 @@ namespace PowerThreadPool
         private Worker GetWorker()
         {
             Worker worker = null;
-            string firstWorkerID = idleWorkerDic.Keys.FirstOrDefault<string>();
-            firstWorkerID = firstWorkerID == null ? "" : firstWorkerID;
-            if (!idleWorkerDic.TryRemove(firstWorkerID, out worker))
+            while (idleWorkerQueue.TryDequeue(out string firstWorkerID))
             {
-                if (runningWorkerDic.Count < powerPoolOption.MaxThreads)
+                if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    worker = new Worker(this);
+                    return worker;
                 }
-                else
+            }
 
+            if (runningWorkerDic.Count < powerPoolOption.MaxThreads)
+            {
+                worker = new Worker(this);
+            }
+            else
+            {
+                List<Worker> workerList = runningWorkerDic.Values.ToList();
+                int min = int.MaxValue;
+                foreach (Worker runningWorker in workerList)
                 {
-                    List<Worker> workerList = runningWorkerDic.Values.ToList();
-                    int min = int.MaxValue;
-                    foreach (Worker runningWorker in workerList)
+                    if (runningWorker.WaittingWorkCount < min)
                     {
-                        if (runningWorker.WaittingWorkCount < min)
-                        { 
-                            min = runningWorker.WaittingWorkCount;
-                            worker = runningWorker;
-                        }
+                        min = runningWorker.WaittingWorkCount;
+                        worker = runningWorker;
                     }
                 }
             }

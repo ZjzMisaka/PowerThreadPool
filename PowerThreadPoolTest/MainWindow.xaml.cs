@@ -287,5 +287,45 @@ namespace PowerThreadPoolTest
         {
             OutputMsg("T6Action: x + y :" + (x + y).ToString());
         }
+
+
+
+
+
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show("Run Stress Test1?", "", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                object lockObj = new object();
+                for (int i = 0; i < 10; ++i)
+                {
+                    int doneCount = 0;
+                    PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
+
+                    Task[] tasks = Enumerable.Range(0, 100000).Select(i =>
+                        Task.Run(() =>
+                        {
+                            string workId = powerPool.QueueWorkItem(() =>
+                            {
+                            }, (res) =>
+                            {
+                                lock (lockObj)
+                                {
+                                    ++doneCount;
+                                }
+                            });
+                        }
+                        )
+                    ).ToArray();
+
+                    await Task.WhenAll(tasks);
+                    await powerPool.WaitAsync();
+                }
+
+                MessageBox.Show("OK");
+                this.Close();
+            }
+        }
     }
 }

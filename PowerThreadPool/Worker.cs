@@ -202,6 +202,7 @@ public class Worker
         if (waitingWorkId == null || work == null)
         {
             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
+            powerPool.idleWorkerQueue.Enqueue(this.ID);
             powerPool.idleWorkerDic[this.ID] = this;
             if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
             {
