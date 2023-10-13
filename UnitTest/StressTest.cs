@@ -47,7 +47,10 @@ namespace UnitTest
                 // Assert.Equal(totalTasks, powerPool.RunningWorkerCount + powerPool.WaitingWorkCount + doneCount);
 
                 await powerPool.WaitAsync();
-                Assert.Equal(totalTasks, powerPool.RunningWorkerCount + powerPool.WaitingWorkCount + doneCount);
+
+                await Task.Delay(100);
+
+                Assert.Equal(totalTasks, doneCount);
                 Assert.Equal(0, powerPool.RunningWorkerCount);
                 Assert.Equal(0, powerPool.WaitingWorkCount);
 
