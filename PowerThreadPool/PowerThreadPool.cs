@@ -25,7 +25,8 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>(); // TODO
         
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
-        internal ConcurrentDictionary<string, Worker> runningWorkerDic = new ConcurrentDictionary<string, Worker>(); // new
+        internal ConcurrentDictionary<string, Worker> runningWorkerDic = new ConcurrentDictionary<string, Worker>();
+        internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>(); // new
         private PowerPoolOption powerPoolOption;
         public PowerPoolOption PowerPoolOption { get => powerPoolOption; set => powerPoolOption = value; }
 
@@ -68,7 +69,7 @@ namespace PowerThreadPool
         {
             get
             {
-                return settedWorkDic.Count - runningWorkerDic.Count;
+                return settedWorkDic.Count - aliveWorkerDic.Count;
             }
         }
         public IEnumerable<string> WaitingWorkList
@@ -96,6 +97,20 @@ namespace PowerThreadPool
             get
             {
                 return runningWorkerDic.Keys.ToList();
+            }
+        }
+        public int AliveWorkerCount
+        {
+            get
+            {
+                return aliveWorkerDic.Count;
+            }
+        }
+        public IEnumerable<string> AliveWorkerList
+        {
+            get
+            {
+                return aliveWorkerDic.Keys.ToList();
             }
         }
 
@@ -720,9 +735,10 @@ namespace PowerThreadPool
             {
                 minThreads = powerPoolOption.DestroyThreadOption.MinThreads;
             }
-            while (IdleWorkerCount + RunningWorkerCount < minThreads)
+            while (AliveWorkerCount < minThreads)
             {
                 Worker worker = new Worker(this);
+                aliveWorkerDic[worker.ID] = worker;
                 idleWorkerQueue.Enqueue(worker.ID);
                 idleWorkerDic[worker.ID] = worker;
                 // SetDestroyTimerForIdleWorker(worker.Id);
@@ -738,8 +754,8 @@ namespace PowerThreadPool
             Worker worker = GetWorker();
 
             settedWorkDic[work.ID] = worker;
-            runningWorkerDic[worker.ID] = worker;
 
+            runningWorkerDic[worker.ID] = worker;
             worker.SetWork(work, this);
         }
 
@@ -754,13 +770,14 @@ namespace PowerThreadPool
                 }
             }
 
-            if (runningWorkerDic.Count < powerPoolOption.MaxThreads)
+            if (aliveWorkerDic.Count < powerPoolOption.MaxThreads)
             {
                 worker = new Worker(this);
+                aliveWorkerDic[worker.ID] = worker;
             }
             else
             {
-                List<Worker> workerList = runningWorkerDic.Values.ToList();
+                List<Worker> workerList = aliveWorkerDic.Values.ToList();
                 int min = int.MaxValue;
                 foreach (Worker runningWorker in workerList)
                 {
@@ -839,6 +856,7 @@ namespace PowerThreadPool
 
                 waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
                 settedWorkDic = new ConcurrentDictionary<string, Worker>();
+                aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
                 runningWorkerDic = new ConcurrentDictionary<string, Worker>();
                 // TODO
             }

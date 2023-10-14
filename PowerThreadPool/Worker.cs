@@ -90,6 +90,7 @@ public class Worker
                     running = false;
 
                     AssignWork(powerPool);
+
                     powerPool.runningWorkerDic.TryRemove(ID, out _);
 
                     powerPool.CheckIdle();
@@ -117,6 +118,7 @@ public class Worker
                     waitSignal.Set();
                 }
 
+                powerPool.aliveWorkerDic.TryRemove(ID, out _);
                 powerPool.runningWorkerDic.TryRemove(ID, out _);
 
                 powerPool.CheckIdle();
@@ -168,7 +170,7 @@ public class Worker
         if (waitingWorkId == null)
         {
             Worker worker = null;
-            List<Worker> workerList = powerPool.runningWorkerDic.Values.ToList();
+            List<Worker> workerList = powerPool.aliveWorkerDic.Values.ToList();
             int max = 0;
             foreach (Worker runningWorker in workerList)
             {
@@ -212,6 +214,7 @@ public class Worker
                 {
                     if (powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads && powerPool.idleWorkerDic.TryRemove(ID, out _))
                     {
+                        powerPool.aliveWorkerDic.TryRemove(ID, out _);
                         Kill();
 
                         timer.Stop();
