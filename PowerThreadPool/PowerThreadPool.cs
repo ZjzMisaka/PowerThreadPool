@@ -50,7 +50,8 @@ namespace PowerThreadPool
 
         private System.Timers.Timer threadPoolTimer;
 
-        private object lockObj = new object();
+        public object lockObj = new object();
+        public object holdWorkerAliveLockObj = new object();
 
         private bool threadPoolRunning = false;
         public bool ThreadPoolRunning { get => threadPoolRunning; }
@@ -625,23 +626,26 @@ namespace PowerThreadPool
             {
                 option.Timeout = powerPoolOption.DefaultWorkTimeout;
             }
-            
-            Work<TResult> work = new Work<TResult>(this, workID, function, param, option);
-            pauseSignalDic[workID] = new ManualResetEvent(true);
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSourceDic[workID] = cancellationTokenSource;
 
-            if (option.Dependents != null && option.Dependents.Count > 0)
+            lock (lockObj)
             {
-                waitingDependentDic[workID] = work;
-            }
-            else
-            {
-                CheckThreadPoolStart();
-                SetWork(work);
-            }
+                Work<TResult> work = new Work<TResult>(this, workID, function, param, option);
+                pauseSignalDic[workID] = new ManualResetEvent(true);
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+                cancellationTokenSourceDic[workID] = cancellationTokenSource;
 
-            return workID;
+                if (option.Dependents != null && option.Dependents.Count > 0)
+                {
+                    waitingDependentDic[workID] = work;
+                }
+                else
+                {
+                    CheckThreadPoolStart();
+                    SetWork(work);
+                }
+
+                return workID;
+            }
         }
 
 
@@ -741,7 +745,6 @@ namespace PowerThreadPool
                 aliveWorkerDic[worker.ID] = worker;
                 idleWorkerQueue.Enqueue(worker.ID);
                 idleWorkerDic[worker.ID] = worker;
-                // SetDestroyTimerForIdleWorker(worker.Id);
             }
         }
 
@@ -751,12 +754,19 @@ namespace PowerThreadPool
         internal void SetWork(WorkBase work)
         {
             CheckThreadPoolStart();
+
             Worker worker = GetWorker();
-
             settedWorkDic[work.ID] = worker;
-
             runningWorkerDic[worker.ID] = worker;
             worker.SetWork(work, this);
+
+            //lock (lockObj)
+            //{
+            //    Worker worker = GetWorker();
+            //    settedWorkDic[work.ID] = worker;
+            //    runningWorkerDic[worker.ID] = worker;
+            //    worker.SetWork(work, this);
+            //}
         }
 
         private Worker GetWorker()
@@ -770,16 +780,18 @@ namespace PowerThreadPool
                 }
             }
 
-            if (aliveWorkerDic.Count < powerPoolOption.MaxThreads)
+            
+            List<Worker> aliveWorkerList = aliveWorkerDic.Values.ToList();
+            int aliveWorkerCount = aliveWorkerList.Count;
+            if (aliveWorkerCount < powerPoolOption.MaxThreads)
             {
                 worker = new Worker(this);
                 aliveWorkerDic[worker.ID] = worker;
             }
             else
             {
-                List<Worker> workerList = aliveWorkerDic.Values.ToList();
                 int min = int.MaxValue;
-                foreach (Worker runningWorker in workerList)
+                foreach (Worker runningWorker in aliveWorkerList)
                 {
                     if (runningWorker.WaittingWorkCount < min)
                     {

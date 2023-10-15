@@ -25,7 +25,7 @@ public class Worker
     private string workID;
     internal string WorkID { get => workID; set => workID = value; }
     private WorkBase work;
-    private bool killFlag = false;
+    internal bool killFlag = false;
 
     private bool running = false;
 
@@ -169,6 +169,7 @@ public class Worker
 
         if (waitingWorkId == null)
         {
+            // Try work stealing
             Worker worker = null;
             List<Worker> workerList = powerPool.aliveWorkerDic.Values.ToList();
             int max = 0;
