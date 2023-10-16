@@ -20,6 +20,7 @@ namespace UnitTest
             for (int i = 0; i < 10; ++i)
             {
                 int doneCount = 0;
+                int failedCount = 0;
                 PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
 
                 Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
@@ -29,6 +30,13 @@ namespace UnitTest
                         {
                         }, (res) =>
                         {
+                            if (res.Status == Status.Failed)
+                            {
+                                lock (lockObj)
+                                {
+                                    ++failedCount;
+                                }
+                            }
                             lock (lockObj)
                             {
                                 ++doneCount;
@@ -51,6 +59,7 @@ namespace UnitTest
                 await Task.Delay(100);
 
                 Assert.Equal(totalTasks, doneCount);
+                Assert.Equal(0, failedCount);
                 Assert.Equal(0, powerPool.RunningWorkerCount);
                 Assert.Equal(0, powerPool.WaitingWorkCount);
 
