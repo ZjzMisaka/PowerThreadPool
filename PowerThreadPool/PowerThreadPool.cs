@@ -752,11 +752,6 @@ namespace PowerThreadPool
         {
             CheckThreadPoolStart();
 
-            //Worker worker = GetWorker();
-            //settedWorkDic[work.ID] = worker;
-            //runningWorkerDic[worker.ID] = worker;
-            //worker.SetWork(work, this);
-
             lock (lockObj)
             {
                 Worker worker = GetWorker();
