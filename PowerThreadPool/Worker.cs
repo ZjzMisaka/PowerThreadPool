@@ -19,6 +19,7 @@ public class Worker
     internal ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
 
     private System.Timers.Timer timer;
+    private System.Timers.Timer killTimer;
 
     private AutoResetEvent runSignal = new AutoResetEvent(false);
     private ConcurrentDictionary<string, AutoResetEvent> waitSignalDic = new ConcurrentDictionary<string, AutoResetEvent>();
@@ -221,10 +222,17 @@ public class Worker
                         timer.Stop();
                     }
                 };
+                this.killTimer = timer;
                 timer.Start();
             }
 
             return;
+        }
+
+        if (killTimer != null)
+        {
+            killTimer.Stop();
+            killTimer = null;
         }
 
         TimeoutOption workTimeoutOption = work.WorkTimeoutOption;
