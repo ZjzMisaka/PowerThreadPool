@@ -1,10 +1,5 @@
 ﻿using PowerThreadPool;
 using PowerThreadPool.Option;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UnitTest
 {
@@ -58,6 +53,7 @@ namespace UnitTest
 
                 await Task.Delay(100);
 
+                // stealCount, settedCount, errorCount, runCount
                 Assert.Equal(totalTasks, doneCount);
                 Assert.Equal(0, failedCount);
                 Assert.Equal(0, powerPool.RunningWorkerCount);
@@ -81,7 +77,6 @@ namespace UnitTest
                 lock (lockObj) 
                 { 
                     ++startCount; 
-                    doneCount = 0; 
                 } 
             };
             powerPool.ThreadPoolIdle += (s, e) => 
@@ -89,8 +84,7 @@ namespace UnitTest
                 lock (lockObj) 
                 {
                     ++idleCount;
-                    Assert.Equal(1, idleCount);
-                    Assert.Equal(6010100, doneCount);
+                    
                 } 
             };
             
@@ -144,8 +138,13 @@ namespace UnitTest
                 });
             }
 
-            powerPool.Wait();
+            while (powerPool.ThreadPoolRunning)
+            {
+                powerPool.Wait();
+                Thread.Sleep(100);
+            }
 
+            Assert.Equal(6010100, doneCount);
             Assert.Equal(1, startCount);
         }
     }

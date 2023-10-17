@@ -29,6 +29,7 @@ public class Worker
     internal bool killFlag = false;
 
     private bool running = false;
+    private bool alive = false;
 
     private AutoResetEvent stealSignal = new AutoResetEvent(true);
 
@@ -154,8 +155,9 @@ public class Worker
 
         waitSignalDic[work.ID] = new AutoResetEvent(false);
 
-        if (!running)
+        if (!alive)
         {
+            alive = true;
             AssignWork(powerPool);
         }
     }
@@ -182,7 +184,7 @@ public class Worker
                     worker = runningWorker;
                 }
             }
-            if (worker != null) 
+            if (worker != null)
             {
                 int count = max / 2;
                 count = count < 1 ? 1 : count;
@@ -205,6 +207,7 @@ public class Worker
 
         if (waitingWorkId == null || work == null)
         {
+            alive = false;
             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
             powerPool.idleWorkerQueue.Enqueue(this.ID);
             powerPool.idleWorkerDic[this.ID] = this;
