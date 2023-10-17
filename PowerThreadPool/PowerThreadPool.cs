@@ -627,25 +627,22 @@ namespace PowerThreadPool
                 option.Timeout = powerPoolOption.DefaultWorkTimeout;
             }
 
-            lock (lockObj)
+            Work<TResult> work = new Work<TResult>(this, workID, function, param, option);
+            pauseSignalDic[workID] = new ManualResetEvent(true);
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSourceDic[workID] = cancellationTokenSource;
+
+            if (option.Dependents != null && option.Dependents.Count > 0)
             {
-                Work<TResult> work = new Work<TResult>(this, workID, function, param, option);
-                pauseSignalDic[workID] = new ManualResetEvent(true);
-                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-                cancellationTokenSourceDic[workID] = cancellationTokenSource;
-
-                if (option.Dependents != null && option.Dependents.Count > 0)
-                {
-                    waitingDependentDic[workID] = work;
-                }
-                else
-                {
-                    CheckThreadPoolStart();
-                    SetWork(work);
-                }
-
-                return workID;
+                waitingDependentDic[workID] = work;
             }
+            else
+            {
+                CheckThreadPoolStart();
+                SetWork(work);
+            }
+
+            return workID;
         }
 
 
@@ -755,19 +752,18 @@ namespace PowerThreadPool
         {
             CheckThreadPoolStart();
 
-            Worker worker = GetWorker();
+            //Worker worker = GetWorker();
+            //settedWorkDic[work.ID] = worker;
+            //runningWorkerDic[worker.ID] = worker;
+            //worker.SetWork(work, this);
 
-            settedWorkDic[work.ID] = worker;
-            runningWorkerDic[worker.ID] = worker;
-            worker.SetWork(work, this);
-
-            //lock (lockObj)
-            //{
-            //    Worker worker = GetWorker();
-            //    settedWorkDic[work.ID] = worker;
-            //    runningWorkerDic[worker.ID] = worker;
-            //    worker.SetWork(work, this);
-            //}
+            lock (lockObj)
+            {
+                Worker worker = GetWorker();
+                settedWorkDic[work.ID] = worker;
+                runningWorkerDic[worker.ID] = worker;
+                worker.SetWork(work, this);
+            }
         }
 
         private Worker GetWorker()
