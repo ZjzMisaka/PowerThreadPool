@@ -17,6 +17,8 @@ public class Worker
 
     internal PriorityQueue<string> waitingWorkIdQueue = new PriorityQueue<string>();
     internal ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+    internal int waittingWorkCount = 0;
+    internal object waittingWorkCountLockObj = new object();
 
     private System.Timers.Timer timer;
     private System.Timers.Timer killTimer;
@@ -35,7 +37,7 @@ public class Worker
     {
         get 
         { 
-            return waitingWorkDic.Count;
+            return waittingWorkCount;
         }
     }
 
@@ -149,6 +151,10 @@ public class Worker
         waitingWorkIdQueue.Enqueue(work.ID, work.WorkPriority);
 
         waitingWorkDic[work.ID] = work;
+        lock (waittingWorkCountLockObj)
+        {
+            ++waittingWorkCount;
+        }
 
         waitSignalDic[work.ID] = new AutoResetEvent(false);
 
@@ -182,6 +188,15 @@ public class Worker
                 int count = max / 2;
                 count = count < 1 ? 1 : count;
                 List<string> stolenWorkIDList = worker.waitingWorkIdQueue.Steal(count);
+                count = stolenWorkIDList.Count;
+                lock (waittingWorkCountLockObj)
+                {
+                    waittingWorkCount += count;
+                }
+                lock (worker.waittingWorkCountLockObj)
+                {
+                    worker.waittingWorkCount -= count;
+                }
                 foreach (string stolenWorkID in stolenWorkIDList)
                 {
                     if (worker.waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
@@ -195,7 +210,13 @@ public class Worker
         WorkBase work = null;
         if (waitingWorkId != null)
         {
-            waitingWorkDic.TryRemove(waitingWorkId, out work);
+            if (waitingWorkDic.TryRemove(waitingWorkId, out work))
+            {
+                lock (waittingWorkCountLockObj)
+                {
+                    --waittingWorkCount;
+                }
+            }
         }
 
         if (waitingWorkId == null || work == null)
