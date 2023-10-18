@@ -90,7 +90,6 @@ public class Worker
                         waitSignal.Set();
                     }
 
-                    powerPool.runningWorkerDic.TryRemove(ID, out _);
                     running = false;
 
                     AssignWork(powerPool);
@@ -207,6 +206,7 @@ public class Worker
 
         if (waitingWorkId == null || work == null)
         {
+            powerPool.runningWorkerDic.TryRemove(ID, out _);
             alive = false;
             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
             powerPool.idleWorkerQueue.Enqueue(this.ID);
