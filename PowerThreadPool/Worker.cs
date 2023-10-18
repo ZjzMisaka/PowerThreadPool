@@ -58,6 +58,7 @@ public class Worker
                     }
 
                     running = true;
+                    powerPool.runningWorkerDic[ID] = this;
 
                     thread.Name = work.ID;
                     powerPool.OnWorkStart(work.ID);
@@ -89,11 +90,10 @@ public class Worker
                         waitSignal.Set();
                     }
 
+                    powerPool.runningWorkerDic.TryRemove(ID, out _);
                     running = false;
 
                     AssignWork(powerPool);
-
-                    powerPool.runningWorkerDic.TryRemove(ID, out _);
 
                     powerPool.CheckIdle();
                 }

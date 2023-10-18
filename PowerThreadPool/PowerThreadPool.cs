@@ -70,7 +70,7 @@ namespace PowerThreadPool
         {
             get
             {
-                return settedWorkDic.Count - aliveWorkerDic.Count;
+                return settedWorkDic.Count - runningWorkerDic.Count;
             }
         }
         public IEnumerable<string> WaitingWorkList
@@ -756,7 +756,6 @@ namespace PowerThreadPool
             {
                 Worker worker = GetWorker();
                 settedWorkDic[work.ID] = worker;
-                runningWorkerDic[worker.ID] = worker;
                 worker.SetWork(work, this);
             }
         }
