@@ -10,8 +10,6 @@ namespace PowerThreadPool.Collections
     {
         private SortedDictionary<int, ConcurrentQueue<T>> queueDic;
 
-        internal AutoResetEvent assignSignal = new AutoResetEvent(true);
-
         object lockObj = new object();
 
         public PriorityQueue()
@@ -36,7 +34,7 @@ namespace PowerThreadPool.Collections
             }
         }
 
-        public List<T> Steal(AutoResetEvent stealSignal, int count)
+        public List<T> Steal(int count)
         {
             var stolenItems = new List<T>();
 
@@ -44,11 +42,6 @@ namespace PowerThreadPool.Collections
             {
                 return stolenItems;
             }
-
-            assignSignal.WaitOne();
-            assignSignal.Set();
-
-            stealSignal.Reset();
 
             lock (lockObj)
             {
@@ -72,8 +65,6 @@ namespace PowerThreadPool.Collections
                     }
                 }
             }
-           
-            stealSignal.Set();
 
             return stolenItems;
         }

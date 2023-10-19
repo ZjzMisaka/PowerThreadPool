@@ -33,8 +33,6 @@ public class Worker
     private bool running = false;
     private bool alive = false;
 
-    private AutoResetEvent stealSignal = new AutoResetEvent(true);
-
     internal int WaittingWorkCount
     {
         get 
@@ -169,11 +167,7 @@ public class Worker
 
     private void AssignWork(PowerPool powerPool)
     {
-        stealSignal.WaitOne();
-        stealSignal.Set();
-        waitingWorkIdQueue.assignSignal.Reset();
         string waitingWorkId = waitingWorkIdQueue.Dequeue();
-        waitingWorkIdQueue.assignSignal.Set();
 
         if (waitingWorkId == null)
         {
@@ -193,7 +187,7 @@ public class Worker
             {
                 int count = max / 2;
                 count = count < 1 ? 1 : count;
-                List<string> stolenWorkIDList = worker.waitingWorkIdQueue.Steal(worker.stealSignal, count);
+                List<string> stolenWorkIDList = worker.waitingWorkIdQueue.Steal(count);
                 count = stolenWorkIDList.Count;
                 lock (waittingWorkCountLockObj)
                 {
