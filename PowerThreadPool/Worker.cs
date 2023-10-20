@@ -32,6 +32,8 @@ public class Worker
 
     private bool running = false;
     private bool alive = false;
+    internal bool stealingLock = false;
+    internal object stealingLockLockObj = new object();
 
     internal int WaittingWorkCount
     {
@@ -179,6 +181,21 @@ public class Worker
             {
                 if (runningWorker.WaittingWorkCount > max)
                 {
+                    lock (runningWorker.stealingLockLockObj)
+                    {
+                        if (runningWorker.stealingLock)
+                        {
+                            continue;
+                        }
+                        runningWorker.stealingLock = true;
+                    }
+                    if (worker != null)
+                    {
+                        lock (worker.stealingLockLockObj)
+                        {
+                            worker.stealingLock = false;
+                        }
+                    }
                     max = runningWorker.WaittingWorkCount;
                     worker = runningWorker;
                 }
@@ -186,23 +203,31 @@ public class Worker
             if (worker != null)
             {
                 int count = max / 2;
-                count = count < 1 ? 1 : count;
-                List<string> stolenWorkIDList = worker.waitingWorkIdQueue.Steal(count);
-                count = stolenWorkIDList.Count;
-                lock (waittingWorkCountLockObj)
+                if (count > 0)
                 {
-                    waittingWorkCount += count;
-                }
-                lock (worker.waittingWorkCountLockObj)
-                {
-                    worker.waittingWorkCount -= count;
-                }
-                foreach (string stolenWorkID in stolenWorkIDList)
-                {
-                    if (worker.waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
+                    List<string> stolenWorkIDList = worker.waitingWorkIdQueue.Steal(count);
+                    
+                    foreach (string stolenWorkID in stolenWorkIDList)
                     {
-                        SetWork(stolenWork, powerPool);
+                        if (worker.waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
+                        {
+                            SetWork(stolenWork, powerPool);
+
+                            lock (waittingWorkCountLockObj)
+                            {
+                                ++waittingWorkCount;
+                            }
+                            lock (worker.waittingWorkCountLockObj)
+                            {
+                                --worker.waittingWorkCount;
+                            }
+                        }
                     }
+                }
+                
+                lock (worker.stealingLockLockObj)
+                {
+                    worker.stealingLock = false;
                 }
             }
         }
