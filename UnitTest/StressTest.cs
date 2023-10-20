@@ -12,7 +12,7 @@ namespace UnitTest
         [Fact]
         public async Task StressTest1()
         {
-            for (int i = 0; i < 10; ++i)
+            for (int i = 0; i < 100; ++i)
             {
                 int doneCount = 0;
                 int failedCount = 0;

@@ -58,6 +58,8 @@ namespace PowerThreadPool
 
         private System.Timers.Timer threadPoolTimer;
 
+        private object lockObj = new object();
+
         private bool threadPoolRunning = false;
         public bool ThreadPoolRunning { get => threadPoolRunning; }
 
@@ -760,7 +762,11 @@ namespace PowerThreadPool
 
             Worker worker = GetWorker();
             settedWorkDic[work.ID] = worker;
-            worker.SetWork(work, this);
+
+            lock (lockObj)
+            {
+                worker.SetWork(work, this);
+            }
         }
 
         /// <summary>
@@ -778,10 +784,8 @@ namespace PowerThreadPool
                 }
             }
 
-            
             List<Worker> aliveWorkerList = aliveWorkerDic.Values.ToList();
-            int aliveWorkerCount = aliveWorkerList.Count;
-            if (aliveWorkerCount < powerPoolOption.MaxThreads)
+            if (aliveWorkerList.Count < powerPoolOption.MaxThreads)
             {
                 worker = new Worker(this);
                 aliveWorkerDic[worker.ID] = worker;
