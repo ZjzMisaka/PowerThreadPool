@@ -784,9 +784,10 @@ namespace PowerThreadPool
                 int min = int.MaxValue;
                 foreach (Worker runningWorker in aliveWorkerList)
                 {
-                    if (runningWorker.WaittingWorkCount < min)
+                    int waittingWorkCountTemp = runningWorker.waittingWorkCount;
+                    if (waittingWorkCountTemp < min)
                     {
-                        min = runningWorker.WaittingWorkCount;
+                        min = waittingWorkCountTemp;
                         worker = runningWorker;
                     }
                 }
