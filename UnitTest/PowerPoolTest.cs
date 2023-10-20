@@ -341,83 +341,63 @@ namespace UnitTest
             List<string> logList = new List<string>();
             powerPool.PowerPoolOption = new PowerPoolOption()
             {
-                MaxThreads = 1,
+                MaxThreads = 2,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 0, KeepAliveTime = 3000 }
             };
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(2000);
+                Thread.Sleep(1000);
+                logList.Add("Work0 Priority0 END");
             }, new WorkOption()
             {
-                Callback = (res) => 
-                {
-                    logList.Add("Work0 Priority0 END");
-                }
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(2000);
+                Thread.Sleep(1100);
+                logList.Add("Work1 Priority0 END");
             }, new WorkOption()
             {
-                Callback = (res) =>
-                {
-                    logList.Add("Work1 Priority1 END");
-                },
-                WorkPriority = 1,
+            });
+            Thread.Sleep(200);
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+                logList.Add("Work2 Priority0 END");
+            }, new WorkOption()
+            {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(2000);
+                Thread.Sleep(200);
+                logList.Add("Work3 Priority0 END");
             }, new WorkOption()
             {
-                Callback = (res) =>
-                {
-                    logList.Add("Work2 Priority2 END");
-                },
-                WorkPriority = 2,
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(2000);
+                Thread.Sleep(100);
+                logList.Add("Work4 Priority1 END");
             }, new WorkOption()
             {
-                Callback = (res) =>
-                {
-                    logList.Add("Work3 Priority0 END");
-                }
+                WorkPriority = 1
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(2000);
+                Thread.Sleep(200);
+                logList.Add("Work5 Priority1 END");
             }, new WorkOption()
             {
-                Callback = (res) =>
-                {
-                    logList.Add("Work4 Priority1 END");
-                },
-                WorkPriority = 1,
-            });
-            powerPool.QueueWorkItem(() =>
-            {
-                Thread.Sleep(2000);
-            }, new WorkOption()
-            {
-                Callback = (res) =>
-                {
-                    logList.Add("Work5 Priority2 END");
-                },
-                WorkPriority = 2,
+                WorkPriority = 1
             });
 
             powerPool.Wait();
 
-            // TODO
             //Assert.Collection<string>(logList,
             //    item => Assert.Equal("Work0 Priority0 END", item),
-            //    item => Assert.Equal("Work2 Priority2 END", item),
-            //    item => Assert.Equal("Work5 Priority2 END", item),
-            //    item => Assert.Equal("Work1 Priority1 END", item),
+            //    item => Assert.Equal("Work1 Priority0 END", item),
             //    item => Assert.Equal("Work4 Priority1 END", item),
+            //    item => Assert.Equal("Work5 Priority1 END", item),
+            //    item => Assert.Equal("Work2 Priority0 END", item),
             //    item => Assert.Equal("Work3 Priority0 END", item)
             //    );
         }

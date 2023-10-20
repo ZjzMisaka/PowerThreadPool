@@ -28,7 +28,15 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, Worker> runningWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>(); // new
         private PowerPoolOption powerPoolOption;
-        public PowerPoolOption PowerPoolOption { get => powerPoolOption; set => powerPoolOption = value; }
+        public PowerPoolOption PowerPoolOption 
+        { 
+            get => powerPoolOption;
+            set
+            { 
+                powerPoolOption = value;
+                InitWorkerQueue();
+            }
+        }
 
         public delegate void ThreadPoolStartEventHandler(object sender, EventArgs e);
         public event ThreadPoolStartEventHandler ThreadPoolStart;
@@ -117,16 +125,12 @@ namespace PowerThreadPool
 
         public PowerPool()
         {
-            PowerPoolOption = new PowerPoolOption();
-
-            InitWorkerQueue();
+            
         }
 
         public PowerPool(PowerPoolOption powerPoolOption)
         {
             PowerPoolOption = powerPoolOption;
-
-            InitWorkerQueue();
         }
 
         /// <summary>
@@ -607,6 +611,11 @@ namespace PowerThreadPool
             if (ThreadPoolStopping)
             {
                 return null;
+            }
+
+            if (powerPoolOption == null)
+            {
+                PowerPoolOption = new PowerPoolOption();
             }
 
             ExecuteResult<TResult> excuteResult = new ExecuteResult<TResult>();
