@@ -181,6 +181,10 @@ public class Worker
             if (waitingWorkDic.TryRemove(stolenWorkId, out WorkBase stolenWork))
             {
                 stolenList.Add(stolenWork);
+                lock (waittingWorkCountLockObj)
+                {
+                    --waittingWorkCount;
+                }
             }
             else
             {
@@ -239,10 +243,6 @@ public class Worker
                         {
                             ++waittingWorkCount;
                         }
-                        lock (worker.waittingWorkCountLockObj)
-                        {
-                            --worker.waittingWorkCount;
-                        }
                     }
                 }
                 
@@ -250,6 +250,8 @@ public class Worker
                 {
                     worker.stealingLock = false;
                 }
+
+                waitingWorkId = waitingWorkIdQueue.Dequeue();
             }
         }
 
