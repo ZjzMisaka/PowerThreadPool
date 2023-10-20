@@ -22,11 +22,11 @@ namespace PowerThreadPool
 
         internal ConcurrentDictionary<string, Worker> idleWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentQueue<string> idleWorkerQueue = new ConcurrentQueue<string>();
-        private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>(); // TODO
+        private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
         
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentDictionary<string, Worker> runningWorkerDic = new ConcurrentDictionary<string, Worker>();
-        internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>(); // new
+        internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
         private PowerPoolOption powerPoolOption;
         public PowerPoolOption PowerPoolOption 
         { 
@@ -58,7 +58,7 @@ namespace PowerThreadPool
 
         private System.Timers.Timer threadPoolTimer;
 
-        public object lockObj = new object();
+        private object lockObj = new object();
 
         private bool threadPoolRunning = false;
         public bool ThreadPoolRunning { get => threadPoolRunning; }
@@ -870,7 +870,6 @@ namespace PowerThreadPool
                 settedWorkDic = new ConcurrentDictionary<string, Worker>();
                 aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
                 runningWorkerDic = new ConcurrentDictionary<string, Worker>();
-                // TODO
             }
         }
 
@@ -944,7 +943,6 @@ namespace PowerThreadPool
             threadPoolStopping = true;
 
             waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
-            // TODO
 
             if (forceStop)
             {
@@ -1190,6 +1188,11 @@ namespace PowerThreadPool
             return false;
         }
 
+        /// <summary>
+        /// Invoke WorkTimeout event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         internal void OnWorkTimeout(object sender, TimeoutEventArgs e)
         {
             if (WorkTimeout != null)
@@ -1198,6 +1201,10 @@ namespace PowerThreadPool
             }
         }
 
+        /// <summary>
+        /// Invoke WorkStart event
+        /// </summary>
+        /// <param name="workID"></param>
         internal void OnWorkStart(string workID)
         {
             if (WorkStart != null)
