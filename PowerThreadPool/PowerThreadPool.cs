@@ -53,7 +53,7 @@ namespace PowerThreadPool
         public delegate void ForceStopEventHandler(object sender, ForceStopEventArgs e);
         public event ForceStopEventHandler ForceStop;
 
-        internal delegate void CallbackEndEventHandler(string id);
+        internal delegate void CallbackEndEventHandler(string id, bool succeed);
         internal event CallbackEndEventHandler CallbackEnd;
 
         private System.Timers.Timer threadPoolTimer;
@@ -714,11 +714,11 @@ namespace PowerThreadPool
         /// Work end
         /// </summary>
         /// <param name="guid"></param>
-        internal void WorkCallbackEnd(string guid)
+        internal void WorkCallbackEnd(string guid, bool succeed)
         {
             if (CallbackEnd != null)
             {
-                CallbackEnd.Invoke(guid);
+                CallbackEnd.Invoke(guid, succeed);
             }
 
             settedWorkDic.TryRemove(guid, out _);

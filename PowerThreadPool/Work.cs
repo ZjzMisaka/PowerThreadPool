@@ -40,13 +40,13 @@ namespace PowerThreadPool
 
             if (this.option != null && this.option.Dependents != null && this.option.Dependents.Count != 0)
             {
-                powerPool.CallbackEnd += (workId) =>
+                powerPool.CallbackEnd += (workId, succeed) =>
                 {
                     lock (lockObj)
                     {
                         if (this.option.Dependents.Remove(workId))
                         {
-                            if (this.option.Dependents.Count == 0)
+                            if (succeed && this.option.Dependents.Count == 0)
                             {
                                 powerPool.SetWork(this);
                             }
