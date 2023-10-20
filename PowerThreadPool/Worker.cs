@@ -156,14 +156,13 @@ public class Worker
             }
 
             waitSignalDic[work.ID] = new AutoResetEvent(false);
-        }
 
-        if (!alive)
-        {
-            alive = true;
-            AssignWork(powerPool);
+            if (!alive)
+            {
+                alive = true;
+                AssignWork(powerPool);
+            }
         }
-        
     }
 
     internal List<WorkBase> Steal(int count)
