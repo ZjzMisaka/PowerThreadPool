@@ -58,8 +58,6 @@ namespace PowerThreadPool
 
         private System.Timers.Timer threadPoolTimer;
 
-        private object lockObj = new object();
-
         private bool threadPoolRunning = false;
         public bool ThreadPoolRunning { get => threadPoolRunning; }
 
@@ -762,11 +760,7 @@ namespace PowerThreadPool
 
             Worker worker = GetWorker();
             settedWorkDic[work.ID] = worker;
-
-            lock (lockObj)
-            {
-                worker.SetWork(work, this);
-            }
+            worker.SetWork(work, this);
         }
 
         /// <summary>

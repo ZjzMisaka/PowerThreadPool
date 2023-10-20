@@ -145,20 +145,23 @@ public class Worker
 
     internal void SetWork(WorkBase work, PowerPool powerPool)
     {
-        waitingWorkIdQueue.Enqueue(work.ID, work.WorkPriority);
-
-        waitingWorkDic[work.ID] = work;
-        lock (waittingWorkCountLockObj)
+        lock (powerPool)
         {
-            ++waittingWorkCount;
-        }
+            waitingWorkIdQueue.Enqueue(work.ID, work.WorkPriority);
 
-        waitSignalDic[work.ID] = new AutoResetEvent(false);
+            waitingWorkDic[work.ID] = work;
+            lock (waittingWorkCountLockObj)
+            {
+                ++waittingWorkCount;
+            }
 
-        if (!alive)
-        {
-            alive = true;
-            AssignWork(powerPool);
+            waitSignalDic[work.ID] = new AutoResetEvent(false);
+
+            if (!alive)
+            {
+                alive = true;
+                AssignWork(powerPool);
+            }
         }
     }
 
@@ -229,7 +232,7 @@ public class Worker
                 if (count > 0)
                 {
                     List<WorkBase> stolenWorkList = worker.Steal(count);
-                    
+
                     foreach (WorkBase stolenWork in stolenWorkList)
                     {
                         SetWork(stolenWork, powerPool);
@@ -240,7 +243,7 @@ public class Worker
                         }
                     }
                 }
-                
+
                 lock (worker.stealingLockLockObj)
                 {
                     worker.stealingLock = false;
