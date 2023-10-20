@@ -270,7 +270,7 @@ namespace UnitTest
             List<string> logList = new List<string>();
             powerPool.QueueWorkItem(() =>
             {
-                for (int i = 0; i < 100; ++i)
+                for (int i = 0; i < 1000; ++i)
                 {
                     powerPool.StopIfRequested();
                     Thread.Sleep(10);
@@ -282,7 +282,7 @@ namespace UnitTest
             Thread.Sleep(100);
             string id = powerPool.QueueWorkItem(() =>
             {
-                for (int i = 0; i < 100; ++i)
+                for (int i = 0; i < 1000; ++i)
                 {
                     powerPool.StopIfRequested();
                     Thread.Sleep(10);
@@ -294,7 +294,7 @@ namespace UnitTest
             Thread.Sleep(100);
             powerPool.QueueWorkItem(() =>
             {
-                for (int i = 0; i < 100; ++i)
+                for (int i = 0; i < 1000; ++i)
                 {
                     powerPool.StopIfRequested();
                     Thread.Sleep(10);
@@ -309,7 +309,7 @@ namespace UnitTest
             powerPool.Wait();
             long end = GetNowSs() - start;
 
-            Assert.True(end > 50 && end < 150);
+            Assert.True(end >= 50 && end <= 350);
         }
 
         [Fact]

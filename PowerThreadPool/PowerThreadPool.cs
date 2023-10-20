@@ -754,7 +754,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Check if a thread pool thread becomes available. when available, get methods from queue and executes them.
+        /// Set a work into a worker's work queue.
         /// </summary>
         internal void SetWork(WorkBase work)
         {
@@ -768,6 +768,10 @@ namespace PowerThreadPool
             }
         }
 
+        /// <summary>
+        /// Get a Worker
+        /// </summary>
+        /// <returns></returns>
         private Worker GetWorker()
         {
             Worker worker = null;
