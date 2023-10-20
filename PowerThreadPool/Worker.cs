@@ -347,4 +347,14 @@ public class Worker
             timer.Start();
         }
     }
+
+    internal void Cancel()
+    {
+        waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+    }
+
+    internal bool Cancel(string id)
+    {
+        return waitingWorkDic.TryRemove(id, out _);
+    }
 }

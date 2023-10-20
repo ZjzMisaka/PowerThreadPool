@@ -1155,7 +1155,11 @@ namespace PowerThreadPool
         /// </summary>
         public void Cancel()
         {
-            // TODO
+            List<Worker> aliveWorkerList = aliveWorkerDic.Values.ToList();
+            foreach (Worker worker in aliveWorkerList)
+            {
+                worker.Cancel();
+            }
         }
 
         /// <summary>
@@ -1169,8 +1173,13 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            // TODO
-            return true;
+
+            if (settedWorkDic.TryGetValue(id, out Worker worker))
+            {
+                return worker.Cancel(id);
+            }
+
+            return false;
         }
 
         public void OnWorkTimeout(object sender, TimeoutEventArgs e)
