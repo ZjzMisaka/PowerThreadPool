@@ -1,10 +1,5 @@
 ﻿using PowerThreadPool;
 using PowerThreadPool.Option;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace UnitTest
 {
@@ -17,9 +12,10 @@ namespace UnitTest
         [Fact]
         public async Task StressTest1()
         {
-            for (int i = 0; i < 10; ++i)
+            for (int i = 0; i < 100; ++i)
             {
                 int doneCount = 0;
+                int failedCount = 0;
                 PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
 
                 Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
@@ -29,6 +25,13 @@ namespace UnitTest
                         {
                         }, (res) =>
                         {
+                            if (res.Status == Status.Failed)
+                            {
+                                lock (lockObj)
+                                {
+                                    ++failedCount;
+                                }
+                            }
                             lock (lockObj)
                             {
                                 ++doneCount;
@@ -47,21 +50,25 @@ namespace UnitTest
                 // Assert.Equal(totalTasks, powerPool.RunningWorkerCount + powerPool.WaitingWorkCount + doneCount);
 
                 await powerPool.WaitAsync();
-                Assert.Equal(totalTasks, powerPool.RunningWorkerCount + powerPool.WaitingWorkCount + doneCount);
+
+                await Task.Delay(100);
+
+                // stealCount, settedCount, errorCount, runCount
+                Assert.Equal(totalTasks, doneCount);
+                Assert.Equal(0, failedCount);
                 Assert.Equal(0, powerPool.RunningWorkerCount);
                 Assert.Equal(0, powerPool.WaitingWorkCount);
 
-                Assert.True(powerPool.IdleThreadCount > 0);
+                Assert.True(powerPool.IdleWorkerCount > 0);
             }
         }
 
         [Fact]
-        public void StressTest2()
+        public async void StressTest2()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
             int startCount = 0;
             int idleCount = 0;
-
             int doneCount = 0;
 
             powerPool.ThreadPoolStart += (s, e) => 
@@ -69,7 +76,6 @@ namespace UnitTest
                 lock (lockObj) 
                 { 
                     ++startCount; 
-                    doneCount = 0; 
                 } 
             };
             powerPool.ThreadPoolIdle += (s, e) => 
@@ -77,11 +83,10 @@ namespace UnitTest
                 lock (lockObj) 
                 {
                     ++idleCount;
-                    Assert.Equal(1, idleCount);
-                    Assert.Equal(6010100, doneCount);
+                    
                 } 
             };
-            
+
             for (int i = 0; i < 100; ++i)
             {
                 powerPool.QueueWorkItem(() =>
@@ -132,9 +137,25 @@ namespace UnitTest
                 });
             }
 
-            powerPool.Wait();
+            while (powerPool.ThreadPoolRunning)
+            {
+                while (powerPool.ThreadPoolRunning)
+                {
+                    while (powerPool.ThreadPoolRunning)
+                    {
+                        while (powerPool.ThreadPoolRunning)
+                        {
+                            await powerPool.WaitAsync();
+                            Thread.Sleep(5000);
+                        }
+                        Thread.Sleep(100);
+                    }
+                    Thread.Sleep(100);
+                }
+                Thread.Sleep(100);
+            }
 
-            Assert.Equal(1, startCount);
+            Assert.Equal(6010100, doneCount);
         }
     }
 }

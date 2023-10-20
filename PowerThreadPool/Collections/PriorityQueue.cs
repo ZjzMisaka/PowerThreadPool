@@ -8,8 +8,9 @@ namespace PowerThreadPool.Collections
 {
     public class PriorityQueue<T>
     {
-        private readonly object syncLock = new object();
         private SortedDictionary<int, ConcurrentQueue<T>> queueDic;
+
+        object lockObj = new object();
 
         public PriorityQueue()
         {
@@ -18,7 +19,7 @@ namespace PowerThreadPool.Collections
 
         public void Enqueue(T item, int priority)
         {
-            lock (syncLock)
+            lock (lockObj)
             {
                 if (queueDic.ContainsKey(priority))
                 {
@@ -35,9 +36,9 @@ namespace PowerThreadPool.Collections
 
         public T Dequeue()
         {
-            lock (syncLock)
+            lock (lockObj)
             {
-                if (queueDic.Count == 0)
+                if (queueDic.Count <= 0)
                 {
                     return default;
                 }
@@ -52,17 +53,6 @@ namespace PowerThreadPool.Collections
                 }
 
                 return item;
-            }
-        }
-
-        public int Count
-        {
-            get
-            {
-                lock (syncLock)
-                {
-                    return queueDic.Sum(p => p.Value.Count);
-                }
             }
         }
     }

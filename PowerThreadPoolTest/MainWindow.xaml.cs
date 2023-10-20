@@ -173,9 +173,9 @@ namespace PowerThreadPoolTest
                 }
 
                 string countTxt =
-                "waiting: " + powerPool.WaitingWorkCount + "\n" +
-                "running: " + powerPool.RunningWorkerCount + "\n" +
-                "Idle: " + powerPool.IdleThreadCount + "\n" +
+                "WaitingWorkCount: " + powerPool.WaitingWorkCount + "\n" +
+                "RunningWorkerCount: " + powerPool.RunningWorkerCount + "\n" +
+                "IdleWorkerCount: " + powerPool.IdleWorkerCount + "\n" +
                 "Running: " + powerPool.ThreadPoolRunning.ToString() + "\n" +
                 "Stopping: " + powerPool.ThreadPoolStopping.ToString();
                 count.Text = countTxt;
@@ -286,6 +286,142 @@ namespace PowerThreadPoolTest
         private void T6Action(int x, int y)
         {
             OutputMsg("T6Action: x + y :" + (x + y).ToString());
+        }
+
+
+
+
+
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (MessageBox.Show("Run Stress Test1?", "", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                object lockObj = new object();
+                for (int i = 0; i < 10; ++i)
+                {
+                    int doneCount = 0;
+                    PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
+
+                    Task[] tasks = Enumerable.Range(0, 100000).Select(i =>
+                        Task.Run(() =>
+                        {
+                            string workId = powerPool.QueueWorkItem(() =>
+                            {
+                            }, (res) =>
+                            {
+                                lock (lockObj)
+                                {
+                                    ++doneCount;
+                                }
+                            });
+                        }
+                        )
+                    ).ToArray();
+
+                    await Task.WhenAll(tasks);
+                    await powerPool.WaitAsync();
+                }
+
+                MessageBox.Show("OK");
+                this.Close();
+            }
+
+            if (MessageBox.Show("Run Stress Test2?", "", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            {
+                object lockObj = new object();
+                PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
+                int startCount = 0;
+                int idleCount = 0;
+                int doneCount = 0;
+
+                powerPool.ThreadPoolStart += (s, e) =>
+                {
+                    lock (lockObj)
+                    {
+                        ++startCount;
+                    }
+                };
+                powerPool.ThreadPoolIdle += (s, e) =>
+                {
+                    lock (lockObj)
+                    {
+                        ++idleCount;
+
+                    }
+                };
+
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.QueueWorkItem(() =>
+                    {
+                        for (int j = 0; j < 100; ++j)
+                        {
+                            powerPool.QueueWorkItem(() =>
+                            {
+                                for (int k = 0; k < 100; ++k)
+                                {
+                                    powerPool.QueueWorkItem(() =>
+                                    {
+                                    }, (res) =>
+                                    {
+                                        for (int j = 0; j < 5; ++j)
+                                        {
+                                            powerPool.QueueWorkItem(() =>
+                                            {
+
+                                            }, (res) =>
+                                            {
+                                                lock (lockObj)
+                                                {
+                                                    ++doneCount;
+                                                }
+                                            });
+                                        }
+                                        lock (lockObj)
+                                        {
+                                            ++doneCount;
+                                        }
+                                    });
+                                }
+                            }, (res) =>
+                            {
+                                lock (lockObj)
+                                {
+                                    ++doneCount;
+                                }
+                            });
+                        }
+                    }, (res) =>
+                    {
+                        lock (lockObj)
+                        {
+                            ++doneCount;
+                        }
+                    });
+                }
+
+                while (powerPool.ThreadPoolRunning)
+                {
+                    while (powerPool.ThreadPoolRunning)
+                    {
+                        while (powerPool.ThreadPoolRunning)
+                        {
+                            while (powerPool.ThreadPoolRunning)
+                            {
+                                await powerPool.WaitAsync();
+                                Thread.Sleep(5000);
+                            }
+                            Thread.Sleep(100);
+                        }
+                        Thread.Sleep(100);
+                    }
+                    Thread.Sleep(100);
+                }
+
+                MessageBox.Show("OK");
+                this.Close();
+            }
         }
     }
 }

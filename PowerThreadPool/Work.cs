@@ -15,7 +15,9 @@ namespace PowerThreadPool
         public abstract object Execute();
         public abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
-        internal abstract ThreadPriority GetThreadPriority();
+        internal abstract ThreadPriority ThreadPriority { get; }
+        internal abstract int WorkPriority { get; }
+        internal abstract TimeoutOption WorkTimeoutOption { get; }
     }
     internal class Work<TResult> : WorkBase
     {
@@ -24,6 +26,10 @@ namespace PowerThreadPool
         private WorkOption<TResult> option;
 
         private object lockObj = new object();
+
+        internal override int WorkPriority { get => option.WorkPriority; }
+        internal override ThreadPriority ThreadPriority { get => option.ThreadPriority; }
+        internal override TimeoutOption WorkTimeoutOption { get => option.Timeout; }
 
         public Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
         {
@@ -34,15 +40,15 @@ namespace PowerThreadPool
 
             if (this.option != null && this.option.Dependents != null && this.option.Dependents.Count != 0)
             {
-                powerPool.CallbackEnd += (workId) =>
+                powerPool.CallbackEnd += (workId, succeed) =>
                 {
                     lock (lockObj)
                     {
                         if (this.option.Dependents.Remove(workId))
                         {
-                            if (this.option.Dependents.Count == 0)
+                            if (succeed && this.option.Dependents.Count == 0)
                             {
-                                powerPool.SetWorkIntoWaitingQueue<TResult>(id);
+                                powerPool.SetWork(this);
                             }
                         }
                     }
@@ -72,11 +78,6 @@ namespace PowerThreadPool
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
             executeResult.SetExecuteResult(result, exception, status);
             return executeResult;
-        }
-
-        internal override ThreadPriority GetThreadPriority()
-        {
-            return option.ThreadPriority;
         }
     }
 }
