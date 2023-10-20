@@ -196,74 +196,72 @@ public class Worker
     private void AssignWork(PowerPool powerPool)
     {
         string waitingWorkId = waitingWorkIdQueue.Dequeue();
-        WorkBase work = null;
-        lock (powerPool)
+
+        if (waitingWorkId == null)
         {
-            if (waitingWorkId == null)
+            // Try work stealing
+            Worker worker = null;
+            List<Worker> workerList = powerPool.aliveWorkerDic.Values.ToList();
+            int max = 0;
+            foreach (Worker runningWorker in workerList)
             {
-                // Try work stealing
-                Worker worker = null;
-                List<Worker> workerList = powerPool.aliveWorkerDic.Values.ToList();
-                int max = 0;
-                foreach (Worker runningWorker in workerList)
+                int waittingWorkCountTemp = runningWorker.waittingWorkCount;
+                if (waittingWorkCountTemp > max)
                 {
-                    int waittingWorkCountTemp = runningWorker.waittingWorkCount;
-                    if (waittingWorkCountTemp > max)
+                    lock (runningWorker.stealingLockLockObj)
                     {
-                        lock (runningWorker.stealingLockLockObj)
+                        if (runningWorker.stealingLock)
                         {
-                            if (runningWorker.stealingLock)
-                            {
-                                continue;
-                            }
-                            runningWorker.stealingLock = true;
+                            continue;
                         }
-                        if (worker != null)
-                        {
-                            lock (worker.stealingLockLockObj)
-                            {
-                                worker.stealingLock = false;
-                            }
-                        }
-                        max = waittingWorkCountTemp;
-                        worker = runningWorker;
+                        runningWorker.stealingLock = true;
                     }
-                }
-                if (worker != null)
-                {
-                    int count = max / 2;
-                    if (count > 0)
+                    if (worker != null)
                     {
-                        List<WorkBase> stolenWorkList = worker.Steal(count);
-
-                        foreach (WorkBase stolenWork in stolenWorkList)
+                        lock (worker.stealingLockLockObj)
                         {
-                            SetWork(stolenWork, powerPool);
-
-                            lock (waittingWorkCountLockObj)
-                            {
-                                ++waittingWorkCount;
-                            }
+                            worker.stealingLock = false;
                         }
                     }
-
-                    lock (worker.stealingLockLockObj)
-                    {
-                        worker.stealingLock = false;
-                    }
-
-                    waitingWorkId = waitingWorkIdQueue.Dequeue();
+                    max = waittingWorkCountTemp;
+                    worker = runningWorker;
                 }
             }
-
-            if (waitingWorkId != null)
+            if (worker != null)
             {
-                if (waitingWorkDic.TryRemove(waitingWorkId, out work))
+                int count = max / 2;
+                if (count > 0)
                 {
-                    lock (waittingWorkCountLockObj)
+                    List<WorkBase> stolenWorkList = worker.Steal(count);
+
+                    foreach (WorkBase stolenWork in stolenWorkList)
                     {
-                        --waittingWorkCount;
+                        SetWork(stolenWork, powerPool);
+
+                        lock (waittingWorkCountLockObj)
+                        {
+                            ++waittingWorkCount;
+                        }
                     }
+                }
+
+                lock (worker.stealingLockLockObj)
+                {
+                    worker.stealingLock = false;
+                }
+
+                waitingWorkId = waitingWorkIdQueue.Dequeue();
+            }
+        }
+
+        WorkBase work = null;
+        if (waitingWorkId != null)
+        {
+            if (waitingWorkDic.TryRemove(waitingWorkId, out work))
+            {
+                lock (waittingWorkCountLockObj)
+                {
+                    --waittingWorkCount;
                 }
             }
         }
