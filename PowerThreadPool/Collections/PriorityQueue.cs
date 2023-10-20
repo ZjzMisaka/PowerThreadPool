@@ -34,41 +34,6 @@ namespace PowerThreadPool.Collections
             }
         }
 
-        public List<T> Steal(int count)
-        {
-            var stolenItems = new List<T>();
-
-            if (queueDic.Count == 0)
-            {
-                return stolenItems;
-            }
-
-            lock (lockObj)
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    if (queueDic.Count <= 0)
-                    {
-                        break;
-                    }
-
-                    var pair = queueDic.Last();
-
-                    if (pair.Value.TryDequeue(out T item))
-                    {
-                        stolenItems.Add(item);
-                    }
-
-                    if (!pair.Value.Any())
-                    {
-                        queueDic.Remove(pair.Key);
-                    }
-                }
-            }
-
-            return stolenItems;
-        }
-
         public T Dequeue()
         {
             lock (lockObj)
@@ -88,14 +53,6 @@ namespace PowerThreadPool.Collections
                 }
 
                 return item;
-            }
-        }
-
-        public int Count
-        {
-            get
-            {
-                return queueDic.Sum(p => p.Value.Count);
             }
         }
     }
