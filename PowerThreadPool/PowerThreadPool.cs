@@ -59,7 +59,6 @@ namespace PowerThreadPool
         private System.Timers.Timer threadPoolTimer;
 
         public object lockObj = new object();
-        public object holdWorkerAliveLockObj = new object();
 
         private bool threadPoolRunning = false;
         public bool ThreadPoolRunning { get => threadPoolRunning; }
@@ -793,7 +792,7 @@ namespace PowerThreadPool
                 int min = int.MaxValue;
                 foreach (Worker runningWorker in aliveWorkerList)
                 {
-                    int waittingWorkCountTemp = runningWorker.waittingWorkCount;
+                    int waittingWorkCountTemp = runningWorker.WaittingWorkCount;
                     if (waittingWorkCountTemp < min)
                     {
                         min = waittingWorkCountTemp;
@@ -1191,7 +1190,7 @@ namespace PowerThreadPool
             return false;
         }
 
-        public void OnWorkTimeout(object sender, TimeoutEventArgs e)
+        internal void OnWorkTimeout(object sender, TimeoutEventArgs e)
         {
             if (WorkTimeout != null)
             {

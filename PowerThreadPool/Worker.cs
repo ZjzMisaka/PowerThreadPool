@@ -15,10 +15,10 @@ public class Worker
     private string id;
     internal string ID { get => id; set => id = value; }
 
-    internal PriorityQueue<string> waitingWorkIdQueue = new PriorityQueue<string>();
-    internal ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
-    internal int waittingWorkCount = 0;
-    internal object waittingWorkCountLockObj = new object();
+    private PriorityQueue<string> waitingWorkIdQueue = new PriorityQueue<string>();
+    private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+    private int waittingWorkCount = 0;
+    private object waittingWorkCountLockObj = new object();
 
     private System.Timers.Timer timer;
     private System.Timers.Timer killTimer;
@@ -28,12 +28,10 @@ public class Worker
     private string workID;
     internal string WorkID { get => workID; set => workID = value; }
     private WorkBase work;
-    internal bool killFlag = false;
-
-    private bool running = false;
+    private bool killFlag = false;
     private bool alive = false;
-    internal bool stealingLock = false;
-    internal object stealingLockLockObj = new object();
+    private bool stealingLock = false;
+    private object stealingLockLockObj = new object();
 
     internal int WaittingWorkCount
     {
@@ -59,7 +57,6 @@ public class Worker
                         return;
                     }
 
-                    running = true;
                     powerPool.runningWorkerDic[ID] = this;
 
                     thread.Name = work.ID;
@@ -91,8 +88,6 @@ public class Worker
                     {
                         waitSignal.Set();
                     }
-
-                    running = false;
 
                     AssignWork(powerPool);
 
