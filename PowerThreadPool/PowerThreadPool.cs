@@ -98,25 +98,11 @@ namespace PowerThreadPool
                 return runningWorkerDic.Count;
             }
         }
-        public IEnumerable<string> RunningWorkerList
-        {
-            get
-            {
-                return runningWorkerDic.Keys.ToList();
-            }
-        }
         public int AliveWorkerCount
         {
             get
             {
                 return aliveWorkerDic.Count;
-            }
-        }
-        public IEnumerable<string> AliveWorkerList
-        {
-            get
-            {
-                return aliveWorkerDic.Keys.ToList();
             }
         }
 
