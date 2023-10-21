@@ -309,7 +309,7 @@ namespace UnitTest
             powerPool.Wait();
             long end = GetNowSs() - start;
 
-            Assert.True(end >= 50 && end <= 500);
+            Assert.True(end >= 50 && end <= 350);
         }
 
         [Fact]
@@ -355,10 +355,10 @@ namespace UnitTest
             long start = GetNowSs();
             Thread.Sleep(50);
             await powerPool.StopAsync();
-            powerPool.Wait();
+            await powerPool.WaitAsync();
             long end = GetNowSs() - start;
 
-            Assert.True(end >= 50 && end <= 500);
+            Assert.True(end >= 50 && end <= 350);
         }
 
         [Fact]
