@@ -358,7 +358,8 @@ namespace UnitTest
             await powerPool.WaitAsync();
             long end = GetNowSs() - start;
 
-            Assert.True(end >= 50 && end <= 350);
+            Assert.Equal(350, end);
+            // Assert.True(end >= 50 && end <= 350);
         }
 
         [Fact]
@@ -383,7 +384,7 @@ namespace UnitTest
             string id = powerPool.QueueWorkItem(() =>
             {
                 long start = GetNowSs();
-                for (int i = 0; i < 100; ++i)
+                for (int i = 0; i < 1000; ++i)
                 {
                     powerPool.StopIfRequested();
                     Thread.Sleep(10);
@@ -622,6 +623,7 @@ namespace UnitTest
             powerPool.Wait();
             long duration = GetNowSs() - start;
 
+            // Assert.True(duration >= 2500);
             Assert.Equal(2500, duration);
         }
 
