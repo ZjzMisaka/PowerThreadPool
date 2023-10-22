@@ -22,17 +22,18 @@ PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/P
     - Pause
     - Resume
     - Cancel
-2. Work Dependency
-3. Thread Pool Sizing
-4. Thread Reuse
-5. Idle Thread Timeout
-6. Work Priority
-7. Thread Priority
-8. Work Timeout
-9. Cumulative Work Timeout
-10. Callback
-11. Error Handling
-12. Runtime Status
+2. Load Balancing
+3. Work Dependency
+4. Thread Pool Sizing
+5. Thread Reuse
+6. Idle Thread Timeout
+7. Work Priority
+8. Thread Priority
+9. Work Timeout
+10. Cumulative Work Timeout
+11. Callback
+12. Error Handling
+13. Runtime Status
 
 ## Getting started
 ```csharp
