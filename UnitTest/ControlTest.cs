@@ -411,6 +411,7 @@ namespace UnitTest
             Thread.Sleep(150);
             await powerPool.StopAsync(id);
             await powerPool.WaitAsync(id);
+            Thread.Sleep(1000);
             await powerPool.WaitAsync();
 
             Assert.Collection<long>(logList,
