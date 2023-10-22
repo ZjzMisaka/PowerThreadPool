@@ -369,7 +369,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 long start = GetNowSs();
-                for (int i = 0; i < 100; ++i)
+                for (int i = 0; i < 10000; ++i)
                 {
                     powerPool.StopIfRequested();
                     Thread.Sleep(10);
@@ -383,7 +383,7 @@ namespace UnitTest
             string id = powerPool.QueueWorkItem(() =>
             {
                 long start = GetNowSs();
-                for (int i = 0; i < 1000; ++i)
+                for (int i = 0; i < 100000; ++i)
                 {
                     powerPool.StopIfRequested();
                     Thread.Sleep(10);
@@ -397,7 +397,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 long start = GetNowSs();
-                for (int i = 0; i < 100; ++i)
+                for (int i = 0; i < 10000; ++i)
                 {
                     powerPool.StopIfRequested();
                     Thread.Sleep(10);
