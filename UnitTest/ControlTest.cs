@@ -366,6 +366,18 @@ namespace UnitTest
         {
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
+
+            object lockObj = new object();
+
+            string id = null;
+            powerPool.WorkStart += async (s, e) =>
+            {
+                if (e.ID == id)
+                {
+                    await powerPool.StopAsync(id);
+                }
+            };
+
             powerPool.QueueWorkItem(() =>
             {
                 long start = GetNowSs();
@@ -377,9 +389,12 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                logList.Add(res.Result);
+                lock (lockObj)
+                {
+                    logList.Add(res.Result);
+                }
             });
-            string id = powerPool.QueueWorkItem(() =>
+            id = powerPool.QueueWorkItem(() =>
             {
                 long start = GetNowSs();
                 for (int i = 0; i < 1000; ++i)
@@ -390,7 +405,10 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                logList.Add(res.Result);
+                lock (lockObj)
+                {
+                    logList.Add(res.Result);
+                }
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -403,13 +421,19 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                logList.Add(res.Result);
+                lock (lockObj)
+                {
+                    logList.Add(res.Result);
+                }
             });
-            
-            Thread.Sleep(150);
-            await powerPool.StopAsync(id);
+
+            Thread.Sleep(5000);
             await powerPool.WaitAsync(id);
-            await powerPool.WaitAsync();
+
+            while (powerPool.ThreadPoolRunning)
+            {
+                await powerPool.WaitAsync();
+            }
 
             Assert.Collection<long>(logList,
                 item => Assert.Equal(0, item),
