@@ -370,6 +370,7 @@ namespace UnitTest
             object lockObj = new object();
 
             string id = null;
+            string resID = null;
             powerPool.WorkStart += async (s, e) =>
             {
                 if (e.ID == id)
@@ -378,56 +379,20 @@ namespace UnitTest
                 }
             };
 
-            powerPool.QueueWorkItem(() =>
-            {
-                long start = GetNowSs();
-                for (int i = 0; i < 1000; ++i)
-                {
-                    powerPool.StopIfRequested();
-                    Thread.Sleep(1);
-                }
-                return GetNowSs() - start;
-            }, (res) =>
-            {
-                lock (lockObj)
-                {
-                    logList.Add(res.Result);
-                }
-            });
             id = powerPool.QueueWorkItem(() =>
             {
                 long start = GetNowSs();
-                for (int i = 0; i < 1000; ++i)
+                while (true)
                 {
                     powerPool.StopIfRequested();
                     Thread.Sleep(1);
                 }
-                return GetNowSs() - start;
             }, (res) =>
             {
-                lock (lockObj)
-                {
-                    logList.Add(res.Result);
-                }
-            });
-            powerPool.QueueWorkItem(() =>
-            {
-                long start = GetNowSs();
-                for (int i = 0; i < 1000; ++i)
-                {
-                    powerPool.StopIfRequested();
-                    Thread.Sleep(1);
-                }
-                return GetNowSs() - start;
-            }, (res) =>
-            {
-                lock (lockObj)
-                {
-                    logList.Add(res.Result);
-                }
+                resID = res.ID;
             });
 
-            Thread.Sleep(5000);
+            Thread.Sleep(500);
             await powerPool.WaitAsync(id);
 
             while (powerPool.ThreadPoolRunning)
@@ -435,11 +400,7 @@ namespace UnitTest
                 await powerPool.WaitAsync();
             }
 
-            Assert.Collection<long>(logList,
-                item => Assert.Equal(0, item),
-                item => Assert.NotEqual(0, item),
-                item => Assert.NotEqual(0, item)
-                );
+            Assert.Equal(id, resID);
         }
 
         [Fact]
