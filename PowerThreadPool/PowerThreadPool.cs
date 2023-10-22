@@ -73,7 +73,13 @@ namespace PowerThreadPool
         {
             get
             {
-                return settedWorkDic.Count - runningWorkerDic.Count;
+                int count = 0;
+                List<Worker> workerList = runningWorkerDic.Values.ToList();
+                foreach (Worker worker in workerList)
+                {
+                    count += worker.WaitingWorkCount;
+                }
+                return count;
             }
         }
         public IEnumerable<string> WaitingWorkList
@@ -760,7 +766,7 @@ namespace PowerThreadPool
                 int min = int.MaxValue;
                 foreach (Worker runningWorker in aliveWorkerList)
                 {
-                    int waittingWorkCountTemp = runningWorker.WaittingWorkCount;
+                    int waittingWorkCountTemp = runningWorker.WaitingWorkCount;
                     if (waittingWorkCountTemp < min)
                     {
                         min = waittingWorkCountTemp;

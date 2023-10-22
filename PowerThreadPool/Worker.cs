@@ -33,7 +33,7 @@ public class Worker
     private bool stealingLock = false;
     private object stealingLockLockObj = new object();
 
-    internal int WaittingWorkCount
+    internal int WaitingWorkCount
     {
         get 
         { 
@@ -353,10 +353,25 @@ public class Worker
     internal void Cancel()
     {
         waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+        lock (waittingWorkCountLockObj)
+        {
+            waittingWorkCount = 0;
+        }
     }
 
     internal bool Cancel(string id)
     {
-        return waitingWorkDic.TryRemove(id, out _);
+        if (waitingWorkDic.TryRemove(id, out _))
+        {
+            lock (waittingWorkCountLockObj)
+            {
+                --waittingWorkCount;
+            }
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }
