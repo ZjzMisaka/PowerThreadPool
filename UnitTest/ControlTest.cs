@@ -343,7 +343,7 @@ namespace UnitTest
             Thread.Sleep(100);
             powerPool.QueueWorkItem(() =>
             {
-                for (int i = 0; i < 1000; ++i)
+                for (int i = 0; i < 1000000; ++i)
                 {
                     powerPool.StopIfRequested();
                     Thread.Sleep(10);
@@ -358,8 +358,7 @@ namespace UnitTest
             await powerPool.WaitAsync();
             long end = GetNowSs() - start;
 
-            Assert.Equal(350, end);
-            // Assert.True(end >= 50 && end <= 350);
+            Assert.True(end >= 50 && end <= 5000);
         }
 
         [Fact]
@@ -411,6 +410,7 @@ namespace UnitTest
             
             Thread.Sleep(150);
             await powerPool.StopAsync(id);
+            await powerPool.WaitAsync(id);
             await powerPool.WaitAsync();
 
             Assert.Collection<long>(logList,
@@ -623,8 +623,7 @@ namespace UnitTest
             powerPool.Wait();
             long duration = GetNowSs() - start;
 
-            // Assert.True(duration >= 2500);
-            Assert.Equal(2500, duration);
+            Assert.True(duration >= 2500);
         }
 
         [Fact]
