@@ -1,9 +1,7 @@
-﻿using PowerThreadPool.Collections;
-using PowerThreadPool.EventArguments;
+﻿using PowerThreadPool.EventArguments;
 using PowerThreadPool.Helper;
 using PowerThreadPool.Option;
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -644,13 +642,6 @@ namespace PowerThreadPool
         /// <param name="executeResult"></param>
         internal void OneWorkEnd(ExecuteResultBase executeResult)
         {
-            //System.Timers.Timer timer;
-            //if (threadPoolTimerDic.TryRemove(executeResult.ID, out timer))
-            //{
-            //    timer.Stop();
-            //    timer.Enabled = false;
-            //}
-
             InvokeWorkEndEvent(executeResult);
         }
 
@@ -660,12 +651,6 @@ namespace PowerThreadPool
         /// <param name="executeResult"></param>
         internal void OneThreadEndByForceStop(string id)
         {
-            //System.Timers.Timer timer;
-            //if (threadPoolTimerDic.TryRemove(id, out timer))
-            //{
-            //    timer.Stop();
-            //    timer.Enabled = false;
-            //}
             if (ForceStop != null)
             {
                 ForceStop.Invoke(this, new ForceStopEventArgs()

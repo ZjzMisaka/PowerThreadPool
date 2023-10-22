@@ -118,6 +118,7 @@ public class Worker
 
                 powerPool.aliveWorkerDic.TryRemove(ID, out _);
                 powerPool.runningWorkerDic.TryRemove(ID, out _);
+                powerPool.idleWorkerDic.TryRemove(ID, out _);
 
                 powerPool.CheckPoolIdle();
 
