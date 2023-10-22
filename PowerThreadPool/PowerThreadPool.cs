@@ -801,6 +801,8 @@ namespace PowerThreadPool
                     PoolStart.Invoke(this, new EventArgs());
                 }
 
+                waitAllSignal.Reset();
+
                 if (powerPoolOption.Timeout != null)
                 {
                     poolTimer = new System.Timers.Timer(powerPoolOption.Timeout.Duration);
