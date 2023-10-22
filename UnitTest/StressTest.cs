@@ -71,14 +71,14 @@ namespace UnitTest
             int idleCount = 0;
             int doneCount = 0;
 
-            powerPool.ThreadPoolStart += (s, e) => 
+            powerPool.PoolStart += (s, e) => 
             { 
                 lock (lockObj) 
                 { 
                     ++startCount; 
                 } 
             };
-            powerPool.ThreadPoolIdle += (s, e) => 
+            powerPool.PoolIdle += (s, e) => 
             { 
                 lock (lockObj) 
                 {
@@ -137,13 +137,13 @@ namespace UnitTest
                 });
             }
 
-            while (powerPool.ThreadPoolRunning)
+            while (powerPool.PoolRunning)
             {
-                while (powerPool.ThreadPoolRunning)
+                while (powerPool.PoolRunning)
                 {
-                    while (powerPool.ThreadPoolRunning)
+                    while (powerPool.PoolRunning)
                     {
-                        while (powerPool.ThreadPoolRunning)
+                        while (powerPool.PoolRunning)
                         {
                             await powerPool.WaitAsync();
                             Thread.Sleep(5000);

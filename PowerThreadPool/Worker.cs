@@ -15,7 +15,7 @@ public class Worker
     private string id;
     internal string ID { get => id; set => id = value; }
 
-    private PriorityQueue<string> waitingWorkIdQueue = new PriorityQueue<string>();
+    private PriorityQueue<string> waitingWorkIDQueue = new PriorityQueue<string>();
     private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
     private int waittingWorkCount = 0;
     private object waittingWorkCountLockObj = new object();
@@ -91,7 +91,7 @@ public class Worker
 
                     AssignWork(powerPool);
 
-                    powerPool.CheckIdle();
+                    powerPool.CheckPoolIdle();
                 }
             }
             catch (ThreadInterruptedException ex)
@@ -119,7 +119,7 @@ public class Worker
                 powerPool.aliveWorkerDic.TryRemove(ID, out _);
                 powerPool.runningWorkerDic.TryRemove(ID, out _);
 
-                powerPool.CheckIdle();
+                powerPool.CheckPoolIdle();
 
                 return;
             }
@@ -147,7 +147,7 @@ public class Worker
     {
         lock (powerPool)
         {
-            waitingWorkIdQueue.Enqueue(work.ID, work.WorkPriority);
+            waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
 
             waitingWorkDic[work.ID] = work;
             lock (waittingWorkCountLockObj)
@@ -170,13 +170,13 @@ public class Worker
         List<WorkBase> stolenList = new List<WorkBase>();
         for (int i = 0; i < count; ++i) 
         {
-            string stolenWorkId = waitingWorkIdQueue.Dequeue();
-            if (stolenWorkId == null)
+            string stolenWorkID = waitingWorkIDQueue.Dequeue();
+            if (stolenWorkID == null)
             { 
                 return stolenList;
             }
 
-            if (waitingWorkDic.TryRemove(stolenWorkId, out WorkBase stolenWork))
+            if (waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
             {
                 stolenList.Add(stolenWork);
                 lock (waittingWorkCountLockObj)
@@ -196,9 +196,9 @@ public class Worker
     {
         lock (powerPool)
         {
-            string waitingWorkId = waitingWorkIdQueue.Dequeue();
+            string waitingWorkID = waitingWorkIDQueue.Dequeue();
 
-            if (waitingWorkId == null)
+            if (waitingWorkID == null)
             {
                 // Try work stealing
                 Worker worker = null;
@@ -251,14 +251,14 @@ public class Worker
                         worker.stealingLock = false;
                     }
 
-                    waitingWorkId = waitingWorkIdQueue.Dequeue();
+                    waitingWorkID = waitingWorkIDQueue.Dequeue();
                 }
             }
 
             WorkBase work = null;
-            if (waitingWorkId != null)
+            if (waitingWorkID != null)
             {
-                if (waitingWorkDic.TryRemove(waitingWorkId, out work))
+                if (waitingWorkDic.TryRemove(waitingWorkID, out work))
                 {
                     lock (waittingWorkCountLockObj)
                     {
@@ -267,7 +267,7 @@ public class Worker
                 }
             }
 
-            if (waitingWorkId == null || work == null)
+            if (waitingWorkID == null || work == null)
             {
                 powerPool.runningWorkerDic.TryRemove(ID, out _);
                 alive = false;

@@ -38,16 +38,16 @@ namespace PowerThreadPool
             }
         }
 
-        public delegate void ThreadPoolStartEventHandler(object sender, EventArgs e);
-        public event ThreadPoolStartEventHandler ThreadPoolStart;
-        public delegate void ThreadPoolIdleEventHandler(object sender, EventArgs e);
-        public event ThreadPoolIdleEventHandler ThreadPoolIdle;
+        public delegate void PoolStartEventHandler(object sender, EventArgs e);
+        public event PoolStartEventHandler PoolStart;
+        public delegate void PoolIdleEventHandler(object sender, EventArgs e);
+        public event PoolIdleEventHandler PoolIdle;
         public delegate void WorkStartEventHandler(object sender, WorkStartEventArgs e);
         public event WorkStartEventHandler WorkStart;
         public delegate void WorkEndEventHandler(object sender, WorkEndEventArgs e);
         public event WorkEndEventHandler WorkEnd;
-        public delegate void ThreadPoolTimeoutEventHandler(object sender, EventArgs e);
-        public event ThreadPoolTimeoutEventHandler ThreadPoolTimeout;
+        public delegate void PoolTimeoutEventHandler(object sender, EventArgs e);
+        public event PoolTimeoutEventHandler PoolTimeout;
         public delegate void WorkTimeoutEventHandler(object sender, TimeoutEventArgs e);
         public event WorkTimeoutEventHandler WorkTimeout;
         public delegate void ForceStopEventHandler(object sender, ForceStopEventArgs e);
@@ -56,13 +56,13 @@ namespace PowerThreadPool
         internal delegate void CallbackEndEventHandler(string id, bool succeed);
         internal event CallbackEndEventHandler CallbackEnd;
 
-        private System.Timers.Timer threadPoolTimer;
+        private System.Timers.Timer poolTimer;
 
-        private bool threadPoolRunning = false;
-        public bool ThreadPoolRunning { get => threadPoolRunning; }
+        private bool poolRunning = false;
+        public bool PoolRunning { get => poolRunning; }
 
-        private bool threadPoolStopping = false;
-        public bool ThreadPoolStopping { get => threadPoolStopping; }
+        private bool poolStopping = false;
+        public bool PoolStopping { get => poolStopping; }
 
         public int IdleWorkerCount
         {
@@ -591,7 +591,7 @@ namespace PowerThreadPool
         {
             string workID = null;
 
-            if (ThreadPoolStopping)
+            if (PoolStopping)
             {
                 return null;
             }
@@ -630,7 +630,7 @@ namespace PowerThreadPool
             }
             else
             {
-                CheckThreadPoolStart();
+                CheckPoolStart();
                 SetWork(work);
             }
 
@@ -742,7 +742,7 @@ namespace PowerThreadPool
         /// </summary>
         internal void SetWork(WorkBase work)
         {
-            CheckThreadPoolStart();
+            CheckPoolStart();
 
             Worker worker = GetWorker();
             settedWorkDic[work.ID] = worker;
@@ -790,30 +790,30 @@ namespace PowerThreadPool
         /// <summary>
         /// Check if it's the start of thread pool
         /// </summary>
-        private void CheckThreadPoolStart()
+        private void CheckPoolStart()
         {
-            if (!ThreadPoolRunning)
+            if (!PoolRunning)
             {
-                threadPoolRunning = true;
+                poolRunning = true;
 
-                if (ThreadPoolStart != null)
+                if (PoolStart != null)
                 {
-                    ThreadPoolStart.Invoke(this, new EventArgs());
+                    PoolStart.Invoke(this, new EventArgs());
                 }
 
                 if (powerPoolOption.Timeout != null)
                 {
-                    threadPoolTimer = new System.Timers.Timer(powerPoolOption.Timeout.Duration);
-                    threadPoolTimer.AutoReset = false;
-                    threadPoolTimer.Elapsed += (s, e) =>
+                    poolTimer = new System.Timers.Timer(powerPoolOption.Timeout.Duration);
+                    poolTimer.AutoReset = false;
+                    poolTimer.Elapsed += (s, e) =>
                     {
-                        if (ThreadPoolTimeout != null)
+                        if (PoolTimeout != null)
                         {
-                            ThreadPoolTimeout.Invoke(this, new EventArgs());
+                            PoolTimeout.Invoke(this, new EventArgs());
                         }
                         this.Stop(powerPoolOption.Timeout.ForceStop);
                     };
-                    threadPoolTimer.Start();
+                    poolTimer.Start();
                 }
             }
         }
@@ -821,27 +821,27 @@ namespace PowerThreadPool
         /// <summary>
         /// Check if thread pool is idle
         /// </summary>
-        internal void CheckIdle()
+        internal void CheckPoolIdle()
         {
-            if (RunningWorkerCount == 0 && threadPoolRunning)
+            if (RunningWorkerCount == 0 && poolRunning)
             {
-                threadPoolRunning = false;
-                if (threadPoolStopping)
+                poolRunning = false;
+                if (poolStopping)
                 {
-                    threadPoolStopping = false;
+                    poolStopping = false;
                 }
 
-                if (ThreadPoolIdle != null)
+                if (PoolIdle != null)
                 {
-                    ThreadPoolIdle.Invoke(this, new EventArgs());
+                    PoolIdle.Invoke(this, new EventArgs());
                 }
 
                 waitAllSignal.Set();
 
-                if (threadPoolTimer != null)
+                if (poolTimer != null)
                 {
-                    threadPoolTimer.Stop();
-                    threadPoolTimer.Enabled = false;
+                    poolTimer.Stop();
+                    poolTimer.Enabled = false;
                 }
 
                 pauseSignal = new ManualResetEvent(true);
@@ -861,7 +861,7 @@ namespace PowerThreadPool
         /// </summary>
         public void Wait()
         {
-            if (!ThreadPoolRunning)
+            if (!PoolRunning)
             {
                 return;
             }
@@ -923,7 +923,7 @@ namespace PowerThreadPool
                 return false;
             }
 
-            threadPoolStopping = true;
+            poolStopping = true;
 
             waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
 
@@ -1068,9 +1068,9 @@ namespace PowerThreadPool
         /// </summary>
         public void Pause()
         {
-            if (threadPoolTimer != null)
+            if (poolTimer != null)
             {
-                threadPoolTimer.Stop();
+                poolTimer.Stop();
             }
             pauseSignal.Reset();
         }
@@ -1078,15 +1078,15 @@ namespace PowerThreadPool
         /// <summary>
         /// Resume all threads
         /// </summary>
-        /// <param name="resumeThreadPausedById"></param>
-        public void Resume(bool resumeThreadPausedById = false)
+        /// <param name="resumeWorkPausedByID">if resume work paused by ID</param>
+        public void Resume(bool resumeWorkPausedByID = false)
         {
-            if (threadPoolTimer != null)
+            if (poolTimer != null)
             {
-                threadPoolTimer.Start();
+                poolTimer.Start();
             }
             pauseSignal.Set();
-            if (resumeThreadPausedById)
+            if (resumeWorkPausedByID)
             {
                 foreach (ManualResetEvent manualResetEvent in pauseSignalDic.Values)
                 {

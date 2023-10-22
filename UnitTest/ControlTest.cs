@@ -395,7 +395,7 @@ namespace UnitTest
             Thread.Sleep(500);
             await powerPool.WaitAsync(id);
 
-            while (powerPool.ThreadPoolRunning)
+            while (powerPool.PoolRunning)
             {
                 await powerPool.WaitAsync();
             }
@@ -552,7 +552,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.False(powerPool.ThreadPoolRunning);
+            Assert.False(powerPool.PoolRunning);
         }
 
         [Fact]

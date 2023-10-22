@@ -51,14 +51,14 @@ namespace PowerThreadPoolTest
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
             };
 
-            powerPool.ThreadPoolStart += (s, e) =>
+            powerPool.PoolStart += (s, e) =>
             {
                 log.Text = "";
-                OutputMsg("ThreadPoolStart");
+                OutputMsg("PoolStart");
             };
-            powerPool.ThreadPoolIdle += (s, e) =>
+            powerPool.PoolIdle += (s, e) =>
             {
-                OutputMsg("ThreadPoolIdle");
+                OutputMsg("PoolIdle");
             };
             powerPool.WorkStart += (s, e) =>
             {
@@ -176,8 +176,8 @@ namespace PowerThreadPoolTest
                 "WaitingWorkCount: " + powerPool.WaitingWorkCount + "\n" +
                 "RunningWorkerCount: " + powerPool.RunningWorkerCount + "\n" +
                 "IdleWorkerCount: " + powerPool.IdleWorkerCount + "\n" +
-                "Running: " + powerPool.ThreadPoolRunning.ToString() + "\n" +
-                "Stopping: " + powerPool.ThreadPoolStopping.ToString();
+                "Running: " + powerPool.PoolRunning.ToString() + "\n" +
+                "Stopping: " + powerPool.PoolStopping.ToString();
                 count.Text = countTxt;
             });
         }
@@ -335,14 +335,14 @@ namespace PowerThreadPoolTest
                 int idleCount = 0;
                 int doneCount = 0;
 
-                powerPool.ThreadPoolStart += (s, e) =>
+                powerPool.PoolStart += (s, e) =>
                 {
                     lock (lockObj)
                     {
                         ++startCount;
                     }
                 };
-                powerPool.ThreadPoolIdle += (s, e) =>
+                powerPool.PoolIdle += (s, e) =>
                 {
                     lock (lockObj)
                     {
@@ -401,13 +401,13 @@ namespace PowerThreadPoolTest
                     });
                 }
 
-                while (powerPool.ThreadPoolRunning)
+                while (powerPool.PoolRunning)
                 {
-                    while (powerPool.ThreadPoolRunning)
+                    while (powerPool.PoolRunning)
                     {
-                        while (powerPool.ThreadPoolRunning)
+                        while (powerPool.PoolRunning)
                         {
-                            while (powerPool.ThreadPoolRunning)
+                            while (powerPool.PoolRunning)
                             {
                                 await powerPool.WaitAsync();
                                 Thread.Sleep(5000);

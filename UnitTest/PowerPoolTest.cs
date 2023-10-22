@@ -27,13 +27,13 @@ namespace UnitTest
                 Timeout = new TimeoutOption() { Duration = 10000, ForceStop = false },
                 DefaultWorkTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
             };
-            powerPool.ThreadPoolStart += (s, e) =>
+            powerPool.PoolStart += (s, e) =>
             {
-                logList.Add("ThreadPoolStart");
+                logList.Add("PoolStart");
             };
-            powerPool.ThreadPoolIdle += (s, e) =>
+            powerPool.PoolIdle += (s, e) =>
             {
-                logList.Add("ThreadPoolIdle");
+                logList.Add("PoolIdle");
             };
             powerPool.WorkStart += (s, e) =>
             {
@@ -47,9 +47,9 @@ namespace UnitTest
             {
                 logList.Add("WorkTimeout");
             };
-            powerPool.ThreadPoolTimeout += (s, e) =>
+            powerPool.PoolTimeout += (s, e) =>
             {
-                logList.Add("ThreadPoolTimeout");
+                logList.Add("PoolTimeout");
             };
 
             powerPool.QueueWorkItem(() =>
@@ -61,11 +61,11 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Collection<string>(logList,
-                item => Assert.Equal("ThreadPoolStart", item),
+                item => Assert.Equal("PoolStart", item),
                 item => Assert.Equal("WorkStart", item),
                 item => Assert.Equal("WorkEnd", item),
                 item => Assert.Equal("DefaultCallback", item),
-                item => Assert.Equal("ThreadPoolIdle", item)
+                item => Assert.Equal("PoolIdle", item)
                 );
 
             Assert.Equal("TestOrder Result", result);
@@ -123,9 +123,9 @@ namespace UnitTest
             {
                 logList.Add("WorkTimeout");
             };
-            powerPool.ThreadPoolTimeout += (s, e) =>
+            powerPool.PoolTimeout += (s, e) =>
             {
-                logList.Add("ThreadPoolTimeout");
+                logList.Add("PoolTimeout");
             };
 
             powerPool.QueueWorkItem(() =>
@@ -164,10 +164,10 @@ namespace UnitTest
             {
                 logList.Add("WorkTimeout");
             };
-            powerPool.ThreadPoolTimeout += (s, e) =>
+            powerPool.PoolTimeout += (s, e) =>
             {
                 timeOut = true;
-                logList.Add("ThreadPoolTimeout");
+                logList.Add("PoolTimeout");
             };
 
             string id;
@@ -191,7 +191,7 @@ namespace UnitTest
 
 
             Assert.Collection<string>(logList,
-                item => Assert.Equal("ThreadPoolTimeout", item)
+                item => Assert.Equal("PoolTimeout", item)
                 );
         }
 
@@ -215,9 +215,9 @@ namespace UnitTest
             {
                 logList.Add("WorkTimeout");
             };
-            powerPool.ThreadPoolTimeout += (s, e) =>
+            powerPool.PoolTimeout += (s, e) =>
             {
-                logList.Add("ThreadPoolTimeout");
+                logList.Add("PoolTimeout");
             };
 
             powerPool.QueueWorkItem(() =>
@@ -275,13 +275,13 @@ namespace UnitTest
                 MaxThreads = 8,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
             };
-            powerPool.ThreadPoolStart += (s, e) =>
+            powerPool.PoolStart += (s, e) =>
             {
-                logList.Add("ThreadPoolStart");
+                logList.Add("PoolStart");
             };
-            powerPool.ThreadPoolIdle += (s, e) =>
+            powerPool.PoolIdle += (s, e) =>
             {
-                logList.Add("ThreadPoolIdle");
+                logList.Add("PoolIdle");
             };
 
             powerPool.QueueWorkItem(() =>
@@ -323,14 +323,14 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Collection<string>(logList,
-                item => Assert.Equal("ThreadPoolStart", item),
+                item => Assert.Equal("PoolStart", item),
                 item => Assert.Equal("Work0 END", item),
                 item => Assert.Equal("Work1 END", item),
                 item => Assert.Equal("Work3 END", item),
                 item => Assert.Equal("Work0 callback END", item),
                 item => Assert.Equal("Work2 denpend on work0, work1 END", item),
                 item => Assert.Equal("Work3 callback END", item),
-                item => Assert.Equal("ThreadPoolIdle", item)
+                item => Assert.Equal("PoolIdle", item)
                 );
         }
 
