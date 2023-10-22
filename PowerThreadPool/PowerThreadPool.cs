@@ -1020,11 +1020,15 @@ namespace PowerThreadPool
             {
                 if (Thread.CurrentThread.Name == id)
                 {
-                    settedWorkDic.TryGetValue(id, out Worker worker);
-                    pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent);
-                    worker.PauseTimer();
-                    manualResetEvent.WaitOne();
-                    worker.ResumeTimer();
+                    if (settedWorkDic.TryGetValue(id, out Worker worker))
+                    {
+                        if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
+                        {
+                            worker.PauseTimer();
+                            manualResetEvent.WaitOne();
+                            worker.ResumeTimer();
+                        }
+                    }
                 }
             }
         }
