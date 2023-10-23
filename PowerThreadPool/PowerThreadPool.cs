@@ -14,6 +14,7 @@ namespace PowerThreadPool
     {
         private ManualResetEvent waitAllSignal = new ManualResetEvent(false);
         private ManualResetEvent pauseSignal = new ManualResetEvent(true);
+        private ConcurrentDictionary<string, bool> pauseStatusDic = new ConcurrentDictionary<string, bool>();
         private ConcurrentDictionary<string, ManualResetEvent> pauseSignalDic = new ConcurrentDictionary<string, ManualResetEvent>();
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
@@ -838,6 +839,7 @@ namespace PowerThreadPool
                 }
 
                 pauseSignal = new ManualResetEvent(true);
+                pauseStatusDic = new ConcurrentDictionary<string, bool>();
                 pauseSignalDic = new ConcurrentDictionary<string, ManualResetEvent>();
                 cancellationTokenSource = new CancellationTokenSource();
                 cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
@@ -1015,11 +1017,17 @@ namespace PowerThreadPool
                 {
                     if (settedWorkDic.TryGetValue(id, out Worker worker))
                     {
-                        if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
+                        if (pauseStatusDic.TryGetValue(id, out bool status))
                         {
-                            worker.PauseTimer();
-                            manualResetEvent.WaitOne();
-                            worker.ResumeTimer();
+                            if (status)
+                            {
+                                if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
+                                {
+                                    worker.PauseTimer();
+                                    manualResetEvent.WaitOne();
+                                    worker.ResumeTimer();
+                                }
+                            }
                         }
                     }
                 }
@@ -1106,6 +1114,7 @@ namespace PowerThreadPool
             if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
             {
                 manualResetEvent.Reset();
+                pauseStatusDic[id] = true;
                 return true;
             }
             else
@@ -1127,6 +1136,7 @@ namespace PowerThreadPool
             }
             if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
             {
+                pauseStatusDic[id] = false;
                 manualResetEvent.Set();
                 return true;
             }

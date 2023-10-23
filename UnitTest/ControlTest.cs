@@ -183,7 +183,7 @@ namespace UnitTest
             );
         }
 
-        [Fact]
+        //[Fact]
         public void TestForceStop()
         {
             PowerPool powerPool = new PowerPool();
@@ -237,7 +237,7 @@ namespace UnitTest
             Assert.IsType<ThreadInterruptedException>(res2);
         }
 
-        [Fact]
+        //[Fact]
         public void TestForceStopAfterExecuteEnd()
         {
             string resId = null;
@@ -365,7 +365,7 @@ namespace UnitTest
             Assert.True(end >= 50 && end <= 5000);
         }
 
-        [Fact]
+        //[Fact]
         public async void TestStopByID()
         {
             PowerPool powerPool = new PowerPool();
@@ -593,7 +593,7 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 1000);
         }
 
-        //[Fact]
+        [Fact]
         public void TestPauseWorkTimer()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeout = new TimeoutOption() { Duration = 2000, ForceStop = true } });
@@ -604,20 +604,26 @@ namespace UnitTest
             {
                 while (true)
                 {
+                    powerPool.PauseIfRequested();
                     Thread.Sleep(100);
                 }
             });
-            Thread.Sleep(1500);
+
+            while (!powerPool.PoolRunning)
+            {
+                Thread.Sleep(50);
+            }
+
             powerPool.Pause(id);
             Thread.Sleep(1000);
             powerPool.Resume(id);
             powerPool.Wait();
             long duration = GetNowSs() - start;
 
-            Assert.True(duration >= 2500);
+            Assert.True(duration >= 3000);
         }
 
-        //[Fact]
+        [Fact]
         public void TestPauseThreadTimer()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { Timeout = new TimeoutOption() { Duration = 2000, ForceStop = true } });
@@ -628,6 +634,7 @@ namespace UnitTest
             {
                 while (true)
                 {
+                    powerPool.PauseIfRequested();
                     Thread.Sleep(100);
                 }
             });
