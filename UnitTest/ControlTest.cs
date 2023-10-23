@@ -593,7 +593,7 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 1000);
         }
 
-        //[Fact]
+        [Fact]
         public void TestPauseWorkTimer()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeout = new TimeoutOption() { Duration = 2000, ForceStop = true } });
@@ -617,7 +617,7 @@ namespace UnitTest
             Assert.True(duration >= 2500);
         }
 
-        //[Fact]
+        [Fact]
         public void TestPauseThreadTimer()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { Timeout = new TimeoutOption() { Duration = 2000, ForceStop = true } });
