@@ -698,6 +698,7 @@ namespace PowerThreadPool
 
             settedWorkDic.TryRemove(guid, out _);
 
+            pauseStatusDic.TryRemove(guid, out _);
             pauseSignalDic.TryRemove(guid, out _);
             cancellationTokenSourceDic.TryRemove(guid, out _);
         }
