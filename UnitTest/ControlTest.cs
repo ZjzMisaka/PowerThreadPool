@@ -237,7 +237,7 @@ namespace UnitTest
             Assert.IsType<ThreadInterruptedException>(res2);
         }
 
-        //[Fact]
+        [Fact]
         public void TestForceStopAfterExecuteEnd()
         {
             string resId = null;
