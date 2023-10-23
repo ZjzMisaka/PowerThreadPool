@@ -183,7 +183,7 @@ namespace UnitTest
             );
         }
 
-        //[Fact]
+        [Fact]
         public void TestForceStop()
         {
             PowerPool powerPool = new PowerPool();
