@@ -377,10 +377,7 @@ namespace UnitTest
             string resID = null;
             powerPool.WorkStart += async (s, e) =>
             {
-                if (e.ID == id)
-                {
-                    await powerPool.StopAsync(id);
-                }
+                await powerPool.StopAsync(e.ID);
             };
 
             id = powerPool.QueueWorkItem(() =>
