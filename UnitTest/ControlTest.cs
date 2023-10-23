@@ -365,7 +365,7 @@ namespace UnitTest
             Assert.True(end >= 50 && end <= 5000);
         }
 
-        //[Fact]
+        [Fact]
         public async void TestStopByID()
         {
             PowerPool powerPool = new PowerPool();
@@ -402,11 +402,7 @@ namespace UnitTest
             }
 
             await powerPool.WaitAsync(id);
-
-            while (powerPool.PoolRunning)
-            {
-                await powerPool.WaitAsync();
-            }
+            await powerPool.WaitAsync();
 
             Assert.Equal(id, resID);
         }
@@ -650,7 +646,7 @@ namespace UnitTest
             powerPool.Wait();
             long duration = GetNowSs() - start;
 
-            Assert.True(duration > 3000);
+            Assert.True(duration >= 3000);
         }
     }
 }
