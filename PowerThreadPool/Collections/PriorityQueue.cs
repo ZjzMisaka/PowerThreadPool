@@ -10,8 +10,6 @@ namespace PowerThreadPool.Collections
     {
         private SortedDictionary<int, ConcurrentQueue<T>> queueDic;
 
-        object lockObj = new object();
-
         public PriorityQueue()
         {
             queueDic = new SortedDictionary<int, ConcurrentQueue<T>>();
@@ -19,41 +17,35 @@ namespace PowerThreadPool.Collections
 
         public void Enqueue(T item, int priority)
         {
-            lock (lockObj)
+            if (queueDic.ContainsKey(priority))
             {
-                if (queueDic.ContainsKey(priority))
-                {
-                    queueDic[priority].Enqueue(item);
-                }
-                else
-                {
-                    var queue = new ConcurrentQueue<T>();
-                    queue.Enqueue(item);
-                    queueDic.Add(priority, queue);
-                }
+                queueDic[priority].Enqueue(item);
+            }
+            else
+            {
+                var queue = new ConcurrentQueue<T>();
+                queue.Enqueue(item);
+                queueDic.Add(priority, queue);
             }
         }
 
         public T Dequeue()
         {
-            lock (lockObj)
+            if (queueDic.Count <= 0)
             {
-                if (queueDic.Count <= 0)
-                {
-                    return default;
-                }
-
-                var pair = queueDic.Last();
-
-                pair.Value.TryDequeue(out T item);
-
-                if (!pair.Value.Any())
-                {
-                    queueDic.Remove(pair.Key);
-                }
-
-                return item;
+                return default;
             }
+
+            var pair = queueDic.Last();
+
+            pair.Value.TryDequeue(out T item);
+
+            if (!pair.Value.Any())
+            {
+                queueDic.Remove(pair.Key);
+            }
+
+            return item;
         }
     }
 }
