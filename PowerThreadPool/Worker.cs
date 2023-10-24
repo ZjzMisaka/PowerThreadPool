@@ -17,8 +17,7 @@ public class Worker
 
     private PriorityQueue<string> waitingWorkIDQueue = new PriorityQueue<string>();
     private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
-    private int waittingWorkCount = 0;
-    private object waittingWorkCountLockObj = new object();
+    private volatile int waittingWorkCount = 0;
 
     private System.Timers.Timer timer;
     private System.Timers.Timer killTimer;
@@ -151,10 +150,7 @@ public class Worker
             waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
 
             waitingWorkDic[work.ID] = work;
-            lock (waittingWorkCountLockObj)
-            {
-                ++waittingWorkCount;
-            }
+            ++waittingWorkCount;
 
             waitSignalDic[work.ID] = new AutoResetEvent(false);
         }
@@ -180,10 +176,7 @@ public class Worker
             if (waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
             {
                 stolenList.Add(stolenWork);
-                lock (waittingWorkCountLockObj)
-                {
-                    --waittingWorkCount;
-                }
+                --waittingWorkCount;
             }
             else
             {
@@ -240,10 +233,7 @@ public class Worker
                         {
                             SetWork(stolenWork, powerPool);
 
-                            lock (waittingWorkCountLockObj)
-                            {
-                                ++waittingWorkCount;
-                            }
+                            ++waittingWorkCount;
                         }
                     }
 
@@ -261,10 +251,7 @@ public class Worker
             {
                 if (waitingWorkDic.TryRemove(waitingWorkID, out work))
                 {
-                    lock (waittingWorkCountLockObj)
-                    {
-                        --waittingWorkCount;
-                    }
+                    --waittingWorkCount;
                 }
             }
 
@@ -353,20 +340,14 @@ public class Worker
     internal void Cancel()
     {
         waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
-        lock (waittingWorkCountLockObj)
-        {
-            waittingWorkCount = 0;
-        }
+        waittingWorkCount = 0;
     }
 
     internal bool Cancel(string id)
     {
         if (waitingWorkDic.TryRemove(id, out _))
         {
-            lock (waittingWorkCountLockObj)
-            {
-                --waittingWorkCount;
-            }
+            --waittingWorkCount;
             return true;
         }
         else
