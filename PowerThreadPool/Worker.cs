@@ -150,7 +150,7 @@ public class Worker
             waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
 
             waitingWorkDic[work.ID] = work;
-            ++waittingWorkCount;
+            Interlocked.Increment(ref waittingWorkCount);
 
             waitSignalDic[work.ID] = new AutoResetEvent(false);
         }
@@ -176,7 +176,7 @@ public class Worker
             if (waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
             {
                 stolenList.Add(stolenWork);
-                --waittingWorkCount;
+                Interlocked.Decrement(ref waittingWorkCount);
             }
             else
             {
@@ -233,7 +233,7 @@ public class Worker
                         {
                             SetWork(stolenWork, powerPool);
 
-                            ++waittingWorkCount;
+                            Interlocked.Increment(ref waittingWorkCount);
                         }
                     }
 
@@ -251,7 +251,7 @@ public class Worker
             {
                 if (waitingWorkDic.TryRemove(waitingWorkID, out work))
                 {
-                    --waittingWorkCount;
+                    Interlocked.Decrement(ref waittingWorkCount);
                 }
             }
 
@@ -347,7 +347,7 @@ public class Worker
     {
         if (waitingWorkDic.TryRemove(id, out _))
         {
-            --waittingWorkCount;
+            Interlocked.Decrement(ref waittingWorkCount);
             return true;
         }
         else
