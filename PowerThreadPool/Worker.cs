@@ -29,8 +29,7 @@ public class Worker
     private WorkBase work;
     private bool killFlag = false;
     private bool alive = false;
-    private bool stealingLock = false;
-    private object stealingLockLockObj = new object();
+    private int stealingLock = 0;
 
     internal int WaitingWorkCount
     {
@@ -203,20 +202,14 @@ public class Worker
                     int waittingWorkCountTemp = runningWorker.waittingWorkCount;
                     if (waittingWorkCountTemp > max)
                     {
-                        lock (runningWorker.stealingLockLockObj)
+                        if (runningWorker.stealingLock == 1)
                         {
-                            if (runningWorker.stealingLock)
-                            {
-                                continue;
-                            }
-                            runningWorker.stealingLock = true;
+                            continue;
                         }
+                        Interlocked.Exchange(ref runningWorker.stealingLock, 1);
                         if (worker != null)
                         {
-                            lock (worker.stealingLockLockObj)
-                            {
-                                worker.stealingLock = false;
-                            }
+                            Interlocked.Exchange(ref worker.stealingLock, 0);
                         }
                         max = waittingWorkCountTemp;
                         worker = runningWorker;
@@ -237,10 +230,7 @@ public class Worker
                         }
                     }
 
-                    lock (worker.stealingLockLockObj)
-                    {
-                        worker.stealingLock = false;
-                    }
+                    Interlocked.Exchange(ref worker.stealingLock, 0);
 
                     waitingWorkID = waitingWorkIDQueue.Dequeue();
                 }
