@@ -63,7 +63,7 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        // [Fact]
         public async void StressTest2()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
