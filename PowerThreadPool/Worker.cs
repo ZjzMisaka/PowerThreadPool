@@ -187,13 +187,13 @@ public class Worker
 
     private void AssignWork(PowerPool powerPool)
     {
+        string waitingWorkID = null;
         lock (powerPool)
         {
-            string waitingWorkID = waitingWorkIDQueue.Dequeue();
+            waitingWorkID = waitingWorkIDQueue.Dequeue();
 
             if (waitingWorkID == null)
             {
-                // Try work stealing
                 Worker worker = null;
                 List<Worker> workerList = powerPool.aliveWorkerDic.Values.ToList();
                 int max = 0;
@@ -231,78 +231,77 @@ public class Worker
                     }
 
                     Interlocked.Exchange(ref worker.stealingLock, 0);
-
                     waitingWorkID = waitingWorkIDQueue.Dequeue();
                 }
             }
+        }
 
-            WorkBase work = null;
-            if (waitingWorkID != null)
+        WorkBase work = null;
+        if (waitingWorkID != null)
+        {
+            if (waitingWorkDic.TryRemove(waitingWorkID, out work))
             {
-                if (waitingWorkDic.TryRemove(waitingWorkID, out work))
-                {
-                    Interlocked.Decrement(ref waittingWorkCount);
-                }
+                Interlocked.Decrement(ref waittingWorkCount);
             }
+        }
 
-            if (waitingWorkID == null || work == null)
+        if (waitingWorkID == null || work == null)
+        {
+            powerPool.runningWorkerDic.TryRemove(ID, out _);
+            alive = false;
+            PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
+            powerPool.idleWorkerQueue.Enqueue(this.ID);
+            powerPool.idleWorkerDic[this.ID] = this;
+            if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
             {
-                powerPool.runningWorkerDic.TryRemove(ID, out _);
-                alive = false;
-                PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
-                powerPool.idleWorkerQueue.Enqueue(this.ID);
-                powerPool.idleWorkerDic[this.ID] = this;
-                if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
-                {
-                    System.Timers.Timer timer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
-                    timer.AutoReset = false;
-                    timer.Elapsed += (s, e) =>
-                    {
-                        if (powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads && powerPool.idleWorkerDic.TryRemove(ID, out _))
-                        {
-                            powerPool.aliveWorkerDic.TryRemove(ID, out _);
-                            Kill();
-
-                            timer.Stop();
-                        }
-                    };
-                    this.killTimer = timer;
-                    timer.Start();
-                }
-
-                return;
-            }
-
-            if (killTimer != null)
-            {
-                killTimer.Stop();
-                killTimer = null;
-            }
-
-            TimeoutOption workTimeoutOption = work.WorkTimeoutOption;
-            if (workTimeoutOption != null)
-            {
-                System.Timers.Timer timer = new System.Timers.Timer(workTimeoutOption.Duration);
+                System.Timers.Timer timer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
                 timer.AutoReset = false;
                 timer.Elapsed += (s, e) =>
                 {
-                    powerPool.OnWorkTimeout(powerPool, new TimeoutEventArgs() { ID = workID });
-                    powerPool.Stop(workID, workTimeoutOption.ForceStop);
+                    if (powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads && powerPool.idleWorkerDic.TryRemove(ID, out _))
+                    {
+                        powerPool.aliveWorkerDic.TryRemove(ID, out _);
+                        Kill();
+
+                        timer.Stop();
+                    }
                 };
+                this.killTimer = timer;
                 timer.Start();
-
-                this.timer = timer;
             }
 
-            this.work = work;
-            this.workID = work.ID;
-            ThreadPriority threadPriority = work.ThreadPriority;
-            if (thread.Priority != threadPriority)
-            {
-                thread.Priority = threadPriority;
-            }
-            runSignal.Set();
+            return;
         }
+
+        if (killTimer != null)
+        {
+            killTimer.Stop();
+            killTimer = null;
+        }
+
+        TimeoutOption workTimeoutOption = work.WorkTimeoutOption;
+        if (workTimeoutOption != null)
+        {
+            System.Timers.Timer timer = new System.Timers.Timer(workTimeoutOption.Duration);
+            timer.AutoReset = false;
+            timer.Elapsed += (s, e) =>
+            {
+                powerPool.OnWorkTimeout(powerPool, new TimeoutEventArgs() { ID = workID });
+                powerPool.Stop(workID, workTimeoutOption.ForceStop);
+            };
+            timer.Start();
+
+            this.timer = timer;
+        }
+
+        this.work = work;
+        this.workID = work.ID;
+        ThreadPriority threadPriority = work.ThreadPriority;
+        if (thread.Priority != threadPriority)
+        {
+            thread.Priority = threadPriority;
+        }
+        runSignal.Set();
     }
 
     internal void Kill()
