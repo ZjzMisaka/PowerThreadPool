@@ -17,7 +17,7 @@ public class Worker
 
     private PriorityQueue<string> waitingWorkIDQueue = new PriorityQueue<string>();
     private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
-    private volatile int waittingWorkCount = 0;
+    private int waittingWorkCount = 0;
 
     private System.Timers.Timer timer;
     private System.Timers.Timer killTimer;
