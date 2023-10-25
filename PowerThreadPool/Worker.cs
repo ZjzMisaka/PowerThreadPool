@@ -85,9 +85,10 @@ public class Worker
                         waitSignal.Set();
                     }
 
-                    AssignWork(powerPool);
-
-                    powerPool.CheckPoolIdle();
+                    if (!AssignWork(powerPool))
+                    {
+                        powerPool.CheckPoolIdle();
+                    }
                 }
             }
             catch (ThreadInterruptedException ex)
@@ -184,7 +185,7 @@ public class Worker
         return stolenList;
     }
 
-    private void AssignWork(PowerPool powerPool)
+    private bool AssignWork(PowerPool powerPool)
     {
         string waitingWorkID = null;
         lock (powerPool)
@@ -268,7 +269,7 @@ public class Worker
                 timer.Start();
             }
 
-            return;
+            return false;
         }
 
         if (killTimer != null)
@@ -300,6 +301,8 @@ public class Worker
             thread.Priority = threadPriority;
         }
         runSignal.Set();
+
+        return true;
     }
 
     internal void Kill()
