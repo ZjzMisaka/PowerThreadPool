@@ -17,7 +17,6 @@ public class Worker
 
     private PriorityQueue<string> waitingWorkIDQueue = new PriorityQueue<string>();
     private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
-    private int waittingWorkCount = 0;
 
     private System.Timers.Timer timer;
     private System.Timers.Timer killTimer;
@@ -35,7 +34,7 @@ public class Worker
     {
         get 
         { 
-            return waittingWorkCount;
+            return waitingWorkDic.Count;
         }
     }
 
@@ -148,7 +147,6 @@ public class Worker
             waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
 
             waitingWorkDic[work.ID] = work;
-            Interlocked.Increment(ref waittingWorkCount);
 
             waitSignalDic[work.ID] = new AutoResetEvent(false);
         }
@@ -175,7 +173,6 @@ public class Worker
             if (waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
             {
                 stolenList.Add(stolenWork);
-                Interlocked.Decrement(ref waittingWorkCount);
             }
             else
             {
@@ -199,7 +196,7 @@ public class Worker
                 int max = 0;
                 foreach (Worker runningWorker in workerList)
                 {
-                    int waittingWorkCountTemp = runningWorker.waittingWorkCount;
+                    int waittingWorkCountTemp = runningWorker.WaitingWorkCount;
                     if (waittingWorkCountTemp > max)
                     {
                         if (Interlocked.CompareExchange(ref runningWorker.stealingLock, 1, 0) == 1)
@@ -224,8 +221,6 @@ public class Worker
                         foreach (WorkBase stolenWork in stolenWorkList)
                         {
                             SetWork(stolenWork, powerPool);
-
-                            Interlocked.Increment(ref waittingWorkCount);
                         }
                     }
 
@@ -238,10 +233,7 @@ public class Worker
         WorkBase work = null;
         if (waitingWorkID != null)
         {
-            if (waitingWorkDic.TryRemove(waitingWorkID, out work))
-            {
-                Interlocked.Decrement(ref waittingWorkCount);
-            }
+            waitingWorkDic.TryRemove(waitingWorkID, out work);
         }
 
         if (waitingWorkID == null || work == null)
@@ -330,19 +322,10 @@ public class Worker
     internal void Cancel()
     {
         waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
-        waittingWorkCount = 0;
     }
 
     internal bool Cancel(string id)
     {
-        if (waitingWorkDic.TryRemove(id, out _))
-        {
-            Interlocked.Decrement(ref waittingWorkCount);
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return (waitingWorkDic.TryRemove(id, out _));
     }
 }
