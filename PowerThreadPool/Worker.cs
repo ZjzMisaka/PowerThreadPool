@@ -55,8 +55,6 @@ public class Worker
                         return;
                     }
 
-                    powerPool.runningWorkerDic[ID] = this;
-
                     thread.Name = work.ID;
                     powerPool.OnWorkStart(work.ID);
 
@@ -157,6 +155,7 @@ public class Worker
         if (!alive)
         {
             alive = true;
+            powerPool.runningWorkerDic[ID] = this;
             AssignWork(powerPool);
         }
     }
