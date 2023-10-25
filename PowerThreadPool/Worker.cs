@@ -202,11 +202,10 @@ public class Worker
                     int waittingWorkCountTemp = runningWorker.waittingWorkCount;
                     if (waittingWorkCountTemp > max)
                     {
-                        if (runningWorker.stealingLock == 1)
+                        if (Interlocked.CompareExchange(ref runningWorker.stealingLock, 1, 0) == 1)
                         {
                             continue;
                         }
-                        Interlocked.Exchange(ref runningWorker.stealingLock, 1);
                         if (worker != null)
                         {
                             Interlocked.Exchange(ref worker.stealingLock, 0);
