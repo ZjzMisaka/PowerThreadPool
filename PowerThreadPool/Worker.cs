@@ -145,11 +145,12 @@ public class Worker
         lock (powerPool)
         {
             waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
-
-            waitingWorkDic[work.ID] = work;
-
-            waitSignalDic[work.ID] = new AutoResetEvent(false);
         }
+
+        waitingWorkDic[work.ID] = work;
+
+        waitSignalDic[work.ID] = new AutoResetEvent(false);
+        
 
         if (!alive)
         {
@@ -159,12 +160,16 @@ public class Worker
         }
     }
 
-    internal List<WorkBase> Steal(int count)
+    internal List<WorkBase> Steal(int count, PowerPool powerPool)
     {
         List<WorkBase> stolenList = new List<WorkBase>();
         for (int i = 0; i < count; ++i) 
         {
-            string stolenWorkID = waitingWorkIDQueue.Dequeue();
+            string stolenWorkID = null;
+            lock (powerPool)
+            {
+                stolenWorkID = waitingWorkIDQueue.Dequeue();
+            }
             if (stolenWorkID == null)
             { 
                 return stolenList;
@@ -188,43 +193,46 @@ public class Worker
         lock (powerPool)
         {
             waitingWorkID = waitingWorkIDQueue.Dequeue();
+        }
 
-            if (waitingWorkID == null)
+        if (waitingWorkID == null)
+        {
+            Worker worker = null;
+            List<Worker> workerList = powerPool.aliveWorkerDic.Values.ToList();
+            int max = 0;
+            foreach (Worker runningWorker in workerList)
             {
-                Worker worker = null;
-                List<Worker> workerList = powerPool.aliveWorkerDic.Values.ToList();
-                int max = 0;
-                foreach (Worker runningWorker in workerList)
+                int waittingWorkCountTemp = runningWorker.WaitingWorkCount;
+                if (waittingWorkCountTemp > max)
                 {
-                    int waittingWorkCountTemp = runningWorker.WaitingWorkCount;
-                    if (waittingWorkCountTemp > max)
+                    if (Interlocked.CompareExchange(ref runningWorker.stealingLock, 1, 0) == 1)
                     {
-                        if (Interlocked.CompareExchange(ref runningWorker.stealingLock, 1, 0) == 1)
-                        {
-                            continue;
-                        }
-                        if (worker != null)
-                        {
-                            Interlocked.Exchange(ref worker.stealingLock, 0);
-                        }
-                        max = waittingWorkCountTemp;
-                        worker = runningWorker;
+                        continue;
+                    }
+                    if (worker != null)
+                    {
+                        Interlocked.Exchange(ref worker.stealingLock, 0);
+                    }
+                    max = waittingWorkCountTemp;
+                    worker = runningWorker;
+                }
+            }
+            if (worker != null)
+            {
+                int count = max / 2;
+                if (count > 0)
+                {
+                    List<WorkBase> stolenWorkList = worker.Steal(count, powerPool);
+
+                    foreach (WorkBase stolenWork in stolenWorkList)
+                    {
+                        SetWork(stolenWork, powerPool);
                     }
                 }
-                if (worker != null)
+
+                Interlocked.Exchange(ref worker.stealingLock, 0);
+                lock (powerPool)
                 {
-                    int count = max / 2;
-                    if (count > 0)
-                    {
-                        List<WorkBase> stolenWorkList = worker.Steal(count);
-
-                        foreach (WorkBase stolenWork in stolenWorkList)
-                        {
-                            SetWork(stolenWork, powerPool);
-                        }
-                    }
-
-                    Interlocked.Exchange(ref worker.stealingLock, 0);
                     waitingWorkID = waitingWorkIDQueue.Dequeue();
                 }
             }
