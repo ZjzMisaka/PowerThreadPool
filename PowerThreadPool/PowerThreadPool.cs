@@ -743,7 +743,7 @@ namespace PowerThreadPool
                 worker = GetWorker();
             }
             settedWorkDic[work.ID] = worker;
-            worker.SetWork(work, this);
+            worker.SetWork(work, this, false);
         }
 
         /// <summary>
@@ -772,20 +772,23 @@ namespace PowerThreadPool
                 int min = int.MaxValue;
                 foreach (Worker aliveWorker in aliveWorkerList)
                 {
-                    int originalState = Interlocked.CompareExchange(ref aliveWorker.workerState, 1, 0);
-                    if (originalState == 2)
-                    {
-                        continue;
-                    }
                     int waittingWorkCountTemp = aliveWorker.WaitingWorkCount;
                     if (waittingWorkCountTemp < min)
                     {
+                        if (Interlocked.CompareExchange(ref aliveWorker.gettedLock, 1, 0) == 1)
+                        {
+                            continue;
+                        }
+                        if (worker != null)
+                        {
+                            Interlocked.Exchange(ref worker.gettedLock, 0);
+                        }
                         min = waittingWorkCountTemp;
                         worker = aliveWorker;
                     }
                 }
             }
-
+            
             return worker;
         }
 

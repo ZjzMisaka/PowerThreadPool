@@ -19,6 +19,7 @@ public class Worker
     /// 0: Idle, 1: Running, 2: ToBeDisposed
     /// </summary>
     internal int workerState = 0;
+    internal int gettedLock = 0;
 
     private PriorityQueue<string> waitingWorkIDQueue = new PriorityQueue<string>();
     private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
@@ -141,7 +142,7 @@ public class Worker
         thread.Join();
     }
 
-    internal void SetWork(WorkBase work, PowerPool powerPool)
+    internal void SetWork(WorkBase work, PowerPool powerPool, bool stolenWork)
     {
         lock (powerPool)
         {
@@ -153,6 +154,11 @@ public class Worker
         waitSignalDic[work.ID] = new AutoResetEvent(false);
 
         int originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
+        if (!stolenWork)
+        {
+            Interlocked.Exchange(ref gettedLock, 0);
+        }
+        
         if (originalWorkerState == 0)
         {
             powerPool.runningWorkerDic[ID] = this;
@@ -226,7 +232,7 @@ public class Worker
 
                     foreach (WorkBase stolenWork in stolenWorkList)
                     {
-                        SetWork(stolenWork, powerPool);
+                        SetWork(stolenWork, powerPool, true);
                     }
                 }
 
@@ -262,6 +268,15 @@ public class Worker
                     killTimer.AutoReset = false;
                     killTimer.Elapsed += (s, e) =>
                     {
+                        SpinWait.SpinUntil(() => 
+                        { 
+                            return Interlocked.CompareExchange(ref gettedLock, 1, 0) == 0;
+                        });
+                        //SpinWait spinWait = new SpinWait();
+                        //while (Interlocked.CompareExchange(ref gettedLock, 1, 0) == 1)
+                        //{
+                        //    spinWait.SpinOnce();
+                        //}
                         int originalState = Interlocked.CompareExchange(ref workerState, 2, 0);
                         if (originalState == 0)
                         {
