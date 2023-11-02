@@ -24,7 +24,6 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
         
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
-        internal ConcurrentDictionary<string, Worker> runningWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
         private PowerPoolOption powerPoolOption;
         public PowerPoolOption PowerPoolOption 
@@ -75,10 +74,13 @@ namespace PowerThreadPool
             get
             {
                 int count = 0;
-                List<Worker> workerList = runningWorkerDic.Values.ToList();
+                List<Worker> workerList = aliveWorkerDic.Values.ToList();
                 foreach (Worker worker in workerList)
                 {
-                    count += worker.WaitingWorkCount;
+                    if (worker.workerState == 1)
+                    {
+                        count += worker.WaitingWorkCount;
+                    }
                 }
                 return count;
             }
@@ -88,21 +90,27 @@ namespace PowerThreadPool
             get
             {
                 List<string> list = settedWorkDic.Keys.ToList();
-                List<Worker> workerList = runningWorkerDic.Values.ToList();
+                List<Worker> workerList = aliveWorkerDic.Values.ToList();
                 foreach (Worker worker in workerList) 
                 {
-                    list.Remove(worker.WorkID);
+                    if (worker.workerState == 1)
+                    {
+                        list.Remove(worker.WorkID);
+                    }
                 }
                 return list;
             }
         }
+
+        internal int runningWorkerCount;
         public int RunningWorkerCount
         {
             get 
             {
-                return runningWorkerDic.Count;
+                return runningWorkerCount;
             }
         }
+
         public int AliveWorkerCount
         {
             get
@@ -867,7 +875,6 @@ namespace PowerThreadPool
                 waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
                 settedWorkDic = new ConcurrentDictionary<string, Worker>();
                 aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
-                runningWorkerDic = new ConcurrentDictionary<string, Worker>();
             }
         }
 

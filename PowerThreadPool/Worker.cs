@@ -115,8 +115,8 @@ public class Worker
                     waitSignal.Set();
                 }
 
+                Interlocked.Decrement(ref powerPool.runningWorkerCount);
                 powerPool.aliveWorkerDic.TryRemove(ID, out _);
-                powerPool.runningWorkerDic.TryRemove(ID, out _);
                 powerPool.idleWorkerDic.TryRemove(ID, out _);
 
                 powerPool.CheckPoolIdle();
@@ -162,7 +162,7 @@ public class Worker
         
         if (originalWorkerState == 0)
         {
-            powerPool.runningWorkerDic[ID] = this;
+            Interlocked.Increment(ref powerPool.runningWorkerCount);
             AssignWork(powerPool);
         }
     }
@@ -253,7 +253,7 @@ public class Worker
 
         if (waitingWorkID == null || work == null)
         {
-            powerPool.runningWorkerDic.TryRemove(ID, out _);
+            Interlocked.Decrement(ref powerPool.runningWorkerCount);
             Interlocked.Exchange(ref workerState, 0);
             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
             powerPool.idleWorkerQueue.Enqueue(this.ID);
