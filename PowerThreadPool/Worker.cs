@@ -7,6 +7,7 @@ using PowerThreadPool.Collections;
 using PowerThreadPool.EventArguments;
 using System.Linq;
 using System.Collections.Generic;
+using System.IO;
 
 public class Worker
 {
@@ -156,7 +157,7 @@ public class Worker
         int originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
         if (!stolenWork)
         {
-            Interlocked.Exchange(ref gettedLock, 0);
+            Interlocked.Decrement(ref gettedLock);
         }
         
         if (originalWorkerState == 0)
@@ -269,8 +270,9 @@ public class Worker
                     killTimer.Elapsed += (s, e) =>
                     {
                         SpinWait.SpinUntil(() => 
-                        { 
-                            return Interlocked.CompareExchange(ref gettedLock, 1, 0) == 0;
+                        {
+                            int gettedStatus = Interlocked.CompareExchange(ref gettedLock, -100, 0);
+                            return (gettedStatus == 0 || gettedStatus == -100);
                         });
                         //SpinWait spinWait = new SpinWait();
                         //while (Interlocked.CompareExchange(ref gettedLock, 1, 0) == 1)

@@ -757,6 +757,11 @@ namespace PowerThreadPool
             {
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
+                    if (Interlocked.Increment(ref worker.gettedLock) == -1)
+                    {
+                        Interlocked.Exchange(ref worker.gettedLock, -1);
+                        continue;
+                    }
                     return worker;
                 }
             }
@@ -764,6 +769,7 @@ namespace PowerThreadPool
             if (aliveWorkerDic.Count < powerPoolOption.MaxThreads)
             {
                 worker = new Worker(this);
+                Interlocked.Increment(ref worker.gettedLock);
                 aliveWorkerDic[worker.ID] = worker;
             }
             else
@@ -775,13 +781,14 @@ namespace PowerThreadPool
                     int waittingWorkCountTemp = aliveWorker.WaitingWorkCount;
                     if (waittingWorkCountTemp < min)
                     {
-                        if (Interlocked.CompareExchange(ref aliveWorker.gettedLock, 1, 0) == 1)
+                        if (Interlocked.Increment(ref aliveWorker.gettedLock) == -1)
                         {
+                            Interlocked.Exchange(ref aliveWorker.gettedLock, -1);
                             continue;
                         }
                         if (worker != null)
                         {
-                            Interlocked.Exchange(ref worker.gettedLock, 0);
+                            Interlocked.Decrement(ref worker.gettedLock);
                         }
                         min = waittingWorkCountTemp;
                         worker = aliveWorker;
