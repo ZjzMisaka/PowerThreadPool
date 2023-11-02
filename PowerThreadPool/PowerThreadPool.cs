@@ -757,9 +757,9 @@ namespace PowerThreadPool
             {
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    if (Interlocked.Increment(ref worker.gettedLock) == -1)
+                    if (Interlocked.Increment(ref worker.gettedLock) == -100)
                     {
-                        Interlocked.Exchange(ref worker.gettedLock, -1);
+                        Interlocked.Exchange(ref worker.gettedLock, -100);
                         continue;
                     }
                     return worker;
@@ -781,9 +781,9 @@ namespace PowerThreadPool
                     int waittingWorkCountTemp = aliveWorker.WaitingWorkCount;
                     if (waittingWorkCountTemp < min)
                     {
-                        if (Interlocked.Increment(ref aliveWorker.gettedLock) == -1)
+                        if (Interlocked.Increment(ref aliveWorker.gettedLock) == -100)
                         {
-                            Interlocked.Exchange(ref aliveWorker.gettedLock, -1);
+                            Interlocked.Exchange(ref aliveWorker.gettedLock, -100);
                             continue;
                         }
                         if (worker != null)
