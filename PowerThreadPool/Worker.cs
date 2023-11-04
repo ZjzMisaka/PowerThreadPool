@@ -148,11 +148,9 @@ public class Worker
         lock (powerPool)
         {
             waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
+            waitingWorkDic[work.ID] = work;
+            waitSignalDic[work.ID] = new AutoResetEvent(false);
         }
-
-        waitingWorkDic[work.ID] = work;
-
-        waitSignalDic[work.ID] = new AutoResetEvent(false);
 
         int originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
         if (!stolenWork)

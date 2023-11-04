@@ -803,7 +803,7 @@ namespace PowerThreadPool
                     }
                 }
             }
-            
+
             return worker;
         }
 
