@@ -7,6 +7,7 @@ using PowerThreadPool.Collections;
 using PowerThreadPool.EventArguments;
 using System.Linq;
 using System.Collections.Generic;
+using System.IO;
 
 public class Worker
 {
@@ -19,6 +20,7 @@ public class Worker
     /// 0: Idle, 1: Running, 2: ToBeDisposed
     /// </summary>
     internal int workerState = 0;
+    internal int gettedLock = 0;
 
     private PriorityQueue<string> waitingWorkIDQueue = new PriorityQueue<string>();
     private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
@@ -34,11 +36,12 @@ public class Worker
     private bool killFlag = false;
     private int stealingLock = 0;
 
+    private int waitingWorkCount = 0;
     internal int WaitingWorkCount
     {
         get 
         { 
-            return waitingWorkDic.Count;
+            return waitingWorkCount;
         }
     }
 
@@ -113,8 +116,8 @@ public class Worker
                     waitSignal.Set();
                 }
 
+                Interlocked.Decrement(ref powerPool.runningWorkerCount);
                 powerPool.aliveWorkerDic.TryRemove(ID, out _);
-                powerPool.runningWorkerDic.TryRemove(ID, out _);
                 powerPool.idleWorkerDic.TryRemove(ID, out _);
 
                 powerPool.CheckPoolIdle();
@@ -141,21 +144,25 @@ public class Worker
         thread.Join();
     }
 
-    internal void SetWork(WorkBase work, PowerPool powerPool)
+    internal void SetWork(WorkBase work, PowerPool powerPool, bool stolenWork)
     {
         lock (powerPool)
         {
             waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
+            waitingWorkDic[work.ID] = work;
+            waitSignalDic[work.ID] = new AutoResetEvent(false);
+            Interlocked.Increment(ref waitingWorkCount);
         }
 
-        waitingWorkDic[work.ID] = work;
-
-        waitSignalDic[work.ID] = new AutoResetEvent(false);
-
         int originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
+        if (!stolenWork)
+        {
+            Interlocked.Decrement(ref gettedLock);
+        }
+        
         if (originalWorkerState == 0)
         {
-            powerPool.runningWorkerDic[ID] = this;
+            Interlocked.Increment(ref powerPool.runningWorkerCount);
             AssignWork(powerPool);
         }
     }
@@ -177,6 +184,7 @@ public class Worker
 
             if (waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
             {
+                Interlocked.Decrement(ref waitingWorkCount);
                 stolenList.Add(stolenWork);
             }
             else
@@ -226,7 +234,7 @@ public class Worker
 
                     foreach (WorkBase stolenWork in stolenWorkList)
                     {
-                        SetWork(stolenWork, powerPool);
+                        SetWork(stolenWork, powerPool, true);
                     }
                 }
 
@@ -242,11 +250,12 @@ public class Worker
         if (waitingWorkID != null)
         {
             waitingWorkDic.TryRemove(waitingWorkID, out work);
+            Interlocked.Decrement(ref waitingWorkCount);
         }
 
         if (waitingWorkID == null || work == null)
         {
-            powerPool.runningWorkerDic.TryRemove(ID, out _);
+            Interlocked.Decrement(ref powerPool.runningWorkerCount);
             Interlocked.Exchange(ref workerState, 0);
             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
             powerPool.idleWorkerQueue.Enqueue(this.ID);
@@ -262,6 +271,16 @@ public class Worker
                     killTimer.AutoReset = false;
                     killTimer.Elapsed += (s, e) =>
                     {
+                        SpinWait.SpinUntil(() => 
+                        {
+                            int gettedStatus = Interlocked.CompareExchange(ref gettedLock, -100, 0);
+                            return (gettedStatus == 0 || gettedStatus == -100);
+                        });
+                        //SpinWait spinWait = new SpinWait();
+                        //while (Interlocked.CompareExchange(ref gettedLock, 1, 0) == 1)
+                        //{
+                        //    spinWait.SpinOnce();
+                        //}
                         int originalState = Interlocked.CompareExchange(ref workerState, 2, 0);
                         if (originalState == 0)
                         {
@@ -345,10 +364,16 @@ public class Worker
     internal void Cancel()
     {
         waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+        Interlocked.Exchange(ref waitingWorkCount, 0);
     }
 
     internal bool Cancel(string id)
     {
-        return (waitingWorkDic.TryRemove(id, out _));
+        if (waitingWorkDic.TryRemove(id, out _))
+        {
+            Interlocked.Decrement(ref waitingWorkCount);
+            return true;
+        }
+        return false;
     }
 }

@@ -24,7 +24,6 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
         
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
-        internal ConcurrentDictionary<string, Worker> runningWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
         private PowerPoolOption powerPoolOption;
         public PowerPoolOption PowerPoolOption 
@@ -75,10 +74,13 @@ namespace PowerThreadPool
             get
             {
                 int count = 0;
-                List<Worker> workerList = runningWorkerDic.Values.ToList();
+                List<Worker> workerList = aliveWorkerDic.Values.ToList();
                 foreach (Worker worker in workerList)
                 {
-                    count += worker.WaitingWorkCount;
+                    if (worker.workerState == 1)
+                    {
+                        count += worker.WaitingWorkCount;
+                    }
                 }
                 return count;
             }
@@ -88,21 +90,27 @@ namespace PowerThreadPool
             get
             {
                 List<string> list = settedWorkDic.Keys.ToList();
-                List<Worker> workerList = runningWorkerDic.Values.ToList();
+                List<Worker> workerList = aliveWorkerDic.Values.ToList();
                 foreach (Worker worker in workerList) 
                 {
-                    list.Remove(worker.WorkID);
+                    if (worker.workerState == 1)
+                    {
+                        list.Remove(worker.WorkID);
+                    }
                 }
                 return list;
             }
         }
+
+        internal int runningWorkerCount;
         public int RunningWorkerCount
         {
             get 
             {
-                return runningWorkerDic.Count;
+                return runningWorkerCount;
             }
         }
+
         public int AliveWorkerCount
         {
             get
@@ -743,7 +751,7 @@ namespace PowerThreadPool
                 worker = GetWorker();
             }
             settedWorkDic[work.ID] = worker;
-            worker.SetWork(work, this);
+            worker.SetWork(work, this, false);
         }
 
         /// <summary>
@@ -757,6 +765,11 @@ namespace PowerThreadPool
             {
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
+                    if (Interlocked.Increment(ref worker.gettedLock) == -100)
+                    {
+                        Interlocked.Exchange(ref worker.gettedLock, -100);
+                        continue;
+                    }
                     return worker;
                 }
             }
@@ -764,6 +777,7 @@ namespace PowerThreadPool
             if (aliveWorkerDic.Count < powerPoolOption.MaxThreads)
             {
                 worker = new Worker(this);
+                Interlocked.Increment(ref worker.gettedLock);
                 aliveWorkerDic[worker.ID] = worker;
             }
             else
@@ -772,14 +786,18 @@ namespace PowerThreadPool
                 int min = int.MaxValue;
                 foreach (Worker aliveWorker in aliveWorkerList)
                 {
-                    int originalState = Interlocked.CompareExchange(ref aliveWorker.workerState, 1, 0);
-                    if (originalState == 2)
-                    {
-                        continue;
-                    }
                     int waittingWorkCountTemp = aliveWorker.WaitingWorkCount;
                     if (waittingWorkCountTemp < min)
                     {
+                        if (Interlocked.Increment(ref aliveWorker.gettedLock) == -100)
+                        {
+                            Interlocked.Exchange(ref aliveWorker.gettedLock, -100);
+                            continue;
+                        }
+                        if (worker != null)
+                        {
+                            Interlocked.Decrement(ref worker.gettedLock);
+                        }
                         min = waittingWorkCountTemp;
                         worker = aliveWorker;
                     }
@@ -857,7 +875,6 @@ namespace PowerThreadPool
                 waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
                 settedWorkDic = new ConcurrentDictionary<string, Worker>();
                 aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
-                runningWorkerDic = new ConcurrentDictionary<string, Worker>();
             }
         }
 
