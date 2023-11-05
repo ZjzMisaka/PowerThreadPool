@@ -63,7 +63,7 @@ namespace UnitTest
             }
         }
 
-        // [Fact]
+        [Fact]
         public async void StressTest2()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
@@ -137,23 +137,7 @@ namespace UnitTest
                 });
             }
 
-            while (powerPool.PoolRunning)
-            {
-                while (powerPool.PoolRunning)
-                {
-                    while (powerPool.PoolRunning)
-                    {
-                        while (powerPool.PoolRunning)
-                        {
-                            await powerPool.WaitAsync();
-                            Thread.Sleep(5000);
-                        }
-                        Thread.Sleep(100);
-                    }
-                    Thread.Sleep(100);
-                }
-                Thread.Sleep(100);
-            }
+            await powerPool.WaitAsync();
 
             Assert.Equal(6010100, doneCount);
         }

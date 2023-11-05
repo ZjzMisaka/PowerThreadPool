@@ -36,11 +36,12 @@ public class Worker
     private bool killFlag = false;
     private int stealingLock = 0;
 
+    private int waitingWorkCount = 0;
     internal int WaitingWorkCount
     {
         get 
         { 
-            return waitingWorkDic.Count;
+            return waitingWorkCount;
         }
     }
 
@@ -150,6 +151,7 @@ public class Worker
             waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
             waitingWorkDic[work.ID] = work;
             waitSignalDic[work.ID] = new AutoResetEvent(false);
+            Interlocked.Increment(ref waitingWorkCount);
         }
 
         int originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
@@ -182,6 +184,7 @@ public class Worker
 
             if (waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
             {
+                Interlocked.Decrement(ref waitingWorkCount);
                 stolenList.Add(stolenWork);
             }
             else
@@ -247,6 +250,7 @@ public class Worker
         if (waitingWorkID != null)
         {
             waitingWorkDic.TryRemove(waitingWorkID, out work);
+            Interlocked.Decrement(ref waitingWorkCount);
         }
 
         if (waitingWorkID == null || work == null)
@@ -360,10 +364,16 @@ public class Worker
     internal void Cancel()
     {
         waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+        Interlocked.Exchange(ref waitingWorkCount, 0);
     }
 
     internal bool Cancel(string id)
     {
-        return (waitingWorkDic.TryRemove(id, out _));
+        if (waitingWorkDic.TryRemove(id, out _))
+        {
+            Interlocked.Decrement(ref waitingWorkCount);
+            return true;
+        }
+        return false;
     }
 }
