@@ -255,55 +255,46 @@ public class Worker
 
         if (waitingWorkID == null || work == null)
         {
+            PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
+            if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
+            {
+                this.killTimer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
+                
+                killTimer.AutoReset = false;
+                killTimer.Elapsed += (s, e) =>
+                {
+                    SpinWait.SpinUntil(() => 
+                    {
+                        int gettedStatus = Interlocked.CompareExchange(ref gettedLock, -100, 0);
+                        return (gettedStatus == 0 || gettedStatus == -100);
+                    });
+                    int originalState = Interlocked.CompareExchange(ref workerState, 2, 0);
+                    if (originalState == 0)
+                    {
+                        if (powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads && powerPool.idleWorkerDic.TryRemove(ID, out _))
+                        {
+                            powerPool.aliveWorkerDic.TryRemove(ID, out _);
+                            Kill();
+
+                            killTimer.Enabled = false;
+                        }
+                    }
+                    else
+                    {
+                        killTimer.Enabled = false;
+                    }
+                };
+
+                killTimer.Start();
+            }
+
             Interlocked.Decrement(ref powerPool.runningWorkerCount);
             Interlocked.Exchange(ref workerState, 0);
-            PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
+            
             powerPool.idleWorkerQueue.Enqueue(this.ID);
             powerPool.idleWorkerDic[this.ID] = this;
 
             powerPool.CheckPoolIdle();
-
-            if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
-            {
-                this.killTimer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
-                try
-                {
-                    killTimer.AutoReset = false;
-                    killTimer.Elapsed += (s, e) =>
-                    {
-                        SpinWait.SpinUntil(() => 
-                        {
-                            int gettedStatus = Interlocked.CompareExchange(ref gettedLock, -100, 0);
-                            return (gettedStatus == 0 || gettedStatus == -100);
-                        });
-                        //SpinWait spinWait = new SpinWait();
-                        //while (Interlocked.CompareExchange(ref gettedLock, 1, 0) == 1)
-                        //{
-                        //    spinWait.SpinOnce();
-                        //}
-                        int originalState = Interlocked.CompareExchange(ref workerState, 2, 0);
-                        if (originalState == 0)
-                        {
-                            if (powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads && powerPool.idleWorkerDic.TryRemove(ID, out _))
-                            {
-                                powerPool.aliveWorkerDic.TryRemove(ID, out _);
-                                Kill();
-
-                                killTimer.Enabled = false;
-                            }
-                        }
-                        else
-                        {
-                            killTimer.Enabled = false;
-                        }
-                    };
-
-                    killTimer.Start();
-                }
-                catch
-                {
-                }
-            }
 
             return;
         }
