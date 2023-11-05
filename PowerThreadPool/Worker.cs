@@ -276,11 +276,6 @@ public class Worker
                             int gettedStatus = Interlocked.CompareExchange(ref gettedLock, -100, 0);
                             return (gettedStatus == 0 || gettedStatus == -100);
                         });
-                        //SpinWait spinWait = new SpinWait();
-                        //while (Interlocked.CompareExchange(ref gettedLock, 1, 0) == 1)
-                        //{
-                        //    spinWait.SpinOnce();
-                        //}
                         int originalState = Interlocked.CompareExchange(ref workerState, 2, 0);
                         if (originalState == 0)
                         {
