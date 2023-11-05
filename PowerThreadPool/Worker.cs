@@ -322,10 +322,6 @@ public class Worker
             {
                 Interlocked.Decrement(ref waitingWorkCount);
             }
-            else
-            {
-                throw new Exception();
-            }
         }
 
         TimeoutOption workTimeoutOption = work.WorkTimeoutOption;
