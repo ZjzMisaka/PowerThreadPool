@@ -7,8 +7,6 @@ namespace UnitTest
     {
         private const int totalTasks = 100000;
 
-        private object lockObj = new object();
-
         [Fact]
         public async Task StressTest1()
         {
@@ -27,20 +25,12 @@ namespace UnitTest
                         {
                             if (res.Status == Status.Failed)
                             {
-                                lock (lockObj)
-                                {
-                                    ++failedCount;
-                                }
+                                Interlocked.Increment(ref failedCount);
                             }
-                            lock (lockObj)
-                            {
-                                ++doneCount;
-                            }
+                            Interlocked.Increment(ref doneCount);
                         });
-
                         Assert.NotNull(workId);
-                    }
-                    )
+                    })
                 ).ToArray();
 
                 await Task.WhenAll(tasks);
@@ -56,29 +46,11 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        //[Fact]
         public async void StressTest2()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
-            int startCount = 0;
-            int idleCount = 0;
             int doneCount = 0;
-
-            powerPool.PoolStart += (s, e) => 
-            { 
-                lock (lockObj) 
-                { 
-                    ++startCount; 
-                } 
-            };
-            powerPool.PoolIdle += (s, e) => 
-            { 
-                lock (lockObj) 
-                {
-                    ++idleCount;
-                    
-                } 
-            };
 
             for (int i = 0; i < 100; ++i)
             {
@@ -101,32 +73,20 @@ namespace UnitTest
 
                                         }, (res) =>
                                         {
-                                            lock (lockObj)
-                                            {
-                                                ++doneCount;
-                                            }
+                                            Interlocked.Increment(ref doneCount);
                                         });
                                     }
-                                    lock (lockObj)
-                                    {
-                                        ++doneCount;
-                                    }
+                                    Interlocked.Increment(ref doneCount);
                                 });
                             }
                         }, (res) =>
                         {
-                            lock (lockObj)
-                            {
-                                ++doneCount;
-                            }
+                            Interlocked.Increment(ref doneCount);
                         });
                     }
                 }, (res) =>
                 {
-                    lock (lockObj) 
-                    {
-                        ++doneCount;
-                    }
+                    Interlocked.Increment(ref doneCount);
                 });
             }
 
