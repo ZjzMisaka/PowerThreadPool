@@ -322,6 +322,11 @@ public class Worker
             {
                 Interlocked.Decrement(ref waitingWorkCount);
             }
+            else
+            {
+                AssignWork(powerPool);
+                return;
+            }
         }
 
         TimeoutOption workTimeoutOption = work.WorkTimeoutOption;
