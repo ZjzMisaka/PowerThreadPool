@@ -940,7 +940,7 @@ namespace PowerThreadPool
         /// <returns>Return false if no thread running</returns>
         public bool Stop(bool forceStop = false)
         {
-            if (RunningWorkerCount == 0 )
+            if (!poolRunning)
             {
                 return false;
             }
@@ -951,11 +951,14 @@ namespace PowerThreadPool
 
             if (forceStop)
             {
-                List<Worker> workersToStop = new List<Worker>(settedWorkDic.Values);
-                settedWorkDic.Clear();
-                foreach (Worker worker in workersToStop)
+                while (poolRunning)
                 {
-                    worker.ForceStop();
+                    settedWorkDic.Clear();
+                    List<Worker> workersToStop = aliveWorkerDic.Values.ToList();
+                    foreach (Worker worker in workersToStop)
+                    {
+                        worker.ForceStop();
+                    }
                 }
             }
             else

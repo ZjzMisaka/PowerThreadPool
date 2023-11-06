@@ -149,8 +149,11 @@ public class Worker
 
     public void ForceStop()
     {
-        thread.Interrupt();
-        thread.Join();
+        if (workerState == 1)
+        {
+            thread.Interrupt();
+            thread.Join();
+        }
     }
 
     public void ForceStop(string workID)
