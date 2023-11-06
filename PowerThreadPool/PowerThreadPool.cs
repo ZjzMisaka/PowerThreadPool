@@ -139,7 +139,7 @@ namespace PowerThreadPool
         {
             WorkOption option = new WorkOption();
             option.Callback = callBack;
-            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), new object[0], option);
+            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), Array.Empty<object>(), option);
         }
 
         /// <summary>
@@ -150,7 +150,7 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public string QueueWorkItem(Action action, WorkOption option)
         {
-            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), new object[0], option);
+            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), Array.Empty<object>(), option);
         }
 
         /// <summary>
@@ -562,7 +562,7 @@ namespace PowerThreadPool
         {
             WorkOption<TResult> option = new WorkOption<TResult>();
             option.Callback = callBack;
-            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), new object[] { }, option);
+            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), Array.Empty<object>(), option);
         }
 
         /// <summary>
@@ -574,7 +574,7 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public string QueueWorkItem<TResult>(Func<TResult> function, WorkOption<TResult> option)
         {
-            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), new object[] { }, option);
+            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), Array.Empty<object>(), option);
         }
 
         /// <summary>
