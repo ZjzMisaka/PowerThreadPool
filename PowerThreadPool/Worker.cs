@@ -99,6 +99,10 @@ public class Worker
                 Interlocked.Exchange(ref gettedLock, -100);
                 Interlocked.Exchange(ref workerState, 2);
 
+                Interlocked.Decrement(ref powerPool.runningWorkerCount);
+                powerPool.aliveWorkerDic.TryRemove(ID, out _);
+                powerPool.idleWorkerDic.TryRemove(ID, out _);
+
                 powerPool.OneThreadEndByForceStop(work.ID);
 
                 if (!ex.Data.Contains("ThrowedWhenExecuting"))
@@ -124,10 +128,6 @@ public class Worker
                 {
                     waitSignal.Set();
                 }
-
-                Interlocked.Decrement(ref powerPool.runningWorkerCount);
-                powerPool.aliveWorkerDic.TryRemove(ID, out _);
-                powerPool.idleWorkerDic.TryRemove(ID, out _);
 
                 powerPool.CheckPoolIdle();
 
