@@ -73,7 +73,7 @@ public class Worker
                     catch (ThreadInterruptedException ex)
                     {
                         ex.Data.Add("ThrowedWhenExecuting", true);
-                        throw ex;
+                        throw;
                     }
                     catch (Exception ex)
                     {
@@ -96,6 +96,9 @@ public class Worker
             }
             catch (ThreadInterruptedException ex)
             {
+                Interlocked.Exchange(ref gettedLock, -100);
+                Interlocked.Exchange(ref workerState, 2);
+
                 powerPool.OneThreadEndByForceStop(work.ID);
 
                 if (!ex.Data.Contains("ThrowedWhenExecuting"))
@@ -110,6 +113,12 @@ public class Worker
                 }
 
                 powerPool.WorkCallbackEnd(workID, false);
+
+                List<WorkBase> waitingWorkList = waitingWorkDic.Values.ToList();
+                foreach (WorkBase work in waitingWorkList)
+                {
+                    powerPool.SetWork(work);
+                }
 
                 if (waitSignalDic.TryRemove(workID, out AutoResetEvent waitSignal))
                 {
@@ -142,6 +151,19 @@ public class Worker
     {
         thread.Interrupt();
         thread.Join();
+    }
+
+    public void ForceStop(string workID)
+    {
+        if (this.workID == workID)
+        {
+            thread.Interrupt();
+            thread.Join();
+        }
+        else
+        {
+            waitingWorkDic.TryRemove(workID, out _);
+        }
     }
 
     internal void SetWork(WorkBase work, PowerPool powerPool, bool stolenWork)

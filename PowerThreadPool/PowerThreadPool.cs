@@ -765,7 +765,7 @@ namespace PowerThreadPool
             {
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    if (Interlocked.Increment(ref worker.gettedLock) == -100)
+                    if (Interlocked.Increment(ref worker.gettedLock) == -99)
                     {
                         Interlocked.Exchange(ref worker.gettedLock, -100);
                         continue;
@@ -789,7 +789,7 @@ namespace PowerThreadPool
                     int waittingWorkCountTemp = aliveWorker.WaitingWorkCount;
                     if (waittingWorkCountTemp < min)
                     {
-                        if (Interlocked.Increment(ref aliveWorker.gettedLock) == -100)
+                        if (Interlocked.Increment(ref aliveWorker.gettedLock) == -99)
                         {
                             Interlocked.Exchange(ref aliveWorker.gettedLock, -100);
                             continue;
@@ -934,7 +934,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// ForceStop all threads
+        /// Stop all works
         /// </summary>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
         /// <returns>Return false if no thread running</returns>
@@ -967,7 +967,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// ForceStop all threads
+        /// Stop all works
         /// </summary>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
         /// <returns>Return false if no thread running</returns>
@@ -980,7 +980,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// ForceStop thread by id
+        /// Stop work by id
         /// </summary>
         /// <param name="id">work id</param>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
@@ -993,32 +993,24 @@ namespace PowerThreadPool
             }
 
             bool res = false;
-            foreach (string settedID in settedWorkDic.Keys)
+            if (forceStop)
             {
-                if (id == settedID)
+                if (settedWorkDic.TryRemove(id, out Worker workerToStop))
                 {
-                    if (forceStop)
-                    {
-                        if (settedWorkDic.TryRemove(settedID, out Worker workerToStop))
-                        {
-                            workerToStop.ForceStop();
-                            res = true;
-                        }
-                    }
-                    else
-                    {
-                        cancellationTokenSourceDic[settedID].Cancel();
-                        res = true;
-                    }
-                    
-                    break;
+                    workerToStop.ForceStop(id);
+                    res = true;
                 }
+            }
+            else
+            {
+                cancellationTokenSourceDic[id].Cancel();
+                res = true;
             }
             return res;
         }
 
         /// <summary>
-        /// ForceStop thread by id
+        /// Stop work by id
         /// </summary>
         /// <param name="id">work id</param>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>

@@ -675,5 +675,100 @@ namespace UnitTest
 
             Assert.Null(id2);
         }
+
+        [Fact]
+        public void TestResetWaitingWorkWhenForceStopEnd()
+        {
+            int doneCount = 0;
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 2,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 2, KeepAliveTime = 30000 }
+            };
+
+            string id3 = null;
+            powerPool.WorkStart += (s, e) =>
+            {
+                if (e.ID == id3)
+                {
+                    powerPool.Stop(id3, true);
+                }
+            };
+
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
+            });
+
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
+            });
+
+            id3 = powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 200; ++i)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
+            });
+
+            string id4 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
+            });
+
+            string id5 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
+            });
+
+            string id6 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(5, doneCount);
+        }
     }
 }
