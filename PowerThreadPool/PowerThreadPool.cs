@@ -987,7 +987,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="id">work id</param>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
-        /// <returns>Return false if the thread isn't running</returns>
+        /// <returns>Return false if the work does not exist or has been done</returns>
         public bool Stop(string id, bool forceStop = false)
         {
             if (string.IsNullOrEmpty(id))
@@ -995,20 +995,26 @@ namespace PowerThreadPool
                 return false;
             }
 
-            bool res = false;
-            if (forceStop)
+            bool res = settedWorkDic.TryRemove(id, out Worker workerToStop);
+            if (res)
             {
-                if (settedWorkDic.TryRemove(id, out Worker workerToStop))
+                if (forceStop)
                 {
                     workerToStop.ForceStop(id);
-                    res = true;
+                }
+                else
+                {
+                    if (cancellationTokenSourceDic.TryGetValue(id, out CancellationTokenSource cancellationTokenSource))
+                    {
+                        cancellationTokenSource.Cancel();
+                    }
+                    else
+                    {
+                        res = false;
+                    }
                 }
             }
-            else
-            {
-                cancellationTokenSourceDic[id].Cancel();
-                res = true;
-            }
+            
             return res;
         }
 

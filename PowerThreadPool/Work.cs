@@ -23,30 +23,30 @@ namespace PowerThreadPool
     {
         private Func<object[], TResult> function;
         private object[] param;
-        private WorkOption<TResult> option;
+        private WorkOption<TResult> workOption;
 
         private object lockObj = new object();
 
-        internal override int WorkPriority { get => option.WorkPriority; }
-        internal override ThreadPriority ThreadPriority { get => option.ThreadPriority; }
-        internal override TimeoutOption WorkTimeoutOption { get => option.Timeout; }
+        internal override int WorkPriority { get => workOption.WorkPriority; }
+        internal override ThreadPriority ThreadPriority { get => workOption.ThreadPriority; }
+        internal override TimeoutOption WorkTimeoutOption { get => workOption.Timeout; }
 
         public Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
         {
             this.ID = id;
             this.function = function;
             this.param = param;
-            this.option = option;
+            this.workOption = option;
 
-            if (this.option != null && this.option.Dependents != null && this.option.Dependents.Count != 0)
+            if (this.workOption != null && this.workOption.Dependents != null && this.workOption.Dependents.Count != 0)
             {
                 powerPool.CallbackEnd += (workId, succeed) =>
                 {
                     lock (lockObj)
                     {
-                        if (this.option.Dependents.Remove(workId))
+                        if (this.workOption.Dependents.Remove(workId))
                         {
-                            if (succeed && this.option.Dependents.Count == 0)
+                            if (succeed && this.workOption.Dependents.Count == 0)
                             {
                                 powerPool.SetWork(this);
                             }
@@ -63,9 +63,9 @@ namespace PowerThreadPool
 
         public override void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
-            if (option.Callback != null)
+            if (workOption.Callback != null)
             {
-                option.Callback((ExecuteResult<TResult>)executeResult);
+                workOption.Callback((ExecuteResult<TResult>)executeResult);
             }
             else if (powerPoolOption.DefaultCallback != null)
             {
