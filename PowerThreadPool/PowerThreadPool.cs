@@ -884,6 +884,7 @@ namespace PowerThreadPool
                 waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
                 settedWorkDic = new ConcurrentDictionary<string, Worker>();
                 Interlocked.Exchange(ref aliveWorkerCount, 0);
+                Interlocked.Exchange(ref runningWorkerCount, 0);
                 aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
 
                 waitAllSignal.Set();

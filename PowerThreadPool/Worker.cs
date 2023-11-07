@@ -289,12 +289,12 @@ namespace PowerThreadPool
 
                         if (waitingWorkID == null || work == null)
                         {
+                            Interlocked.Exchange(ref workerState, 0);
+
                             Interlocked.Decrement(ref powerPool.runningWorkerCount);
                             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
                             powerPool.idleWorkerQueue.Enqueue(this.ID);
                             powerPool.idleWorkerDic[this.ID] = this;
-
-                            Interlocked.Exchange(ref workerState, 0);
 
                             powerPool.CheckPoolIdle();
 
