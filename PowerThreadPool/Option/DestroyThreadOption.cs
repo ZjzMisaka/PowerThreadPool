@@ -5,7 +5,7 @@ namespace PowerThreadPool.Option
     public class DestroyThreadOption
     {
         /// <summary>
-        /// The amount of time a thread is kept alive after it finishes execution. If a new task is received within this time, the thread is reused; otherwise, it is destroyed.
+        /// The amount of time a thread is kept alive after it finishes execution (ms). If a new task is received within this time, the thread is reused; otherwise, it is destroyed.
         /// </summary>
         public int KeepAliveTime { get; set; } = 10000;
 
