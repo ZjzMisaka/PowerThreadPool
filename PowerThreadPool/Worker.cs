@@ -100,7 +100,10 @@ namespace PowerThreadPool
                     Interlocked.Exchange(ref workerState, 2);
 
                     Interlocked.Decrement(ref powerPool.runningWorkerCount);
-                    powerPool.aliveWorkerDic.TryRemove(ID, out _);
+                    if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
+                    {
+                        Interlocked.Decrement(ref powerPool.aliveWorkerCount);
+                    }
                     powerPool.idleWorkerDic.TryRemove(ID, out _);
 
                     powerPool.OneThreadEndByForceStop(work.ID);
@@ -313,7 +316,10 @@ namespace PowerThreadPool
                                         {
                                             if (powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads && powerPool.idleWorkerDic.TryRemove(ID, out _))
                                             {
-                                                powerPool.aliveWorkerDic.TryRemove(ID, out _);
+                                                if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
+                                                {
+                                                    Interlocked.Decrement(ref powerPool.aliveWorkerCount);
+                                                }
                                                 Kill();
 
                                                 killTimer.Enabled = false;

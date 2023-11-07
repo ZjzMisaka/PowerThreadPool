@@ -111,11 +111,12 @@ namespace PowerThreadPool
             }
         }
 
+        internal int aliveWorkerCount;
         public int AliveWorkerCount
         {
             get
             {
-                return aliveWorkerDic.Count;
+                return aliveWorkerCount;
             }
         }
 
@@ -729,10 +730,13 @@ namespace PowerThreadPool
             {
                 minThreads = powerPoolOption.DestroyThreadOption.MinThreads;
             }
-            while (AliveWorkerCount < minThreads)
+            while (aliveWorkerCount < minThreads)
             {
                 Worker worker = new Worker(this);
-                aliveWorkerDic[worker.ID] = worker;
+                if (aliveWorkerDic.TryAdd(worker.ID, worker))
+                {
+                    Interlocked.Increment(ref aliveWorkerCount);
+                }
                 idleWorkerQueue.Enqueue(worker.ID);
                 idleWorkerDic[worker.ID] = worker;
             }
@@ -774,13 +778,20 @@ namespace PowerThreadPool
                 }
             }
 
-            if (aliveWorkerDic.Count < powerPoolOption.MaxThreads)
+            lock (this)
             {
-                worker = new Worker(this);
-                Interlocked.Increment(ref worker.gettedLock);
-                aliveWorkerDic[worker.ID] = worker;
+                if (aliveWorkerCount < powerPoolOption.MaxThreads)
+                {
+                    worker = new Worker(this);
+                    Interlocked.Increment(ref worker.gettedLock);
+                    if (aliveWorkerDic.TryAdd(worker.ID, worker))
+                    {
+                        Interlocked.Increment(ref aliveWorkerCount);
+                    }
+                }
             }
-            else
+            
+            if (worker == null)
             {
                 List<Worker> aliveWorkerList = aliveWorkerDic.Values.ToList();
                 int min = int.MaxValue;
@@ -858,8 +869,6 @@ namespace PowerThreadPool
                     PoolIdle.Invoke(this, new EventArgs());
                 }
 
-                waitAllSignal.Set();
-
                 if (poolTimer != null)
                 {
                     poolTimer.Stop();
@@ -874,7 +883,10 @@ namespace PowerThreadPool
 
                 waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
                 settedWorkDic = new ConcurrentDictionary<string, Worker>();
+                Interlocked.Exchange(ref aliveWorkerCount, 0);
                 aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
+
+                waitAllSignal.Set();
             }
         }
 
