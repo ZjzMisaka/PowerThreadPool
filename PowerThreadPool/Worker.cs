@@ -99,7 +99,7 @@ namespace PowerThreadPool
                     Interlocked.Exchange(ref gettedLock, -100);
                     Interlocked.Exchange(ref workerState, 2);
 
-                    Interlocked.Decrement(ref powerPool.runningWorkerCount);
+                    powerPool.runningWorkerSet.Remove(ID);
                     if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
                     {
                         Interlocked.Decrement(ref powerPool.aliveWorkerCount);
@@ -190,7 +190,7 @@ namespace PowerThreadPool
 
             if (originalWorkerState == 0)
             {
-                Interlocked.Increment(ref powerPool.runningWorkerCount);
+                powerPool.runningWorkerSet.Add(ID);
                 AssignWork(powerPool);
             }
         }
@@ -291,7 +291,7 @@ namespace PowerThreadPool
                         {
                             Interlocked.Exchange(ref workerState, 0);
 
-                            Interlocked.Decrement(ref powerPool.runningWorkerCount);
+                            powerPool.runningWorkerSet.Remove(ID);
                             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
                             powerPool.idleWorkerQueue.Enqueue(this.ID);
                             powerPool.idleWorkerDic[this.ID] = this;

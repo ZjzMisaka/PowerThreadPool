@@ -1,4 +1,5 @@
-﻿using PowerThreadPool.EventArguments;
+﻿using PowerThreadPool.Collections;
+using PowerThreadPool.EventArguments;
 using PowerThreadPool.Helper;
 using PowerThreadPool.Option;
 using System;
@@ -22,7 +23,8 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, Worker> idleWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentQueue<string> idleWorkerQueue = new ConcurrentQueue<string>();
         private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
-        
+        internal ConcurrentSet<string> runningWorkerSet = new ConcurrentSet<string>();
+
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
         private PowerPoolOption powerPoolOption;
@@ -102,12 +104,11 @@ namespace PowerThreadPool
             }
         }
 
-        internal int runningWorkerCount;
         public int RunningWorkerCount
         {
             get 
             {
-                return runningWorkerCount;
+                return runningWorkerSet.Count;
             }
         }
 
@@ -884,7 +885,7 @@ namespace PowerThreadPool
                 waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
                 settedWorkDic = new ConcurrentDictionary<string, Worker>();
                 Interlocked.Exchange(ref aliveWorkerCount, 0);
-                Interlocked.Exchange(ref runningWorkerCount, 0);
+                runningWorkerSet = new ConcurrentSet<string>();
                 aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
 
                 waitAllSignal.Set();
