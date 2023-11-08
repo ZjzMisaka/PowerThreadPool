@@ -770,5 +770,49 @@ namespace UnitTest
 
             Assert.Equal(5, doneCount);
         }
+
+        [Fact]
+        public void TestDispose()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2, DestroyThreadOption = new DestroyThreadOption() { MinThreads = 2, KeepAliveTime = 1000000 } });
+            object res0 = null;
+            object res1 = null;
+            object res2 = null;
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                res0 = res.Exception;
+            });
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                res1 = res.Exception;
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                res2 = res.Exception;
+            });
+
+            powerPool.Dispose();
+
+            Assert.Equal(0, powerPool.AliveWorkerCount);
+            Assert.Equal(0, powerPool.IdleWorkerCount);
+        }
     }
 }
