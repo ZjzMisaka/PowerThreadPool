@@ -223,11 +223,6 @@ namespace UnitTest
                 res2 = res.Exception;
             });
             long start = GetNowSs();
-
-            while (!powerPool.PoolRunning)
-            {
-                Thread.Sleep(50);
-            }
             
             powerPool.Stop(true);
             long end = GetNowSs() - start;
@@ -473,11 +468,6 @@ namespace UnitTest
                 resID = res.ID;
             });
 
-            while (!powerPool.PoolRunning)
-            {
-                Thread.Sleep(50);
-            }
-
             await powerPool.WaitAsync(id);
             await powerPool.WaitAsync();
 
@@ -682,11 +672,6 @@ namespace UnitTest
                 }
             });
 
-            while (!powerPool.PoolRunning)
-            {
-                Thread.Sleep(50);
-            }
-
             powerPool.Pause(id);
             Thread.Sleep(1000);
             powerPool.Resume(id);
@@ -711,11 +696,6 @@ namespace UnitTest
                     Thread.Sleep(100);
                 }
             });
-
-            while (!powerPool.PoolRunning)
-            {
-                Thread.Sleep(50);
-            }
 
             powerPool.Pause();
             Thread.Sleep(1000);
