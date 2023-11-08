@@ -11,8 +11,10 @@ using System.Threading.Tasks;
 
 namespace PowerThreadPool
 {
-    public class PowerPool
+    public class PowerPool : IDisposable
     {
+        private bool disposed = false;
+
         private ManualResetEvent waitAllSignal = new ManualResetEvent(false);
         private ManualResetEvent pauseSignal = new ManualResetEvent(true);
         private ConcurrentDictionary<string, bool> pauseStatusDic = new ConcurrentDictionary<string, bool>();
@@ -976,6 +978,11 @@ namespace PowerThreadPool
             else
             {
                 cancellationTokenSource.Cancel();
+                List<Worker> workersToStop = aliveWorkerDic.Values.ToList();
+                foreach (Worker worker in workersToStop)
+                {
+                    worker.Cancel();
+                }
             }
 
             return true;
@@ -1248,12 +1255,36 @@ namespace PowerThreadPool
 
         public void Dispose()
         {
-            Stop();
-            Stop(true);
-            foreach (Worker worker in aliveWorkerDic.Values)
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
             {
-                worker.Kill();
+                if (disposing)
+                {
+                    Stop();
+                    Stop(true);
+                    foreach (Worker worker in aliveWorkerDic.Values)
+                    {
+                        worker.Kill();
+                    }
+                    aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
+                    idleWorkerDic = new ConcurrentDictionary<string, Worker>();
+                    idleWorkerQueue = new ConcurrentQueue<string>();
+                    aliveWorkerCount = 0;
+                    runningWorkerSet = new ConcurrentSet<string>();
+                }
+
+                disposed = true;
             }
+        }
+
+        ~PowerPool()
+        {
+            Dispose(false);
         }
     }
 }

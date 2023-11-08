@@ -154,6 +154,7 @@ namespace PowerThreadPool
         {
             if (workerState == 1)
             {
+                Cancel();
                 thread.Interrupt();
                 thread.Join();
             }
