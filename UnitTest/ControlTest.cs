@@ -238,6 +238,86 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestForceStopBeforeRunning()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
+            int doneCount = 0;
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, (res) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, (res) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, (res) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, (res) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Stop(id, true);
+            powerPool.Wait();
+
+            Assert.Equal(3, doneCount);
+        }
+
+        [Fact]
+        public void TestStopBeforeRunning()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
+            int doneCount = 0;
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, (res) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, (res) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, (res) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, (res) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Stop(id);
+            powerPool.Wait();
+
+            Assert.Equal(3, doneCount);
+        }
+
+        [Fact]
         public void TestForceStopAfterExecuteEnd()
         {
             string resId = null;

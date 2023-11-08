@@ -1018,13 +1018,16 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    if (cancellationTokenSourceDic.TryGetValue(id, out CancellationTokenSource cancellationTokenSource))
+                    if (!workerToStop.Cancel(id))
                     {
-                        cancellationTokenSource.Cancel();
-                    }
-                    else
-                    {
-                        res = false;
+                        if (cancellationTokenSourceDic.TryGetValue(id, out CancellationTokenSource cancellationTokenSource))
+                        {
+                            cancellationTokenSource.Cancel();
+                        }
+                        else
+                        {
+                            res = false;
+                        }
                     }
                 }
             }
