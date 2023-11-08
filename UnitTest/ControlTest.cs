@@ -672,6 +672,8 @@ namespace UnitTest
                 }
             });
 
+            Thread.Sleep(100);
+
             powerPool.Pause(id);
             Thread.Sleep(1000);
             powerPool.Resume(id);
