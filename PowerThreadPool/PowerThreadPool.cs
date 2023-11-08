@@ -1245,5 +1245,15 @@ namespace PowerThreadPool
                 WorkStart.Invoke(this, new WorkStartEventArgs() { ID = workID });
             }
         }
+
+        public void Dispose()
+        {
+            Stop();
+            Stop(true);
+            foreach (Worker worker in aliveWorkerDic.Values)
+            {
+                worker.Kill();
+            }
+        }
     }
 }
