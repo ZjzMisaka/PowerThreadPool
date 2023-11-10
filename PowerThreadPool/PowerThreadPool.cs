@@ -878,15 +878,8 @@ namespace PowerThreadPool
                     poolTimer.Enabled = false;
                 }
 
-                pauseSignal = new ManualResetEvent(true);
-                pauseStatusDic = new ConcurrentDictionary<string, bool>();
-                pauseSignalDic = new ConcurrentDictionary<string, ManualResetEvent>();
-                cancellationTokenSource = new CancellationTokenSource();
-                cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
-
-                waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
-                settedWorkDic = new ConcurrentDictionary<string, Worker>();
-                runningWorkerSet = new ConcurrentSet<string>();
+                Interlocked.Exchange(ref aliveWorkerCount, 0);
+                aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
 
                 waitAllSignal.Set();
             }
