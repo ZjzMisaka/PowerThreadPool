@@ -25,7 +25,7 @@ namespace PowerThreadPool
         private PriorityQueue<string> waitingWorkIDQueue = new PriorityQueue<string>();
         private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
 
-        private System.Timers.Timer timer;
+        private System.Timers.Timer timeoutTimer;
         private System.Timers.Timer killTimer;
 
         private AutoResetEvent runSignal = new AutoResetEvent(false);
@@ -374,7 +374,7 @@ namespace PowerThreadPool
                     };
                     timer.Start();
 
-                    this.timer = timer;
+                    this.timeoutTimer = timer;
                 }
 
                 this.work = work;
@@ -397,17 +397,17 @@ namespace PowerThreadPool
 
         internal void PauseTimer()
         {
-            if (timer != null)
+            if (timeoutTimer != null)
             {
-                timer.Stop();
+                timeoutTimer.Stop();
             }
         }
 
         internal void ResumeTimer()
         {
-            if (timer != null)
+            if (timeoutTimer != null)
             {
-                timer.Start();
+                timeoutTimer.Start();
             }
         }
 
