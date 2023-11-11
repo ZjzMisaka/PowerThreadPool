@@ -767,20 +767,20 @@ namespace PowerThreadPool
         /// <returns></returns>
         private Worker GetWorker()
         {
-            
-                Worker worker = null;
-                while (idleWorkerQueue.TryDequeue(out string firstWorkerID))
+
+            Worker worker = null;
+            while (idleWorkerQueue.TryDequeue(out string firstWorkerID))
+            {
+                if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
+                    if (Interlocked.Increment(ref worker.gettedLock) == -99)
                     {
-                        if (Interlocked.Increment(ref worker.gettedLock) == -99)
-                        {
-                            Interlocked.Exchange(ref worker.gettedLock, -100);
-                            continue;
-                        }
-                        return worker;
+                        Interlocked.Exchange(ref worker.gettedLock, -100);
+                        continue;
                     }
+                    return worker;
                 }
+            }
 
             lock (this)
             {
@@ -817,9 +817,9 @@ namespace PowerThreadPool
                         }
                     }
                 }
-
-                return worker;
             }
+
+            return worker;
         }
 
         /// <summary>
