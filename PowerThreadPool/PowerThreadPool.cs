@@ -29,6 +29,8 @@ namespace PowerThreadPool
 
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
+        internal IEnumerable<Worker> aliveWorkerList = new List<Worker>();
+
         private PowerPoolOption powerPoolOption;
         public PowerPoolOption PowerPoolOption 
         { 
@@ -78,8 +80,7 @@ namespace PowerThreadPool
             get
             {
                 int count = 0;
-                List<Worker> workerList = aliveWorkerDic.Values.ToList();
-                foreach (Worker worker in workerList)
+                foreach (Worker worker in aliveWorkerList)
                 {
                     if (worker.workerState == 1)
                     {
@@ -94,8 +95,7 @@ namespace PowerThreadPool
             get
             {
                 List<string> list = settedWorkDic.Keys.ToList();
-                List<Worker> workerList = aliveWorkerDic.Values.ToList();
-                foreach (Worker worker in workerList) 
+                foreach (Worker worker in aliveWorkerList) 
                 {
                     if (worker.workerState == 1)
                     {
@@ -739,6 +739,7 @@ namespace PowerThreadPool
                 if (aliveWorkerDic.TryAdd(worker.ID, worker))
                 {
                     Interlocked.Increment(ref aliveWorkerCount);
+                    aliveWorkerList = aliveWorkerDic.Values;
                 }
                 idleWorkerQueue.Enqueue(worker.ID);
                 idleWorkerDic[worker.ID] = worker;
@@ -791,12 +792,12 @@ namespace PowerThreadPool
                     if (aliveWorkerDic.TryAdd(worker.ID, worker))
                     {
                         Interlocked.Increment(ref aliveWorkerCount);
+                        aliveWorkerList = aliveWorkerDic.Values;
                     }
                 }
 
                 if (worker == null)
                 {
-                    List<Worker> aliveWorkerList = aliveWorkerDic.Values.ToList();
                     int min = int.MaxValue;
                     foreach (Worker aliveWorker in aliveWorkerList)
                     {
@@ -959,7 +960,7 @@ namespace PowerThreadPool
                 while (poolRunning)
                 {
                     settedWorkDic.Clear();
-                    List<Worker> workersToStop = aliveWorkerDic.Values.ToList();
+                    IEnumerable<Worker> workersToStop = aliveWorkerList;
                     foreach (Worker worker in workersToStop)
                     {
                         worker.ForceStop();
@@ -969,7 +970,7 @@ namespace PowerThreadPool
             else
             {
                 cancellationTokenSource.Cancel();
-                List<Worker> workersToStop = aliveWorkerDic.Values.ToList();
+                IEnumerable<Worker> workersToStop = aliveWorkerList;
                 foreach (Worker worker in workersToStop)
                 {
                     worker.Cancel();
@@ -1230,7 +1231,6 @@ namespace PowerThreadPool
         /// </summary>
         public void Cancel()
         {
-            List<Worker> aliveWorkerList = aliveWorkerDic.Values.ToList();
             foreach (Worker worker in aliveWorkerList)
             {
                 worker.Cancel();
@@ -1296,7 +1296,7 @@ namespace PowerThreadPool
                 {
                     Stop();
                     Stop(true);
-                    foreach (Worker worker in aliveWorkerDic.Values)
+                    foreach (Worker worker in aliveWorkerList)
                     {
                         worker.Kill();
                     }

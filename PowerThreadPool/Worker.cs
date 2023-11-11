@@ -102,6 +102,7 @@ namespace PowerThreadPool
                     if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
                     {
                         Interlocked.Decrement(ref powerPool.aliveWorkerCount);
+                        powerPool.aliveWorkerList = powerPool.aliveWorkerDic.Values;
                     }
                     powerPool.idleWorkerDic.TryRemove(ID, out _);
 
@@ -120,7 +121,7 @@ namespace PowerThreadPool
 
                     powerPool.WorkCallbackEnd(workID, false);
 
-                    List<WorkBase> waitingWorkList = waitingWorkDic.Values.ToList();
+                    IEnumerable<WorkBase> waitingWorkList = waitingWorkDic.Values;
                     foreach (WorkBase work in waitingWorkList)
                     {
                         powerPool.SetWork(work);
@@ -237,9 +238,8 @@ namespace PowerThreadPool
                 if (waitingWorkID == null)
                 {
                     Worker worker = null;
-                    List<Worker> workerList = powerPool.aliveWorkerDic.Values.ToList();
                     int max = 0;
-                    foreach (Worker runningWorker in workerList)
+                    foreach (Worker runningWorker in powerPool.aliveWorkerList)
                     {
                         int waittingWorkCountTemp = runningWorker.WaitingWorkCount;
                         if (waittingWorkCountTemp > max)
@@ -319,6 +319,7 @@ namespace PowerThreadPool
                                                 if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
                                                 {
                                                     Interlocked.Decrement(ref powerPool.aliveWorkerCount);
+                                                    powerPool.aliveWorkerList = powerPool.aliveWorkerDic.Values;
                                                 }
                                                 Kill();
 
