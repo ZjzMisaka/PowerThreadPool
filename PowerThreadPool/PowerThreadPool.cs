@@ -767,19 +767,20 @@ namespace PowerThreadPool
         /// <returns></returns>
         private Worker GetWorker()
         {
-            Worker worker = null;
-            while (idleWorkerQueue.TryDequeue(out string firstWorkerID))
-            {
-                if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
+            
+                Worker worker = null;
+                while (idleWorkerQueue.TryDequeue(out string firstWorkerID))
                 {
-                    if (Interlocked.Increment(ref worker.gettedLock) == -99)
+                    if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                     {
-                        Interlocked.Exchange(ref worker.gettedLock, -100);
-                        continue;
+                        if (Interlocked.Increment(ref worker.gettedLock) == -99)
+                        {
+                            Interlocked.Exchange(ref worker.gettedLock, -100);
+                            continue;
+                        }
+                        return worker;
                     }
-                    return worker;
                 }
-            }
 
             lock (this)
             {
@@ -792,33 +793,33 @@ namespace PowerThreadPool
                         Interlocked.Increment(ref aliveWorkerCount);
                     }
                 }
-            }
-            
-            if (worker == null)
-            {
-                List<Worker> aliveWorkerList = aliveWorkerDic.Values.ToList();
-                int min = int.MaxValue;
-                foreach (Worker aliveWorker in aliveWorkerList)
+
+                if (worker == null)
                 {
-                    int waittingWorkCountTemp = aliveWorker.WaitingWorkCount;
-                    if (waittingWorkCountTemp < min)
+                    List<Worker> aliveWorkerList = aliveWorkerDic.Values.ToList();
+                    int min = int.MaxValue;
+                    foreach (Worker aliveWorker in aliveWorkerList)
                     {
-                        if (Interlocked.Increment(ref aliveWorker.gettedLock) == -99)
+                        int waittingWorkCountTemp = aliveWorker.WaitingWorkCount;
+                        if (waittingWorkCountTemp < min)
                         {
-                            Interlocked.Exchange(ref aliveWorker.gettedLock, -100);
-                            continue;
+                            if (Interlocked.Increment(ref aliveWorker.gettedLock) == -99)
+                            {
+                                Interlocked.Exchange(ref aliveWorker.gettedLock, -100);
+                                continue;
+                            }
+                            if (worker != null)
+                            {
+                                Interlocked.Decrement(ref worker.gettedLock);
+                            }
+                            min = waittingWorkCountTemp;
+                            worker = aliveWorker;
                         }
-                        if (worker != null)
-                        {
-                            Interlocked.Decrement(ref worker.gettedLock);
-                        }
-                        min = waittingWorkCountTemp;
-                        worker = aliveWorker;
                     }
                 }
-            }
 
-            return worker;
+                return worker;
+            }
         }
 
         /// <summary>
@@ -877,9 +878,6 @@ namespace PowerThreadPool
                     poolTimer.Stop();
                     poolTimer.Enabled = false;
                 }
-
-                Interlocked.Exchange(ref aliveWorkerCount, 0);
-                aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
 
                 waitAllSignal.Set();
             }
