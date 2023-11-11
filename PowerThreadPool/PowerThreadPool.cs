@@ -1282,12 +1282,19 @@ namespace PowerThreadPool
             }
         }
 
+        /// <summary>
+        /// Will try stop, force stop and kill all of the workers. 
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Dispose the instance
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (!disposed)
