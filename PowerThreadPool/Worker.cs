@@ -61,7 +61,6 @@ namespace PowerThreadPool
                             return;
                         }
 
-                        thread.Name = work.ID;
                         powerPool.OnWorkStart(work.ID);
 
                         ExecuteResultBase executeResult;
