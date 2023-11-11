@@ -1005,7 +1005,7 @@ namespace PowerThreadPool
                 return false;
             }
 
-            bool res = settedWorkDic.TryRemove(id, out Worker workerToStop);
+            bool res = settedWorkDic.TryGetValue(id, out Worker workerToStop);
             if (res)
             {
                 if (forceStop)
@@ -1054,9 +1054,9 @@ namespace PowerThreadPool
             ICollection<string> workIDs = pauseSignalDic.Keys;
             foreach (string id in workIDs)
             {
-                if (Thread.CurrentThread.Name == id)
+                if (settedWorkDic.TryGetValue(id, out Worker worker))
                 {
-                    if (settedWorkDic.TryGetValue(id, out Worker worker))
+                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
                     {
                         if (pauseStatusDic.TryGetValue(id, out bool status))
                         {
@@ -1080,8 +1080,17 @@ namespace PowerThreadPool
         /// </summary>
         public void StopIfRequested()
         {
-            if (CheckIfRequestedStop())
+            string workID = CheckIfRequestedStopAndReturnWorkID();
+            if (workID != null)
             {
+                if (workID == "")
+                {
+                    settedWorkDic.Clear();
+                }
+                else
+                {
+                    settedWorkDic.TryRemove(workID, out _);
+                }
                 throw new OperationCanceledException();
             }
         }
@@ -1098,15 +1107,44 @@ namespace PowerThreadPool
             }
             foreach (string id in cancellationTokenSourceDic.Keys)
             {
-                if (Thread.CurrentThread.Name == id)
+                if (settedWorkDic.TryGetValue(id, out Worker worker))
                 {
-                    if (cancellationTokenSourceDic[id].Token.IsCancellationRequested)
+                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
                     {
-                        return true;
+                        if (cancellationTokenSourceDic[id].Token.IsCancellationRequested)
+                        {
+                            return true;
+                        }
                     }
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// Call this function inside the thread logic where you want to check if requested stop (if user call ForceStop(...))
+        /// </summary>
+        /// <returns></returns>
+        private string CheckIfRequestedStopAndReturnWorkID()
+        {
+            if (cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                return "";
+            }
+            foreach (string id in cancellationTokenSourceDic.Keys)
+            {
+                if (settedWorkDic.TryGetValue(id, out Worker worker))
+                {
+                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
+                    {
+                        if (cancellationTokenSourceDic[id].Token.IsCancellationRequested)
+                        {
+                            return id;
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         /// <summary>

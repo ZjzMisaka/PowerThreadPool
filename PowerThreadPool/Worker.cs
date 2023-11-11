@@ -11,7 +11,7 @@ namespace PowerThreadPool
 {
     public class Worker
     {
-        private Thread thread;
+        internal Thread thread;
 
         private string id;
         internal string ID { get => id; set => id = value; }
