@@ -31,6 +31,9 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal IEnumerable<Worker> aliveWorkerList = new List<Worker>();
 
+        private Dictionary<WorkBase, ConcurrentSet<string>> suspendedWork = new Dictionary<WorkBase, ConcurrentSet<string>>();
+        private bool suspended;
+
         private PowerPoolOption powerPoolOption;
         public PowerPoolOption PowerPoolOption 
         { 
@@ -38,6 +41,7 @@ namespace PowerThreadPool
             set
             { 
                 powerPoolOption = value;
+                suspended = value.StartSuspended;
                 InitWorkerQueue();
             }
         }
@@ -604,7 +608,7 @@ namespace PowerThreadPool
         /// <param name="param"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
+        public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption<TResult> workOption)
         {
             string workID = null;
 
@@ -618,42 +622,71 @@ namespace PowerThreadPool
                 PowerPoolOption = new PowerPoolOption();
             }
 
-            ExecuteResult<TResult> excuteResult = new ExecuteResult<TResult>();
-
-            if (option.CustomWorkID != null)
+            if (workOption.CustomWorkID != null)
             {
-                workID = option.CustomWorkID;
+                workID = workOption.CustomWorkID;
             }
             else
             {
                 workID = Guid.NewGuid().ToString();
             }
-            excuteResult.ID = workID;
 
-            
-            if (option.Timeout == null && powerPoolOption.DefaultWorkTimeout != null)
+            if (workOption.Timeout == null && powerPoolOption.DefaultWorkTimeout != null)
             {
-                option.Timeout = powerPoolOption.DefaultWorkTimeout;
+                workOption.Timeout = powerPoolOption.DefaultWorkTimeout;
             }
 
-            Work<TResult> work = new Work<TResult>(this, workID, function, param, option);
+            Work<TResult> work = new Work<TResult>(this, workID, function, param, workOption);
             pauseSignalDic[workID] = new ManualResetEvent(true);
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSourceDic[workID] = cancellationTokenSource;
 
-            if (option.Dependents != null && option.Dependents.Count > 0)
+            if (powerPoolOption.StartSuspended)
             {
-                waitingDependentDic[workID] = work;
+                suspendedWork[work] = workOption.Dependents;
             }
             else
             {
-                CheckPoolStart();
-                SetWork(work);
+                if (workOption.Dependents != null && workOption.Dependents.Count > 0)
+                {
+                    waitingDependentDic[workID] = work;
+                }
+                else
+                {
+                    CheckPoolStart();
+                    SetWork(work);
+                }
             }
 
             return workID;
         }
 
+        /// <summary>
+        /// Start the pool, but only if PowerPoolOption.StartSuspended is set to true.
+        /// </summary>
+        public void Start()
+        {
+            if (!suspended)
+            {
+                return;
+            }
+
+            suspended = false;
+            foreach (WorkBase work in suspendedWork.Keys)
+            {
+                ConcurrentSet<string> dependents = suspendedWork[work];
+                if (dependents != null && dependents.Count > 0)
+                {
+                    waitingDependentDic[work.ID] = work;
+                }
+                else
+                {
+                    CheckPoolStart();
+                    SetWork(work);
+                }
+            }
+            suspendedWork.Clear();
+        }
 
         /// <summary>
         /// One thread end
@@ -879,6 +912,8 @@ namespace PowerThreadPool
                     poolTimer.Stop();
                     poolTimer.Enabled = false;
                 }
+
+                suspended = powerPoolOption.StartSuspended;
 
                 waitAllSignal.Set();
             }

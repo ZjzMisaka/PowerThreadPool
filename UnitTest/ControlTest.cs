@@ -707,5 +707,56 @@ namespace UnitTest
 
             Assert.True(duration >= 3000);
         }
+
+        [Fact]
+        public void TestStartSuspended()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            });
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.False(powerPool.PoolRunning);
+
+            powerPool.Start();
+
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+            Assert.True(powerPool.PoolRunning);
+
+            powerPool.Stop();
+            powerPool.Wait();
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.False(powerPool.PoolRunning);
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            });
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.False(powerPool.PoolRunning);
+
+            powerPool.Start();
+
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+            Assert.True(powerPool.PoolRunning);
+
+            powerPool.Stop();
+            powerPool.Wait();
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.False(powerPool.PoolRunning);
+        }
     }
 }

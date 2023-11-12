@@ -33,5 +33,10 @@ namespace PowerThreadPool.Option
         /// The default callback function that is called when a work finishes execution.
         /// </summary>
         public Action<ExecuteResult<object>> DefaultCallback { get; set; } = null;
+
+        /// <summary>
+        /// Indicates whether the pool should begin in a suspended state.
+        /// </summary>
+        public bool StartSuspended { get; set; } = false;
     }
 }
