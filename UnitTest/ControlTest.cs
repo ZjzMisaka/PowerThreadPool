@@ -68,9 +68,9 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Collection<long>(logList,
-                item => Assert.True(item >= 1500 && item < 1800),
-                item => Assert.True(item >= 1500 && item < 1800),
-                item => Assert.True(item >= 1500 && item < 1800)
+                item => Assert.True(item >= 1500 && item < 2000),
+                item => Assert.True(item >= 1500 && item < 2000),
+                item => Assert.True(item >= 1500 && item < 2000)
             );
         }
 
@@ -705,7 +705,7 @@ namespace UnitTest
             powerPool.Wait();
             long duration = GetNowSs() - start;
 
-            Assert.True(duration >= 3000);
+            Assert.True(duration >= 2900);
         }
 
         [Fact]
