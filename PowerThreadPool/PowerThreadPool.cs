@@ -1338,10 +1338,6 @@ namespace PowerThreadPool
                 {
                     Stop();
                     Stop(true);
-                    foreach (Worker worker in aliveWorkerList)
-                    {
-                        worker.Kill();
-                    }
                     aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
                     idleWorkerDic = new ConcurrentDictionary<string, Worker>();
                     idleWorkerQueue = new ConcurrentQueue<string>();
