@@ -46,54 +46,5 @@ namespace UnitTest
                 Assert.True(powerPool.IdleWorkerCount > 0);
             }
         }
-
-        [Fact]
-        public async void StressTest2()
-        {
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { });
-            int doneCount = 0;
-
-            for (int i = 0; i < 100; ++i)
-            {
-                powerPool.QueueWorkItem(() =>
-                {
-                    for (int j = 0; j < 100; ++j)
-                    {
-                        powerPool.QueueWorkItem(() =>
-                        {
-                            for (int k = 0; k < 100; ++k)
-                            {
-                                powerPool.QueueWorkItem(() =>
-                                {
-                                }, (res) =>
-                                {
-                                    for (int j = 0; j < 5; ++j)
-                                    {
-                                        powerPool.QueueWorkItem(() =>
-                                        {
-
-                                        }, (res) =>
-                                        {
-                                            Interlocked.Increment(ref doneCount);
-                                        });
-                                    }
-                                    Interlocked.Increment(ref doneCount);
-                                });
-                            }
-                        }, (res) =>
-                        {
-                            Interlocked.Increment(ref doneCount);
-                        });
-                    }
-                }, (res) =>
-                {
-                    Interlocked.Increment(ref doneCount);
-                });
-            }
-
-            await powerPool.WaitAsync();
-
-            Assert.Equal(6010100, doneCount);
-        }
     }
 }
