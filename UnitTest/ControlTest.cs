@@ -758,5 +758,74 @@ namespace UnitTest
             Assert.Equal(0, powerPool.RunningWorkerCount);
             Assert.False(powerPool.PoolRunning);
         }
+
+        [Fact]
+        public void TestStartWhenNotSuspended()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = false });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        return;
+                    }
+                    Thread.Sleep(100);
+                }
+            });
+
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+            Assert.True(powerPool.PoolRunning);
+
+            powerPool.Start();
+
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+            Assert.True(powerPool.PoolRunning);
+
+            powerPool.Stop();
+            powerPool.Wait();
+        }
+
+        [Fact]
+        public void TestStartSuspendedWithDependents()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i >= 0; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            }, new WorkOption() 
+            { 
+                Dependents = new PowerThreadPool.Collections.ConcurrentSet<string>() { id }
+            });
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.False(powerPool.PoolRunning);
+
+            powerPool.Start();
+
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+            Assert.True(powerPool.PoolRunning);
+
+            powerPool.Stop();
+            powerPool.Wait();
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.False(powerPool.PoolRunning);
+        }
     }
 }
