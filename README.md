@@ -10,9 +10,12 @@
 
 Enables efficient thread pool management with callback implementation, granular control, customizable concurrency, and support for diverse task submissions.  
 
+## Documentation
 Read the [Wiki](https://github.com/ZjzMisaka/PowerThreadPool/wiki) here.  
+
 ## Download
-PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/PowerThreadPool/) now.
+PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/PowerThreadPool/) now.  
+Support: Net46+ | Net5.0+  
 
 ## Features
 1. Work Control
@@ -43,6 +46,7 @@ powerPool.QueueWorkItem(() =>
     // DO SOMETHING
 });
 ```
+
 ### With callback
 ```csharp
 PowerPool powerPool = new PowerPool(new PowerPoolOption() { /* Some options */ });
@@ -55,6 +59,7 @@ powerPool.QueueWorkItem(() =>
     // Callback of the work
 });
 ```
+
 ### With option
 ```csharp
 PowerPool powerPool = new PowerPool(new PowerPoolOption() { /* Some options */ });
@@ -66,6 +71,7 @@ powerPool.QueueWorkItem(() =>
 {
     // Some options
 });
+
 ```
 ## APIs
 ### [API Summary](https://github.com/ZjzMisaka/PowerThreadPool/wiki/API-Summary)  
