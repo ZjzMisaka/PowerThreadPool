@@ -238,27 +238,26 @@ namespace PowerThreadPool
                 if (waitingWorkID == null)
                 {
                     Worker worker = null;
-                    int max = 0;
+                    int waittingWorkCountTemp = 0;
                     foreach (Worker runningWorker in powerPool.aliveWorkerList)
                     {
-                        int waittingWorkCountTemp = runningWorker.WaitingWorkCount;
-                        if (waittingWorkCountTemp > max)
+                        if (Interlocked.CompareExchange(ref runningWorker.stealingLock, 1, 0) == 1)
                         {
-                            if (Interlocked.CompareExchange(ref runningWorker.stealingLock, 1, 0) == 1)
-                            {
-                                continue;
-                            }
-                            if (worker != null)
-                            {
-                                Interlocked.Exchange(ref worker.stealingLock, 0);
-                            }
-                            max = waittingWorkCountTemp;
-                            worker = runningWorker;
+                            continue;
                         }
+                        if (worker != null)
+                        {
+                            Interlocked.Exchange(ref worker.stealingLock, 0);
+                        }
+
+                        waittingWorkCountTemp = runningWorker.WaitingWorkCount;
+                        worker = runningWorker;
+
+                        break;
                     }
                     if (worker != null)
                     {
-                        int count = max / 2;
+                        int count = waittingWorkCountTemp / 2;
                         if (count > 0)
                         {
                             List<WorkBase> stolenWorkList = worker.Steal(count, powerPool);
