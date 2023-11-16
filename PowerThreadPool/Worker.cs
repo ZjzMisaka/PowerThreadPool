@@ -253,11 +253,22 @@ namespace PowerThreadPool
                         waittingWorkCountTemp = runningWorker.WaitingWorkCount;
                         worker = runningWorker;
 
-                        break;
+                        if (waittingWorkCountTemp >= 1)
+                        {
+                            break;
+                        }
                     }
                     if (worker != null)
                     {
-                        int count = waittingWorkCountTemp / 2;
+                        int count;
+                        if (waittingWorkCountTemp == 1)
+                        {
+                            count = 1;
+                        }
+                        else
+                        {
+                            count = waittingWorkCountTemp / 2;
+                        }
                         if (count > 0)
                         {
                             List<WorkBase> stolenWorkList = worker.Steal(count, powerPool);
