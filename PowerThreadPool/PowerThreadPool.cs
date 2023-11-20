@@ -72,6 +72,23 @@ namespace PowerThreadPool
         private bool poolStopping = false;
         public bool PoolStopping { get => poolStopping; }
 
+        private bool enablePoolIdleCheck = true;
+        public bool EnablePoolIdleCheck
+        {
+            get 
+            { 
+                return enablePoolIdleCheck; 
+            } 
+            set 
+            {
+                enablePoolIdleCheck = value;
+                if (enablePoolIdleCheck)
+                {
+                    CheckPoolIdle();
+                }
+            }
+        }
+
         public int IdleWorkerCount
         {
             get
@@ -894,6 +911,11 @@ namespace PowerThreadPool
         /// </summary>
         internal void CheckPoolIdle()
         {
+            if (!enablePoolIdleCheck)
+            {
+                return;
+            }
+
             if (RunningWorkerCount == 0 && poolRunning)
             {
                 poolRunning = false;

@@ -858,5 +858,43 @@ namespace UnitTest
             Assert.Equal(0, powerPool.AliveWorkerCount);
             Assert.Equal(0, powerPool.IdleWorkerCount);
         }
+
+        [Fact]
+        public void TestEnablePoolIdleCheck()
+        {
+            int idleCount = 0;
+            int doneCount = 0;
+            PowerPool powerPool = new PowerPool();
+            powerPool.PoolIdle += (s, e) => 
+            { 
+                Interlocked.Increment(ref idleCount); 
+            };
+
+            Assert.True(powerPool.EnablePoolIdleCheck);
+            powerPool.EnablePoolIdleCheck = false;
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+            Thread.Sleep(100);
+            powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+            Thread.Sleep(100);
+            powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.EnablePoolIdleCheck = true;
+            Assert.True(powerPool.EnablePoolIdleCheck);
+
+            powerPool.Wait();
+
+            Assert.Equal(1, idleCount);
+            Assert.Equal(3, doneCount);
+        }
     }
 }
