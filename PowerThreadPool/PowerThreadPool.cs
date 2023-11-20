@@ -73,6 +73,9 @@ namespace PowerThreadPool
         public bool PoolStopping { get => poolStopping; }
 
         private bool enablePoolIdleCheck = true;
+        /// <summary>
+        /// Indicates whether to perform pool idle check.
+        /// </summary>
         public bool EnablePoolIdleCheck
         {
             get 
