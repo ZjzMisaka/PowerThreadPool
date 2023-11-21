@@ -243,35 +243,27 @@ namespace PowerThreadPool
                 if (waitingWorkID == null)
                 {
                     Worker worker = null;
-                    int waittingWorkCountTemp = 0;
+                    int max = 0;
                     foreach (Worker runningWorker in powerPool.aliveWorkerList)
                     {
-                        if (Interlocked.CompareExchange(ref runningWorker.stealingLock, 1, 0) == 1)
+                        int waittingWorkCountTemp = runningWorker.WaitingWorkCount;
+                        if (waittingWorkCountTemp > max)
                         {
-                            continue;
-                        }
-                        if (worker != null)
-                        {
-                            Interlocked.Exchange(ref worker.stealingLock, 0);
-                        }
-                        waittingWorkCountTemp = runningWorker.WaitingWorkCount;
-                        worker = runningWorker;
-                        if (waittingWorkCountTemp >= 1)
-                        {
-                            break;
+                            if (Interlocked.CompareExchange(ref runningWorker.stealingLock, 1, 0) == 1)
+                            {
+                                continue;
+                            }
+                            if (worker != null)
+                            {
+                                Interlocked.Exchange(ref worker.stealingLock, 0);
+                            }
+                            max = waittingWorkCountTemp;
+                            worker = runningWorker;
                         }
                     }
                     if (worker != null)
                     {
-                        int count;
-                        if (waittingWorkCountTemp == 1)
-                        {
-                            count = 1;
-                        }
-                        else
-                        {
-                            count = waittingWorkCountTemp / 2;
-                        }
+                        int count = max / 2;
                         if (count > 0)
                         {
                             List<WorkBase> stolenWorkList = worker.Steal(count, powerPool);
