@@ -251,6 +251,11 @@ namespace PowerThreadPool
                     int max = 0;
                     foreach (Worker runningWorker in powerPool.aliveWorkerList)
                     {
+                        if (runningWorker.workerState != 1)
+                        {
+                            continue;
+                        }
+
                         int waittingWorkCountTemp = runningWorker.WaitingWorkCount;
                         if (waittingWorkCountTemp > max)
                         {
