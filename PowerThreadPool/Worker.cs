@@ -98,7 +98,7 @@ namespace PowerThreadPool
                     Interlocked.Exchange(ref gettedLock, -100);
                     Interlocked.Exchange(ref workerState, 2);
 
-                    powerPool.runningWorkerSet.Remove(ID);
+                    Interlocked.Decrement(ref powerPool.runningWorkerCount);
                     if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
                     {
                         Interlocked.Decrement(ref powerPool.aliveWorkerCount);
@@ -121,10 +121,12 @@ namespace PowerThreadPool
 
                     powerPool.WorkCallbackEnd(workID, false);
 
+                    bool hasWaitingWork = false;
                     IEnumerable<WorkBase> waitingWorkList = waitingWorkDic.Values;
                     foreach (WorkBase work in waitingWorkList)
                     {
                         powerPool.SetWork(work);
+                        hasWaitingWork = true;
                     }
 
                     if (waitSignalDic.TryRemove(workID, out AutoResetEvent waitSignal))
@@ -132,7 +134,10 @@ namespace PowerThreadPool
                         waitSignal.Set();
                     }
 
-                    powerPool.CheckPoolIdle();
+                    if (!hasWaitingWork)
+                    {
+                        powerPool.CheckPoolIdle();
+                    }
 
                     return;
                 }
@@ -191,7 +196,7 @@ namespace PowerThreadPool
 
                 if (originalWorkerState == 0)
                 {
-                    powerPool.runningWorkerSet.Add(ID);
+                    Interlocked.Increment(ref powerPool.runningWorkerCount);
                 }
             }
 
@@ -296,7 +301,7 @@ namespace PowerThreadPool
                         {
                             Interlocked.Exchange(ref workerState, 0);
 
-                            powerPool.runningWorkerSet.Remove(ID);
+                            Interlocked.Decrement(ref powerPool.runningWorkerCount);
                             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
                             powerPool.idleWorkerQueue.Enqueue(this.ID);
                             powerPool.idleWorkerDic[this.ID] = this;

@@ -24,8 +24,7 @@ namespace PowerThreadPool
 
         internal ConcurrentDictionary<string, Worker> idleWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentQueue<string> idleWorkerQueue = new ConcurrentQueue<string>();
-        private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
-        internal ConcurrentSet<string> runningWorkerSet = new ConcurrentSet<string>();
+        private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>(); 
 
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
@@ -130,15 +129,16 @@ namespace PowerThreadPool
             }
         }
 
+        internal int runningWorkerCount = 0;
         public int RunningWorkerCount
         {
             get 
             {
-                return runningWorkerSet.Count;
+                return runningWorkerCount;
             }
         }
 
-        internal int aliveWorkerCount;
+        internal int aliveWorkerCount = 0;
         public int AliveWorkerCount
         {
             get
@@ -1371,7 +1371,7 @@ namespace PowerThreadPool
                     idleWorkerDic = new ConcurrentDictionary<string, Worker>();
                     idleWorkerQueue = new ConcurrentQueue<string>();
                     aliveWorkerCount = 0;
-                    runningWorkerSet = new ConcurrentSet<string>();
+                    runningWorkerCount = 0;
                 }
 
                 disposed = true;
