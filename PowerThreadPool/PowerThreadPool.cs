@@ -630,7 +630,12 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption<TResult> workOption)
         {
-            string workID = null;
+            if (disposed)
+            { 
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+
+            string workID;
 
             if (PoolStopping)
             {

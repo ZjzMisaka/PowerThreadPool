@@ -896,5 +896,28 @@ namespace UnitTest
             Assert.Equal(1, idleCount);
             Assert.Equal(3, doneCount);
         }
+
+        [Fact]
+        public void TestSetWorkAfterDispose()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.Dispose();
+
+            Exception exception = null;
+
+            try
+            {
+                powerPool.QueueWorkItem(() =>
+                {
+                });
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            Assert.NotNull(exception);
+            Assert.Equal("ObjectDisposedException", exception.GetType().Name);
+        }
     }
 }
