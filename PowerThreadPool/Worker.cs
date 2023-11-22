@@ -175,6 +175,7 @@ namespace PowerThreadPool
             else
             {
                 waitingWorkDic.TryRemove(workID, out _);
+                Interlocked.Decrement(ref waitingWorkCount);
             }
         }
 
