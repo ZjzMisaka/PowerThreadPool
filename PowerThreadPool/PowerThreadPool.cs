@@ -98,19 +98,12 @@ namespace PowerThreadPool
                 return idleWorkerDic.Count;
             }
         }
+        internal int waitingWorkCount = 0;
         public int WaitingWorkCount
         {
             get
             {
-                int count = 0;
-                foreach (Worker worker in aliveWorkerList)
-                {
-                    if (worker.workerState == 1)
-                    {
-                        count += worker.WaitingWorkCount;
-                    }
-                }
-                return count;
+                return waitingWorkCount;
             }
         }
         public IEnumerable<string> WaitingWorkList
@@ -666,6 +659,8 @@ namespace PowerThreadPool
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSourceDic[workID] = cancellationTokenSource;
 
+            Interlocked.Increment(ref waitingWorkCount);
+
             if (powerPoolOption.StartSuspended)
             {
                 suspendedWork[work] = workOption.Dependents;
@@ -924,7 +919,7 @@ namespace PowerThreadPool
                 return;
             }
 
-            if (RunningWorkerCount == 0 && poolRunning)
+            if (runningWorkerCount == 0 && waitingWorkCount == 0 && poolRunning)
             {
                 poolRunning = false;
                 if (poolStopping)

@@ -36,6 +36,8 @@ namespace PowerThreadPool
         private bool killFlag = false;
         private int stealingLock = 0;
 
+        private PowerPool powerPool;
+
         private int waitingWorkCount = 0;
         internal int WaitingWorkCount
         {
@@ -47,6 +49,7 @@ namespace PowerThreadPool
 
         internal Worker(PowerPool powerPool)
         {
+            this.powerPool = powerPool;
             this.ID = Guid.NewGuid().ToString();
             thread = new Thread(() =>
             {
@@ -176,6 +179,7 @@ namespace PowerThreadPool
             {
                 waitingWorkDic.TryRemove(workID, out _);
                 Interlocked.Decrement(ref waitingWorkCount);
+                Interlocked.Decrement(ref powerPool.waitingWorkCount);
             }
         }
 
@@ -378,6 +382,8 @@ namespace PowerThreadPool
                     }
                 }
 
+                Interlocked.Decrement(ref powerPool.waitingWorkCount);
+
                 TimeoutOption workTimeoutOption = work.WorkTimeoutOption;
                 if (workTimeoutOption != null)
                 {
@@ -430,7 +436,8 @@ namespace PowerThreadPool
         internal void Cancel()
         {
             waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
-            Interlocked.Exchange(ref waitingWorkCount, 0);
+            int count = Interlocked.Exchange(ref waitingWorkCount, 0);
+            Interlocked.Exchange(ref powerPool.waitingWorkCount, powerPool.waitingWorkCount - count);
         }
 
         internal bool Cancel(string id)
@@ -438,6 +445,7 @@ namespace PowerThreadPool
             if (waitingWorkDic.TryRemove(id, out _))
             {
                 Interlocked.Decrement(ref waitingWorkCount);
+                Interlocked.Decrement(ref powerPool.waitingWorkCount);
                 return true;
             }
             return false;
