@@ -812,7 +812,7 @@ namespace PowerThreadPool
                 worker = GetWorker();
             }
             settedWorkDic[work.ID] = worker;
-            worker.SetWork(work, this, false);
+            worker.SetWork(work, false);
         }
 
         /// <summary>

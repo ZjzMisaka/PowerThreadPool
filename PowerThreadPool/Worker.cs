@@ -93,7 +93,7 @@ namespace PowerThreadPool
                             waitSignal.Set();
                         }
 
-                        AssignWork(powerPool);
+                        AssignWork();
                     }
                 }
                 catch (ThreadInterruptedException ex)
@@ -183,7 +183,7 @@ namespace PowerThreadPool
             }
         }
 
-        internal void SetWork(WorkBase work, PowerPool powerPool, bool stolenWork)
+        internal void SetWork(WorkBase work, bool stolenWork)
         {
             int originalWorkerState;
             lock (powerPool)
@@ -207,11 +207,11 @@ namespace PowerThreadPool
 
             if (originalWorkerState == 0)
             {
-                AssignWork(powerPool);
+                AssignWork();
             }
         }
 
-        internal List<WorkBase> Steal(int count, PowerPool powerPool)
+        internal List<WorkBase> Steal(int count)
         {
             List<WorkBase> stolenList = new List<WorkBase>();
             for (int i = 0; i < count; ++i)
@@ -239,7 +239,7 @@ namespace PowerThreadPool
             return stolenList;
         }
 
-        private void AssignWork(PowerPool powerPool)
+        private void AssignWork()
         {
             while (true)
             {
@@ -281,11 +281,11 @@ namespace PowerThreadPool
                         int count = max / 2;
                         if (count > 0)
                         {
-                            List<WorkBase> stolenWorkList = worker.Steal(count, powerPool);
+                            List<WorkBase> stolenWorkList = worker.Steal(count);
 
                             foreach (WorkBase stolenWork in stolenWorkList)
                             {
-                                SetWork(stolenWork, powerPool, true);
+                                SetWork(stolenWork, true);
                             }
                         }
 
