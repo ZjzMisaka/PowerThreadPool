@@ -98,6 +98,7 @@ namespace PowerThreadPool
                 return idleWorkerDic.Count;
             }
         }
+
         internal int waitingWorkCount = 0;
         public int WaitingWorkCount
         {
@@ -106,6 +107,7 @@ namespace PowerThreadPool
                 return waitingWorkCount;
             }
         }
+
         public IEnumerable<string> WaitingWorkList
         {
             get
@@ -1372,6 +1374,7 @@ namespace PowerThreadPool
                     idleWorkerQueue = new ConcurrentQueue<string>();
                     aliveWorkerCount = 0;
                     runningWorkerCount = 0;
+                    waitingWorkCount = 0;
                 }
 
                 disposed = true;
