@@ -185,28 +185,23 @@ namespace PowerThreadPool
 
         internal void SetWork(WorkBase work, bool stolenWork)
         {
-            int originalWorkerState;
             lock (powerPool)
             {
                 waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
                 waitingWorkDic[work.ID] = work;
                 waitSignalDic[work.ID] = new AutoResetEvent(false);
                 Interlocked.Increment(ref waitingWorkCount);
+            }
 
-                originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
-                if (!stolenWork)
-                {
-                    Interlocked.Decrement(ref gettedLock);
-                }
-
-                if (originalWorkerState == 0)
-                {
-                    Interlocked.Increment(ref powerPool.runningWorkerCount);
-                }
+            int originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
+            if (!stolenWork)
+            {
+                Interlocked.Decrement(ref gettedLock);
             }
 
             if (originalWorkerState == 0)
             {
+                Interlocked.Increment(ref powerPool.runningWorkerCount);
                 AssignWork();
             }
         }
