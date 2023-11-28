@@ -301,8 +301,9 @@ namespace PowerThreadPool
                                 Interlocked.Decrement(ref waitingWorkCount);
                             }
                         }
+                    }
 
-                        if (waitingWorkID == null || work == null)
+                    if (waitingWorkID == null || work == null)
                         {
                             Interlocked.Exchange(ref workerState, 0);
 
@@ -356,7 +357,6 @@ namespace PowerThreadPool
 
                             return;
                         }
-                    }
                 }
 
                 if (killTimer != null)
