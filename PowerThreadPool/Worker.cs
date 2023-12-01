@@ -187,8 +187,8 @@ namespace PowerThreadPool
         {
             lock (powerPool)
             {
-                waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
                 waitingWorkDic[work.ID] = work;
+                waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
                 waitSignalDic[work.ID] = new AutoResetEvent(false);
                 Interlocked.Increment(ref waitingWorkCount);
             }
@@ -301,17 +301,16 @@ namespace PowerThreadPool
                                 Interlocked.Decrement(ref waitingWorkCount);
                             }
                         }
-                    }
 
-                    if (waitingWorkID == null || work == null)
+                        if (waitingWorkID == null || work == null)
                         {
                             Interlocked.Exchange(ref workerState, 0);
 
                             Interlocked.Decrement(ref powerPool.runningWorkerCount);
                             PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
-                            powerPool.idleWorkerQueue.Enqueue(this.ID);
                             powerPool.idleWorkerDic[this.ID] = this;
-
+                            powerPool.idleWorkerQueue.Enqueue(this.ID);
+                            
                             powerPool.CheckPoolIdle();
 
                             if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
@@ -357,6 +356,7 @@ namespace PowerThreadPool
 
                             return;
                         }
+                    }
                 }
 
                 if (killTimer != null)
