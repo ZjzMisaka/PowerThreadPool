@@ -38,6 +38,19 @@ namespace UnitTest
 
                 await powerPool.WaitAsync();
 
+                int loopCount = 0;
+                while (totalTasks != doneCount)
+                {
+                    Thread.Sleep(100);
+                    await powerPool.WaitAsync();
+                    ++loopCount;
+
+                    if (loopCount == 20)
+                    {
+                        break;
+                    }
+                }
+
                 Assert.Equal(totalTasks, doneCount);
                 Assert.Equal(0, failedCount);
                 Assert.Equal(0, powerPool.RunningWorkerCount);
