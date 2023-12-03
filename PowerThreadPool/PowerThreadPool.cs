@@ -796,8 +796,8 @@ namespace PowerThreadPool
                     Interlocked.Increment(ref aliveWorkerCount);
                     aliveWorkerList = aliveWorkerDic.Values;
                 }
-                idleWorkerQueue.Enqueue(worker.ID);
                 idleWorkerDic[worker.ID] = worker;
+                idleWorkerQueue.Enqueue(worker.ID);
             }
         }
 
