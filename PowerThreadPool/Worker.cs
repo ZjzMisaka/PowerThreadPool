@@ -189,7 +189,7 @@ namespace PowerThreadPool
             {
                 waitingWorkDic[work.ID] = work;
                 waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
-                waitSignalDic[work.ID] = new AutoResetEvent(false);
+                waitSignalDic.GetOrAdd(work.ID, _ => new AutoResetEvent(false));
                 Interlocked.Increment(ref waitingWorkCount);
             }
 
