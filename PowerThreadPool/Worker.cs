@@ -86,7 +86,7 @@ namespace PowerThreadPool
                         powerPool.OneWorkEnd(executeResult);
                         work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
 
-                        powerPool.WorkCallbackEnd(workID, true);
+                        powerPool.WorkCallbackEnd(workID, executeResult.Status);
 
                         if (waitSignalDic.TryRemove(workID, out AutoResetEvent waitSignal))
                         {
@@ -122,7 +122,7 @@ namespace PowerThreadPool
                         work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
                     }
 
-                    powerPool.WorkCallbackEnd(workID, false);
+                    powerPool.WorkCallbackEnd(workID, Status.Failed);
 
                     bool hasWaitingWork = false;
                     IEnumerable<WorkBase> waitingWorkList = waitingWorkDic.Values;

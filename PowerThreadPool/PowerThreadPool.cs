@@ -747,11 +747,11 @@ namespace PowerThreadPool
         /// Work end
         /// </summary>
         /// <param name="guid"></param>
-        internal void WorkCallbackEnd(string guid, bool succeed)
+        internal void WorkCallbackEnd(string guid, Status status)
         {
             if (CallbackEnd != null)
             {
-                CallbackEnd.Invoke(guid, succeed);
+                CallbackEnd.Invoke(guid, status == Status.Succeed ? true : false);
             }
 
             settedWorkDic.TryRemove(guid, out _);
