@@ -1,5 +1,6 @@
 ﻿using PowerThreadPool.Option;
 using System;
+using System.Linq;
 using System.Threading;
 
 namespace PowerThreadPool
@@ -45,14 +46,20 @@ namespace PowerThreadPool
                         {
                             return;
                         }
-                        if (this.workOption.Dependents.Remove(workId))
+
+                        foreach (string dependedId in this.workOption.Dependents)
                         {
-                            if (!succeed)
+                            if (powerPool.failedWorkSet.Contains(dependedId))
                             {
                                 this.succeed = false;
                                 Interlocked.Decrement(ref powerPool.waitingWorkCount);
+                                return;
                             }
-                            else if (this.workOption.Dependents.Count == 0)
+                        }
+
+                        if (this.workOption.Dependents.Remove(workId))
+                        {
+                            if (this.workOption.Dependents.Count == 0)
                             {
                                 powerPool.SetWork(this);
                             }

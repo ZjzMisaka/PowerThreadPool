@@ -22,6 +22,8 @@ namespace PowerThreadPool
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
+        internal ConcurrentSet<string> failedWorkSet = new ConcurrentSet<string>();
+
         internal ConcurrentDictionary<string, Worker> idleWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentQueue<string> idleWorkerQueue = new ConcurrentQueue<string>();
 
@@ -692,7 +694,7 @@ namespace PowerThreadPool
             foreach (WorkBase work in suspendedWork.Keys)
             {
                 ConcurrentSet<string> dependents = suspendedWork[work];
-                if (dependents== null || dependents.Count == 0)
+                if (dependents == null || dependents.Count == 0)
                 {
                     CheckPoolStart();
                     SetWork(work);
@@ -749,6 +751,11 @@ namespace PowerThreadPool
         /// <param name="guid"></param>
         internal void WorkCallbackEnd(string guid, Status status)
         {
+            if (status == Status.Failed)
+            {
+                failedWorkSet.Add(guid);
+            }
+
             if (CallbackEnd != null)
             {
                 CallbackEnd.Invoke(guid, status == Status.Succeed ? true : false);
