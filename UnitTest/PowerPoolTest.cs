@@ -383,6 +383,55 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestDependentsFailedBeforeWorkRun()
+        {
+            int doneCount = 0;
+            int failedCount = 0;
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
+            };
+
+            powerPool.WorkEnd += (s, e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+                if (e.Exception != null)
+                {
+                    Interlocked.Increment(ref failedCount);
+                }
+            };
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                throw new Exception();
+            });
+
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            Thread.Sleep(100);
+
+            powerPool.QueueWorkItem(() =>
+            {
+            },
+           new WorkOption()
+           {
+               Dependents = new ConcurrentSet<string>() { id0, id1 }
+           });
+
+            powerPool.Wait();
+
+            Assert.Equal(2, doneCount);
+            Assert.Equal(1, failedCount);
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
         public void TestWorkPriority()
         {
             PowerPool powerPool = new PowerPool();
