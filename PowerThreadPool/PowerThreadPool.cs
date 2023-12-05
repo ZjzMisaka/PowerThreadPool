@@ -137,7 +137,7 @@ namespace PowerThreadPool
         {
             get
             {
-                return failedWorkSet.ToArray();
+                return failedWorkSet;
             }
         }
 
