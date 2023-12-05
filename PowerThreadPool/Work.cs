@@ -38,7 +38,7 @@ namespace PowerThreadPool
 
             if (this.workOption != null && this.workOption.Dependents != null && this.workOption.Dependents.Count != 0)
             {
-                powerPool.CallbackEnd += (workId, succeed) =>
+                powerPool.CallbackEnd += (workId) =>
                 {
                     lock (lockObj)
                     {
