@@ -150,8 +150,9 @@ namespace PowerThreadPool
 
         public bool Wait(string workID)
         {
-            if (waitSignalDic.TryGetValue(workID, out AutoResetEvent autoResetEvent))
+            if (waitingWorkDic.ContainsKey(workID) || workID == this.workID)
             {
+                AutoResetEvent autoResetEvent = waitSignalDic.GetOrAdd(workID, _ => new AutoResetEvent(false));
                 autoResetEvent.WaitOne();
                 return true;
             }
@@ -188,7 +189,6 @@ namespace PowerThreadPool
             {
                 waitingWorkDic[work.ID] = work;
                 waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
-                waitSignalDic.GetOrAdd(work.ID, _ => new AutoResetEvent(false));
                 Interlocked.Increment(ref waitingWorkCount);
             }
 
