@@ -170,16 +170,15 @@ namespace PowerThreadPool
 
         public void ForceStop(string workID)
         {
-            if (this.workID == workID)
+            if (waitingWorkDic.TryRemove(workID, out _))
             {
-                thread.Interrupt();
-                thread.Join();
+                Interlocked.Decrement(ref waitingWorkCount);
+                Interlocked.Decrement(ref powerPool.waitingWorkCount);
             }
             else
             {
-                waitingWorkDic.TryRemove(workID, out _);
-                Interlocked.Decrement(ref waitingWorkCount);
-                Interlocked.Decrement(ref powerPool.waitingWorkCount);
+                thread.Interrupt();
+                thread.Join();
             }
         }
 
