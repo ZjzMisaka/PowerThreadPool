@@ -20,6 +20,7 @@ namespace PowerThreadPool
         private Func<object[], TResult> function;
         private object[] param;
         private WorkOption<TResult> workOption;
+        private bool succeed = true;
 
         private object lockObj = new object();
 
@@ -40,9 +41,18 @@ namespace PowerThreadPool
                 {
                     lock (lockObj)
                     {
+                        if (!this.succeed)
+                        {
+                            return;
+                        }
                         if (this.workOption.Dependents.Remove(workId))
                         {
-                            if (succeed && this.workOption.Dependents.Count == 0)
+                            if (!succeed)
+                            {
+                                this.succeed = false;
+                                Interlocked.Decrement(ref powerPool.waitingWorkCount);
+                            }
+                            else if (this.workOption.Dependents.Count == 0)
                             {
                                 powerPool.SetWork(this);
                             }

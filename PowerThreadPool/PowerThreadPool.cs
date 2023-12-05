@@ -24,7 +24,6 @@ namespace PowerThreadPool
 
         internal ConcurrentDictionary<string, Worker> idleWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentQueue<string> idleWorkerQueue = new ConcurrentQueue<string>();
-        private ConcurrentDictionary<string, WorkBase> waitingDependentDic = new ConcurrentDictionary<string, WorkBase>(); 
 
         private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
@@ -669,11 +668,7 @@ namespace PowerThreadPool
             }
             else
             {
-                if (workOption.Dependents != null && workOption.Dependents.Count > 0)
-                {
-                    waitingDependentDic[workID] = work;
-                }
-                else
+                if (workOption.Dependents == null || workOption.Dependents.Count == 0)
                 {
                     CheckPoolStart();
                     SetWork(work);
@@ -697,11 +692,7 @@ namespace PowerThreadPool
             foreach (WorkBase work in suspendedWork.Keys)
             {
                 ConcurrentSet<string> dependents = suspendedWork[work];
-                if (dependents != null && dependents.Count > 0)
-                {
-                    waitingDependentDic[work.ID] = work;
-                }
-                else
+                if (dependents== null || dependents.Count == 0)
                 {
                     CheckPoolStart();
                     SetWork(work);
@@ -1014,8 +1005,6 @@ namespace PowerThreadPool
             }
 
             poolStopping = true;
-
-            waitingDependentDic = new ConcurrentDictionary<string, WorkBase>();
 
             if (forceStop)
             {
