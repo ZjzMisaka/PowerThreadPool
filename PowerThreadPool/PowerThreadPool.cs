@@ -125,6 +125,22 @@ namespace PowerThreadPool
             }
         }
 
+        public int FailedWorkCount
+        {
+            get
+            {
+                return failedWorkSet.Count;
+            }
+        }
+
+        public IEnumerable<string> FailedWorkList
+        {
+            get
+            {
+                return failedWorkSet.ToArray();
+            }
+        }
+
         internal int runningWorkerCount = 0;
         public int RunningWorkerCount
         {

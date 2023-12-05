@@ -338,7 +338,6 @@ namespace UnitTest
         public void TestDependentsFailed()
         {
             int doneCount = 0;
-            int failedCount = 0;
 
             PowerPool powerPool = new PowerPool();
             powerPool.PowerPoolOption = new PowerPoolOption()
@@ -350,10 +349,6 @@ namespace UnitTest
             powerPool.WorkEnd += (s, e) =>
             {
                 Interlocked.Increment(ref doneCount);
-                if (e.Exception != null)
-                {
-                    Interlocked.Increment(ref failedCount);
-                }
             };
 
             string id0 = powerPool.QueueWorkItem(() =>
@@ -378,7 +373,8 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(2, doneCount);
-            Assert.Equal(1, failedCount);
+            Assert.Equal(1, powerPool.FailedWorkCount);
+            Assert.Equal(id0, powerPool.FailedWorkList.First());
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
 
@@ -386,7 +382,6 @@ namespace UnitTest
         public void TestDependentsFailedBeforeWorkRun()
         {
             int doneCount = 0;
-            int failedCount = 0;
 
             PowerPool powerPool = new PowerPool();
             powerPool.PowerPoolOption = new PowerPoolOption()
@@ -398,10 +393,6 @@ namespace UnitTest
             powerPool.WorkEnd += (s, e) =>
             {
                 Interlocked.Increment(ref doneCount);
-                if (e.Exception != null)
-                {
-                    Interlocked.Increment(ref failedCount);
-                }
             };
 
             string id0 = powerPool.QueueWorkItem(() =>
@@ -427,7 +418,8 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(2, doneCount);
-            Assert.Equal(1, failedCount);
+            Assert.Equal(1, powerPool.FailedWorkCount);
+            Assert.Equal(id0, powerPool.FailedWorkList.First());
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
 
