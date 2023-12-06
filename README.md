@@ -18,25 +18,24 @@ PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/P
 Support: Net46+ | Net5.0+  
 
 ## Features
-1. Work Control
+1. [Work Control](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control)
     - Wait
     - Stop
     - Force Stop
     - Pause
     - Resume
     - Cancel
-2. Load Balancing
-3. Work Dependency
-4. Thread Pool Sizing
-5. Thread Reuse
-6. Idle Thread Timeout
-7. Work Priority
-8. Thread Priority
-9. Work Timeout
-10. Cumulative Work Timeout
-11. Callback
-12. Error Handling
-13. Runtime Status
+2. [Work Dependency](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Dependency)
+3. [Thread Pool Sizing](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing)
+4. [Idle Thread Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/DestroyThreadOption)
+5. [Work Priority](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Priority)
+6. [Thread Priority](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Priority)
+7. [Work Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Timeout)
+8. [Cumulative Work Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Timeout)
+9. [Callback](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
+10. [Error Handling](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
+11. [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPool#properties)
+12. [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
 
 ## Getting started
 ```csharp
