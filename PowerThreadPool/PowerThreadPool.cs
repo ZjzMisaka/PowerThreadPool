@@ -1091,13 +1091,11 @@ namespace PowerThreadPool
                 {
                     if (!workerToStop.Cancel(id))
                     {
+                        res = false;
                         if (cancellationTokenSourceDic.TryGetValue(id, out CancellationTokenSource cancellationTokenSource))
                         {
                             cancellationTokenSource.Cancel();
-                        }
-                        else
-                        {
-                            res = false;
+                            res = true;
                         }
                     }
                 }
@@ -1288,16 +1286,15 @@ namespace PowerThreadPool
             {
                 return false;
             }
+
+            bool res = false;
             if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
             {
                 pauseStatusDic[id] = false;
                 manualResetEvent.Set();
-                return true;
+                res =  true;
             }
-            else
-            {
-                return false;
-            }
+            return res;
         }
 
         /// <summary>

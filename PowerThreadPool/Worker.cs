@@ -150,13 +150,14 @@ namespace PowerThreadPool
 
         public bool Wait(string workID)
         {
+            bool res = false;
             if (waitingWorkDic.ContainsKey(workID) || workID == this.workID)
             {
                 AutoResetEvent autoResetEvent = waitSignalDic.GetOrAdd(workID, _ => new AutoResetEvent(false));
                 autoResetEvent.WaitOne();
-                return true;
+                res = true;
             }
-            return false;
+            return res;
         }
 
         public void ForceStop()
