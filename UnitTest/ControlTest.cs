@@ -679,19 +679,25 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestWaitByIDErrorEnd()
+        public async Task TestWaitByIDInterruptEnd()
         {
             long start = GetNowSs();
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1000);
-                throw new Exception();
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
             });
+            Thread.Sleep(10);
+            Task<bool> task = powerPool.WaitAsync(id);
 
-            powerPool.Wait(id);
+            Thread.Sleep(10);
+            powerPool.Stop(true);
 
-            Assert.True(GetNowSs() - start >= 1000);
+            bool res = await task;
+            Assert.True(res);
         }
 
         [Fact]
