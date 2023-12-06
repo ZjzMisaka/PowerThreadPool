@@ -1079,7 +1079,6 @@ namespace PowerThreadPool
             {
                 return false;
             }
-
             bool res = settedWorkDic.TryGetValue(id, out Worker workerToStop);
             if (res)
             {
@@ -1091,16 +1090,18 @@ namespace PowerThreadPool
                 {
                     if (!workerToStop.Cancel(id))
                     {
-                        res = false;
                         if (cancellationTokenSourceDic.TryGetValue(id, out CancellationTokenSource cancellationTokenSource))
                         {
                             cancellationTokenSource.Cancel();
-                            res = true;
+                        }
+                        else
+                        {
+                            res = false;
                         }
                     }
                 }
             }
-            
+
             return res;
         }
 
