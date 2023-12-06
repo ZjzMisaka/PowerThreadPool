@@ -28,14 +28,12 @@ Support: Net46+ | Net5.0+
 2. [Work Dependency](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Dependency)
 3. [Thread Pool Sizing](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing)
 4. [Idle Thread Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/DestroyThreadOption)
-5. [Work Priority](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Priority)
-6. [Thread Priority](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Priority)
-7. [Work Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Timeout)
-8. [Cumulative Work Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Timeout)
-9. [Callback](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
-10. [Error Handling](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
-11. [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPool#properties)
-12. [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
+5. [Work Priority | Thread Priority](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Priority)
+6. [Work Timeout | Cumulative Work Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Timeout)
+7. [Callback](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
+8. [Error Handling](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
+9. [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPool#properties)
+10. [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
 
 ## Getting started
 ```csharp
