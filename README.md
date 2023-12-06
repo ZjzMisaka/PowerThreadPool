@@ -19,12 +19,12 @@ Support: Net46+ | Net5.0+
 
 ## Features
 1. [Work Control](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control)
-    - Wait
-    - Stop
-    - Force Stop
-    - Pause
-    - Resume
-    - Cancel
+    - [Stop](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#pause-resume-stop)
+    - [Pause](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#pause-resume-stop)
+    - [Resume](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#pause-resume-stop)
+    - [Force Stop](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#force-stop)
+    - [Wait](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#wait)
+    - [Cancel](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#cancel)
 2. [Work Dependency](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Dependency)
 3. [Thread Pool Sizing](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing)
 4. [Idle Thread Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/DestroyThreadOption)
