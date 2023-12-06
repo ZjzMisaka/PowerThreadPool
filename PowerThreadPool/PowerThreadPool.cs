@@ -1098,6 +1098,10 @@ namespace PowerThreadPool
                             cancellationTokenSource.Cancel();
                         }
                     }
+                    else
+                    {
+                        res = true;
+                    }
                 }
             }
 
