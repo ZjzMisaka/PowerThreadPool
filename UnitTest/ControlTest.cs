@@ -475,6 +475,43 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestStopByIDUseCheckIfRequestedStop()
+        {
+            PowerPool powerPool = new PowerPool();
+            List<long> logList = new List<long>();
+
+            object lockObj = new object();
+
+            string id = null;
+            string resID = null;
+            powerPool.WorkStart += async (s, e) =>
+            {
+                await powerPool.StopAsync(e.ID);
+            };
+
+            id = powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                while (true)
+                {
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        return;
+                    }
+                    Thread.Sleep(1);
+                }
+            }, (res) =>
+            {
+                resID = res.ID;
+            });
+
+            await powerPool.WaitAsync(id);
+            await powerPool.WaitAsync();
+
+            Assert.Equal(id, resID);
+        }
+
+        [Fact]
         public void TestCancelByID()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
@@ -634,6 +671,22 @@ namespace UnitTest
             string id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
+            });
+
+            powerPool.Wait(id);
+
+            Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact]
+        public void TestWaitByIDErrorEnd()
+        {
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                throw new Exception();
             });
 
             powerPool.Wait(id);
