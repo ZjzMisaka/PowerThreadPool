@@ -1,12 +1,12 @@
 # PowerThreadPool
 ![Logo](icon.png "Logo")
 
-![Nuget](https://img.shields.io/nuget/v/PowerThreadPool)
-![Nuget](https://img.shields.io/nuget/dt/PowerThreadPool)
-![GitHub release (with filter)](https://img.shields.io/github/v/release/ZjzMisaka/PowerThreadPool)
-![GitHub Repo stars](https://img.shields.io/github/stars/ZjzMisaka/PowerThreadPool)
-![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/ZjzMisaka/PowerThreadPool/test.yml)
-![Codecov](https://img.shields.io/codecov/c/github/ZjzMisaka/PowerThreadPool)
+![Nuget](https://img.shields.io/nuget/v/PowerThreadPool?style=for-the-badge)
+![Nuget](https://img.shields.io/nuget/dt/PowerThreadPool?style=for-the-badge)
+![GitHub release (with filter)](https://img.shields.io/github/v/release/ZjzMisaka/PowerThreadPool?style=for-the-badge)
+![GitHub Repo stars](https://img.shields.io/github/stars/ZjzMisaka/PowerThreadPool?style=for-the-badge)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/ZjzMisaka/PowerThreadPool/test.yml?style=for-the-badge)
+![Codecov](https://img.shields.io/codecov/c/github/ZjzMisaka/PowerThreadPool?style=for-the-badge)
 
 Enables efficient thread pool management with callback implementation, granular control, customizable concurrency, and support for diverse task submissions.  
 
