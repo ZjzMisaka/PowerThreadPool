@@ -110,7 +110,7 @@ namespace PowerThreadPool
             }
         }
 
-        public List<string> WaitingWorkList
+        public IEnumerable<string> WaitingWorkList
         {
             get
             {
@@ -134,7 +134,7 @@ namespace PowerThreadPool
             }
         }
 
-        public List<string> FailedWorkList
+        public IEnumerable<string> FailedWorkList
         {
             get
             {
