@@ -38,6 +38,10 @@ namespace UnitTest
 
                 await powerPool.WaitAsync();
 
+                // TODO REMOVE
+                Thread.Sleep(3000);
+                await powerPool.WaitAsync();
+
                 Assert.Equal(totalTasks, doneCount);
                 Assert.Equal(0, failedCount);
                 Assert.Equal(0, powerPool.RunningWorkerCount);

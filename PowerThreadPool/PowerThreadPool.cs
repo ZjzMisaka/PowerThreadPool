@@ -3,6 +3,7 @@ using PowerThreadPool.EventArguments;
 using PowerThreadPool.Helper;
 using PowerThreadPool.Option;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -991,6 +992,26 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Blocks the calling thread until the work terminates.
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of ID for work that doesn't running</returns>
+        public List<string> Wait(IEnumerable<string> idList)
+        {
+            List<string> failedIDList = new List<string>();
+
+            foreach (string id in idList)
+            {
+                if (!Wait(id))
+                {
+                    failedIDList.Add(id);
+                }
+            }
+
+            return failedIDList;
+        }
+
+        /// <summary>
         /// Blocks the calling thread until all of the works terminates.
         /// </summary>
         /// <returns>A Task</returns>
@@ -1012,6 +1033,29 @@ namespace PowerThreadPool
             return await Task.Run(() =>
             {
                 return Wait(id);
+            });
+        }
+
+        /// <summary>
+        /// Blocks the calling thread until the work terminates.
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of ID for work that doesn't running</returns>
+        public async Task<IEnumerable<string>> WaitAsync(IEnumerable<string> idList)
+        {
+            return await Task.Run(() =>
+            {
+                List<string> failedIDList = new List<string>();
+
+                foreach (string id in idList)
+                {
+                    if (!Wait(id))
+                    {
+                        failedIDList.Add(id);
+                    }
+                }
+
+                return failedIDList;
             });
         }
 
@@ -1119,6 +1163,51 @@ namespace PowerThreadPool
             return await Task.Run(() =>
             {
                 return Stop(id, forceStop);
+            });
+        }
+
+        /// <summary>
+        /// Stop works by id list
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
+        /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
+        public List<string> Stop(IEnumerable<string> idList, bool forceStop = false)
+        {
+            List<string> failedIDList = new List<string>();
+
+            foreach (string id in idList)
+            {
+                if (!Stop(id, forceStop))
+                {
+                    failedIDList.Add(id);
+                }
+            }
+
+            return failedIDList;
+        }
+
+        /// <summary>
+        /// Stop works by id list
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
+        /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
+        public async Task<IEnumerable<string>> StopAsync(IEnumerable<string> idList, bool forceStop = false)
+        {
+            return await Task.Run(() =>
+            {
+                List<string> failedIDList = new List<string>();
+
+                foreach (string id in idList)
+                {
+                    if (!Stop(id, forceStop))
+                    {
+                        failedIDList.Add(id);
+                    }
+                }
+
+                return failedIDList;
             });
         }
 
@@ -1302,6 +1391,46 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Pause threads by id list
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of IDs for work that doesn't exist</returns>
+        public List<string> Pause(IEnumerable<string> idList)
+        {
+            List<string> failedIDList = new List<string>();
+
+            foreach (string id in idList)
+            {
+                if (!Pause(id))
+                {
+                    failedIDList.Add(id);
+                }
+            }
+
+            return failedIDList;
+        }
+
+        /// <summary>
+        /// Resume threads by id list
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of IDs for work that doesn't exist</returns>
+        public List<string> Resume(IEnumerable<string> idList)
+        {
+            List<string> failedIDList = new List<string>();
+
+            foreach (string id in idList)
+            {
+                if (!Resume(id))
+                {
+                    failedIDList.Add(id);
+                }
+            }
+
+            return failedIDList;
+        }
+
+        /// <summary>
         /// Cancel all tasks that have not started running
         /// </summary>
         public void Cancel()
@@ -1313,7 +1442,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Cancel the task by id if the task has not started running
+        /// Cancel the work by id if the work has not started running
         /// </summary>
         /// <param name="id">work id</param>
         /// <returns>is succeed</returns>
@@ -1330,6 +1459,26 @@ namespace PowerThreadPool
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Cancel the works by id if the work has not started running
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of IDs for work that doesn't exist</returns>
+        public List<string> Cancel(IEnumerable<string> idList)
+        {
+            List<string> failedIDList = new List<string>();
+
+            foreach (string id in idList)
+            {
+                if (!Cancel(id))
+                {
+                    failedIDList.Add(id);
+                }
+            }
+
+            return failedIDList;
         }
 
         /// <summary>
