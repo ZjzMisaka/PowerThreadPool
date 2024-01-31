@@ -1041,7 +1041,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="idList">work id list</param>
         /// <returns>Return a list of ID for work that doesn't running</returns>
-        public async Task<IEnumerable<string>> WaitAsync(IEnumerable<string> idList)
+        public async Task<List<string>> WaitAsync(IEnumerable<string> idList)
         {
             return await Task.Run(() =>
             {
@@ -1193,7 +1193,7 @@ namespace PowerThreadPool
         /// <param name="idList">work id list</param>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
         /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
-        public async Task<IEnumerable<string>> StopAsync(IEnumerable<string> idList, bool forceStop = false)
+        public async Task<List<string>> StopAsync(IEnumerable<string> idList, bool forceStop = false)
         {
             return await Task.Run(() =>
             {

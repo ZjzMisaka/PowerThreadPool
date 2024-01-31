@@ -760,7 +760,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestIDEmpty()
+        public async void TestIDEmpty()
         {
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(() =>
@@ -778,6 +778,8 @@ namespace UnitTest
             Assert.Equal("", powerPool.Resume(new List<string>() { "" }).First());
             Assert.Equal("", powerPool.Stop(new List<string>() { "" }).First());
             Assert.Equal("", powerPool.Cancel(new List<string>() { "" }).First());
+            Assert.Equal("", (await powerPool.StopAsync(new List<string>() { "" })).First());
+            Assert.Equal("", (await powerPool.WaitAsync(new List<string>() { "" })).First());
         }
 
         [Fact]
