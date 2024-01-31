@@ -130,6 +130,61 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestPauseByIDList()
+        {
+            PowerPool powerPool = new PowerPool();
+            List<string> logList = new List<string>();
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.PauseIfRequested();
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                logList.Add("Work0 END");
+            });
+            Thread.Sleep(100);
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.PauseIfRequested();
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                logList.Add("Work1 END");
+            });
+            Thread.Sleep(100);
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.PauseIfRequested();
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                logList.Add("Work2 END");
+            });
+            Thread.Sleep(50);
+            List<string> pauseRes = powerPool.Pause(new List<string>() { id });
+            Assert.Empty(pauseRes);
+            Thread.Sleep(500);
+            List<string> resumeRes = powerPool.Resume(new List<string>() { id });
+            Assert.Empty(resumeRes);
+            powerPool.Wait();
+
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("Work0 END", item),
+                item => Assert.Equal("Work2 END", item),
+                item => Assert.Equal("Work1 END", item)
+            );
+        }
+
+        [Fact]
         public void TestPauseByIDAndResumeAll()
         {
             PowerPool powerPool = new PowerPool();
@@ -475,6 +530,40 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestStopByIDList()
+        {
+            PowerPool powerPool = new PowerPool();
+            List<long> logList = new List<long>();
+
+            object lockObj = new object();
+
+            string id = null;
+            string resID = null;
+            powerPool.WorkStart += async (s, e) =>
+            {
+                await powerPool.StopAsync(new List<string>() { e.ID });
+            };
+
+            id = powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(1);
+                }
+            }, (res) =>
+            {
+                resID = res.ID;
+            });
+
+            await powerPool.WaitAsync(new List<string>() { id });
+            await powerPool.WaitAsync();
+
+            Assert.Equal(id, resID);
+        }
+
+        [Fact]
         public async void TestStopByIDUseCheckIfRequestedStop()
         {
             PowerPool powerPool = new PowerPool();
@@ -565,6 +654,59 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestCancelByIDList()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
+            List<long> logList = new List<long>();
+            powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+                return GetNowSs() - start;
+            }, (res) =>
+            {
+                logList.Add(res.Result);
+            });
+            Thread.Sleep(100);
+            powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+                return GetNowSs() - start;
+            }, (res) =>
+            {
+                logList.Add(res.Result);
+            });
+            Thread.Sleep(100);
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+                return GetNowSs() - start;
+            }, (res) =>
+            {
+                logList.Add(res.Result);
+            });
+
+            powerPool.Cancel(new List<string>() { id });
+            powerPool.Wait();
+
+            Assert.Equal(2, logList.Count);
+        }
+
+        [Fact]
         public void TestCancelAll()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 1 });
@@ -631,6 +773,11 @@ namespace UnitTest
             Assert.False(powerPool.Resume(""));
             Assert.False(powerPool.Stop(""));
             Assert.False(powerPool.Cancel(""));
+            Assert.Equal("", powerPool.Wait(new List<string>() { "" }).First());
+            Assert.Equal("", powerPool.Pause(new List<string>() { "" }).First());
+            Assert.Equal("", powerPool.Resume(new List<string>() { "" }).First());
+            Assert.Equal("", powerPool.Stop(new List<string>() { "" }).First());
+            Assert.Equal("", powerPool.Cancel(new List<string>() { "" }).First());
         }
 
         [Fact]
@@ -679,6 +826,21 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestWaitByIDList()
+        {
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            powerPool.Wait(new List<string>() { id });
+
+            Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact]
         public async Task TestWaitByIDInterruptEnd()
         {
             long start = GetNowSs();
@@ -711,6 +873,21 @@ namespace UnitTest
             });
 
             await powerPool.WaitAsync(id);
+
+            Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact]
+        public async void TestWaitByIDListAsync()
+        {
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            await powerPool.WaitAsync(new List<string>() { id });
 
             Assert.True(GetNowSs() - start >= 1000);
         }
