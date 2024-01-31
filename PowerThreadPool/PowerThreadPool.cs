@@ -3,6 +3,7 @@ using PowerThreadPool.EventArguments;
 using PowerThreadPool.Helper;
 using PowerThreadPool.Option;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -1123,6 +1124,51 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Stop works by id list
+        /// </summary>
+        /// <param name="id">work id list</param>
+        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
+        /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
+        public IEnumerable<string> Stop(IEnumerable<string> idList, bool forceStop = false)
+        {
+            List<string> failedIDList = new List<string>();
+
+            foreach (string id in idList)
+            {
+                if (!Stop(id, forceStop))
+                {
+                    failedIDList.Add(id);
+                }
+            }
+
+            return failedIDList;
+        }
+
+        /// <summary>
+        /// Stop works by id list
+        /// </summary>
+        /// <param name="id">work id list</param>
+        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
+        /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
+        public async Task<IEnumerable<string>> StopAsync(IEnumerable<string> idList, bool forceStop = false)
+        {
+            return await Task.Run(() =>
+            {
+                List<string> failedIDList = new List<string>();
+
+                foreach (string id in idList)
+                {
+                    if (!Stop(id, forceStop))
+                    {
+                        failedIDList.Add(id);
+                    }
+                }
+
+                return failedIDList;
+            });
+        }
+
+        /// <summary>
         /// Call this function inside the thread logic where you want to pause when user call Pause(...)
         /// </summary>
         public void PauseIfRequested()
@@ -1302,6 +1348,46 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Pause threads by id list
+        /// </summary>
+        /// <param name="id">work id list</param>
+        /// <returns>Return a list of IDs for work that doesn't exist</returns>
+        public IEnumerable<string> Pause(IEnumerable<string> idList)
+        {
+            List<string> failedIDList = new List<string>();
+
+            foreach (string id in idList)
+            {
+                if (!Pause(id))
+                {
+                    failedIDList.Add(id);
+                }
+            }
+
+            return failedIDList;
+        }
+
+        /// <summary>
+        /// Resume threads by id list
+        /// </summary>
+        /// <param name="id">work id list</param>
+        /// <returns>Return a list of IDs for work that doesn't exist</returns>
+        public IEnumerable<string> Resume(IEnumerable<string> idList)
+        {
+            List<string> failedIDList = new List<string>();
+
+            foreach (string id in idList)
+            {
+                if (!Resume(id))
+                {
+                    failedIDList.Add(id);
+                }
+            }
+
+            return failedIDList;
+        }
+
+        /// <summary>
         /// Cancel all tasks that have not started running
         /// </summary>
         public void Cancel()
@@ -1313,7 +1399,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Cancel the task by id if the task has not started running
+        /// Cancel the work by id if the work has not started running
         /// </summary>
         /// <param name="id">work id</param>
         /// <returns>is succeed</returns>
@@ -1330,6 +1416,26 @@ namespace PowerThreadPool
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Cancel the works by id if the work has not started running
+        /// </summary>
+        /// <param name="id">work id list</param>
+        /// <returns>Return a list of IDs for work that doesn't exist</returns>
+        public IEnumerable<string> Cancel(IEnumerable<string> idList)
+        {
+            List<string> failedIDList = new List<string>();
+
+            foreach (string id in idList)
+            {
+                if (!Cancel(id))
+                {
+                    failedIDList.Add(id);
+                }
+            }
+
+            return failedIDList;
         }
 
         /// <summary>
