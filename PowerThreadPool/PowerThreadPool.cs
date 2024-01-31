@@ -110,7 +110,7 @@ namespace PowerThreadPool
             }
         }
 
-        public IEnumerable<string> WaitingWorkList
+        public List<string> WaitingWorkList
         {
             get
             {
@@ -134,7 +134,7 @@ namespace PowerThreadPool
             }
         }
 
-        public IEnumerable<string> FailedWorkList
+        public List<string> FailedWorkList
         {
             get
             {
@@ -996,7 +996,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="idList">work id list</param>
         /// <returns>Return a list of ID for work that doesn't running</returns>
-        public IEnumerable<string> Wait(IEnumerable<string> idList)
+        public List<string> Wait(IEnumerable<string> idList)
         {
             List<string> failedIDList = new List<string>();
 
@@ -1172,7 +1172,7 @@ namespace PowerThreadPool
         /// <param name="idList">work id list</param>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
         /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
-        public IEnumerable<string> Stop(IEnumerable<string> idList, bool forceStop = false)
+        public List<string> Stop(IEnumerable<string> idList, bool forceStop = false)
         {
             List<string> failedIDList = new List<string>();
 
@@ -1395,7 +1395,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="idList">work id list</param>
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
-        public IEnumerable<string> Pause(IEnumerable<string> idList)
+        public List<string> Pause(IEnumerable<string> idList)
         {
             List<string> failedIDList = new List<string>();
 
@@ -1415,7 +1415,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="idList">work id list</param>
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
-        public IEnumerable<string> Resume(IEnumerable<string> idList)
+        public List<string> Resume(IEnumerable<string> idList)
         {
             List<string> failedIDList = new List<string>();
 
@@ -1466,7 +1466,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="idList">work id list</param>
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
-        public IEnumerable<string> Cancel(IEnumerable<string> idList)
+        public List<string> Cancel(IEnumerable<string> idList)
         {
             List<string> failedIDList = new List<string>();
 
