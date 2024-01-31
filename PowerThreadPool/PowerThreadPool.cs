@@ -992,6 +992,26 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Blocks the calling thread until the work terminates.
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of ID for work that doesn't running</returns>
+        public IEnumerable<string> Wait(IEnumerable<string> idList)
+        {
+            List<string> failedIDList = new List<string>();
+
+            foreach (string id in idList)
+            {
+                if (!Wait(id))
+                {
+                    failedIDList.Add(id);
+                }
+            }
+
+            return failedIDList;
+        }
+
+        /// <summary>
         /// Blocks the calling thread until all of the works terminates.
         /// </summary>
         /// <returns>A Task</returns>
@@ -1013,6 +1033,29 @@ namespace PowerThreadPool
             return await Task.Run(() =>
             {
                 return Wait(id);
+            });
+        }
+
+        /// <summary>
+        /// Blocks the calling thread until the work terminates.
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of ID for work that doesn't running</returns>
+        public async Task<IEnumerable<string>> WaitAsync(IEnumerable<string> idList)
+        {
+            return await Task.Run(() =>
+            {
+                List<string> failedIDList = new List<string>();
+
+                foreach (string id in idList)
+                {
+                    if (!Wait(id))
+                    {
+                        failedIDList.Add(id);
+                    }
+                }
+
+                return failedIDList;
             });
         }
 
@@ -1126,7 +1169,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Stop works by id list
         /// </summary>
-        /// <param name="id">work id list</param>
+        /// <param name="idList">work id list</param>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
         /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
         public IEnumerable<string> Stop(IEnumerable<string> idList, bool forceStop = false)
@@ -1147,7 +1190,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Stop works by id list
         /// </summary>
-        /// <param name="id">work id list</param>
+        /// <param name="idList">work id list</param>
         /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
         /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
         public async Task<IEnumerable<string>> StopAsync(IEnumerable<string> idList, bool forceStop = false)
@@ -1350,7 +1393,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Pause threads by id list
         /// </summary>
-        /// <param name="id">work id list</param>
+        /// <param name="idList">work id list</param>
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
         public IEnumerable<string> Pause(IEnumerable<string> idList)
         {
@@ -1370,7 +1413,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Resume threads by id list
         /// </summary>
-        /// <param name="id">work id list</param>
+        /// <param name="idList">work id list</param>
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
         public IEnumerable<string> Resume(IEnumerable<string> idList)
         {
@@ -1421,7 +1464,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Cancel the works by id if the work has not started running
         /// </summary>
-        /// <param name="id">work id list</param>
+        /// <param name="idList">work id list</param>
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
         public IEnumerable<string> Cancel(IEnumerable<string> idList)
         {
