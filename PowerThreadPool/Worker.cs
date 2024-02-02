@@ -93,6 +93,11 @@ namespace PowerThreadPool
                             waitSignal.Set();
                         }
 
+                        if (work.LongRunning)
+                        {
+                            Interlocked.Decrement(ref powerPool.longRunningWorkerCount);
+                        }
+
                         AssignWork();
                     }
                 }
@@ -100,6 +105,11 @@ namespace PowerThreadPool
                 {
                     Interlocked.Exchange(ref gettedLock, -100);
                     Interlocked.Exchange(ref workerState, 2);
+
+                    if (work.LongRunning)
+                    {
+                        Interlocked.Decrement(ref powerPool.longRunningWorkerCount);
+                    }
 
                     Interlocked.Decrement(ref powerPool.runningWorkerCount);
                     if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
