@@ -40,6 +40,11 @@ namespace PowerThreadPool.Option
         /// A set of works that this work depends on. This work will not start until all dependent works have completed execution.
         /// </summary>
         public ConcurrentSet<string> Dependents { get; set; } = null;
+
+        /// <summary>
+        /// Is long running work.
+        /// </summary>
+        public bool LongRunning { get; set; } = false;
     }
 
     public class WorkOption : WorkOption<object>

@@ -38,6 +38,9 @@ namespace PowerThreadPool
 
         private PowerPool powerPool;
 
+        private bool longRunning = true;
+        internal bool LongRunning { get => longRunning; set => longRunning = value; }
+
         private int waitingWorkCount = 0;
         internal int WaitingWorkCount
         {
@@ -93,6 +96,11 @@ namespace PowerThreadPool
                             waitSignal.Set();
                         }
 
+                        if (work.LongRunning)
+                        {
+                            Interlocked.Decrement(ref powerPool.longRunningWorkerCount);
+                        }
+
                         AssignWork();
                     }
                 }
@@ -100,6 +108,11 @@ namespace PowerThreadPool
                 {
                     Interlocked.Exchange(ref gettedLock, -100);
                     Interlocked.Exchange(ref workerState, 2);
+
+                    if (work.LongRunning)
+                    {
+                        Interlocked.Decrement(ref powerPool.longRunningWorkerCount);
+                    }
 
                     Interlocked.Decrement(ref powerPool.runningWorkerCount);
                     if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
@@ -245,7 +258,7 @@ namespace PowerThreadPool
                 {
                     waitingWorkID = waitingWorkIDQueue.Dequeue();
                 }
-                if (waitingWorkID == null)
+                if (waitingWorkID == null && powerPool.aliveWorkerCount <= powerPool.PowerPoolOption.MaxThreads)
                 {
                     Worker worker = null;
                     int max = 0;
@@ -256,8 +269,8 @@ namespace PowerThreadPool
                             continue;
                         }
 
-                        int waittingWorkCountTemp = runningWorker.WaitingWorkCount;
-                        if (waittingWorkCountTemp > max)
+                        int waitingWorkCountTemp = runningWorker.WaitingWorkCount;
+                        if (waitingWorkCountTemp > max)
                         {
                             if (Interlocked.CompareExchange(ref runningWorker.stealingLock, 1, 0) == 1)
                             {
@@ -267,7 +280,7 @@ namespace PowerThreadPool
                             {
                                 Interlocked.Exchange(ref worker.stealingLock, 0);
                             }
-                            max = waittingWorkCountTemp;
+                            max = waitingWorkCountTemp;
                             worker = runningWorker;
                         }
                     }
@@ -397,6 +410,7 @@ namespace PowerThreadPool
 
                 this.work = work;
                 this.workID = work.ID;
+                this.longRunning = work.LongRunning;
                 ThreadPriority threadPriority = work.ThreadPriority;
                 if (thread.Priority != threadPriority)
                 {

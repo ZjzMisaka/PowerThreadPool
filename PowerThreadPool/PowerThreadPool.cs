@@ -160,6 +160,15 @@ namespace PowerThreadPool
             }
         }
 
+        internal int longRunningWorkerCount = 0;
+        public int LongRunningWorkerCount
+        {
+            get
+            {
+                return longRunningWorkerCount;
+            }
+        }
+
         public PowerPool()
         {
             
@@ -826,7 +835,7 @@ namespace PowerThreadPool
             Worker worker = null;
             while (worker == null)
             {
-                worker = GetWorker();
+                worker = GetWorker(work.LongRunning);
             }
             settedWorkDic[work.ID] = worker;
             worker.SetWork(work, false);
@@ -836,9 +845,8 @@ namespace PowerThreadPool
         /// Get a Worker
         /// </summary>
         /// <returns></returns>
-        private Worker GetWorker()
+        private Worker GetWorker(bool longRunning)
         {
-
             Worker worker = null;
             while (idleWorkerQueue.TryDequeue(out string firstWorkerID))
             {
@@ -849,13 +857,17 @@ namespace PowerThreadPool
                         Interlocked.Exchange(ref worker.gettedLock, -100);
                         continue;
                     }
+                    if (longRunning)
+                    {
+                        Interlocked.Increment(ref longRunningWorkerCount);
+                    }
                     return worker;
                 }
             }
 
             lock (this)
             {
-                if (aliveWorkerCount < powerPoolOption.MaxThreads)
+                if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
                 {
                     worker = new Worker(this);
                     Interlocked.Increment(ref worker.gettedLock);
@@ -864,15 +876,24 @@ namespace PowerThreadPool
                         Interlocked.Increment(ref aliveWorkerCount);
                         aliveWorkerList = aliveWorkerDic.Values;
                     }
+                    if (longRunning)
+                    {
+                        Interlocked.Increment(ref longRunningWorkerCount);
+                    }
                 }
 
-                if (worker == null)
+                if (worker == null && !longRunning)
                 {
                     int min = int.MaxValue;
                     foreach (Worker aliveWorker in aliveWorkerList)
                     {
-                        int waittingWorkCountTemp = aliveWorker.WaitingWorkCount;
-                        if (waittingWorkCountTemp < min)
+                        if (aliveWorker.LongRunning)
+                        {
+                            continue;
+                        }
+
+                        int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
+                        if (waitingWorkCountTemp < min)
                         {
                             if (Interlocked.Increment(ref aliveWorker.gettedLock) == -99)
                             {
@@ -883,7 +904,7 @@ namespace PowerThreadPool
                             {
                                 Interlocked.Decrement(ref worker.gettedLock);
                             }
-                            min = waittingWorkCountTemp;
+                            min = waitingWorkCountTemp;
                             worker = aliveWorker;
                         }
                     }
