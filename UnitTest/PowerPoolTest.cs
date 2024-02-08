@@ -1061,7 +1061,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestLongWorkError()
+        public void TestLongWorkForceStop()
         {
             PowerPool powerPool = new PowerPool();
             powerPool.PowerPoolOption = new PowerPoolOption()
@@ -1069,6 +1069,20 @@ namespace UnitTest
                 MaxThreads = 2,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
             };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, new WorkOption()
+            {
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, new WorkOption()
+            {
+            });
 
             powerPool.QueueWorkItem(() =>
             {
@@ -1125,7 +1139,7 @@ namespace UnitTest
             Assert.Equal(2, powerPool.RunningWorkerCount);
             Assert.Equal(2, powerPool.LongRunningWorkerCount);
 
-            powerPool.Stop();
+            powerPool.Stop(true);
 
             Thread.Sleep(1000);
 
