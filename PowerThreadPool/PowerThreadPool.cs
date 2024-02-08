@@ -887,8 +887,8 @@ namespace PowerThreadPool
                     int min = int.MaxValue;
                     foreach (Worker aliveWorker in aliveWorkerList)
                     {
-                        int waittingWorkCountTemp = aliveWorker.WaitingWorkCount;
-                        if (waittingWorkCountTemp < min)
+                        int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
+                        if (waitingWorkCountTemp < min)
                         {
                             if (Interlocked.Increment(ref aliveWorker.gettedLock) == -99)
                             {
@@ -899,7 +899,7 @@ namespace PowerThreadPool
                             {
                                 Interlocked.Decrement(ref worker.gettedLock);
                             }
-                            min = waittingWorkCountTemp;
+                            min = waitingWorkCountTemp;
                             worker = aliveWorker;
                         }
                     }

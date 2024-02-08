@@ -266,8 +266,8 @@ namespace PowerThreadPool
                             continue;
                         }
 
-                        int waittingWorkCountTemp = runningWorker.WaitingWorkCount;
-                        if (waittingWorkCountTemp > max)
+                        int waitingWorkCountTemp = runningWorker.WaitingWorkCount;
+                        if (waitingWorkCountTemp > max)
                         {
                             if (Interlocked.CompareExchange(ref runningWorker.stealingLock, 1, 0) == 1)
                             {
@@ -277,7 +277,7 @@ namespace PowerThreadPool
                             {
                                 Interlocked.Exchange(ref worker.stealingLock, 0);
                             }
-                            max = waittingWorkCountTemp;
+                            max = waitingWorkCountTemp;
                             worker = runningWorker;
                         }
                     }
