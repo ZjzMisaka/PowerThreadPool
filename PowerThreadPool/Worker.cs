@@ -99,6 +99,7 @@ namespace PowerThreadPool
                         if (work.LongRunning)
                         {
                             Interlocked.Decrement(ref powerPool.longRunningWorkerCount);
+                            this.LongRunning = false;
                         }
 
                         AssignWork();
@@ -112,6 +113,7 @@ namespace PowerThreadPool
                     if (work.LongRunning)
                     {
                         Interlocked.Decrement(ref powerPool.longRunningWorkerCount);
+                        this.LongRunning = false;
                     }
 
                     Interlocked.Decrement(ref powerPool.runningWorkerCount);
