@@ -255,7 +255,7 @@ namespace PowerThreadPool
                 {
                     waitingWorkID = waitingWorkIDQueue.Dequeue();
                 }
-                if (waitingWorkID == null)
+                if (waitingWorkID == null && powerPool.aliveWorkerCount <= powerPool.PowerPoolOption.MaxThreads)
                 {
                     Worker worker = null;
                     int max = 0;
