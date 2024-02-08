@@ -1059,5 +1059,78 @@ namespace UnitTest
             Assert.Equal(0, powerPool.RunningWorkerCount);
             Assert.Equal(0, powerPool.LongRunningWorkerCount);
         }
+
+        [Fact]
+        public void TestLongWorkError()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 2,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(500);
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        throw new Exception();
+                    }
+                    if (false)
+                    {
+                        return;
+                    }
+                }
+            }, new WorkOption()
+            {
+                LongRunning = true,
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(500);
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        throw new Exception();
+                    }
+                    if (false)
+                    {
+                        return;
+                    }
+                }
+            }, new WorkOption()
+            {
+                LongRunning = true,
+            });
+
+            Thread.Sleep(500);
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, new WorkOption()
+            {
+            });
+
+            Assert.Equal(3, powerPool.RunningWorkerCount);
+            Assert.Equal(2, powerPool.LongRunningWorkerCount);
+
+            Thread.Sleep(1000);
+
+            Assert.Equal(2, powerPool.RunningWorkerCount);
+            Assert.Equal(2, powerPool.LongRunningWorkerCount);
+
+            powerPool.Stop();
+
+            Thread.Sleep(1000);
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.Equal(0, powerPool.LongRunningWorkerCount);
+        }
     }
 }
