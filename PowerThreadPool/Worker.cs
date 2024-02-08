@@ -38,6 +38,9 @@ namespace PowerThreadPool
 
         private PowerPool powerPool;
 
+        private bool longRunning = true;
+        internal bool LongRunning { get => longRunning; set => longRunning = value; }
+
         private int waitingWorkCount = 0;
         internal int WaitingWorkCount
         {
@@ -407,6 +410,7 @@ namespace PowerThreadPool
 
                 this.work = work;
                 this.workID = work.ID;
+                this.longRunning = work.LongRunning;
                 ThreadPriority threadPriority = work.ThreadPriority;
                 if (thread.Priority != threadPriority)
                 {
