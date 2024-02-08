@@ -1086,6 +1086,13 @@ namespace UnitTest
 
             powerPool.QueueWorkItem(() =>
             {
+                Thread.Sleep(1000);
+            }, new WorkOption()
+            {
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
                 while (true)
                 {
                     Thread.Sleep(500);
@@ -1120,6 +1127,13 @@ namespace UnitTest
             }, new WorkOption()
             {
                 LongRunning = true,
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, new WorkOption()
+            {
             });
 
             Thread.Sleep(500);
@@ -1131,7 +1145,7 @@ namespace UnitTest
             {
             });
 
-            Assert.Equal(3, powerPool.RunningWorkerCount);
+            Assert.Equal(4, powerPool.RunningWorkerCount);
             Assert.Equal(2, powerPool.LongRunningWorkerCount);
 
             Thread.Sleep(1000);
