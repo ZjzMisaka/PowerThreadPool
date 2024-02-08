@@ -1,6 +1,7 @@
 using PowerThreadPool;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Option;
+using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Xunit.Sdk;
@@ -1007,6 +1008,56 @@ namespace UnitTest
 
             Assert.NotNull(exception);
             Assert.Equal("ObjectDisposedException", exception.GetType().Name);
+        }
+
+        [Fact]
+        public void TestLongWork()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(500);
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        return;
+                    }
+                }
+            }, new WorkOption()
+            {
+                LongRunning = true,
+            });
+
+            Thread.Sleep(500);
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, new WorkOption()
+            {
+            });
+
+            Assert.Equal(2, powerPool.RunningWorkerCount);
+            Assert.Equal(1, powerPool.LongRunningWorkerCount);
+
+            Thread.Sleep(1000);
+
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+            Assert.Equal(1, powerPool.LongRunningWorkerCount);
+
+            powerPool.Stop();
+
+            Thread.Sleep(1000);
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.Equal(0, powerPool.LongRunningWorkerCount);
         }
     }
 }
