@@ -18,24 +18,26 @@ PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/P
 Support: Net46+ | Net5.0+  
 
 ## Features
-1. [Work Control](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control)
+- [Pool Control | Work Control](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control)
     - [Stop](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#pause-resume-stop)
     - [Pause](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#pause-resume-stop)
     - [Resume](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#pause-resume-stop)
     - [Force Stop](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#force-stop)
     - [Wait](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#wait)
     - [Cancel](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#cancel)
-2. [Work Dependency](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Dependency)
-3. [Thread Pool Sizing](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing)
-4. [Idle Thread Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/DestroyThreadOption)
-5. [Work Priority | Thread Priority](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Priority)
-6. [Work Timeout | Cumulative Work Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Timeout)
-7. [Callback](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
-8. [Error Handling](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
-9. [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPool#properties)
-10. [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
+- [Work Dependency](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Dependency)
+- [Thread Pool Sizing](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing)
+    - [Idle Thread Scheduled Destruction](https://github.com/ZjzMisaka/PowerThreadPool/wiki/DestroyThreadOption)
+    - [Thread Starvation Countermeasures (Long-running Task Support)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing#thread-starvation)
+- [Work Priority | Thread Priority](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Priority)
+- [Work Timeout | Cumulative Work Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Timeout)
+- [Work Callback | Default Callback](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
+- [Error Handling](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
+- [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPool#properties)
+- [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
 
 ## Getting started
+### Simple example: run a work
 ```csharp
 PowerPool powerPool = new PowerPool(new PowerPoolOption() { /* Some options */ });
 powerPool.QueueWorkItem(() => 
