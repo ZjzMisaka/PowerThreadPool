@@ -1,4 +1,7 @@
 # PowerThreadPool
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/bb9ddc720f7542f4aa29c90eab247791)](https://app.codacy.com/gh/ZjzMisaka/PowerThreadPool?utm_source=github.com&utm_medium=referral&utm_content=ZjzMisaka/PowerThreadPool&utm_campaign=Badge_Grade)
+
 ![icon](https://github.com/ZjzMisaka/PowerThreadPool/assets/16731853/ee9956be-53b3-404f-aaf6-88c28bd833b3)
 
 ![Nuget](https://img.shields.io/nuget/v/PowerThreadPool?style=for-the-badge)
