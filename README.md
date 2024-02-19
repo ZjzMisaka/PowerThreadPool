@@ -70,8 +70,20 @@ powerPool.QueueWorkItem(() =>
 {
     // Some options
 });
-
 ```
+
+### Reference
+``` csharp
+string QueueWorkItem(Action action, *);
+string QueueWorkItem(Action<object[]> action, object[] param, *);
+string QueueWorkItem<T1, ...>(Action<T1, ...> action, T1 param1, ..., *);
+string QueueWorkItem<T1, ..., TResult>(Func<T1, ..., TResult> function, T1 param1, ..., *);
+string QueueWorkItem<TResult>(Func<TResult> function, *);
+string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, *);
+```
+- Asterisk (*) denotes an optional parameter, either a WorkOption or a delegate (Action<ExecuteResult<object>> or Action<ExecuteResult<TResult>>), depending on whether the first parameter is an Action or a Func. 
+- In places where you see ellipses (...), you can provide up to five generic type parameters. 
+
 ## APIs
 ### [API Summary](https://github.com/ZjzMisaka/PowerThreadPool/wiki/API-Summary)  
 - #### [PowerPool](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPool)  
