@@ -978,6 +978,7 @@ namespace PowerThreadPool
 
                 suspended = powerPoolOption.StartSuspended;
 
+                cancellationTokenSource = new CancellationTokenSource();
                 waitAllSignal.Set();
             }
         }
