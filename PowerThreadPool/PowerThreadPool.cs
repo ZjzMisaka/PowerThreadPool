@@ -717,9 +717,10 @@ namespace PowerThreadPool
             }
 
             suspended = false;
-            foreach (WorkBase work in suspendedWork.Keys)
+            foreach (KeyValuePair<WorkBase, ConcurrentSet<string>> kv in suspendedWork)
             {
-                ConcurrentSet<string> dependents = suspendedWork[work];
+                WorkBase work = kv.Key;
+                ConcurrentSet<string> dependents = kv.Value;
                 if (dependents == null || dependents.Count == 0)
                 {
                     CheckPoolStart();
@@ -1310,13 +1311,16 @@ namespace PowerThreadPool
             {
                 return true;
             }
-            foreach (string id in cancellationTokenSourceDic.Keys)
+            foreach (KeyValuePair<string, CancellationTokenSource> pair in cancellationTokenSourceDic)
             {
+                string id = pair.Key;
+                CancellationTokenSource cts = pair.Value;
+
                 if (settedWorkDic.TryGetValue(id, out Worker worker))
                 {
                     if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
                     {
-                        if (cancellationTokenSourceDic[id].Token.IsCancellationRequested)
+                        if (cts.Token.IsCancellationRequested)
                         {
                             return true;
                         }
@@ -1336,13 +1340,16 @@ namespace PowerThreadPool
             {
                 return "";
             }
-            foreach (string id in cancellationTokenSourceDic.Keys)
+            foreach (KeyValuePair<string, CancellationTokenSource> pair in cancellationTokenSourceDic)
             {
+                string id = pair.Key;
+                CancellationTokenSource cts = pair.Value;
+
                 if (settedWorkDic.TryGetValue(id, out Worker worker))
                 {
                     if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
                     {
-                        if (cancellationTokenSourceDic[id].Token.IsCancellationRequested)
+                        if (cts.Token.IsCancellationRequested)
                         {
                             return id;
                         }
