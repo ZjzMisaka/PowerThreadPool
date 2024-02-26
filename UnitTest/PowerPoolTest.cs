@@ -710,8 +710,10 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestQueueWhenStopping()
+        public async void TestQueueWhenStopping()
         {
+            bool canReturn = false;
+
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(() =>
             {
@@ -719,49 +721,30 @@ namespace UnitTest
                 {
                     if (powerPool.CheckIfRequestedStop())
                     {
+                        while (!canReturn)
+                        {
+                            Thread.Sleep(100);
+                        }
                         return;
                     }
-                    Thread.Sleep(5000);
-                }
-            }, new WorkOption()
-            {
-            });
-            Thread.Sleep(2000);
-            powerPool.QueueWorkItem(() =>
-            {
-                for (int i = 0; i < 9999999; ++i)
-                {
-                    if (powerPool.CheckIfRequestedStop())
-                    {
-                        return;
-                    }
-                    Thread.Sleep(5000);
-                }
-            }, new WorkOption()
-            {
-            });
-            Thread.Sleep(2000);
-            powerPool.QueueWorkItem(() =>
-            {
-                for (int i = 0; i < 9999999; ++i)
-                {
-                    if (powerPool.CheckIfRequestedStop())
-                    {
-                        return;
-                    }
-                    Thread.Sleep(3000);
+                    Thread.Sleep(100);
                 }
             }, new WorkOption()
             {
             });
 
-            Task<bool> t = powerPool.StopAsync(false);
+            Task<bool> task = powerPool.StopAsync(false);
 
+            Thread.Sleep(100);
             string id = powerPool.QueueWorkItem(() =>
             {
             }, new WorkOption()
             {
             });
+
+            canReturn = true;
+
+            bool res = await task;
 
             Assert.Null(id);
         }

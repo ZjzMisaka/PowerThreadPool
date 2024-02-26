@@ -857,7 +857,7 @@ namespace UnitTest
             Thread.Sleep(10);
             Task<bool> task = powerPool.WaitAsync(id);
 
-            Thread.Sleep(10);
+            Thread.Sleep(100);
             powerPool.Stop(true);
 
             bool res = await task;
