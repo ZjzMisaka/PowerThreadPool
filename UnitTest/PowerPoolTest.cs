@@ -721,12 +721,12 @@ namespace UnitTest
                     {
                         return;
                     }
-                    Thread.Sleep(1000);
+                    Thread.Sleep(5000);
                 }
             }, new WorkOption()
             {
             });
-            Thread.Sleep(100);
+            Thread.Sleep(2000);
             powerPool.QueueWorkItem(() =>
             {
                 for (int i = 0; i < 9999999; ++i)
@@ -735,12 +735,12 @@ namespace UnitTest
                     {
                         return;
                     }
-                    Thread.Sleep(1000);
+                    Thread.Sleep(5000);
                 }
             }, new WorkOption()
             {
             });
-            Thread.Sleep(100);
+            Thread.Sleep(2000);
             powerPool.QueueWorkItem(() =>
             {
                 for (int i = 0; i < 9999999; ++i)
@@ -749,21 +749,21 @@ namespace UnitTest
                     {
                         return;
                     }
-                    Thread.Sleep(1000);
+                    Thread.Sleep(3000);
                 }
             }, new WorkOption()
             {
             });
 
-            powerPool.Stop(false);
+            Task<bool> t = powerPool.StopAsync(false);
 
-            string id2 = powerPool.QueueWorkItem(() =>
+            string id = powerPool.QueueWorkItem(() =>
             {
             }, new WorkOption()
             {
             });
 
-            Assert.Null(id2);
+            Assert.Null(id);
         }
 
         [Fact]

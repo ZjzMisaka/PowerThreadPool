@@ -1564,6 +1564,7 @@ namespace PowerThreadPool
             {
                 if (disposing)
                 {
+                    waitAllSignal.Set();
                     Stop();
                     Stop(true);
                     foreach (Worker worker in aliveWorkerList)
