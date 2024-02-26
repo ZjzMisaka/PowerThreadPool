@@ -67,15 +67,39 @@ namespace PowerThreadPoolTest
                     }
                     else if(r >= 95 && r <= 99)
                     {
-                        powerPool.QueueWorkItem(() => { Sleep(10000); });
+                        powerPool.QueueWorkItem(() => 
+                        { 
+                            Sleep(10000);
+                            int r1 = random.Next(0, 101);
+                            if (r1 >= 100 && r1 <= 100)
+                            {
+                                Thread.Sleep(1);
+                            }
+                        });
                     }
                     else if (r >= 94 && r <= 94)
                     {
-                        powerPool.QueueWorkItem(() => { Sleep(30000); });
+                        powerPool.QueueWorkItem(() => 
+                        { 
+                            Sleep(30000);
+                            int r1 = random.Next(0, 101);
+                            if (r1 >= 100 && r1 <= 100)
+                            {
+                                Thread.Sleep(1);
+                            }
+                        });
                     }
                     else
                     {
-                        powerPool.QueueWorkItem(() => { Sleep(random.Next(500, 1000)); });
+                        powerPool.QueueWorkItem(() => 
+                        { 
+                            Sleep(random.Next(500, 1000));
+                            int r1 = random.Next(0, 101);
+                            if (r1 >= 100 && r1 <= 100)
+                            {
+                                Thread.Sleep(1);
+                            }
+                        });
                     }
                 }
                 OutputMsg("Run count: " + runCount);
@@ -86,17 +110,49 @@ namespace PowerThreadPoolTest
                 }
 
                 powerPool.Start();
+                OutputMsg("Running... AliveWorkerCount: " + powerPool.AliveWorkerCount + " | RunningWorkerCount: " + powerPool.RunningWorkerCount);
 
-                await powerPool.WaitAsync();
-                OutputMsg("RunningWorkerCount: " + powerPool.RunningWorkerCount);
-                OutputMsg("WaitingWorkCount: " + powerPool.WaitingWorkCount);
-                OutputMsg("FailedWorkCount: " + powerPool.FailedWorkCount);
-                OutputMsg("DoneCount: " + doneCount);
-                OutputMsg("---------------");
-                if (powerPool.RunningWorkerCount > 0 || powerPool.WaitingWorkCount > 0 || runCount != doneCount)
+                int r1 = random.Next(0, 101);
+                if (r1 >= 97 && r1 <= 100)
                 {
-                    break;
+                    OutputMsg("Stopping...");
+                    await powerPool.StopAsync();
+                    OutputMsg("AliveWorkerCount: " + powerPool.AliveWorkerCount + " | RunningWorkerCount: " + powerPool.RunningWorkerCount);
+                    OutputMsg("WaitingWorkCount: " + powerPool.WaitingWorkCount);
+                    OutputMsg("FailedWorkCount: " + powerPool.FailedWorkCount);
+                    OutputMsg("DoneCount: " + doneCount);
+                    if (powerPool.RunningWorkerCount > 0 || powerPool.WaitingWorkCount > 0)
+                    {
+                        break;
+                    }
                 }
+                else if (r1 >= 93 && r1 <= 96)
+                {
+                    OutputMsg("Force Stopping...");
+                    await powerPool.StopAsync(true);
+                    OutputMsg("AliveWorkerCount: " + powerPool.AliveWorkerCount + " | RunningWorkerCount: " + powerPool.RunningWorkerCount);
+                    OutputMsg("WaitingWorkCount: " + powerPool.WaitingWorkCount);
+                    OutputMsg("FailedWorkCount: " + powerPool.FailedWorkCount);
+                    OutputMsg("DoneCount: " + doneCount);
+                    if (powerPool.RunningWorkerCount > 0 || powerPool.WaitingWorkCount > 0)
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    OutputMsg("Waiting...");
+                    await powerPool.WaitAsync();
+                    OutputMsg("AliveWorkerCount: " + powerPool.AliveWorkerCount + " | RunningWorkerCount: " + powerPool.RunningWorkerCount);
+                    OutputMsg("WaitingWorkCount: " + powerPool.WaitingWorkCount);
+                    OutputMsg("FailedWorkCount: " + powerPool.FailedWorkCount);
+                    OutputMsg("DoneCount: " + doneCount);
+                    if (powerPool.RunningWorkerCount > 0 || powerPool.WaitingWorkCount > 0 || runCount != doneCount)
+                    {
+                        break;
+                    }
+                }
+                OutputMsg("---------------");
                 Sleep(random.Next(0, 1500));
             }
             OutputMsg("done");
@@ -107,7 +163,7 @@ namespace PowerThreadPoolTest
         private void stop_Click(object sender, RoutedEventArgs e)
         {
             run = false;
-            powerPool.Stop();
+            powerPool.Stop(true);
         }
 
 
