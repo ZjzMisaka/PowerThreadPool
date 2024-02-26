@@ -108,7 +108,7 @@ namespace PowerThreadPool
                 catch (ThreadInterruptedException ex)
                 {
                     Interlocked.Exchange(ref gettedLock, -100);
-                    Interlocked.Exchange(ref workerState, 2);
+                    int origWorkState = Interlocked.Exchange(ref workerState, 2);
 
                     if (work.LongRunning)
                     {
@@ -116,7 +116,11 @@ namespace PowerThreadPool
                         this.LongRunning = false;
                     }
 
-                    Interlocked.Decrement(ref powerPool.runningWorkerCount);
+                    if (origWorkState == 1)
+                    {
+                        Interlocked.Decrement(ref powerPool.runningWorkerCount);
+                    }
+                    
                     if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
                     {
                         Interlocked.Decrement(ref powerPool.aliveWorkerCount);
