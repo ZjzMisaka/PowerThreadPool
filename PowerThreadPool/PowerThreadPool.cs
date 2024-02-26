@@ -967,20 +967,33 @@ namespace PowerThreadPool
 
                 if (PoolIdle != null)
                 {
-                    PoolIdle.Invoke(this, new EventArgs());
+                    try
+                    {
+                        PoolIdle.Invoke(this, new EventArgs());
+                    }
+                    catch
+                    {
+                        IdleSetting();
+                        throw;
+                    }
                 }
 
-                if (poolTimer != null)
-                {
-                    poolTimer.Stop();
-                    poolTimer.Enabled = false;
-                }
-
-                suspended = powerPoolOption.StartSuspended;
-
-                cancellationTokenSource = new CancellationTokenSource();
-                waitAllSignal.Set();
+                IdleSetting();
             }
+        }
+
+        private void IdleSetting()
+        {
+            if (poolTimer != null)
+            {
+                poolTimer.Stop();
+                poolTimer.Enabled = false;
+            }
+
+            suspended = powerPoolOption.StartSuspended;
+
+            cancellationTokenSource = new CancellationTokenSource();
+            waitAllSignal.Set();
         }
 
         /// <summary>
@@ -1116,6 +1129,8 @@ namespace PowerThreadPool
                     worker.Cancel();
                 }
             }
+
+            waitAllSignal.WaitOne();
 
             return true;
         }
