@@ -727,7 +727,7 @@ namespace UnitTest
                         }
                         return;
                     }
-                    Thread.Sleep(500);
+                    Thread.Sleep(100);
                 }
             }, new WorkOption()
             {
@@ -735,7 +735,7 @@ namespace UnitTest
 
             Task<bool> task = powerPool.StopAsync(false);
 
-            await Task.Delay(100);
+            await Task.Delay(1000);
             string id = powerPool.QueueWorkItem(() =>
             {
             }, new WorkOption()
