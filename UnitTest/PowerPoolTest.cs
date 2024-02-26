@@ -710,7 +710,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public async void TestQueueWhenStopping()
+        public async Task TestQueueWhenStopping()
         {
             bool canReturn = false;
 
@@ -727,7 +727,7 @@ namespace UnitTest
                         }
                         return;
                     }
-                    Thread.Sleep(100);
+                    Thread.Sleep(500);
                 }
             }, new WorkOption()
             {
@@ -735,7 +735,7 @@ namespace UnitTest
 
             Task<bool> task = powerPool.StopAsync(false);
 
-            Thread.Sleep(100);
+            await Task.Delay(100);
             string id = powerPool.QueueWorkItem(() =>
             {
             }, new WorkOption()
