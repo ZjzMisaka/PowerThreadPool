@@ -957,6 +957,8 @@ namespace PowerThreadPool
                 return;
             }
 
+            InitWorkerQueue();
+
             if (runningWorkerCount == 0 && waitingWorkCount == 0 && poolRunning)
             {
                 poolRunning = false;
