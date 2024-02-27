@@ -87,7 +87,7 @@ string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, 
 ## APIs
 ### [API Summary](https://github.com/ZjzMisaka/PowerThreadPool/wiki/API-Summary)  
 - #### [PowerPool](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPool)  
-- #### [ExcuteResult](https://github.com/ZjzMisaka/PowerThreadPool/wiki/ExcuteResult)  
+- #### [ExecuteResult](https://github.com/ZjzMisaka/PowerThreadPool/wiki/ExecuteResult)  
 - #### [PowerPoolOption](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPoolOption)  
 - #### [DestroyThreadOption](https://github.com/ZjzMisaka/PowerThreadPool/wiki/DestroyThreadOption)  
 - #### [WorkOption](https://github.com/ZjzMisaka/PowerThreadPool/wiki/WorkOption)  
