@@ -974,14 +974,15 @@ namespace PowerThreadPool
                     {
                         PoolIdle.Invoke(this, new EventArgs());
                     }
-                    catch
+                    finally
                     {
                         IdleSetting();
-                        throw;
                     }
                 }
-
-                IdleSetting();
+                else
+                {
+                    IdleSetting();
+                }
             }
         }
 
