@@ -228,7 +228,7 @@ namespace PowerThreadPool
         internal List<WorkBase> Steal(int count)
         {
             List<WorkBase> stolenList = new List<WorkBase>();
-            for (int i = 0; i < count; ++i)
+            while (stolenList.Count < count)
             {
                 string stolenWorkID = null;
                 lock (powerPool)
@@ -244,10 +244,6 @@ namespace PowerThreadPool
                 {
                     Interlocked.Decrement(ref waitingWorkCount);
                     stolenList.Add(stolenWork);
-                }
-                else
-                {
-                    --i;
                 }
             }
             return stolenList;
