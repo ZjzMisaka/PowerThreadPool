@@ -222,25 +222,23 @@ namespace PowerThreadPoolTest
             this.Dispatcher.Invoke(() =>
             {
                 log.Text += msg + "\n";
-                log.Text = GetLastThousandLines(log.Text);
+                log.Text = GetLastHundredLines(log.Text);
                 sv.ScrollToEnd();
             });
         }
 
-        private string GetLastThousandLines(string input)
+        private string GetLastHundredLines(string str)
         {
-            string[] lines = input.Split(new string[] { Environment.NewLine }, StringSplitOptions.None);
+            string[] lines = str.Split(
+                new[] { "\r\n", "\r", "\n" },
+                StringSplitOptions.None
+            );
 
-            if (lines.Length <= 1000)
-            {
-                return input;
-            }
-            else
-            {
-                string[] lastThousandLines = new string[1000];
-                Array.Copy(lines, lines.Length - 1000, lastThousandLines, 0, 1000);
-                return string.Join(Environment.NewLine, lastThousandLines);
-            }
+            string[] lastHundredLines = lines.Skip(Math.Max(0, lines.Length - 100)).ToArray();
+
+            string result = string.Join(Environment.NewLine, lastHundredLines);
+
+            return result;
         }
     }
 }
