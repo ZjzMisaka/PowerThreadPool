@@ -854,10 +854,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                 }
             });
-            Thread.Sleep(10);
+            Thread.Sleep(100);
             Task<bool> task = powerPool.WaitAsync(id);
 
-            Thread.Sleep(100);
+            Thread.Sleep(500);
             powerPool.Stop(true);
 
             bool res = await task;

@@ -320,26 +320,29 @@ namespace PowerThreadPool
                                 Interlocked.Decrement(ref waitingWorkCount);
                             }
                         }
+                    }
 
-                        if (waitingWorkID == null || work == null)
+                    if (waitingWorkID == null || work == null)
+                    {
+                        Interlocked.Exchange(ref workerState, 0);
+
+                        Interlocked.Decrement(ref powerPool.runningWorkerCount);
+                        PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
+
+                        powerPool.idleWorkerDic[this.ID] = this;
+                        powerPool.idleWorkerQueue.Enqueue(this.ID);
+
+                        powerPool.CheckPoolIdle();
+
+                        if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
                         {
-                            Interlocked.Exchange(ref workerState, 0);
-
-                            Interlocked.Decrement(ref powerPool.runningWorkerCount);
-                            PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
-
-                            powerPool.idleWorkerDic[this.ID] = this;
-                            powerPool.idleWorkerQueue.Enqueue(this.ID);
-
-                            powerPool.CheckPoolIdle();
-
-                            if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
+                            this.killTimer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
+                            try
                             {
-                                this.killTimer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
-                                try
+                                killTimer.AutoReset = false;
+                                killTimer.Elapsed += (s, e) =>
                                 {
-                                    killTimer.AutoReset = false;
-                                    killTimer.Elapsed += (s, e) =>
+                                    if (powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
                                     {
                                         SpinWait.SpinUntil(() =>
                                         {
@@ -349,33 +352,26 @@ namespace PowerThreadPool
                                         int originalState = Interlocked.CompareExchange(ref workerState, 2, 0);
                                         if (originalState == 0)
                                         {
-                                            if (powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads && powerPool.idleWorkerDic.TryRemove(ID, out _))
+                                            powerPool.idleWorkerDic.TryRemove(ID, out _);
+                                            if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
                                             {
-                                                if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
-                                                {
-                                                    Interlocked.Decrement(ref powerPool.aliveWorkerCount);
-                                                    powerPool.aliveWorkerList = powerPool.aliveWorkerDic.Values;
-                                                }
-                                                Kill();
-
-                                                killTimer.Enabled = false;
+                                                Interlocked.Decrement(ref powerPool.aliveWorkerCount);
+                                                powerPool.aliveWorkerList = powerPool.aliveWorkerDic.Values;
                                             }
+                                            Kill();
                                         }
-                                        else
-                                        {
-                                            killTimer.Enabled = false;
-                                        }
-                                    };
+                                    }
+                                    killTimer.Enabled = false;
+                                };
 
-                                    killTimer.Start();
-                                }
-                                catch
-                                {
-                                }
+                                killTimer.Start();
                             }
-
-                            return;
+                            catch
+                            {
+                            }
                         }
+
+                        return;
                     }
                 }
 
