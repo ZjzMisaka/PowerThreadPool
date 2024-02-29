@@ -872,16 +872,22 @@ namespace PowerThreadPool
 
             if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
             {
-                worker = new Worker(this);
-                Interlocked.Exchange(ref worker.gettedLock, 1);
-                if (aliveWorkerDic.TryAdd(worker.ID, worker))
+                lock (this)
                 {
-                    Interlocked.Increment(ref aliveWorkerCount);
-                    aliveWorkerList = aliveWorkerDic.Values;
-                }
-                if (longRunning)
-                {
-                    Interlocked.Increment(ref longRunningWorkerCount);
+                    if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
+                    {
+                        worker = new Worker(this);
+                        Interlocked.Exchange(ref worker.gettedLock, 1);
+                        if (aliveWorkerDic.TryAdd(worker.ID, worker))
+                        {
+                            Interlocked.Increment(ref aliveWorkerCount);
+                            aliveWorkerList = aliveWorkerDic.Values;
+                        }
+                        if (longRunning)
+                        {
+                            Interlocked.Increment(ref longRunningWorkerCount);
+                        }
+                    }
                 }
             }
 
