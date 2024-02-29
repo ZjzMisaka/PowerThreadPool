@@ -8,7 +8,7 @@
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/ZjzMisaka/PowerThreadPool/test.yml?style=for-the-badge)
 ![Codecov](https://img.shields.io/codecov/c/github/ZjzMisaka/PowerThreadPool?style=for-the-badge)
 
-Enables efficient thread pool management with callback implementation, granular control, customizable concurrency, and support for diverse task submissions.  
+Offers comprehensive and efficient thread pool management with features like granular work control, dependencies, customizable concurrency, events, priority handling, timeout options, callbacks, error handling, and load balancing, alongside an easy-to-use API for diverse task submissions.  
 
 ## Documentation
 Read the [Wiki](https://github.com/ZjzMisaka/PowerThreadPool/wiki) here.  
