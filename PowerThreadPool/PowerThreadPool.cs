@@ -171,7 +171,7 @@ namespace PowerThreadPool
 
         public PowerPool()
         {
-            
+
         }
 
         public PowerPool(PowerPoolOption powerPoolOption)
@@ -853,16 +853,20 @@ namespace PowerThreadPool
             {
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    if (Interlocked.Increment(ref worker.gettedLock) == -99)
+                    int originalValue = worker.gettedLock;
+                    if (originalValue == 0)
                     {
-                        Interlocked.Exchange(ref worker.gettedLock, -100);
-                        continue;
+                        // Try to increment the gettedLock only if it hasn't been changed to -100 by another thread
+                        if (Interlocked.CompareExchange(ref worker.gettedLock, 1, originalValue) == originalValue)
+                        {
+                            // If successful, we have incremented gettedLock without any interference
+                            if (longRunning)
+                            {
+                                Interlocked.Increment(ref longRunningWorkerCount);
+                            }
+                            return worker;
+                        }
                     }
-                    if (longRunning)
-                    {
-                        Interlocked.Increment(ref longRunningWorkerCount);
-                    }
-                    return worker;
                 }
             }
 
@@ -871,7 +875,7 @@ namespace PowerThreadPool
                 if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
                 {
                     worker = new Worker(this);
-                    Interlocked.Increment(ref worker.gettedLock);
+                    Interlocked.Exchange(ref worker.gettedLock, 1);
                     if (aliveWorkerDic.TryAdd(worker.ID, worker))
                     {
                         Interlocked.Increment(ref aliveWorkerCount);
@@ -896,17 +900,19 @@ namespace PowerThreadPool
                         int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
                         if (waitingWorkCountTemp < min)
                         {
-                            if (Interlocked.Increment(ref aliveWorker.gettedLock) == -99)
+                            int originalValue = aliveWorker.gettedLock;
+                            if (originalValue == 0)
                             {
-                                Interlocked.Exchange(ref aliveWorker.gettedLock, -100);
-                                continue;
+                                if (Interlocked.CompareExchange(ref aliveWorker.gettedLock, 1, originalValue) == originalValue)
+                                {
+                                    if (worker != null)
+                                    {
+                                        Interlocked.Exchange(ref worker.gettedLock, 0);
+                                    }
+                                    min = waitingWorkCountTemp;
+                                    worker = aliveWorker;
+                                }
                             }
-                            if (worker != null)
-                            {
-                                Interlocked.Decrement(ref worker.gettedLock);
-                            }
-                            min = waitingWorkCountTemp;
-                            worker = aliveWorker;
                         }
                     }
                 }
