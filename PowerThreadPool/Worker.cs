@@ -20,6 +20,9 @@ namespace PowerThreadPool
         /// 0: Idle, 1: Running, 2: ToBeDisposed
         /// </summary>
         internal int workerState = 0;
+        /// <summary>
+        /// 0: Waiting for lock, 1: Locked, 2: Disabled
+        /// </summary>
         internal int gettedLock = 0;
 
         private PriorityQueue<string> waitingWorkIDQueue = new PriorityQueue<string>();
