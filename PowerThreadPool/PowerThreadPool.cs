@@ -870,48 +870,45 @@ namespace PowerThreadPool
                 }
             }
 
-            lock (this)
+            if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
             {
-                if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
+                worker = new Worker(this);
+                Interlocked.Exchange(ref worker.gettedLock, 1);
+                if (aliveWorkerDic.TryAdd(worker.ID, worker))
                 {
-                    worker = new Worker(this);
-                    Interlocked.Exchange(ref worker.gettedLock, 1);
-                    if (aliveWorkerDic.TryAdd(worker.ID, worker))
-                    {
-                        Interlocked.Increment(ref aliveWorkerCount);
-                        aliveWorkerList = aliveWorkerDic.Values;
-                    }
-                    if (longRunning)
-                    {
-                        Interlocked.Increment(ref longRunningWorkerCount);
-                    }
+                    Interlocked.Increment(ref aliveWorkerCount);
+                    aliveWorkerList = aliveWorkerDic.Values;
                 }
-
-                if (worker == null && !longRunning)
+                if (longRunning)
                 {
-                    int min = int.MaxValue;
-                    foreach (Worker aliveWorker in aliveWorkerList)
-                    {
-                        if (aliveWorker.LongRunning)
-                        {
-                            continue;
-                        }
+                    Interlocked.Increment(ref longRunningWorkerCount);
+                }
+            }
 
-                        int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
-                        if (waitingWorkCountTemp < min)
+            if (worker == null && !longRunning)
+            {
+                int min = int.MaxValue;
+                foreach (Worker aliveWorker in aliveWorkerList)
+                {
+                    if (aliveWorker.LongRunning)
+                    {
+                        continue;
+                    }
+
+                    int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
+                    if (waitingWorkCountTemp < min)
+                    {
+                        int originalValue = aliveWorker.gettedLock;
+                        if (originalValue == 0)
                         {
-                            int originalValue = aliveWorker.gettedLock;
-                            if (originalValue == 0)
+                            if (Interlocked.CompareExchange(ref aliveWorker.gettedLock, 1, originalValue) == originalValue)
                             {
-                                if (Interlocked.CompareExchange(ref aliveWorker.gettedLock, 1, originalValue) == originalValue)
+                                if (worker != null)
                                 {
-                                    if (worker != null)
-                                    {
-                                        Interlocked.Exchange(ref worker.gettedLock, 0);
-                                    }
-                                    min = waitingWorkCountTemp;
-                                    worker = aliveWorker;
+                                    Interlocked.Exchange(ref worker.gettedLock, 0);
                                 }
+                                min = waitingWorkCountTemp;
+                                worker = aliveWorker;
                             }
                         }
                     }
