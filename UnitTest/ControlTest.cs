@@ -828,6 +828,27 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestWaitByIDNotRunningYet()
+        {
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 1 });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            powerPool.Wait(id);
+
+            Assert.True(GetNowSs() - start >= 2000);
+        }
+
+        [Fact]
         public void TestWaitByIDList()
         {
             long start = GetNowSs();
