@@ -126,6 +126,10 @@ namespace PowerThreadPool
             }
         }
 
+        /// <summary>
+        /// Failed work count
+        /// Will be reset to zero when the thread pool starts again
+        /// </summary>
         public int FailedWorkCount
         {
             get
@@ -134,6 +138,10 @@ namespace PowerThreadPool
             }
         }
 
+        /// <summary>
+        /// ID list of failed works
+        /// Will be cleared when the thread pool starts again
+        /// </summary>
         public IEnumerable<string> FailedWorkList
         {
             get
@@ -937,6 +945,7 @@ namespace PowerThreadPool
                     PoolStart.Invoke(this, new EventArgs());
                 }
 
+                failedWorkSet = new ConcurrentSet<string>();
                 waitAllSignal.Reset();
 
                 if (powerPoolOption.Timeout != null)
