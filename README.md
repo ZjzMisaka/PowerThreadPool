@@ -74,9 +74,9 @@ powerPool.QueueWorkItem(() =>
 
 ### Reference
 ``` csharp
+string QueueWorkItem<T1, ...>(Action<T1, ...> action, T1 param1, ..., *);
 string QueueWorkItem(Action action, *);
 string QueueWorkItem(Action<object[]> action, object[] param, *);
-string QueueWorkItem<T1, ...>(Action<T1, ...> action, T1 param1, ..., *);
 string QueueWorkItem<T1, ..., TResult>(Func<T1, ..., TResult> function, T1 param1, ..., *);
 string QueueWorkItem<TResult>(Func<TResult> function, *);
 string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, *);

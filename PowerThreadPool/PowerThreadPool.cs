@@ -182,56 +182,6 @@ namespace PowerThreadPool
         /// <summary>
         /// Queues a method for execution. The method executes when a thread pool thread becomes available.
         /// </summary>
-        /// <param name="action"></param>
-        /// <param name="callBack"></param>
-        /// <returns>work id</returns>
-        public string QueueWorkItem(Action action, Action<ExecuteResult<object>> callBack = null)
-        {
-            WorkOption option = new WorkOption();
-            option.Callback = callBack;
-            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), Array.Empty<object>(), option);
-        }
-
-        /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
-        /// </summary>
-        /// <param name="action"></param>
-        /// <param name="option"></param>
-        /// <returns>work id</returns>
-        public string QueueWorkItem(Action action, WorkOption option)
-        {
-            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), Array.Empty<object>(), option);
-        }
-
-        /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
-        /// </summary>
-        /// <param name="action"></param>
-        /// <param name="param"></param>
-        /// <param name="callBack"></param>
-        /// <returns>work id</returns>
-        public string QueueWorkItem(Action<object[]> action, object[] param, Action<ExecuteResult<object>> callBack = null)
-        {
-            WorkOption option = new WorkOption();
-            option.Callback = callBack;
-            return QueueWorkItem<object>(DelegateHelper<object[]>.ToNormalFunc(action, param), param, option);
-        }
-
-        /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
-        /// </summary>
-        /// <param name="action"></param>
-        /// <param name="param"></param>
-        /// <param name="option"></param>
-        /// <returns>work id</returns>
-        public string QueueWorkItem(Action<object[]> action, object[] param, WorkOption option)
-        {
-            return QueueWorkItem<object>(DelegateHelper<object[]>.ToNormalFunc(action, param), param, option);
-        }
-
-        /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
-        /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="action"></param>
         /// <param name="param1"></param>
@@ -409,6 +359,55 @@ namespace PowerThreadPool
             return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, T4, T5, object>.ToNormalFunc(action, param1, param2, param3, param4, param5), new object[] { param1, param2, param3, param4, param5 }, option);
         }
 
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem(Action action, Action<ExecuteResult<object>> callBack = null)
+        {
+            WorkOption option = new WorkOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), Array.Empty<object>(), option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem(Action action, WorkOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), Array.Empty<object>(), option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="param"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem(Action<object[]> action, object[] param, Action<ExecuteResult<object>> callBack = null)
+        {
+            WorkOption option = new WorkOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<object[]>.ToNormalFunc(action, param), param, option);
+        }
+
+        /// <summary>
+        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="param"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem(Action<object[]> action, object[] param, WorkOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<object[]>.ToNormalFunc(action, param), param, option);
+        }
 
         /// <summary>
         /// Queues a method for execution. The method executes when a thread pool thread becomes available.
@@ -1017,6 +1016,139 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Invoke WorkTimeout event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        internal void OnWorkTimeout(object sender, TimeoutEventArgs e)
+        {
+            if (WorkTimeout != null)
+            {
+                WorkTimeout.Invoke(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Invoke WorkStart event
+        /// </summary>
+        /// <param name="workID"></param>
+        internal void OnWorkStart(string workID)
+        {
+            if (WorkStart != null)
+            {
+                WorkStart.Invoke(this, new WorkStartEventArgs() { ID = workID });
+            }
+        }
+
+        /// <summary>
+        /// Call this function inside the thread logic where you want to pause when user call Pause(...)
+        /// </summary>
+        public void PauseIfRequested()
+        {
+            pauseSignal.WaitOne();
+            ICollection<string> workIDs = pauseSignalDic.Keys;
+            foreach (string id in workIDs)
+            {
+                if (settedWorkDic.TryGetValue(id, out Worker worker))
+                {
+                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
+                    {
+                        if (pauseStatusDic.TryGetValue(id, out bool status))
+                        {
+                            if (status)
+                            {
+                                if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
+                                {
+                                    worker.PauseTimer();
+                                    manualResetEvent.WaitOne();
+                                    worker.ResumeTimer();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Call this function inside the thread logic where you want to stop when user call ForceStop(...)
+        /// </summary>
+        public void StopIfRequested()
+        {
+            string workID = CheckIfRequestedStopAndReturnWorkID();
+            if (workID != null)
+            {
+                if (workID == "")
+                {
+                    settedWorkDic.Clear();
+                }
+                else
+                {
+                    settedWorkDic.TryRemove(workID, out _);
+                }
+                throw new OperationCanceledException();
+            }
+        }
+
+        /// <summary>
+        /// Call this function inside the thread logic where you want to check if requested stop (if user call ForceStop(...))
+        /// </summary>
+        /// <returns></returns>
+        public bool CheckIfRequestedStop()
+        {
+            if (cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                return true;
+            }
+            foreach (KeyValuePair<string, CancellationTokenSource> pair in cancellationTokenSourceDic)
+            {
+                string id = pair.Key;
+                CancellationTokenSource cts = pair.Value;
+
+                if (settedWorkDic.TryGetValue(id, out Worker worker))
+                {
+                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
+                    {
+                        if (cts.Token.IsCancellationRequested)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Call this function inside the thread logic where you want to check if requested stop (if user call ForceStop(...))
+        /// </summary>
+        /// <returns></returns>
+        private string CheckIfRequestedStopAndReturnWorkID()
+        {
+            if (cancellationTokenSource.Token.IsCancellationRequested)
+            {
+                return "";
+            }
+            foreach (KeyValuePair<string, CancellationTokenSource> pair in cancellationTokenSourceDic)
+            {
+                string id = pair.Key;
+                CancellationTokenSource cts = pair.Value;
+
+                if (settedWorkDic.TryGetValue(id, out Worker worker))
+                {
+                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
+                    {
+                        if (cts.Token.IsCancellationRequested)
+                        {
+                            return id;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Blocks the calling thread until all of the works terminates.
         /// </summary>
         public void Wait()
@@ -1156,19 +1288,6 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Stop all works
-        /// </summary>
-        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
-        /// <returns>Return false if no thread running</returns>
-        public async Task<bool> StopAsync(bool forceStop = false)
-        {
-            return await Task.Run(() =>
-            {
-                return Stop(forceStop);
-            });
-        }
-
-        /// <summary>
         /// Stop work by id
         /// </summary>
         /// <param name="id">work id</param>
@@ -1210,20 +1329,6 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Stop work by id
-        /// </summary>
-        /// <param name="id">work id</param>
-        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
-        /// <returns>Return false if the thread isn't running</returns>
-        public async Task<bool> StopAsync(string id, bool forceStop = false)
-        {
-            return await Task.Run(() =>
-            {
-                return Stop(id, forceStop);
-            });
-        }
-
-        /// <summary>
         /// Stop works by id list
         /// </summary>
         /// <param name="idList">work id list</param>
@@ -1242,6 +1347,33 @@ namespace PowerThreadPool
             }
 
             return failedIDList;
+        }
+
+        /// <summary>
+        /// Stop all works
+        /// </summary>
+        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
+        /// <returns>Return false if no thread running</returns>
+        public async Task<bool> StopAsync(bool forceStop = false)
+        {
+            return await Task.Run(() =>
+            {
+                return Stop(forceStop);
+            });
+        }
+
+        /// <summary>
+        /// Stop work by id
+        /// </summary>
+        /// <param name="id">work id</param>
+        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
+        /// <returns>Return false if the thread isn't running</returns>
+        public async Task<bool> StopAsync(string id, bool forceStop = false)
+        {
+            return await Task.Run(() =>
+            {
+                return Stop(id, forceStop);
+            });
         }
 
         /// <summary>
@@ -1269,114 +1401,6 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Call this function inside the thread logic where you want to pause when user call Pause(...)
-        /// </summary>
-        public void PauseIfRequested()
-        {
-            pauseSignal.WaitOne();
-            ICollection<string> workIDs = pauseSignalDic.Keys;
-            foreach (string id in workIDs)
-            {
-                if (settedWorkDic.TryGetValue(id, out Worker worker))
-                {
-                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
-                    {
-                        if (pauseStatusDic.TryGetValue(id, out bool status))
-                        {
-                            if (status)
-                            {
-                                if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
-                                {
-                                    worker.PauseTimer();
-                                    manualResetEvent.WaitOne();
-                                    worker.ResumeTimer();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Call this function inside the thread logic where you want to stop when user call ForceStop(...)
-        /// </summary>
-        public void StopIfRequested()
-        {
-            string workID = CheckIfRequestedStopAndReturnWorkID();
-            if (workID != null)
-            {
-                if (workID == "")
-                {
-                    settedWorkDic.Clear();
-                }
-                else
-                {
-                    settedWorkDic.TryRemove(workID, out _);
-                }
-                throw new OperationCanceledException();
-            }
-        }
-
-        /// <summary>
-        /// Call this function inside the thread logic where you want to check if requested stop (if user call ForceStop(...))
-        /// </summary>
-        /// <returns></returns>
-        public bool CheckIfRequestedStop()
-        {
-            if (cancellationTokenSource.Token.IsCancellationRequested)
-            {
-                return true;
-            }
-            foreach (KeyValuePair<string, CancellationTokenSource> pair in cancellationTokenSourceDic)
-            {
-                string id = pair.Key;
-                CancellationTokenSource cts = pair.Value;
-
-                if (settedWorkDic.TryGetValue(id, out Worker worker))
-                {
-                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
-                    {
-                        if (cts.Token.IsCancellationRequested)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Call this function inside the thread logic where you want to check if requested stop (if user call ForceStop(...))
-        /// </summary>
-        /// <returns></returns>
-        private string CheckIfRequestedStopAndReturnWorkID()
-        {
-            if (cancellationTokenSource.Token.IsCancellationRequested)
-            {
-                return "";
-            }
-            foreach (KeyValuePair<string, CancellationTokenSource> pair in cancellationTokenSourceDic)
-            {
-                string id = pair.Key;
-                CancellationTokenSource cts = pair.Value;
-
-                if (settedWorkDic.TryGetValue(id, out Worker worker))
-                {
-                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
-                    {
-                        if (cts.Token.IsCancellationRequested)
-                        {
-                            return id;
-                        }
-                    }
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
         /// Pause all threads
         /// </summary>
         public void Pause()
@@ -1386,26 +1410,6 @@ namespace PowerThreadPool
                 poolTimer.Stop();
             }
             pauseSignal.Reset();
-        }
-
-        /// <summary>
-        /// Resume all threads
-        /// </summary>
-        /// <param name="resumeWorkPausedByID">if resume work paused by ID</param>
-        public void Resume(bool resumeWorkPausedByID = false)
-        {
-            if (poolTimer != null)
-            {
-                poolTimer.Start();
-            }
-            pauseSignal.Set();
-            if (resumeWorkPausedByID)
-            {
-                foreach (ManualResetEvent manualResetEvent in pauseSignalDic.Values)
-                {
-                    manualResetEvent.Set();
-                }
-            }
         }
 
         /// <summary>
@@ -1432,6 +1436,46 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Pause threads by id list
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of IDs for work that doesn't exist</returns>
+        public List<string> Pause(IEnumerable<string> idList)
+        {
+            List<string> failedIDList = new List<string>();
+
+            foreach (string id in idList)
+            {
+                if (!Pause(id))
+                {
+                    failedIDList.Add(id);
+                }
+            }
+
+            return failedIDList;
+        }
+
+        /// <summary>
+        /// Resume all threads
+        /// </summary>
+        /// <param name="resumeWorkPausedByID">if resume work paused by ID</param>
+        public void Resume(bool resumeWorkPausedByID = false)
+        {
+            if (poolTimer != null)
+            {
+                poolTimer.Start();
+            }
+            pauseSignal.Set();
+            if (resumeWorkPausedByID)
+            {
+                foreach (ManualResetEvent manualResetEvent in pauseSignalDic.Values)
+                {
+                    manualResetEvent.Set();
+                }
+            }
+        }
+
+        /// <summary>
         /// Resume thread by id
         /// </summary>
         /// <param name="id">work id</param>
@@ -1451,26 +1495,6 @@ namespace PowerThreadPool
                 res =  true;
             }
             return res;
-        }
-
-        /// <summary>
-        /// Pause threads by id list
-        /// </summary>
-        /// <param name="idList">work id list</param>
-        /// <returns>Return a list of IDs for work that doesn't exist</returns>
-        public List<string> Pause(IEnumerable<string> idList)
-        {
-            List<string> failedIDList = new List<string>();
-
-            foreach (string id in idList)
-            {
-                if (!Pause(id))
-                {
-                    failedIDList.Add(id);
-                }
-            }
-
-            return failedIDList;
         }
 
         /// <summary>
@@ -1542,31 +1566,6 @@ namespace PowerThreadPool
             }
 
             return failedIDList;
-        }
-
-        /// <summary>
-        /// Invoke WorkTimeout event
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        internal void OnWorkTimeout(object sender, TimeoutEventArgs e)
-        {
-            if (WorkTimeout != null)
-            {
-                WorkTimeout.Invoke(this, e);
-            }
-        }
-
-        /// <summary>
-        /// Invoke WorkStart event
-        /// </summary>
-        /// <param name="workID"></param>
-        internal void OnWorkStart(string workID)
-        {
-            if (WorkStart != null)
-            {
-                WorkStart.Invoke(this, new WorkStartEventArgs() { ID = workID });
-            }
         }
 
         /// <summary>
