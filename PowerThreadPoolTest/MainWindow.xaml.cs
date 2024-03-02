@@ -188,7 +188,14 @@ namespace PowerThreadPoolTest
                     }
                 }
                 OutputMsg("---------------");
-                Sleep(random.Next(0, 1500));
+                int r2 = random.Next(0, 101);
+                if (r1 >= 81 && r1 <= 100)
+                {
+                }
+                else
+                {
+                    Sleep(random.Next(0, 1500));
+                }
             }
             OutputMsg("done");
 

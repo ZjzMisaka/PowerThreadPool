@@ -145,7 +145,7 @@ namespace UnitTest
             {
                 logList.Add("Work0 END");
             });
-            Thread.Sleep(100);
+            Thread.Sleep(200);
             string id = powerPool.QueueWorkItem(() =>
             {
                 for (int i = 0; i < 100; ++i)
@@ -157,7 +157,7 @@ namespace UnitTest
             {
                 logList.Add("Work1 END");
             });
-            Thread.Sleep(100);
+            Thread.Sleep(200);
             powerPool.QueueWorkItem(() =>
             {
                 for (int i = 0; i < 100; ++i)
@@ -172,7 +172,7 @@ namespace UnitTest
             Thread.Sleep(50);
             List<string> pauseRes = powerPool.Pause(new List<string>() { id });
             Assert.Empty(pauseRes);
-            Thread.Sleep(500);
+            Thread.Sleep(1000);
             List<string> resumeRes = powerPool.Resume(new List<string>() { id });
             Assert.Empty(resumeRes);
             powerPool.Wait();
