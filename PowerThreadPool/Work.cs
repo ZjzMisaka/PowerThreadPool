@@ -42,29 +42,26 @@ namespace PowerThreadPool
             {
                 powerPool.CallbackEnd += (workId) =>
                 {
-                    lock (lockObj)
+                    if (!this.succeed)
                     {
-                        if (!this.succeed)
+                        return;
+                    }
+
+                    foreach (string dependedId in this.workOption.Dependents)
+                    {
+                        if (powerPool.failedWorkSet.Contains(dependedId))
                         {
+                            this.succeed = false;
+                            Interlocked.Decrement(ref powerPool.waitingWorkCount);
                             return;
                         }
+                    }
 
-                        foreach (string dependedId in this.workOption.Dependents)
+                    if (this.workOption.Dependents.Remove(workId))
+                    {
+                        if (this.workOption.Dependents.Count == 0)
                         {
-                            if (powerPool.failedWorkSet.Contains(dependedId))
-                            {
-                                this.succeed = false;
-                                Interlocked.Decrement(ref powerPool.waitingWorkCount);
-                                return;
-                            }
-                        }
-
-                        if (this.workOption.Dependents.Remove(workId))
-                        {
-                            if (this.workOption.Dependents.Count == 0)
-                            {
-                                powerPool.SetWork(this);
-                            }
+                            powerPool.SetWork(this);
                         }
                     }
                 };
