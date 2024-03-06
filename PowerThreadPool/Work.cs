@@ -24,8 +24,6 @@ namespace PowerThreadPool
         private WorkOption<TResult> workOption;
         private bool succeed = true;
 
-        private object lockObj = new object();
-
         internal override int WorkPriority { get => workOption.WorkPriority; }
         internal override ThreadPriority ThreadPriority { get => workOption.ThreadPriority; }
         internal override TimeoutOption WorkTimeoutOption { get => workOption.Timeout; }
