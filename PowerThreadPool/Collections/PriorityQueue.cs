@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -6,25 +7,16 @@ namespace PowerThreadPool.Collections
 {
     public class PriorityQueue<T>
     {
-        private SortedDictionary<int, ConcurrentQueue<T>> queueDic;
+        private ConcurrentDictionary<int, ConcurrentQueue<T>> queueDic;
 
         public PriorityQueue()
         {
-            queueDic = new SortedDictionary<int, ConcurrentQueue<T>>();
+            queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
         }
 
         public void Enqueue(T item, int priority)
         {
-            if (queueDic.ContainsKey(priority))
-            {
-                queueDic[priority].Enqueue(item);
-            }
-            else
-            {
-                var queue = new ConcurrentQueue<T>();
-                queue.Enqueue(item);
-                queueDic.Add(priority, queue);
-            }
+            queueDic.AddOrUpdate(priority, (key) => { ConcurrentQueue<T> queue = new ConcurrentQueue<T>(); queue.Enqueue(item); return queue; }, (key, oldValue) => { oldValue.Enqueue(item); return oldValue; });
         }
 
         public T Dequeue()
@@ -34,13 +26,13 @@ namespace PowerThreadPool.Collections
                 return default;
             }
 
-            var pair = queueDic.Last();
+            int highestPriority = queueDic.Keys.Max();
+            ConcurrentQueue<T> queue = queueDic[highestPriority];
+            queue.TryDequeue(out T item);
 
-            pair.Value.TryDequeue(out T item);
-
-            if (!pair.Value.Any())
+            if (!queue.Any())
             {
-                queueDic.Remove(pair.Key);
+                queueDic.TryRemove(highestPriority, out _);
             }
 
             return item;
