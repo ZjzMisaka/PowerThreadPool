@@ -972,35 +972,28 @@ namespace PowerThreadPool
 
             InitWorkerQueue();
 
-            // Double-checked locking
             if (runningWorkerCount == 0 && waitingWorkCount == 0 && poolRunning)
             {
-                lock (this)
+                poolRunning = false;
+                if (poolStopping)
                 {
-                    if (runningWorkerCount == 0 && waitingWorkCount == 0 && poolRunning)
-                    {
-                        poolRunning = false;
-                        if (poolStopping)
-                        {
-                            poolStopping = false;
-                        }
+                    poolStopping = false;
+                }
 
-                        if (PoolIdle != null)
-                        {
-                            try
-                            {
-                                PoolIdle.Invoke(this, new EventArgs());
-                            }
-                            finally
-                            {
-                                IdleSetting();
-                            }
-                        }
-                        else
-                        {
-                            IdleSetting();
-                        }
+                if (PoolIdle != null)
+                {
+                    try
+                    {
+                        PoolIdle.Invoke(this, new EventArgs());
                     }
+                    finally
+                    {
+                        IdleSetting();
+                    }
+                }
+                else
+                {
+                    IdleSetting();
                 }
             }
         }
