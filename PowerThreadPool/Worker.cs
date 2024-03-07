@@ -342,7 +342,7 @@ namespace PowerThreadPool
                     {
                         Interlocked.Exchange(ref workerState, 0);
 
-                        Interlocked.CompareExchange(ref gettedLock, 0, 374)
+                        Interlocked.CompareExchange(ref gettedLock, 0, 374);
 
                         Interlocked.Decrement(ref powerPool.runningWorkerCount);
                         PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
