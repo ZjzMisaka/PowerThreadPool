@@ -1,49 +1,76 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace PowerThreadPool.Collections
 {
     public class PriorityQueue<T>
     {
-        private SortedDictionary<int, ConcurrentQueue<T>> queueDic;
+        private ConcurrentDictionary<int, ConcurrentQueue<T>> queueDic;
+        private int highestPriority;
 
         public PriorityQueue()
         {
-            queueDic = new SortedDictionary<int, ConcurrentQueue<T>>();
+            queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
+            highestPriority = int.MinValue;
         }
 
         public void Enqueue(T item, int priority)
         {
-            if (queueDic.ContainsKey(priority))
-            {
-                queueDic[priority].Enqueue(item);
-            }
-            else
-            {
-                var queue = new ConcurrentQueue<T>();
-                queue.Enqueue(item);
-                queueDic.Add(priority, queue);
-            }
+            var queue = queueDic.GetOrAdd(priority, _ => new ConcurrentQueue<T>());
+            queue.Enqueue(item);
+
+            UpdateHighestPriority(priority);
         }
 
         public T Dequeue()
         {
-            if (queueDic.Count <= 0)
+            T item = default;
+            ConcurrentQueue<T> queue;
+            if (queueDic.TryGetValue(highestPriority, out queue))
             {
-                return default;
+                if (queue.TryDequeue(out item))
+                {
+                    return item;
+                }
             }
 
-            var pair = queueDic.Last();
+            List<int> sortedPriorities = queueDic.Keys.OrderByDescending(x => x).ToList();
 
-            pair.Value.TryDequeue(out T item);
-
-            if (!pair.Value.Any())
+            foreach (int priority in sortedPriorities)
             {
-                queueDic.Remove(pair.Key);
+                if (queueDic.TryGetValue(priority, out queue))
+                {
+                    if (queue.TryDequeue(out item))
+                    {
+                        UpdateHighestPriority(priority);
+                        break;
+                    }
+                }
             }
 
             return item;
+        }
+
+        private void UpdateHighestPriority(int priority)
+        {
+            bool retry = true;
+            while (retry)
+            {
+                int highestPriorityTemp = highestPriority;
+                if (priority > highestPriorityTemp)
+                {
+                    if (Interlocked.CompareExchange(ref highestPriority, priority, highestPriorityTemp) == highestPriorityTemp)
+                    {
+                        retry = false;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
         }
     }
 }

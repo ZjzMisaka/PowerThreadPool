@@ -210,22 +210,13 @@ namespace PowerThreadPool
         {
             int originalWorkerState;
             waitingWorkDic[work.ID] = work;
-            lock (waitingWorkIDQueue)
-            {
-                waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
-            }
+            waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
             Interlocked.Increment(ref waitingWorkCount);
             originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
 
             if (!stolenWork)
             {
                 Interlocked.Exchange(ref gettedLock, 0);
-
-               //SpinWait.SpinUntil(() =>
-               // {
-               //     int gettedStatusOrig = Interlocked.CompareExchange(ref gettedLock, 0, 1);
-               //     return (gettedStatusOrig == 1);
-               // });
             }
 
             if (originalWorkerState == 0)
@@ -242,10 +233,7 @@ namespace PowerThreadPool
             while (stolenList.Count < count)
             {
                 string stolenWorkID;
-                lock (waitingWorkIDQueue)
-                {
-                    stolenWorkID = waitingWorkIDQueue.Dequeue();
-                }
+                stolenWorkID = waitingWorkIDQueue.Dequeue();
 
                 if (stolenWorkID == null)
                 {
@@ -269,10 +257,7 @@ namespace PowerThreadPool
                 string waitingWorkID = null;
                 WorkBase work = null;
 
-                lock (waitingWorkIDQueue)
-                {
-                    waitingWorkID = waitingWorkIDQueue.Dequeue();
-                }
+                waitingWorkID = waitingWorkIDQueue.Dequeue();
 
                 if (waitingWorkID == null && powerPool.aliveWorkerCount <= powerPool.PowerPoolOption.MaxThreads)
                 {
@@ -325,11 +310,8 @@ namespace PowerThreadPool
                         return (gettedLockOrig == 0);
                     });
 
-                    lock (waitingWorkIDQueue)
-                    {
-                        waitingWorkID = waitingWorkIDQueue.Dequeue();
-                    }
-                    
+                    waitingWorkID = waitingWorkIDQueue.Dequeue();
+
                     if (waitingWorkID != null)
                     {
                         if (waitingWorkDic.TryRemove(waitingWorkID, out work))
