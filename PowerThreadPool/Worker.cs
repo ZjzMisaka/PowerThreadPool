@@ -24,7 +24,6 @@ namespace PowerThreadPool
         /// 0: Waiting for lock, 1: Locked, 2: Disabled
         /// </summary>
         internal int gettedLock = 0;
-        internal int queueLock = 0;
 
         private PriorityQueue<string> waitingWorkIDQueue = new PriorityQueue<string>();
         private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
@@ -210,23 +209,14 @@ namespace PowerThreadPool
         internal void SetWork(WorkBase work, bool stolenWork)
         {
             int originalWorkerState;
-            lock (powerPool)
+            waitingWorkDic[work.ID] = work;
+            lock (waitingWorkIDQueue)
             {
-                waitingWorkDic[work.ID] = work;
-                SpinWait.SpinUntil(() =>
-                {
-                    int queueLockOrig = Interlocked.CompareExchange(ref queueLock, 218, 0);
-                    return (queueLockOrig == 0);
-                });
                 waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
-                if (Interlocked.CompareExchange(ref queueLock, 0, 218) != 218)
-                {
-                    throw new Exception();
-                }
-                Interlocked.Increment(ref waitingWorkCount);
-                originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
             }
-            
+            Interlocked.Increment(ref waitingWorkCount);
+            originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
+
             if (!stolenWork)
             {
                 Interlocked.Exchange(ref gettedLock, 0);
@@ -250,24 +240,19 @@ namespace PowerThreadPool
             List<WorkBase> stolenList = new List<WorkBase>();
 
             int gettedStatus = -1;
-            SpinWait.SpinUntil(() =>
-            {
-                gettedStatus = Interlocked.CompareExchange(ref queueLock, 243, 0);
-                return (gettedStatus == 0);
-            });
 
             if (gettedStatus == 0)
             {
                 while (stolenList.Count < count)
                 {
-                    string stolenWorkID = waitingWorkIDQueue.Dequeue();
+                    string stolenWorkID;
+                    lock (waitingWorkIDQueue)
+                    {
+                        stolenWorkID = waitingWorkIDQueue.Dequeue();
+                    }
 
                     if (stolenWorkID == null)
                     {
-                        if (Interlocked.CompareExchange(ref queueLock, 0, 243) != 243)
-                        {
-                            throw new Exception();
-                        }
                         return stolenList;
                     }
 
@@ -276,11 +261,6 @@ namespace PowerThreadPool
                         Interlocked.Decrement(ref waitingWorkCount);
                         stolenList.Add(stolenWork);
                     }
-                }
-
-                if (Interlocked.CompareExchange(ref queueLock, 0, 243) != 243)
-                {
-                    throw new Exception();
                 }
             }
             
@@ -294,15 +274,9 @@ namespace PowerThreadPool
                 string waitingWorkID = null;
                 WorkBase work = null;
 
-                SpinWait.SpinUntil(() =>
+                lock (waitingWorkIDQueue)
                 {
-                    int queueLockOrig = Interlocked.CompareExchange(ref queueLock, 282, 0);
-                    return (queueLockOrig == 0);
-                });
-                waitingWorkID = waitingWorkIDQueue.Dequeue();
-                if (Interlocked.CompareExchange(ref queueLock, 0, 282) != 282)
-                {
-                    throw new Exception();
+                    waitingWorkID = waitingWorkIDQueue.Dequeue();
                 }
 
                 if (waitingWorkID == null && powerPool.aliveWorkerCount <= powerPool.PowerPoolOption.MaxThreads)
@@ -356,17 +330,11 @@ namespace PowerThreadPool
                         return (gettedLockOrig == 0);
                     });
 
-                    SpinWait.SpinUntil(() =>
+                    lock (waitingWorkIDQueue)
                     {
-                        int queueLockOrig = Interlocked.CompareExchange(ref queueLock, 339, 0);
-                        return (queueLockOrig == 0);
-                    });
-
-                    waitingWorkID = waitingWorkIDQueue.Dequeue();
-                    if (Interlocked.CompareExchange(ref queueLock, 0, 339) != 339)
-                    {
-                        throw new Exception();
+                        waitingWorkID = waitingWorkIDQueue.Dequeue();
                     }
+                    
                     if (waitingWorkID != null)
                     {
                         if (waitingWorkDic.TryRemove(waitingWorkID, out work))
@@ -379,16 +347,16 @@ namespace PowerThreadPool
                     {
                         Interlocked.Exchange(ref workerState, 0);
 
+                        if (Interlocked.CompareExchange(ref gettedLock, 0, 374) != 374)
+                        {
+                            //throw new Exception();
+                        }
+
                         Interlocked.Decrement(ref powerPool.runningWorkerCount);
                         PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
 
                         powerPool.idleWorkerDic[this.ID] = this;
                         powerPool.idleWorkerQueue.Enqueue(this.ID);
-
-                        if (Interlocked.CompareExchange(ref gettedLock, 0, 374) != 374)
-                        {
-                            //throw new Exception();
-                        }
 
                         powerPool.CheckPoolIdle();
 
