@@ -239,31 +239,26 @@ namespace PowerThreadPool
         {
             List<WorkBase> stolenList = new List<WorkBase>();
 
-            int gettedStatus = -1;
-
-            if (gettedStatus == 0)
+            while (stolenList.Count < count)
             {
-                while (stolenList.Count < count)
+                string stolenWorkID;
+                lock (waitingWorkIDQueue)
                 {
-                    string stolenWorkID;
-                    lock (waitingWorkIDQueue)
-                    {
-                        stolenWorkID = waitingWorkIDQueue.Dequeue();
-                    }
+                    stolenWorkID = waitingWorkIDQueue.Dequeue();
+                }
 
-                    if (stolenWorkID == null)
-                    {
-                        return stolenList;
-                    }
+                if (stolenWorkID == null)
+                {
+                    return stolenList;
+                }
 
-                    if (waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
-                    {
-                        Interlocked.Decrement(ref waitingWorkCount);
-                        stolenList.Add(stolenWork);
-                    }
+                if (waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
+                {
+                    Interlocked.Decrement(ref waitingWorkCount);
+                    stolenList.Add(stolenWork);
                 }
             }
-            
+
             return stolenList;
         }
 
