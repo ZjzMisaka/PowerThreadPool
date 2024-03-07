@@ -6,41 +6,41 @@ namespace PowerThreadPool.Collections
 {
     public class PriorityQueue<T>
     {
-        private SortedDictionary<int, ConcurrentQueue<T>> queueDic;
+        private ConcurrentDictionary<int, ConcurrentQueue<T>> queueDic;
+        private ConcurrentBag<int> priorities;
 
         public PriorityQueue()
         {
-            queueDic = new SortedDictionary<int, ConcurrentQueue<T>>();
+            queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
+            priorities = new ConcurrentBag<int>();
         }
 
         public void Enqueue(T item, int priority)
         {
-            if (queueDic.ContainsKey(priority))
+            var queue = queueDic.GetOrAdd(priority, _ => new ConcurrentQueue<T>());
+            queue.Enqueue(item);
+
+            // Add priority to the bag if it's a new one
+            if (queue.Count == 1)
             {
-                queueDic[priority].Enqueue(item);
-            }
-            else
-            {
-                var queue = new ConcurrentQueue<T>();
-                queue.Enqueue(item);
-                queueDic.Add(priority, queue);
+                priorities.Add(priority);
             }
         }
 
         public T Dequeue()
         {
-            if (queueDic.Count <= 0)
+            T item = default;
+            var sortedPriorities = priorities.Distinct().OrderByDescending(x => x).ToList();
+
+            foreach (var priority in sortedPriorities)
             {
-                return default;
-            }
-
-            var pair = queueDic.Last();
-
-            pair.Value.TryDequeue(out T item);
-
-            if (!pair.Value.Any())
-            {
-                queueDic.Remove(pair.Key);
+                if (queueDic.TryGetValue(priority, out var queue))
+                {
+                    if (queue.TryDequeue(out item))
+                    {
+                        break;
+                    }
+                }
             }
 
             return item;
