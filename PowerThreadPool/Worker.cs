@@ -342,10 +342,7 @@ namespace PowerThreadPool
                     {
                         Interlocked.Exchange(ref workerState, 0);
 
-                        if (Interlocked.CompareExchange(ref gettedLock, 0, 374) != 374)
-                        {
-                            //throw new Exception();
-                        }
+                        Interlocked.CompareExchange(ref gettedLock, 0, 374)
 
                         Interlocked.Decrement(ref powerPool.runningWorkerCount);
                         PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
@@ -400,10 +397,7 @@ namespace PowerThreadPool
                     }
                     else
                     {
-                        if (Interlocked.CompareExchange(ref gettedLock, 0, 374) != 374)
-                        {
-                            throw new Exception();
-                        }
+                        Interlocked.CompareExchange(ref gettedLock, 0, 374);
                     }
                 }
 

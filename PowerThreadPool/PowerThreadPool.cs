@@ -911,16 +911,9 @@ namespace PowerThreadPool
                             }
                             min = waitingWorkCountTemp;
                             worker = aliveWorker;
-
-                            break;
                         }
                     }
                 }
-            }
-
-            if (worker != null && worker.gettedLock != 1)
-            {
-                // throw new Exception();
             }
 
             return worker;
