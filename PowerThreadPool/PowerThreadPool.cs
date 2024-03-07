@@ -860,19 +860,14 @@ namespace PowerThreadPool
             {
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    int originalValue = worker.gettedLock;
-                    if (originalValue == 0)
+                    if (Interlocked.CompareExchange(ref worker.gettedLock, 1, 0) == 0)
                     {
-                        // Try to increment the gettedLock only if it hasn't been changed to -100 by another thread
-                        if (Interlocked.CompareExchange(ref worker.gettedLock, 1, originalValue) == originalValue)
+                        // If successful, we have incremented gettedLock without any interference
+                        if (longRunning)
                         {
-                            // If successful, we have incremented gettedLock without any interference
-                            if (longRunning)
-                            {
-                                Interlocked.Increment(ref longRunningWorkerCount);
-                            }
-                            return worker;
+                            Interlocked.Increment(ref longRunningWorkerCount);
                         }
+                        return worker;
                     }
                 }
             }
@@ -911,21 +906,24 @@ namespace PowerThreadPool
                     int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
                     if (waitingWorkCountTemp < min)
                     {
-                        int originalValue = aliveWorker.gettedLock;
-                        if (originalValue == 0)
+                        if (Interlocked.CompareExchange(ref aliveWorker.gettedLock, 1, 0) == 0)
                         {
-                            if (Interlocked.CompareExchange(ref aliveWorker.gettedLock, 1, originalValue) == originalValue)
+                            if (worker != null)
                             {
-                                if (worker != null)
-                                {
-                                    Interlocked.Exchange(ref worker.gettedLock, 0);
-                                }
-                                min = waitingWorkCountTemp;
-                                worker = aliveWorker;
+                                Interlocked.CompareExchange(ref worker.gettedLock, 0, 1);
                             }
+                            min = waitingWorkCountTemp;
+                            worker = aliveWorker;
+
+                            break;
                         }
                     }
                 }
+            }
+
+            if (worker != null && worker.gettedLock != 1)
+            {
+                // throw new Exception();
             }
 
             return worker;
