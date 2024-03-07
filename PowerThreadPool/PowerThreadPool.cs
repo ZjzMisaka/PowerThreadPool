@@ -35,6 +35,8 @@ namespace PowerThreadPool
         private Dictionary<WorkBase, ConcurrentSet<string>> suspendedWork = new Dictionary<WorkBase, ConcurrentSet<string>>();
         private bool suspended;
 
+        private int createWorkerLock = 0;
+
         private PowerPoolOption powerPoolOption;
         public PowerPoolOption PowerPoolOption 
         { 
@@ -874,19 +876,24 @@ namespace PowerThreadPool
 
             if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
             {
-                if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
+                if (Interlocked.CompareExchange(ref createWorkerLock, 1, 0) == 0)
                 {
-                    worker = new Worker(this);
-                    Interlocked.Exchange(ref worker.gettedLock, 1);
-                    if (aliveWorkerDic.TryAdd(worker.ID, worker))
+                    if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
                     {
-                        Interlocked.Increment(ref aliveWorkerCount);
-                        aliveWorkerList = aliveWorkerDic.Values;
+                        worker = new Worker(this);
+                        Interlocked.Exchange(ref worker.gettedLock, 1);
+                        if (aliveWorkerDic.TryAdd(worker.ID, worker))
+                        {
+                            Interlocked.Increment(ref aliveWorkerCount);
+                            aliveWorkerList = aliveWorkerDic.Values;
+                        }
+                        if (longRunning)
+                        {
+                            Interlocked.Increment(ref longRunningWorkerCount);
+                        }
                     }
-                    if (longRunning)
-                    {
-                        Interlocked.Increment(ref longRunningWorkerCount);
-                    }
+
+                    Interlocked.Exchange(ref createWorkerLock, 0);
                 }
             }
 
