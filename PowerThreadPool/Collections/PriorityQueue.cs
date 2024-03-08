@@ -11,11 +11,13 @@ namespace PowerThreadPool.Collections
         private ConcurrentDictionary<int, ConcurrentQueue<T>> queueDic;
         private SortedSet<int> sortedPrioritySet;
         private List<int> reversed;
+        private int updated;
 
         public PriorityQueue()
         {
             queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
             sortedPrioritySet = new SortedSet<int>();
+            updated = 0;
         }
 
         public void Enqueue(T item, int priority)
@@ -23,7 +25,7 @@ namespace PowerThreadPool.Collections
             ConcurrentQueue<T> queue = queueDic.GetOrAdd(priority, _ =>
             {
                 sortedPrioritySet.Add(priority);
-                reversed = sortedPrioritySet.Reverse().ToList();
+                Interlocked.Exchange(ref updated, 1);
                 return new ConcurrentQueue<T>();
             });
 
@@ -34,8 +36,12 @@ namespace PowerThreadPool.Collections
         {
             T item = default;
 
-            int reversedCount = reversed.Count;
-            for (int i = 0; i < reversedCount; ++i)
+            if (Interlocked.CompareExchange(ref updated, 0, 1) == 1)
+            {
+                reversed = sortedPrioritySet.Reverse().ToList();
+            }
+
+            for (int i = 0; i < reversed.Count; ++i)
             {
                 int priority = reversed[i];
                 if (queueDic.TryGetValue(priority, out ConcurrentQueue<T> queue))
