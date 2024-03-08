@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -8,11 +9,13 @@ namespace PowerThreadPool.Collections
     public class PriorityQueue<T>
     {
         private ConcurrentDictionary<int, ConcurrentQueue<T>> queueDic;
+        private SortedSet<int> sortedPrioritySet;
         private int highestPriority;
 
         public PriorityQueue()
         {
             queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
+            sortedPrioritySet = new SortedSet<int>();
             highestPriority = int.MinValue;
         }
 
@@ -20,31 +23,30 @@ namespace PowerThreadPool.Collections
         {
             var queue = queueDic.GetOrAdd(priority, _ => new ConcurrentQueue<T>());
             queue.Enqueue(item);
-
-            UpdateHighestPriority(priority);
+            sortedPrioritySet.Add(priority);
+            if (priority > highestPriority)
+            {
+                UpdateHighestPriority(priority);
+            }
         }
 
         public T Dequeue()
         {
             T item = default;
             ConcurrentQueue<T> queue;
-            if (queueDic.TryGetValue(highestPriority, out queue))
-            {
-                if (queue.TryDequeue(out item))
-                {
-                    return item;
-                }
-            }
 
-            List<int> sortedPriorities = queueDic.Keys.OrderByDescending(x => x).ToList();
-
-            foreach (int priority in sortedPriorities)
+            SortedSet<int> snapshot = new SortedSet<int>(sortedPrioritySet);
+            IEnumerable<int> reversed = sortedPrioritySet.Reverse();
+            foreach (int priority in reversed)
             {
-                if (queueDic.TryGetValue(priority, out queue))
+                if (priority <= highestPriority && queueDic.TryGetValue(priority, out queue))
                 {
                     if (queue.TryDequeue(out item))
                     {
-                        UpdateHighestPriority(priority);
+                        if (priority > highestPriority)
+                        {
+                            UpdateHighestPriority(priority);
+                        }
                         break;
                     }
                 }
