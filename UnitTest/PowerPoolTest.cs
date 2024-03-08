@@ -403,7 +403,7 @@ namespace UnitTest
 
             string id1 = powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(4000);
             });
 
             Thread.Sleep(100);

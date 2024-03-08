@@ -9,14 +9,14 @@ namespace PowerThreadPool.Collections
     public class PriorityQueue<T>
     {
         private ConcurrentDictionary<int, ConcurrentQueue<T>> queueDic;
-        private SortedSet<int> sortedPrioritySet;
+        private ConcurrentSet<int> prioritySet;
         private List<int> reversed;
         private int updated;
 
         public PriorityQueue()
         {
             queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
-            sortedPrioritySet = new SortedSet<int>();
+            prioritySet = new ConcurrentSet<int>();
             updated = 0;
         }
 
@@ -24,7 +24,7 @@ namespace PowerThreadPool.Collections
         {
             ConcurrentQueue<T> queue = queueDic.GetOrAdd(priority, _ =>
             {
-                sortedPrioritySet.Add(priority);
+                prioritySet.Add(priority);
                 Interlocked.Exchange(ref updated, 1);
                 return new ConcurrentQueue<T>();
             });
@@ -38,7 +38,9 @@ namespace PowerThreadPool.Collections
 
             if (Interlocked.CompareExchange(ref updated, 0, 1) == 1)
             {
-                reversed = sortedPrioritySet.Reverse().ToList();
+                reversed = prioritySet.ToList();
+                reversed.Sort();
+                reversed.Reverse();
             }
 
             for (int i = 0; i < reversed.Count; ++i)
