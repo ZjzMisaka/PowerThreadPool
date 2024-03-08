@@ -36,7 +36,7 @@ namespace PowerThreadPool.Collections
             ConcurrentQueue<T> queue;
 
             SortedSet<int> snapshot = new SortedSet<int>(sortedPrioritySet);
-            IEnumerable<int> reversed = sortedPrioritySet.Reverse();
+            IEnumerable<int> reversed = snapshot.Reverse();
             foreach (int priority in reversed)
             {
                 if (priority <= highestPriority && queueDic.TryGetValue(priority, out queue))
