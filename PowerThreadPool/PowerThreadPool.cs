@@ -95,11 +95,12 @@ namespace PowerThreadPool
             }
         }
 
+        internal int idleWorkerCount = 0;
         public int IdleWorkerCount
         {
             get
             {
-                return idleWorkerDic.Count;
+                return idleWorkerCount;
             }
         }
 
@@ -831,6 +832,7 @@ namespace PowerThreadPool
                     aliveWorkerList = aliveWorkerDic.Values;
                 }
                 idleWorkerDic[worker.ID] = worker;
+                Interlocked.Increment(ref idleWorkerCount);
                 idleWorkerQueue.Enqueue(worker.ID);
             }
         }
@@ -860,6 +862,7 @@ namespace PowerThreadPool
             Worker worker = null;
             while (idleWorkerQueue.TryDequeue(out string firstWorkerID))
             {
+                Interlocked.Decrement(ref idleWorkerCount);
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
                     if (Interlocked.CompareExchange(ref worker.gettedLock, 1, 0) == 0)
@@ -1594,6 +1597,7 @@ namespace PowerThreadPool
                     aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
                     idleWorkerDic = new ConcurrentDictionary<string, Worker>();
                     idleWorkerQueue = new ConcurrentQueue<string>();
+                    idleWorkerCount = 0;
                     aliveWorkerCount = 0;
                     runningWorkerCount = 0;
                     waitingWorkCount = 0;
