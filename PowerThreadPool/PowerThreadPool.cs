@@ -852,7 +852,6 @@ namespace PowerThreadPool
             {
                 worker = GetWorker(work.LongRunning);
             }
-            settedWorkDic[work.ID] = worker;
             worker.SetWork(work, false);
         }
 
@@ -1011,6 +1010,11 @@ namespace PowerThreadPool
             {
                 poolStopping = false;
             }
+        }
+
+        internal void SetWorkOwner(string workId, Worker worker)
+        {
+            settedWorkDic[workId] = worker;
         }
 
         /// <summary>

@@ -229,6 +229,7 @@ namespace PowerThreadPool
         {
             int originalWorkerState;
             waitingWorkDic[work.ID] = work;
+            powerPool.SetWorkOwner(work.ID, this);
             waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
             Interlocked.Increment(ref waitingWorkCount);
             originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
