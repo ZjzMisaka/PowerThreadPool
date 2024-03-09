@@ -865,18 +865,15 @@ namespace PowerThreadPool
             Worker worker = null;
             while (idleWorkerQueue.TryDequeue(out string firstWorkerID))
             {
-                Interlocked.Decrement(ref idleWorkerCount);
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    if (Interlocked.CompareExchange(ref worker.gettedLock, 1, 0) == 0)
+                    Interlocked.Decrement(ref idleWorkerCount);
+                    Interlocked.Exchange(ref worker.gettedLock, 1);
+                    if (longRunning)
                     {
-                        // If successful, we have incremented gettedLock without any interference
-                        if (longRunning)
-                        {
-                            Interlocked.Increment(ref longRunningWorkerCount);
-                        }
-                        return worker;
+                        Interlocked.Increment(ref longRunningWorkerCount);
                     }
+                    return worker;
                 }
             }
 
