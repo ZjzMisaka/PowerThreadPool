@@ -69,8 +69,11 @@ namespace PowerThreadPool
 
         private System.Timers.Timer poolTimer;
 
-        private bool poolRunning = false;
-        public bool PoolRunning { get => poolRunning; }
+        /// <summary>
+        /// 0: Not running 1: Idle checked 2: Running
+        /// </summary>
+        private int poolRunning = 0;
+        public bool PoolRunning { get => poolRunning != 0; }
 
         private bool poolStopping = false;
         public bool PoolStopping { get => poolStopping; }
@@ -934,10 +937,8 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckPoolStart()
         {
-            if (!PoolRunning)
+            if (Interlocked.CompareExchange(ref poolRunning, 2, 0) == 0)
             {
-                poolRunning = true;
-
                 if (PoolStart != null)
                 {
                     PoolStart.Invoke(this, new EventArgs());
@@ -975,7 +976,7 @@ namespace PowerThreadPool
 
             InitWorkerQueue();
 
-            if (runningWorkerCount == 0 && waitingWorkCount == 0 && poolRunning)
+            if (runningWorkerCount == 0 && waitingWorkCount == 0 && Interlocked.CompareExchange(ref poolRunning, 1, 2) == 2)
             {
                 if (PoolIdle != null)
                 {
@@ -1008,7 +1009,7 @@ namespace PowerThreadPool
             cancellationTokenSource = new CancellationTokenSource();
             waitAllSignal.Set();
 
-            poolRunning = false;
+            Interlocked.Exchange(ref poolRunning, 0);
             if (poolStopping)
             {
                 poolStopping = false;
@@ -1153,7 +1154,7 @@ namespace PowerThreadPool
         /// </summary>
         public void Wait()
         {
-            if (!PoolRunning)
+            if (poolRunning != 2)
             {
                 return;
             }
@@ -1253,7 +1254,7 @@ namespace PowerThreadPool
         /// <returns>Return false if no thread running</returns>
         public bool Stop(bool forceStop = false)
         {
-            if (!poolRunning)
+            if (poolRunning != 2)
             {
                 return false;
             }
@@ -1262,7 +1263,7 @@ namespace PowerThreadPool
 
             if (forceStop)
             {
-                while (poolRunning)
+                while (poolRunning == 2)
                 {
                     settedWorkDic.Clear();
                     IEnumerable<Worker> workersToStop = aliveWorkerList;
