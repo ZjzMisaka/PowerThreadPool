@@ -211,6 +211,83 @@ namespace PowerThreadPool
             }
         }
 
+        public void WaitForResume()
+        {
+            work.PauseSignal.WaitOne();
+        }
+
+        public bool Pause(string workID)
+        {
+            bool res = false;
+
+            WorkBase workerToPause;
+            if (!waitingWorkDic.TryGetValue(workID, out workerToPause))
+            {
+                if (workID == WorkID)
+                {
+                    workerToPause = work;
+                }
+            }
+
+            if (workerToPause != null)
+            {
+                if (workerToPause.PauseSignal == null)
+                {
+                    workerToPause.PauseSignal = new ManualResetEvent(true);
+                }
+
+                workerToPause.IsPausing = true;
+                workerToPause.PauseSignal.Reset();
+                res = true;
+            }
+
+            return res;
+        }
+
+        public bool Resume(string workID)
+        {
+            bool res = false;
+
+            WorkBase workerToResume;
+            if (!waitingWorkDic.TryGetValue(workID, out workerToResume))
+            {
+                if (workID == WorkID)
+                {
+                    workerToResume = work;
+                }
+            }
+
+            if (workerToResume != null)
+            {
+                workerToResume.IsPausing = false;
+                workerToResume.PauseSignal.Set();
+                res = true;
+            }
+
+            return res;
+        }
+
+        public bool Resume()
+        {
+            bool res = false;
+
+            foreach (WorkBase workerToResume in waitingWorkDic.Values)
+            {
+                if (workerToResume.IsPausing)
+                {
+                    workerToResume.IsPausing = false;
+                    workerToResume.PauseSignal.Set();
+                }
+            }
+            if (work.IsPausing)
+            {
+                work.IsPausing = false;
+                work.PauseSignal.Set();
+            }
+
+            return res;
+        }
+
         public bool Stop(string workID, bool forceStop)
         {
             bool res = false;
@@ -519,6 +596,11 @@ namespace PowerThreadPool
         internal bool IsCancellationRequested()
         {
             return work.ShouldStop;
+        }
+
+        internal bool IsPausing()
+        {
+            return work.IsPausing;
         }
     }
 }

@@ -18,8 +18,6 @@ namespace PowerThreadPool
 
         private ManualResetEvent waitAllSignal = new ManualResetEvent(false);
         private ManualResetEvent pauseSignal = new ManualResetEvent(true);
-        private ConcurrentDictionary<string, bool> pauseStatusDic = new ConcurrentDictionary<string, bool>();
-        private ConcurrentDictionary<string, ManualResetEvent> pauseSignalDic = new ConcurrentDictionary<string, ManualResetEvent>();
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 
         internal ConcurrentSet<string> failedWorkSet = new ConcurrentSet<string>();
@@ -696,7 +694,6 @@ namespace PowerThreadPool
             }
 
             Work<TResult> work = new Work<TResult>(this, workID, function, param, workOption);
-            pauseSignalDic[workID] = new ManualResetEvent(true);
 
             Interlocked.Increment(ref waitingWorkCount);
 
@@ -799,9 +796,6 @@ namespace PowerThreadPool
             }
 
             settedWorkDic.TryRemove(guid, out _);
-
-            pauseStatusDic.TryRemove(guid, out _);
-            pauseSignalDic.TryRemove(guid, out _);
         }
 
         /// <summary>
@@ -1044,26 +1038,15 @@ namespace PowerThreadPool
         public void PauseIfRequested()
         {
             pauseSignal.WaitOne();
-            ICollection<string> workIDs = pauseSignalDic.Keys;
-            foreach (string id in workIDs)
+
+
+            foreach (Worker worker in aliveWorkerList)
             {
-                if (settedWorkDic.TryGetValue(id, out Worker worker))
+                if (worker.workerState == 1 && worker.thread == Thread.CurrentThread && worker.IsPausing())
                 {
-                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
-                    {
-                        if (pauseStatusDic.TryGetValue(id, out bool status))
-                        {
-                            if (status)
-                            {
-                                if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
-                                {
-                                    worker.PauseTimer();
-                                    manualResetEvent.WaitOne();
-                                    worker.ResumeTimer();
-                                }
-                            }
-                        }
-                    }
+                    worker.PauseTimer();
+                    worker.WaitForResume();
+                    worker.ResumeTimer();
                 }
             }
         }
@@ -1099,10 +1082,9 @@ namespace PowerThreadPool
                 return true;
             }
 
-            foreach (KeyValuePair<string, Worker> pair in aliveWorkerDic)
+            foreach (Worker worker in aliveWorkerList)
             {
-                Worker worker = pair.Value;
-                if (worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
+                if (worker.workerState == 1 && worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
                 {
                     return true;
                 }
@@ -1122,10 +1104,9 @@ namespace PowerThreadPool
                 return "";
             }
 
-            foreach (KeyValuePair<string, Worker> pair in aliveWorkerDic)
+            foreach (Worker worker in aliveWorkerList)
             {
-                Worker worker = pair.Value;
-                if (worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
+                if (worker.workerState == 1 && worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
                 {
                     return worker.WorkID;
                 }
@@ -1390,16 +1371,11 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
+            if (settedWorkDic.TryGetValue(id, out Worker workerToPause))
             {
-                manualResetEvent.Reset();
-                pauseStatusDic[id] = true;
-                return true;
+                return workerToPause.Pause(id);
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         /// <summary>
@@ -1435,9 +1411,12 @@ namespace PowerThreadPool
             pauseSignal.Set();
             if (resumeWorkPausedByID)
             {
-                foreach (ManualResetEvent manualResetEvent in pauseSignalDic.Values)
+                foreach (Worker worker in aliveWorkerList)
                 {
-                    manualResetEvent.Set();
+                    if (worker.workerState == 1)
+                    {
+                        worker.Resume();
+                    }
                 }
             }
         }
@@ -1453,15 +1432,11 @@ namespace PowerThreadPool
             {
                 return false;
             }
-
-            bool res = false;
-            if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
+            if (settedWorkDic.TryGetValue(id, out Worker workerToPause))
             {
-                pauseStatusDic[id] = false;
-                manualResetEvent.Set();
-                res =  true;
+                return workerToPause.Resume(id);
             }
-            return res;
+            return false;
         }
 
         /// <summary>
