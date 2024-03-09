@@ -32,7 +32,6 @@ namespace PowerThreadPool
         private System.Timers.Timer killTimer;
 
         private AutoResetEvent runSignal = new AutoResetEvent(false);
-        private ConcurrentDictionary<string, AutoResetEvent> waitSignalDic = new ConcurrentDictionary<string, AutoResetEvent>();
         private string workID;
         internal string WorkID { get => workID; set => workID = value; }
         private WorkBase work;
@@ -94,9 +93,9 @@ namespace PowerThreadPool
 
                         powerPool.WorkCallbackEnd(workID, executeResult.Status);
 
-                        if (waitSignalDic.TryRemove(workID, out AutoResetEvent waitSignal))
+                        if (work.WaitSignal != null)
                         {
-                            waitSignal.Set();
+                            work.WaitSignal.Set();
                         }
 
                         if (work.LongRunning)
@@ -157,9 +156,9 @@ namespace PowerThreadPool
                         hasWaitingWork = true;
                     }
 
-                    if (waitSignalDic.TryRemove(workID, out AutoResetEvent waitSignal))
+                    if (work.WaitSignal != null)
                     {
-                        waitSignal.Set();
+                        work.WaitSignal.Set();
                     }
 
                     if (!hasWaitingWork)
@@ -176,12 +175,29 @@ namespace PowerThreadPool
         public bool Wait(string workID)
         {
             bool res = false;
-            if (waitingWorkDic.ContainsKey(workID) || workID == this.workID)
+            if (waitingWorkDic.TryGetValue(workID, out WorkBase needWaitWork))
             {
-                AutoResetEvent autoResetEvent = waitSignalDic.GetOrAdd(workID, _ => new AutoResetEvent(false));
-                autoResetEvent.WaitOne();
+                if (needWaitWork.WaitSignal == null)
+                {
+                    needWaitWork.WaitSignal = new AutoResetEvent(false);
+                }
+                needWaitWork.WaitSignal.WaitOne();
                 res = true;
             }
+            else
+            {
+                needWaitWork = work;
+                if (workID == needWaitWork.ID)
+                {
+                    if (needWaitWork.WaitSignal == null)
+                    {
+                        needWaitWork.WaitSignal = new AutoResetEvent(false);
+                    }
+                    needWaitWork.WaitSignal.WaitOne();
+                    res = true;
+                }
+            }
+
             return res;
         }
 

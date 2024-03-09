@@ -9,6 +9,8 @@ namespace PowerThreadPool
     {
         private string id;
         public string ID { get => id; set => id = value; }
+        private AutoResetEvent waitSignal;
+        public AutoResetEvent WaitSignal { get => waitSignal; set => waitSignal = value; }
         public abstract object Execute();
         public abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);

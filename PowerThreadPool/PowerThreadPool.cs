@@ -1151,7 +1151,7 @@ namespace PowerThreadPool
         /// </summary>
         public void Wait()
         {
-            if (poolRunning != 2)
+            if (poolRunning == 0)
             {
                 return;
             }
@@ -1251,7 +1251,7 @@ namespace PowerThreadPool
         /// <returns>Return false if no thread running</returns>
         public bool Stop(bool forceStop = false)
         {
-            if (poolRunning != 2)
+            if (poolRunning == 0)
             {
                 return false;
             }
@@ -1280,7 +1280,7 @@ namespace PowerThreadPool
                 }
             }
 
-            waitAllSignal.WaitOne();
+            Wait();
 
             return true;
         }
