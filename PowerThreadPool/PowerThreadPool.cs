@@ -977,12 +977,6 @@ namespace PowerThreadPool
 
             if (runningWorkerCount == 0 && waitingWorkCount == 0 && poolRunning)
             {
-                poolRunning = false;
-                if (poolStopping)
-                {
-                    poolStopping = false;
-                }
-
                 if (PoolIdle != null)
                 {
                     try
@@ -1013,6 +1007,12 @@ namespace PowerThreadPool
 
             cancellationTokenSource = new CancellationTokenSource();
             waitAllSignal.Set();
+
+            poolRunning = false;
+            if (poolStopping)
+            {
+                poolStopping = false;
+            }
         }
 
         /// <summary>
