@@ -211,18 +211,39 @@ namespace PowerThreadPool
             }
         }
 
-        public void ForceStop(string workID)
+        public bool Stop(string workID, bool forceStop)
         {
-            if (waitingWorkDic.TryRemove(workID, out _))
+            bool res = false;
+            if (forceStop)
             {
-                Interlocked.Decrement(ref waitingWorkCount);
-                Interlocked.Decrement(ref powerPool.waitingWorkCount);
+                if (waitingWorkDic.TryRemove(workID, out _))
+                {
+                    Interlocked.Decrement(ref waitingWorkCount);
+                    Interlocked.Decrement(ref powerPool.waitingWorkCount);
+                }
+                else
+                {
+                    thread.Interrupt();
+                    thread.Join();
+                }
+                res = true;
             }
             else
             {
-                thread.Interrupt();
-                thread.Join();
+                if (!Cancel(workID))
+                {
+                    if (workID == WorkID)
+                    {
+                        work.ShouldStop = true;
+                        res = true;
+                    }
+                }
+                else
+                {
+                    res = true;
+                }
             }
+            return res;
         }
 
         internal void SetWork(WorkBase work, bool stolenWork)
@@ -493,6 +514,11 @@ namespace PowerThreadPool
                 return true;
             }
             return false;
+        }
+
+        internal bool IsCancellationRequested()
+        {
+            return work.ShouldStop;
         }
     }
 }

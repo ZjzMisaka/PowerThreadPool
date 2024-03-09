@@ -11,6 +11,8 @@ namespace PowerThreadPool
         public string ID { get => id; set => id = value; }
         private AutoResetEvent waitSignal;
         public AutoResetEvent WaitSignal { get => waitSignal; set => waitSignal = value; }
+        private bool shouldStop;
+        public bool ShouldStop { get => shouldStop; set => shouldStop = value; }
         public abstract object Execute();
         public abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
@@ -37,6 +39,7 @@ namespace PowerThreadPool
             this.function = function;
             this.param = param;
             this.workOption = option;
+            this.ShouldStop = false;
 
             if (this.workOption != null && this.workOption.Dependents != null && this.workOption.Dependents.Count != 0)
             {

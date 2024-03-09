@@ -21,7 +21,6 @@ namespace PowerThreadPool
         private ConcurrentDictionary<string, bool> pauseStatusDic = new ConcurrentDictionary<string, bool>();
         private ConcurrentDictionary<string, ManualResetEvent> pauseSignalDic = new ConcurrentDictionary<string, ManualResetEvent>();
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
         internal ConcurrentSet<string> failedWorkSet = new ConcurrentSet<string>();
 
@@ -698,8 +697,6 @@ namespace PowerThreadPool
 
             Work<TResult> work = new Work<TResult>(this, workID, function, param, workOption);
             pauseSignalDic[workID] = new ManualResetEvent(true);
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSourceDic[workID] = cancellationTokenSource;
 
             Interlocked.Increment(ref waitingWorkCount);
 
@@ -805,7 +802,6 @@ namespace PowerThreadPool
 
             pauseStatusDic.TryRemove(guid, out _);
             pauseSignalDic.TryRemove(guid, out _);
-            cancellationTokenSourceDic.TryRemove(guid, out _);
         }
 
         /// <summary>
@@ -1102,22 +1098,16 @@ namespace PowerThreadPool
             {
                 return true;
             }
-            foreach (KeyValuePair<string, CancellationTokenSource> pair in cancellationTokenSourceDic)
-            {
-                string id = pair.Key;
-                CancellationTokenSource cts = pair.Value;
 
-                if (settedWorkDic.TryGetValue(id, out Worker worker))
+            foreach (KeyValuePair<string, Worker> pair in aliveWorkerDic)
+            {
+                Worker worker = pair.Value;
+                if (worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
                 {
-                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
-                    {
-                        if (cts.Token.IsCancellationRequested)
-                        {
-                            return true;
-                        }
-                    }
+                    return true;
                 }
             }
+
             return false;
         }
 
@@ -1131,22 +1121,16 @@ namespace PowerThreadPool
             {
                 return "";
             }
-            foreach (KeyValuePair<string, CancellationTokenSource> pair in cancellationTokenSourceDic)
-            {
-                string id = pair.Key;
-                CancellationTokenSource cts = pair.Value;
 
-                if (settedWorkDic.TryGetValue(id, out Worker worker))
+            foreach (KeyValuePair<string, Worker> pair in aliveWorkerDic)
+            {
+                Worker worker = pair.Value;
+                if (worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
                 {
-                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
-                    {
-                        if (cts.Token.IsCancellationRequested)
-                        {
-                            return id;
-                        }
-                    }
+                    return worker.WorkID;
                 }
             }
+
             return null;
         }
 
@@ -1305,26 +1289,7 @@ namespace PowerThreadPool
             bool res = false;
             if (settedWorkDic.TryGetValue(id, out Worker workerToStop))
             {
-                if (forceStop)
-                {
-                    res = true;
-                    workerToStop.ForceStop(id);
-                }
-                else
-                {
-                    if (!workerToStop.Cancel(id))
-                    {
-                        if (cancellationTokenSourceDic.TryGetValue(id, out CancellationTokenSource cancellationTokenSource))
-                        {
-                            res = true;
-                            cancellationTokenSource.Cancel();
-                        }
-                    }
-                    else
-                    {
-                        res = true;
-                    }
-                }
+                res = workerToStop.Stop(id, forceStop);
             }
 
             return res;
