@@ -31,7 +31,7 @@ namespace PowerThreadPool
         private System.Timers.Timer timeoutTimer;
         private System.Timers.Timer killTimer;
 
-        private AutoResetEvent runSignal = new AutoResetEvent(false);
+        private ManualResetEventSlim runSignal = new ManualResetEventSlim(false);
         private string workID;
         internal string WorkID { get => workID; set => workID = value; }
         private WorkBase work;
@@ -62,7 +62,7 @@ namespace PowerThreadPool
                 {
                     while (true)
                     {
-                        runSignal.WaitOne();
+                        runSignal.Wait();
 
                         if (killFlag)
                         {
@@ -441,6 +441,7 @@ namespace PowerThreadPool
                     if (waitingWorkID == null || work == null)
                     {
                         Interlocked.Exchange(ref workerState, 0);
+                        runSignal.Reset();
 
                         Interlocked.CompareExchange(ref gettedLock, 0, 374);
 
@@ -556,7 +557,6 @@ namespace PowerThreadPool
         internal void Kill()
         {
             killFlag = true;
-            runSignal.Set();
         }
 
         internal void PauseTimer()
