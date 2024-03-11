@@ -26,11 +26,11 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, Worker> idleWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentQueue<string> idleWorkerQueue = new ConcurrentQueue<string>();
 
-        private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
+        internal ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal IEnumerable<Worker> aliveWorkerList = new List<Worker>();
 
-        private Dictionary<WorkBase, ConcurrentSet<string>> suspendedWork = new Dictionary<WorkBase, ConcurrentSet<string>>();
+        internal Dictionary<string, KeyValuePair<WorkBase, ConcurrentSet<string>>> suspendedWork = new Dictionary<string, KeyValuePair<WorkBase, ConcurrentSet<string>>>();
         private bool suspended;
 
         private int createWorkerLock = WorkerCreationFlags.Unlocked;
@@ -697,7 +697,7 @@ namespace PowerThreadPool
 
             if (powerPoolOption.StartSuspended)
             {
-                suspendedWork[work] = workOption.Dependents;
+                suspendedWork[workID] = new KeyValuePair<WorkBase, ConcurrentSet<string>>(work, workOption.Dependents);
             }
             else
             {
@@ -722,10 +722,10 @@ namespace PowerThreadPool
             }
 
             suspended = false;
-            foreach (KeyValuePair<WorkBase, ConcurrentSet<string>> kv in suspendedWork)
+            foreach (KeyValuePair<string, KeyValuePair<WorkBase, ConcurrentSet<string>>> kv in suspendedWork)
             {
-                WorkBase work = kv.Key;
-                ConcurrentSet<string> dependents = kv.Value;
+                WorkBase work = kv.Value.Key;
+                ConcurrentSet<string> dependents = kv.Value.Value;
                 if (dependents == null || dependents.Count == 0)
                 {
                     CheckPoolStart();

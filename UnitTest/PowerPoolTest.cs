@@ -388,8 +388,9 @@ namespace UnitTest
             powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 1,
-                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 },
             };
+            powerPool.EnablePoolIdleCheck = false;
 
             powerPool.WorkEnd += (s, e) =>
             {
@@ -398,12 +399,18 @@ namespace UnitTest
 
             string id0 = powerPool.QueueWorkItem(() =>
             {
-                throw new Exception();
             });
 
             string id1 = powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(4000);
+                throw new Exception();
+            });
+
+            Thread.Sleep(2000);
+
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
             });
 
             Thread.Sleep(100);
@@ -413,14 +420,61 @@ namespace UnitTest
             },
            new WorkOption()
            {
-               Dependents = new ConcurrentSet<string>() { id0, id1 }
+               Dependents = new ConcurrentSet<string>() { id0, id1, id2 }
            });
+
+            powerPool.EnablePoolIdleCheck = true;
 
             powerPool.Wait();
 
-            Assert.Equal(2, doneCount);
+            Assert.Equal(3, doneCount);
             Assert.Equal(1, powerPool.FailedWorkCount);
-            Assert.Equal(id0, powerPool.FailedWorkList.First());
+            Assert.Equal(id1, powerPool.FailedWorkList.First());
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestDependentsAllSucceedBeforeWorkRun()
+        {
+            int doneCount = 0;
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 },
+            };
+            powerPool.EnablePoolIdleCheck = false;
+
+            powerPool.WorkEnd += (s, e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            };
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+            });
+
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+            });
+
+            Thread.Sleep(2000);
+
+            powerPool.QueueWorkItem(() =>
+            {
+            },
+           new WorkOption()
+           {
+               Dependents = new ConcurrentSet<string>() { id0, id1 }
+           });
+
+            powerPool.EnablePoolIdleCheck = true;
+
+            powerPool.Wait();
+
+            Assert.Equal(3, doneCount);
+            Assert.Equal(0, powerPool.FailedWorkCount);
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
 

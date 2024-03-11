@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using static PowerThreadPool.PowerPool;
 
 namespace PowerThreadPool
 {
@@ -31,6 +32,7 @@ namespace PowerThreadPool
         private object[] param;
         private WorkOption<TResult> workOption;
         private bool succeed = true;
+        private CallbackEndEventHandler callbackEndHandler;
 
         internal override int WorkPriority { get => workOption.WorkPriority; }
         internal override ThreadPriority ThreadPriority { get => workOption.ThreadPriority; }
@@ -46,33 +48,61 @@ namespace PowerThreadPool
             this.ShouldStop = false;
             this.IsPausing = false;
 
-            if (this.workOption != null && this.workOption.Dependents != null && this.workOption.Dependents.Count != 0)
+            this.callbackEndHandler = (workId) =>
             {
-                powerPool.CallbackEnd += (workId) =>
+                if (!this.succeed)
                 {
-                    if (!this.succeed)
+                    return;
+                }
+
+                foreach (string dependedId in this.workOption.Dependents)
+                {
+                    if (powerPool.failedWorkSet.Contains(dependedId))
                     {
+                        this.succeed = false;
+                        Interlocked.Decrement(ref powerPool.waitingWorkCount);
+                        powerPool.CheckPoolIdle();
+                        powerPool.CallbackEnd -= callbackEndHandler;
                         return;
                     }
+                }
 
-                    foreach (string dependedId in this.workOption.Dependents)
+                if (this.workOption.Dependents.Remove(workId))
+                {
+                    if (this.workOption.Dependents.Count == 0)
+                    {
+                        powerPool.CallbackEnd -= callbackEndHandler;
+                        powerPool.SetWork(this);
+                    }
+                }
+            };
+
+            if (this.workOption != null && this.workOption.Dependents != null && this.workOption.Dependents.Count != 0)
+            {
+                powerPool.CallbackEnd += callbackEndHandler;
+
+                foreach (string dependedId in this.workOption.Dependents)
+                {
+                    if (!powerPool.settedWorkDic.ContainsKey(dependedId) && !powerPool.suspendedWork.ContainsKey(dependedId))
                     {
                         if (powerPool.failedWorkSet.Contains(dependedId))
                         {
                             this.succeed = false;
                             Interlocked.Decrement(ref powerPool.waitingWorkCount);
+                            powerPool.CheckPoolIdle();
+                            powerPool.CallbackEnd -= callbackEndHandler;
                             return;
                         }
-                    }
-
-                    if (this.workOption.Dependents.Remove(workId))
-                    {
-                        if (this.workOption.Dependents.Count == 0)
+                        else if (this.workOption.Dependents.Remove(dependedId))
                         {
-                            powerPool.SetWork(this);
+                            if (this.workOption.Dependents.Count == 0)
+                            {
+                                powerPool.CallbackEnd -= callbackEndHandler;
+                                // No need to call powerPool.SetWork here
+                            }
                         }
                     }
-                };
+                }
             }
         }
 
