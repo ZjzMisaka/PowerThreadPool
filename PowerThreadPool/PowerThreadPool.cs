@@ -71,7 +71,7 @@ namespace PowerThreadPool
         /// 0: Not running 1: Idle checked 2: Running
         /// </summary>
         private int poolRunning = 0;
-        public bool PoolRunning { get => poolRunning != 0; }
+        public bool PoolRunning { get => poolRunning == 2; }
 
         private bool poolStopping = false;
         public bool PoolStopping { get => poolStopping; }
@@ -994,11 +994,9 @@ namespace PowerThreadPool
             suspended = powerPoolOption.StartSuspended;
 
             cancellationTokenSource = new CancellationTokenSource();
-            
-            Interlocked.Exchange(ref poolRunning, 0);
-
             waitAllSignal.Set();
 
+            Interlocked.Exchange(ref poolRunning, 0);
             if (poolStopping)
             {
                 poolStopping = false;
