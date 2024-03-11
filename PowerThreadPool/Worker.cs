@@ -6,6 +6,7 @@ using PowerThreadPool.Collections;
 using PowerThreadPool.EventArguments;
 using System.Linq;
 using System.Collections.Generic;
+using PowerThreadPool.Constants;
 
 namespace PowerThreadPool
 {
@@ -16,14 +17,8 @@ namespace PowerThreadPool
         private string id;
         internal string ID { get => id; set => id = value; }
 
-        /// <summary>
-        /// 0: Idle, 1: Running, 2: ToBeDisposed
-        /// </summary>
-        internal int workerState = 0;
-        /// <summary>
-        /// 0: Waiting for lock, 1: Locked, 2: Disabled
-        /// </summary>
-        internal int gettedLock = 0;
+        internal int workerState = WorkerStates.Idle;
+        internal int gettedLock = WorkerGettedFlags.Unlocked;
 
         private PriorityQueue<string> waitingWorkIDQueue = new PriorityQueue<string>();
         private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
@@ -36,7 +31,7 @@ namespace PowerThreadPool
         internal string WorkID { get => workID; set => workID = value; }
         private WorkBase work;
         private bool killFlag = false;
-        private int stealingLock = 0;
+        private int stealingLock = WorkerStealingFlags.Unlocked;
 
         private PowerPool powerPool;
 
@@ -109,8 +104,8 @@ namespace PowerThreadPool
                 }
                 catch (ThreadInterruptedException ex)
                 {
-                    Interlocked.Exchange(ref gettedLock, -100);
-                    int origWorkState = Interlocked.Exchange(ref workerState, 2);
+                    Interlocked.Exchange(ref gettedLock, WorkerGettedFlags.Disabled);
+                    int origWorkState = Interlocked.Exchange(ref workerState, WorkerStates.ToBeDisposed);
 
                     if (work.LongRunning)
                     {
@@ -118,7 +113,7 @@ namespace PowerThreadPool
                         this.LongRunning = false;
                     }
 
-                    if (origWorkState == 1)
+                    if (origWorkState == WorkerStates.Running)
                     {
                         Interlocked.Decrement(ref powerPool.runningWorkerCount);
                     }
@@ -203,7 +198,7 @@ namespace PowerThreadPool
 
         public void ForceStop()
         {
-            if (workerState == 1)
+            if (workerState == WorkerStates.Running)
             {
                 Cancel();
                 thread.Interrupt();
@@ -330,14 +325,14 @@ namespace PowerThreadPool
             powerPool.SetWorkOwner(work.ID, this);
             waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
             Interlocked.Increment(ref waitingWorkCount);
-            originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
+            originalWorkerState = Interlocked.CompareExchange(ref workerState, WorkerStates.Running, WorkerStates.Idle);
 
             if (!stolenWork)
             {
-                Interlocked.Exchange(ref gettedLock, 0);
+                Interlocked.Exchange(ref gettedLock, WorkerGettedFlags.Unlocked);
             }
 
-            if (originalWorkerState == 0)
+            if (originalWorkerState == WorkerStates.Idle)
             {
                 Interlocked.Increment(ref powerPool.runningWorkerCount);
                 AssignWork();
@@ -383,7 +378,7 @@ namespace PowerThreadPool
                     int max = 0;
                     foreach (Worker runningWorker in powerPool.aliveWorkerList)
                     {
-                        if (runningWorker.workerState != 1)
+                        if (runningWorker.workerState != WorkerStates.Running)
                         {
                             continue;
                         }
@@ -391,13 +386,13 @@ namespace PowerThreadPool
                         int waitingWorkCountTemp = runningWorker.WaitingWorkCount;
                         if (waitingWorkCountTemp > max)
                         {
-                            if (Interlocked.CompareExchange(ref runningWorker.stealingLock, 1, 0) == 1)
+                            if (Interlocked.CompareExchange(ref runningWorker.stealingLock, WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked) == WorkerStealingFlags.Locked)
                             {
                                 continue;
                             }
                             if (worker != null)
                             {
-                                Interlocked.Exchange(ref worker.stealingLock, 0);
+                                Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
                             }
                             max = waitingWorkCountTemp;
                             worker = runningWorker;
@@ -416,7 +411,7 @@ namespace PowerThreadPool
                             }
                         }
 
-                        Interlocked.Exchange(ref worker.stealingLock, 0);
+                        Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
                     }
                 }
 
@@ -424,8 +419,8 @@ namespace PowerThreadPool
                 {
                     SpinWait.SpinUntil(() =>
                     {
-                        int gettedLockOrig = Interlocked.CompareExchange(ref gettedLock, 374, 0);
-                        return (gettedLockOrig == 0);
+                        int gettedLockOrig = Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.ToBeDisabled, WorkerGettedFlags.Unlocked);
+                        return (gettedLockOrig == WorkerGettedFlags.Unlocked);
                     });
 
                     waitingWorkID = waitingWorkIDQueue.Dequeue();
@@ -440,10 +435,10 @@ namespace PowerThreadPool
 
                     if (waitingWorkID == null || work == null)
                     {
-                        Interlocked.Exchange(ref workerState, 0);
+                        Interlocked.Exchange(ref workerState, WorkerStates.Idle);
                         runSignal.Reset();
 
-                        Interlocked.CompareExchange(ref gettedLock, 0, 374);
+                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
 
                         Interlocked.Decrement(ref powerPool.runningWorkerCount);
                         PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
@@ -466,11 +461,11 @@ namespace PowerThreadPool
                                     {
                                         SpinWait.SpinUntil(() =>
                                         {
-                                            int gettedStatus = Interlocked.CompareExchange(ref gettedLock, -100, 0);
-                                            return (gettedStatus == 0 || gettedStatus == -100);
+                                            int gettedStatus = Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Disabled, WorkerGettedFlags.Unlocked);
+                                            return (gettedStatus == WorkerGettedFlags.Unlocked || gettedStatus == WorkerGettedFlags.Disabled);
                                         });
-                                        int originalState = Interlocked.CompareExchange(ref workerState, 2, 0);
-                                        if (originalState == 0)
+                                        int originalState = Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle);
+                                        if (originalState == WorkerStates.Idle)
                                         {
                                             if (powerPool.idleWorkerDic.TryRemove(ID, out _))
                                             {
@@ -485,7 +480,7 @@ namespace PowerThreadPool
                                         }
                                         else
                                         {
-                                            Interlocked.Exchange(ref gettedLock, 0);
+                                            Interlocked.Exchange(ref gettedLock, WorkerGettedFlags.Unlocked);
                                         }
                                     }
                                     killTimer.Enabled = false;
@@ -502,7 +497,7 @@ namespace PowerThreadPool
                     }
                     else
                     {
-                        Interlocked.CompareExchange(ref gettedLock, 0, 374);
+                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
                     }
                 }
 

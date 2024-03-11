@@ -1,4 +1,5 @@
 ﻿using PowerThreadPool.Collections;
+using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
 using PowerThreadPool.Helper;
 using PowerThreadPool.Option;
@@ -32,7 +33,7 @@ namespace PowerThreadPool
         private Dictionary<WorkBase, ConcurrentSet<string>> suspendedWork = new Dictionary<WorkBase, ConcurrentSet<string>>();
         private bool suspended;
 
-        private int createWorkerLock = 0;
+        private int createWorkerLock = WorkerCreationFlags.Unlocked;
 
         private PowerPoolOption powerPoolOption;
         public PowerPoolOption PowerPoolOption 
@@ -120,7 +121,7 @@ namespace PowerThreadPool
                 List<string> list = settedWorkDic.Keys.ToList();
                 foreach (Worker worker in aliveWorkerList) 
                 {
-                    if (worker.workerState == 1)
+                    if (worker.workerState == WorkerStates.Running)
                     {
                         list.Remove(worker.WorkID);
                     }
@@ -857,7 +858,7 @@ namespace PowerThreadPool
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
                     Interlocked.Decrement(ref idleWorkerCount);
-                    Interlocked.Exchange(ref worker.gettedLock, 1);
+                    Interlocked.Exchange(ref worker.gettedLock, WorkerGettedFlags.Locked);
                     if (longRunning)
                     {
                         Interlocked.Increment(ref longRunningWorkerCount);
@@ -868,12 +869,12 @@ namespace PowerThreadPool
 
             if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
             {
-                if (Interlocked.CompareExchange(ref createWorkerLock, 1, 0) == 0)
+                if (Interlocked.CompareExchange(ref createWorkerLock, WorkerCreationFlags.Locked, WorkerCreationFlags.Unlocked) == WorkerCreationFlags.Unlocked)
                 {
                     if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
                     {
                         worker = new Worker(this);
-                        Interlocked.Exchange(ref worker.gettedLock, 1);
+                        Interlocked.Exchange(ref worker.gettedLock, WorkerGettedFlags.Locked);
                         if (aliveWorkerDic.TryAdd(worker.ID, worker))
                         {
                             Interlocked.Increment(ref aliveWorkerCount);
@@ -885,7 +886,7 @@ namespace PowerThreadPool
                         }
                     }
 
-                    Interlocked.Exchange(ref createWorkerLock, 0);
+                    Interlocked.Exchange(ref createWorkerLock, WorkerCreationFlags.Unlocked);
                 }
             }
 
@@ -902,11 +903,11 @@ namespace PowerThreadPool
                     int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
                     if (waitingWorkCountTemp < min)
                     {
-                        if (Interlocked.CompareExchange(ref aliveWorker.gettedLock, 1, 0) == 0)
+                        if (Interlocked.CompareExchange(ref aliveWorker.gettedLock, WorkerGettedFlags.Locked, WorkerGettedFlags.Unlocked) == WorkerGettedFlags.Unlocked)
                         {
                             if (worker != null)
                             {
-                                Interlocked.CompareExchange(ref worker.gettedLock, 0, 1);
+                                Interlocked.CompareExchange(ref worker.gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.Locked);
                             }
                             min = waitingWorkCountTemp;
                             worker = aliveWorker;
@@ -1042,7 +1043,7 @@ namespace PowerThreadPool
 
             foreach (Worker worker in aliveWorkerList)
             {
-                if (worker.workerState == 1 && worker.thread == Thread.CurrentThread && worker.IsPausing())
+                if (worker.workerState == WorkerStates.Running && worker.thread == Thread.CurrentThread && worker.IsPausing())
                 {
                     worker.PauseTimer();
                     worker.WaitForResume();
@@ -1084,7 +1085,7 @@ namespace PowerThreadPool
 
             foreach (Worker worker in aliveWorkerList)
             {
-                if (worker.workerState == 1 && worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
+                if (worker.workerState == WorkerStates.Running && worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
                 {
                     return true;
                 }
@@ -1106,7 +1107,7 @@ namespace PowerThreadPool
 
             foreach (Worker worker in aliveWorkerList)
             {
-                if (worker.workerState == 1 && worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
+                if (worker.workerState == WorkerStates.Running && worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
                 {
                     return worker.WorkID;
                 }
@@ -1413,7 +1414,7 @@ namespace PowerThreadPool
             {
                 foreach (Worker worker in aliveWorkerList)
                 {
-                    if (worker.workerState == 1)
+                    if (worker.workerState == WorkerStates.Running)
                     {
                         worker.Resume();
                     }
