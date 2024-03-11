@@ -26,7 +26,7 @@ namespace PowerThreadPool
         private System.Timers.Timer timeoutTimer;
         private System.Timers.Timer killTimer;
 
-        private ManualResetEventSlim runSignal = new ManualResetEventSlim(false);
+        private ManualResetEvent runSignal = new ManualResetEvent(false);
         private string workID;
         internal string WorkID { get => workID; set => workID = value; }
         private WorkBase work;
@@ -57,7 +57,7 @@ namespace PowerThreadPool
                 {
                     while (true)
                     {
-                        runSignal.Wait();
+                        runSignal.WaitOne();
 
                         if (killFlag)
                         {
