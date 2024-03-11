@@ -1,4 +1,5 @@
 ﻿using PowerThreadPool.Option;
+using PowerThreadPool.Collections;
 using System;
 using System.Linq;
 using System.Threading;
@@ -25,6 +26,7 @@ namespace PowerThreadPool
         internal abstract int WorkPriority { get; }
         internal abstract TimeoutOption WorkTimeoutOption { get; }
         internal abstract bool LongRunning { get; }
+        internal abstract ConcurrentSet<string> Dependents { get; }
     }
     internal class Work<TResult> : WorkBase
     {
@@ -38,6 +40,7 @@ namespace PowerThreadPool
         internal override ThreadPriority ThreadPriority { get => workOption.ThreadPriority; }
         internal override TimeoutOption WorkTimeoutOption { get => workOption.Timeout; }
         internal override bool LongRunning { get => workOption.LongRunning; }
+        internal override ConcurrentSet<string> Dependents { get => workOption.Dependents; }
 
         public Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
         {

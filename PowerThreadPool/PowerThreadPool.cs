@@ -30,7 +30,7 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal IEnumerable<Worker> aliveWorkerList = new List<Worker>();
 
-        internal Dictionary<string, KeyValuePair<WorkBase, ConcurrentSet<string>>> suspendedWork = new Dictionary<string, KeyValuePair<WorkBase, ConcurrentSet<string>>>();
+        internal Dictionary<string, WorkBase> suspendedWork = new Dictionary<string, WorkBase>();
         private bool suspended;
 
         private int createWorkerLock = WorkerCreationFlags.Unlocked;
@@ -697,7 +697,7 @@ namespace PowerThreadPool
 
             if (powerPoolOption.StartSuspended)
             {
-                suspendedWork[workID] = new KeyValuePair<WorkBase, ConcurrentSet<string>>(work, workOption.Dependents);
+                suspendedWork[workID] = work;
             }
             else
             {
@@ -722,10 +722,10 @@ namespace PowerThreadPool
             }
 
             suspended = false;
-            foreach (KeyValuePair<string, KeyValuePair<WorkBase, ConcurrentSet<string>>> kv in suspendedWork)
+            foreach (KeyValuePair<string, WorkBase> kv in suspendedWork)
             {
-                WorkBase work = kv.Value.Key;
-                ConcurrentSet<string> dependents = kv.Value.Value;
+                WorkBase work = kv.Value;
+                ConcurrentSet<string> dependents = work.Dependents;
                 if (dependents == null || dependents.Count == 0)
                 {
                     CheckPoolStart();
