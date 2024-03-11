@@ -551,6 +551,7 @@ namespace PowerThreadPool
 
         internal void Kill()
         {
+            runSignal.Set();
             killFlag = true;
         }
 
