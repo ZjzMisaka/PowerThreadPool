@@ -852,9 +852,9 @@ namespace PowerThreadPool
             Worker worker = null;
             while (idleWorkerQueue.TryDequeue(out string firstWorkerID))
             {
+                Interlocked.Decrement(ref idleWorkerCount);
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    Interlocked.Decrement(ref idleWorkerCount);
                     Interlocked.Exchange(ref worker.gettedLock, WorkerGettedFlags.Locked);
                     if (longRunning)
                     {
