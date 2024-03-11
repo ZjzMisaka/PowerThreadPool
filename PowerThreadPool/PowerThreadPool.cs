@@ -994,9 +994,11 @@ namespace PowerThreadPool
             suspended = powerPoolOption.StartSuspended;
 
             cancellationTokenSource = new CancellationTokenSource();
+            
+            Interlocked.Exchange(ref poolRunning, 0);
+
             waitAllSignal.Set();
 
-            Interlocked.Exchange(ref poolRunning, 0);
             if (poolStopping)
             {
                 poolStopping = false;
