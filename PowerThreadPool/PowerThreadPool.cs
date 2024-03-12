@@ -1037,7 +1037,6 @@ namespace PowerThreadPool
         {
             pauseSignal.WaitOne();
 
-
             foreach (Worker worker in aliveWorkerList)
             {
                 if (worker.workerState == WorkerStates.Running && worker.thread == Thread.CurrentThread && worker.IsPausing())
