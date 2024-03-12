@@ -127,6 +127,9 @@ namespace UnitTest
                         });
                     }
                 }
+
+                Thread.Sleep(10);
+
                 if (runCount != powerPool.WaitingWorkCount)
                 {
                     Assert.Fail();

@@ -1124,6 +1124,8 @@ namespace UnitTest
 
             powerPool.Start();
 
+            Thread.Sleep(100);
+
             Assert.Equal(1, powerPool.RunningWorkerCount);
             Assert.True(powerPool.PoolRunning);
 
