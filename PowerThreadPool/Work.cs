@@ -53,19 +53,14 @@ namespace PowerThreadPool
 
             this.callbackEndHandler = (workId) =>
             {
-                if (!this.succeed)
-                {
-                    return;
-                }
-
                 foreach (string dependedId in this.workOption.Dependents)
                 {
                     if (powerPool.failedWorkSet.Contains(dependedId))
                     {
+                        powerPool.CallbackEnd -= callbackEndHandler;
                         this.succeed = false;
                         Interlocked.Decrement(ref powerPool.waitingWorkCount);
                         powerPool.CheckPoolIdle();
-                        powerPool.CallbackEnd -= callbackEndHandler;
                         return;
                     }
                 }
@@ -90,10 +85,10 @@ namespace PowerThreadPool
                     {
                         if (powerPool.failedWorkSet.Contains(dependedId))
                         {
+                            powerPool.CallbackEnd -= callbackEndHandler;
                             this.succeed = false;
                             Interlocked.Decrement(ref powerPool.waitingWorkCount);
                             powerPool.CheckPoolIdle();
-                            powerPool.CallbackEnd -= callbackEndHandler;
                             return;
                         }
                         else if (this.workOption.Dependents.Remove(dependedId))

@@ -239,6 +239,60 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestPauseByIDAndResumeAllWhenItStealWaiting()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 1 });
+            List<string> logList = new List<string>();
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.PauseIfRequested();
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                logList.Add("Work0 END");
+            });
+            Thread.Sleep(100);
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.PauseIfRequested();
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                logList.Add("Work1 END");
+            });
+            Thread.Sleep(100);
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.PauseIfRequested();
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                logList.Add("Work2 END");
+            });
+            Thread.Sleep(50);
+            bool pauseRes = powerPool.Pause(id);
+            Assert.True(pauseRes);
+            Thread.Sleep(500);
+            powerPool.Resume(true);
+            powerPool.Wait();
+
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("Work0 END", item),
+                item => Assert.Equal("Work1 END", item),
+                item => Assert.Equal("Work2 END", item)
+            );
+        }
+
+        [Fact]
         public void TestForceStop()
         {
             PowerPool powerPool = new PowerPool();

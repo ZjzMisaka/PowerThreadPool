@@ -1425,15 +1425,16 @@ namespace PowerThreadPool
         /// <returns>If the work id exists</returns>
         public bool Resume(string id)
         {
+            bool res = false;
             if (string.IsNullOrEmpty(id))
             {
-                return false;
+                res = false;
             }
-            if (settedWorkDic.TryGetValue(id, out Worker workerToPause))
+            else if (settedWorkDic.TryGetValue(id, out Worker workerToPause))
             {
-                return workerToPause.Resume(id);
+                res = workerToPause.Resume(id);
             }
-            return false;
+            return res;
         }
 
         /// <summary>
