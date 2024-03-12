@@ -1,5 +1,5 @@
 # PowerThreadPool
-![icon](https://github.com/ZjzMisaka/PowerThreadPool/assets/16731853/ee9956be-53b3-404f-aaf6-88c28bd833b3)
+![icon](https://raw.githubusercontent.com/ZjzMisaka/PowerThreadPool/main/icon.png)
 
 ![Nuget](https://img.shields.io/nuget/v/PowerThreadPool?style=for-the-badge)
 ![Nuget](https://img.shields.io/nuget/dt/PowerThreadPool?style=for-the-badge)
