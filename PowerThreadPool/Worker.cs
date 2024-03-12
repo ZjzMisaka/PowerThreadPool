@@ -6,6 +6,7 @@ using PowerThreadPool.Collections;
 using PowerThreadPool.EventArguments;
 using System.Linq;
 using System.Collections.Generic;
+using PowerThreadPool.Constants;
 
 namespace PowerThreadPool
 {
@@ -16,14 +17,8 @@ namespace PowerThreadPool
         private string id;
         internal string ID { get => id; set => id = value; }
 
-        /// <summary>
-        /// 0: Idle, 1: Running, 2: ToBeDisposed
-        /// </summary>
-        internal int workerState = 0;
-        /// <summary>
-        /// 0: Waiting for lock, 1: Locked, 2: Disabled
-        /// </summary>
-        internal int gettedLock = 0;
+        internal int workerState = WorkerStates.Idle;
+        internal int gettedLock = WorkerGettedFlags.Unlocked;
 
         private PriorityQueue<string> waitingWorkIDQueue = new PriorityQueue<string>();
         private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
@@ -31,13 +26,12 @@ namespace PowerThreadPool
         private System.Timers.Timer timeoutTimer;
         private System.Timers.Timer killTimer;
 
-        private AutoResetEvent runSignal = new AutoResetEvent(false);
-        private ConcurrentDictionary<string, AutoResetEvent> waitSignalDic = new ConcurrentDictionary<string, AutoResetEvent>();
+        private ManualResetEvent runSignal = new ManualResetEvent(false);
         private string workID;
         internal string WorkID { get => workID; set => workID = value; }
         private WorkBase work;
         private bool killFlag = false;
-        private int stealingLock = 0;
+        private int stealingLock = WorkerStealingFlags.Unlocked;
 
         private PowerPool powerPool;
 
@@ -94,9 +88,9 @@ namespace PowerThreadPool
 
                         powerPool.WorkCallbackEnd(workID, executeResult.Status);
 
-                        if (waitSignalDic.TryRemove(workID, out AutoResetEvent waitSignal))
+                        if (work.WaitSignal != null)
                         {
-                            waitSignal.Set();
+                            work.WaitSignal.Set();
                         }
 
                         if (work.LongRunning)
@@ -110,8 +104,8 @@ namespace PowerThreadPool
                 }
                 catch (ThreadInterruptedException ex)
                 {
-                    Interlocked.Exchange(ref gettedLock, -100);
-                    int origWorkState = Interlocked.Exchange(ref workerState, 2);
+                    Interlocked.Exchange(ref gettedLock, WorkerGettedFlags.Disabled);
+                    int origWorkState = Interlocked.Exchange(ref workerState, WorkerStates.ToBeDisposed);
 
                     if (work.LongRunning)
                     {
@@ -119,7 +113,7 @@ namespace PowerThreadPool
                         this.LongRunning = false;
                     }
 
-                    if (origWorkState == 1)
+                    if (origWorkState == WorkerStates.Running)
                     {
                         Interlocked.Decrement(ref powerPool.runningWorkerCount);
                     }
@@ -129,7 +123,10 @@ namespace PowerThreadPool
                         Interlocked.Decrement(ref powerPool.aliveWorkerCount);
                         powerPool.aliveWorkerList = powerPool.aliveWorkerDic.Values;
                     }
-                    powerPool.idleWorkerDic.TryRemove(ID, out _);
+                    if (powerPool.idleWorkerDic.TryRemove(ID, out _))
+                    {
+                        Interlocked.Decrement(ref powerPool.idleWorkerCount);
+                    }
 
                     powerPool.OneThreadEndByForceStop(work.ID);
 
@@ -154,9 +151,9 @@ namespace PowerThreadPool
                         hasWaitingWork = true;
                     }
 
-                    if (waitSignalDic.TryRemove(workID, out AutoResetEvent waitSignal))
+                    if (work.WaitSignal != null)
                     {
-                        waitSignal.Set();
+                        work.WaitSignal.Set();
                     }
 
                     if (!hasWaitingWork)
@@ -173,18 +170,35 @@ namespace PowerThreadPool
         public bool Wait(string workID)
         {
             bool res = false;
-            if (waitingWorkDic.ContainsKey(workID) || workID == this.workID)
+            if (waitingWorkDic.TryGetValue(workID, out WorkBase needWaitWork))
             {
-                AutoResetEvent autoResetEvent = waitSignalDic.GetOrAdd(workID, _ => new AutoResetEvent(false));
-                autoResetEvent.WaitOne();
+                if (needWaitWork.WaitSignal == null)
+                {
+                    needWaitWork.WaitSignal = new AutoResetEvent(false);
+                }
+                needWaitWork.WaitSignal.WaitOne();
                 res = true;
             }
+            else
+            {
+                needWaitWork = work;
+                if (workID == needWaitWork.ID)
+                {
+                    if (needWaitWork.WaitSignal == null)
+                    {
+                        needWaitWork.WaitSignal = new AutoResetEvent(false);
+                    }
+                    needWaitWork.WaitSignal.WaitOne();
+                    res = true;
+                }
+            }
+
             return res;
         }
 
         public void ForceStop()
         {
-            if (workerState == 1)
+            if (workerState == WorkerStates.Running)
             {
                 Cancel();
                 thread.Interrupt();
@@ -192,37 +206,133 @@ namespace PowerThreadPool
             }
         }
 
-        public void ForceStop(string workID)
+        public void WaitForResume()
         {
-            if (waitingWorkDic.TryRemove(workID, out _))
+            work.PauseSignal.WaitOne();
+        }
+
+        public bool Pause(string workID)
+        {
+            bool res = false;
+
+            WorkBase workerToPause;
+            if (!waitingWorkDic.TryGetValue(workID, out workerToPause))
             {
-                Interlocked.Decrement(ref waitingWorkCount);
-                Interlocked.Decrement(ref powerPool.waitingWorkCount);
+                if (workID == WorkID)
+                {
+                    workerToPause = work;
+                }
+            }
+
+            if (workerToPause != null)
+            {
+                if (workerToPause.PauseSignal == null)
+                {
+                    workerToPause.PauseSignal = new ManualResetEvent(true);
+                }
+
+                workerToPause.IsPausing = true;
+                workerToPause.PauseSignal.Reset();
+                res = true;
+            }
+
+            return res;
+        }
+
+        public bool Resume(string workID)
+        {
+            bool res = false;
+
+            WorkBase workerToResume;
+            if (!waitingWorkDic.TryGetValue(workID, out workerToResume))
+            {
+                if (workID == WorkID)
+                {
+                    workerToResume = work;
+                }
+            }
+
+            if (workerToResume != null)
+            {
+                workerToResume.IsPausing = false;
+                workerToResume.PauseSignal.Set();
+                res = true;
+            }
+
+            return res;
+        }
+
+        public bool Resume()
+        {
+            bool res = false;
+
+            foreach (WorkBase workerToResume in waitingWorkDic.Values)
+            {
+                if (workerToResume.IsPausing)
+                {
+                    workerToResume.IsPausing = false;
+                    workerToResume.PauseSignal.Set();
+                }
+            }
+            if (work.IsPausing)
+            {
+                work.IsPausing = false;
+                work.PauseSignal.Set();
+            }
+
+            return res;
+        }
+
+        public bool Stop(string workID, bool forceStop)
+        {
+            bool res = false;
+            if (forceStop)
+            {
+                if (waitingWorkDic.TryRemove(workID, out _))
+                {
+                    Interlocked.Decrement(ref waitingWorkCount);
+                    Interlocked.Decrement(ref powerPool.waitingWorkCount);
+                }
+                else
+                {
+                    thread.Interrupt();
+                    thread.Join();
+                }
+                res = true;
             }
             else
             {
-                thread.Interrupt();
-                thread.Join();
+                if (!Cancel(workID))
+                {
+                    if (workID == WorkID)
+                    {
+                        work.ShouldStop = true;
+                        res = true;
+                    }
+                }
+                else
+                {
+                    res = true;
+                }
             }
+            return res;
         }
 
         internal void SetWork(WorkBase work, bool stolenWork)
         {
             int originalWorkerState;
-            lock (powerPool)
-            {
-                waitingWorkDic[work.ID] = work;
-                waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
-                Interlocked.Increment(ref waitingWorkCount);
-                originalWorkerState = Interlocked.CompareExchange(ref workerState, 1, 0);
-            }
-            
+            waitingWorkDic[work.ID] = work;
+            powerPool.SetWorkOwner(work.ID, this);
+            waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
+            Interlocked.Increment(ref waitingWorkCount);
+            originalWorkerState = Interlocked.CompareExchange(ref workerState, WorkerStates.Running, WorkerStates.Idle);
+
             if (!stolenWork)
             {
-                Interlocked.Exchange(ref gettedLock, 0);
+                Interlocked.Exchange(ref gettedLock, WorkerGettedFlags.Unlocked);
             }
 
-            if (originalWorkerState == 0)
+            if (originalWorkerState == WorkerStates.Idle)
             {
                 Interlocked.Increment(ref powerPool.runningWorkerCount);
                 AssignWork();
@@ -232,13 +342,12 @@ namespace PowerThreadPool
         internal List<WorkBase> Steal(int count)
         {
             List<WorkBase> stolenList = new List<WorkBase>();
+
             while (stolenList.Count < count)
             {
-                string stolenWorkID = null;
-                lock (powerPool)
-                {
-                    stolenWorkID = waitingWorkIDQueue.Dequeue();
-                }
+                string stolenWorkID;
+                stolenWorkID = waitingWorkIDQueue.Dequeue();
+
                 if (stolenWorkID == null)
                 {
                     return stolenList;
@@ -250,6 +359,7 @@ namespace PowerThreadPool
                     stolenList.Add(stolenWork);
                 }
             }
+
             return stolenList;
         }
 
@@ -260,17 +370,15 @@ namespace PowerThreadPool
                 string waitingWorkID = null;
                 WorkBase work = null;
 
-                lock (powerPool)
-                {
-                    waitingWorkID = waitingWorkIDQueue.Dequeue();
-                }
+                waitingWorkID = waitingWorkIDQueue.Dequeue();
+
                 if (waitingWorkID == null && powerPool.aliveWorkerCount <= powerPool.PowerPoolOption.MaxThreads)
                 {
                     Worker worker = null;
                     int max = 0;
                     foreach (Worker runningWorker in powerPool.aliveWorkerList)
                     {
-                        if (runningWorker.workerState != 1)
+                        if (runningWorker.workerState != WorkerStates.Running || runningWorker.ID == ID)
                         {
                             continue;
                         }
@@ -278,13 +386,13 @@ namespace PowerThreadPool
                         int waitingWorkCountTemp = runningWorker.WaitingWorkCount;
                         if (waitingWorkCountTemp > max)
                         {
-                            if (Interlocked.CompareExchange(ref runningWorker.stealingLock, 1, 0) == 1)
+                            if (Interlocked.CompareExchange(ref runningWorker.stealingLock, WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked) == WorkerStealingFlags.Locked)
                             {
                                 continue;
                             }
                             if (worker != null)
                             {
-                                Interlocked.Exchange(ref worker.stealingLock, 0);
+                                Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
                             }
                             max = waitingWorkCountTemp;
                             worker = runningWorker;
@@ -303,33 +411,40 @@ namespace PowerThreadPool
                             }
                         }
 
-                        Interlocked.Exchange(ref worker.stealingLock, 0);
+                        Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
                     }
                 }
 
                 if (waitingWorkID == null)
                 {
-                    lock (powerPool)
+                    SpinWait.SpinUntil(() =>
                     {
-                        waitingWorkID = waitingWorkIDQueue.Dequeue();
+                        int gettedLockOrig = Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.ToBeDisabled, WorkerGettedFlags.Unlocked);
+                        return (gettedLockOrig == WorkerGettedFlags.Unlocked);
+                    });
 
-                        if (waitingWorkID != null)
+                    waitingWorkID = waitingWorkIDQueue.Dequeue();
+
+                    if (waitingWorkID != null)
+                    {
+                        if (waitingWorkDic.TryRemove(waitingWorkID, out work))
                         {
-                            if (waitingWorkDic.TryRemove(waitingWorkID, out work))
-                            {
-                                Interlocked.Decrement(ref waitingWorkCount);
-                            }
+                            Interlocked.Decrement(ref waitingWorkCount);
                         }
                     }
 
                     if (waitingWorkID == null || work == null)
                     {
-                        Interlocked.Exchange(ref workerState, 0);
+                        Interlocked.Exchange(ref workerState, WorkerStates.Idle);
+                        runSignal.Reset();
+
+                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
 
                         Interlocked.Decrement(ref powerPool.runningWorkerCount);
                         PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
 
                         powerPool.idleWorkerDic[this.ID] = this;
+                        Interlocked.Increment(ref powerPool.idleWorkerCount);
                         powerPool.idleWorkerQueue.Enqueue(this.ID);
 
                         powerPool.CheckPoolIdle();
@@ -346,19 +461,26 @@ namespace PowerThreadPool
                                     {
                                         SpinWait.SpinUntil(() =>
                                         {
-                                            int gettedStatus = Interlocked.CompareExchange(ref gettedLock, -100, 0);
-                                            return (gettedStatus == 0 || gettedStatus == -100);
+                                            int gettedStatus = Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Disabled, WorkerGettedFlags.Unlocked);
+                                            return (gettedStatus == WorkerGettedFlags.Unlocked || gettedStatus == WorkerGettedFlags.Disabled);
                                         });
-                                        int originalState = Interlocked.CompareExchange(ref workerState, 2, 0);
-                                        if (originalState == 0)
+                                        int originalState = Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle);
+                                        if (originalState == WorkerStates.Idle)
                                         {
-                                            powerPool.idleWorkerDic.TryRemove(ID, out _);
+                                            if (powerPool.idleWorkerDic.TryRemove(ID, out _))
+                                            {
+                                                Interlocked.Decrement(ref powerPool.idleWorkerCount);
+                                            }
                                             if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
                                             {
                                                 Interlocked.Decrement(ref powerPool.aliveWorkerCount);
                                                 powerPool.aliveWorkerList = powerPool.aliveWorkerDic.Values;
                                             }
                                             Kill();
+                                        }
+                                        else
+                                        {
+                                            Interlocked.Exchange(ref gettedLock, WorkerGettedFlags.Unlocked);
                                         }
                                     }
                                     killTimer.Enabled = false;
@@ -372,6 +494,10 @@ namespace PowerThreadPool
                         }
 
                         return;
+                    }
+                    else
+                    {
+                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
                     }
                 }
 
@@ -461,6 +587,16 @@ namespace PowerThreadPool
                 return true;
             }
             return false;
+        }
+
+        internal bool IsCancellationRequested()
+        {
+            return work.ShouldStop;
+        }
+
+        internal bool IsPausing()
+        {
+            return work.IsPausing;
         }
     }
 }

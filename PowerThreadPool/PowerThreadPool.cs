@@ -1,4 +1,5 @@
 ﻿using PowerThreadPool.Collections;
+using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
 using PowerThreadPool.Helper;
 using PowerThreadPool.Option;
@@ -18,22 +19,21 @@ namespace PowerThreadPool
 
         private ManualResetEvent waitAllSignal = new ManualResetEvent(false);
         private ManualResetEvent pauseSignal = new ManualResetEvent(true);
-        private ConcurrentDictionary<string, bool> pauseStatusDic = new ConcurrentDictionary<string, bool>();
-        private ConcurrentDictionary<string, ManualResetEvent> pauseSignalDic = new ConcurrentDictionary<string, ManualResetEvent>();
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-        private ConcurrentDictionary<string, CancellationTokenSource> cancellationTokenSourceDic = new ConcurrentDictionary<string, CancellationTokenSource>();
 
         internal ConcurrentSet<string> failedWorkSet = new ConcurrentSet<string>();
 
         internal ConcurrentDictionary<string, Worker> idleWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentQueue<string> idleWorkerQueue = new ConcurrentQueue<string>();
 
-        private ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
+        internal ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal IEnumerable<Worker> aliveWorkerList = new List<Worker>();
 
-        private Dictionary<WorkBase, ConcurrentSet<string>> suspendedWork = new Dictionary<WorkBase, ConcurrentSet<string>>();
+        internal Dictionary<string, WorkBase> suspendedWork = new Dictionary<string, WorkBase>();
         private bool suspended;
+
+        private int createWorkerLock = WorkerCreationFlags.Unlocked;
 
         private PowerPoolOption powerPoolOption;
         public PowerPoolOption PowerPoolOption 
@@ -67,8 +67,8 @@ namespace PowerThreadPool
 
         private System.Timers.Timer poolTimer;
 
-        private bool poolRunning = false;
-        public bool PoolRunning { get => poolRunning; }
+        private int poolRunning = 0;
+        public bool PoolRunning { get => poolRunning == PoolRunningFlags.Running; }
 
         private bool poolStopping = false;
         public bool PoolStopping { get => poolStopping; }
@@ -93,11 +93,12 @@ namespace PowerThreadPool
             }
         }
 
+        internal int idleWorkerCount = 0;
         public int IdleWorkerCount
         {
             get
             {
-                return idleWorkerDic.Count;
+                return idleWorkerCount;
             }
         }
 
@@ -117,7 +118,7 @@ namespace PowerThreadPool
                 List<string> list = settedWorkDic.Keys.ToList();
                 foreach (Worker worker in aliveWorkerList) 
                 {
-                    if (worker.workerState == 1)
+                    if (worker.workerState == WorkerStates.Running)
                     {
                         list.Remove(worker.WorkID);
                     }
@@ -691,15 +692,12 @@ namespace PowerThreadPool
             }
 
             Work<TResult> work = new Work<TResult>(this, workID, function, param, workOption);
-            pauseSignalDic[workID] = new ManualResetEvent(true);
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSourceDic[workID] = cancellationTokenSource;
 
             Interlocked.Increment(ref waitingWorkCount);
 
             if (powerPoolOption.StartSuspended)
             {
-                suspendedWork[work] = workOption.Dependents;
+                suspendedWork[workID] = work;
             }
             else
             {
@@ -724,10 +722,10 @@ namespace PowerThreadPool
             }
 
             suspended = false;
-            foreach (KeyValuePair<WorkBase, ConcurrentSet<string>> kv in suspendedWork)
+            foreach (KeyValuePair<string, WorkBase> kv in suspendedWork)
             {
-                WorkBase work = kv.Key;
-                ConcurrentSet<string> dependents = kv.Value;
+                WorkBase work = kv.Value;
+                ConcurrentSet<string> dependents = work.Dependents;
                 if (dependents == null || dependents.Count == 0)
                 {
                     CheckPoolStart();
@@ -796,10 +794,6 @@ namespace PowerThreadPool
             }
 
             settedWorkDic.TryRemove(guid, out _);
-
-            pauseStatusDic.TryRemove(guid, out _);
-            pauseSignalDic.TryRemove(guid, out _);
-            cancellationTokenSourceDic.TryRemove(guid, out _);
         }
 
         /// <summary>
@@ -829,6 +823,7 @@ namespace PowerThreadPool
                     aliveWorkerList = aliveWorkerDic.Values;
                 }
                 idleWorkerDic[worker.ID] = worker;
+                Interlocked.Increment(ref idleWorkerCount);
                 idleWorkerQueue.Enqueue(worker.ID);
             }
         }
@@ -845,7 +840,6 @@ namespace PowerThreadPool
             {
                 worker = GetWorker(work.LongRunning);
             }
-            settedWorkDic[work.ID] = worker;
             worker.SetWork(work, false);
         }
 
@@ -858,33 +852,26 @@ namespace PowerThreadPool
             Worker worker = null;
             while (idleWorkerQueue.TryDequeue(out string firstWorkerID))
             {
+                Interlocked.Decrement(ref idleWorkerCount);
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    int originalValue = worker.gettedLock;
-                    if (originalValue == 0)
+                    Interlocked.Exchange(ref worker.gettedLock, WorkerGettedFlags.Locked);
+                    if (longRunning)
                     {
-                        // Try to increment the gettedLock only if it hasn't been changed to -100 by another thread
-                        if (Interlocked.CompareExchange(ref worker.gettedLock, 1, originalValue) == originalValue)
-                        {
-                            // If successful, we have incremented gettedLock without any interference
-                            if (longRunning)
-                            {
-                                Interlocked.Increment(ref longRunningWorkerCount);
-                            }
-                            return worker;
-                        }
+                        Interlocked.Increment(ref longRunningWorkerCount);
                     }
+                    return worker;
                 }
             }
 
             if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
             {
-                lock (this)
+                if (Interlocked.CompareExchange(ref createWorkerLock, WorkerCreationFlags.Locked, WorkerCreationFlags.Unlocked) == WorkerCreationFlags.Unlocked)
                 {
                     if (aliveWorkerCount < powerPoolOption.MaxThreads + longRunningWorkerCount)
                     {
                         worker = new Worker(this);
-                        Interlocked.Exchange(ref worker.gettedLock, 1);
+                        Interlocked.Exchange(ref worker.gettedLock, WorkerGettedFlags.Locked);
                         if (aliveWorkerDic.TryAdd(worker.ID, worker))
                         {
                             Interlocked.Increment(ref aliveWorkerCount);
@@ -895,6 +882,8 @@ namespace PowerThreadPool
                             Interlocked.Increment(ref longRunningWorkerCount);
                         }
                     }
+
+                    Interlocked.Exchange(ref createWorkerLock, WorkerCreationFlags.Unlocked);
                 }
             }
 
@@ -911,18 +900,14 @@ namespace PowerThreadPool
                     int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
                     if (waitingWorkCountTemp < min)
                     {
-                        int originalValue = aliveWorker.gettedLock;
-                        if (originalValue == 0)
+                        if (Interlocked.CompareExchange(ref aliveWorker.gettedLock, WorkerGettedFlags.Locked, WorkerGettedFlags.Unlocked) == WorkerGettedFlags.Unlocked)
                         {
-                            if (Interlocked.CompareExchange(ref aliveWorker.gettedLock, 1, originalValue) == originalValue)
+                            if (worker != null)
                             {
-                                if (worker != null)
-                                {
-                                    Interlocked.Exchange(ref worker.gettedLock, 0);
-                                }
-                                min = waitingWorkCountTemp;
-                                worker = aliveWorker;
+                                Interlocked.CompareExchange(ref worker.gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.Locked);
                             }
+                            min = waitingWorkCountTemp;
+                            worker = aliveWorker;
                         }
                     }
                 }
@@ -936,10 +921,8 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckPoolStart()
         {
-            if (!PoolRunning)
+            if (Interlocked.CompareExchange(ref poolRunning, PoolRunningFlags.Running, PoolRunningFlags.NotRunning) == PoolRunningFlags.NotRunning)
             {
-                poolRunning = true;
-
                 if (PoolStart != null)
                 {
                     PoolStart.Invoke(this, new EventArgs());
@@ -977,35 +960,22 @@ namespace PowerThreadPool
 
             InitWorkerQueue();
 
-            // Double-checked locking
-            if (runningWorkerCount == 0 && waitingWorkCount == 0 && poolRunning)
+            if (runningWorkerCount == 0 && waitingWorkCount == 0 && Interlocked.CompareExchange(ref poolRunning, PoolRunningFlags.IdleChecked, PoolRunningFlags.Running) == PoolRunningFlags.Running)
             {
-                lock (this)
+                if (PoolIdle != null)
                 {
-                    if (runningWorkerCount == 0 && waitingWorkCount == 0 && poolRunning)
+                    try
                     {
-                        poolRunning = false;
-                        if (poolStopping)
-                        {
-                            poolStopping = false;
-                        }
-
-                        if (PoolIdle != null)
-                        {
-                            try
-                            {
-                                PoolIdle.Invoke(this, new EventArgs());
-                            }
-                            finally
-                            {
-                                IdleSetting();
-                            }
-                        }
-                        else
-                        {
-                            IdleSetting();
-                        }
+                        PoolIdle.Invoke(this, new EventArgs());
                     }
+                    finally
+                    {
+                        IdleSetting();
+                    }
+                }
+                else
+                {
+                    IdleSetting();
                 }
             }
         }
@@ -1022,6 +992,17 @@ namespace PowerThreadPool
 
             cancellationTokenSource = new CancellationTokenSource();
             waitAllSignal.Set();
+
+            Interlocked.Exchange(ref poolRunning, PoolRunningFlags.NotRunning);
+            if (poolStopping)
+            {
+                poolStopping = false;
+            }
+        }
+
+        internal void SetWorkOwner(string workId, Worker worker)
+        {
+            settedWorkDic[workId] = worker;
         }
 
         /// <summary>
@@ -1055,26 +1036,15 @@ namespace PowerThreadPool
         public void PauseIfRequested()
         {
             pauseSignal.WaitOne();
-            ICollection<string> workIDs = pauseSignalDic.Keys;
-            foreach (string id in workIDs)
+
+
+            foreach (Worker worker in aliveWorkerList)
             {
-                if (settedWorkDic.TryGetValue(id, out Worker worker))
+                if (worker.workerState == WorkerStates.Running && worker.thread == Thread.CurrentThread && worker.IsPausing())
                 {
-                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
-                    {
-                        if (pauseStatusDic.TryGetValue(id, out bool status))
-                        {
-                            if (status)
-                            {
-                                if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
-                                {
-                                    worker.PauseTimer();
-                                    manualResetEvent.WaitOne();
-                                    worker.ResumeTimer();
-                                }
-                            }
-                        }
-                    }
+                    worker.PauseTimer();
+                    worker.WaitForResume();
+                    worker.ResumeTimer();
                 }
             }
         }
@@ -1109,22 +1079,15 @@ namespace PowerThreadPool
             {
                 return true;
             }
-            foreach (KeyValuePair<string, CancellationTokenSource> pair in cancellationTokenSourceDic)
-            {
-                string id = pair.Key;
-                CancellationTokenSource cts = pair.Value;
 
-                if (settedWorkDic.TryGetValue(id, out Worker worker))
+            foreach (Worker worker in aliveWorkerList)
+            {
+                if (worker.workerState == WorkerStates.Running && worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
                 {
-                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
-                    {
-                        if (cts.Token.IsCancellationRequested)
-                        {
-                            return true;
-                        }
-                    }
+                    return true;
                 }
             }
+
             return false;
         }
 
@@ -1138,22 +1101,15 @@ namespace PowerThreadPool
             {
                 return "";
             }
-            foreach (KeyValuePair<string, CancellationTokenSource> pair in cancellationTokenSourceDic)
-            {
-                string id = pair.Key;
-                CancellationTokenSource cts = pair.Value;
 
-                if (settedWorkDic.TryGetValue(id, out Worker worker))
+            foreach (Worker worker in aliveWorkerList)
+            {
+                if (worker.workerState == WorkerStates.Running && worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
                 {
-                    if (worker.thread == Thread.CurrentThread && worker.WorkID == id)
-                    {
-                        if (cts.Token.IsCancellationRequested)
-                        {
-                            return id;
-                        }
-                    }
+                    return worker.WorkID;
                 }
             }
+
             return null;
         }
 
@@ -1162,7 +1118,7 @@ namespace PowerThreadPool
         /// </summary>
         public void Wait()
         {
-            if (!PoolRunning)
+            if (poolRunning == PoolRunningFlags.NotRunning)
             {
                 return;
             }
@@ -1262,7 +1218,7 @@ namespace PowerThreadPool
         /// <returns>Return false if no thread running</returns>
         public bool Stop(bool forceStop = false)
         {
-            if (!poolRunning)
+            if (poolRunning == PoolRunningFlags.NotRunning)
             {
                 return false;
             }
@@ -1271,7 +1227,7 @@ namespace PowerThreadPool
 
             if (forceStop)
             {
-                while (poolRunning)
+                while (poolRunning == PoolRunningFlags.Running)
                 {
                     settedWorkDic.Clear();
                     IEnumerable<Worker> workersToStop = aliveWorkerList;
@@ -1291,7 +1247,7 @@ namespace PowerThreadPool
                 }
             }
 
-            waitAllSignal.WaitOne();
+            Wait();
 
             return true;
         }
@@ -1312,26 +1268,7 @@ namespace PowerThreadPool
             bool res = false;
             if (settedWorkDic.TryGetValue(id, out Worker workerToStop))
             {
-                if (forceStop)
-                {
-                    res = true;
-                    workerToStop.ForceStop(id);
-                }
-                else
-                {
-                    if (!workerToStop.Cancel(id))
-                    {
-                        if (cancellationTokenSourceDic.TryGetValue(id, out CancellationTokenSource cancellationTokenSource))
-                        {
-                            res = true;
-                            cancellationTokenSource.Cancel();
-                        }
-                    }
-                    else
-                    {
-                        res = true;
-                    }
-                }
+                res = workerToStop.Stop(id, forceStop);
             }
 
             return res;
@@ -1432,16 +1369,11 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
+            if (settedWorkDic.TryGetValue(id, out Worker workerToPause))
             {
-                manualResetEvent.Reset();
-                pauseStatusDic[id] = true;
-                return true;
+                return workerToPause.Pause(id);
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         /// <summary>
@@ -1477,9 +1409,12 @@ namespace PowerThreadPool
             pauseSignal.Set();
             if (resumeWorkPausedByID)
             {
-                foreach (ManualResetEvent manualResetEvent in pauseSignalDic.Values)
+                foreach (Worker worker in aliveWorkerList)
                 {
-                    manualResetEvent.Set();
+                    if (worker.workerState == WorkerStates.Running)
+                    {
+                        worker.Resume();
+                    }
                 }
             }
         }
@@ -1495,15 +1430,11 @@ namespace PowerThreadPool
             {
                 return false;
             }
-
-            bool res = false;
-            if (pauseSignalDic.TryGetValue(id, out ManualResetEvent manualResetEvent))
+            if (settedWorkDic.TryGetValue(id, out Worker workerToPause))
             {
-                pauseStatusDic[id] = false;
-                manualResetEvent.Set();
-                res =  true;
+                return workerToPause.Resume(id);
             }
-            return res;
+            return false;
         }
 
         /// <summary>
@@ -1606,6 +1537,7 @@ namespace PowerThreadPool
                     aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
                     idleWorkerDic = new ConcurrentDictionary<string, Worker>();
                     idleWorkerQueue = new ConcurrentQueue<string>();
+                    idleWorkerCount = 0;
                     aliveWorkerCount = 0;
                     runningWorkerCount = 0;
                     waitingWorkCount = 0;

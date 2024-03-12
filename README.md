@@ -35,6 +35,7 @@ Support: Net46+ | Net5.0+
 - [Error Handling](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
 - [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPool#properties)
 - [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
+- [Lock-Free](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
 
 ## Getting started
 ### Simple example: run a work

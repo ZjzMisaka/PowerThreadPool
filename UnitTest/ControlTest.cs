@@ -496,6 +496,122 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestStopByIDMultiWorks()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 8 });
+            string id = null;
+            string resID = null;
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(1);
+                }
+            }, (res) =>
+            {
+                resID = res.ID;
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(1);
+                }
+            }, (res) =>
+            {
+                resID = res.ID;
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(1);
+                }
+            }, (res) =>
+            {
+                resID = res.ID;
+            });
+
+            id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(1);
+                }
+            }, (res) =>
+            {
+                resID = res.ID;
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(1);
+                }
+            }, (res) =>
+            {
+                resID = res.ID;
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(1);
+                }
+            }, (res) =>
+            {
+                resID = res.ID;
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(1);
+                }
+            }, (res) =>
+            {
+                resID = res.ID;
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(1);
+                }
+            }, (res) =>
+            {
+                resID = res.ID;
+            });
+
+            Assert.Equal(8, powerPool.RunningWorkerCount);
+
+            await powerPool.StopAsync(id);
+
+            Thread.Sleep(100);
+
+            Assert.Equal(7, powerPool.RunningWorkerCount);
+            Assert.Equal(resID, id);
+
+            await powerPool.StopAsync(true);
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
         public async void TestStopByID()
         {
             PowerPool powerPool = new PowerPool();

@@ -1,46 +1,58 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace PowerThreadPool.Collections
 {
     public class PriorityQueue<T>
     {
-        private SortedDictionary<int, ConcurrentQueue<T>> queueDic;
+        private ConcurrentDictionary<int, ConcurrentQueue<T>> queueDic;
+        private ConcurrentSet<int> prioritySet;
+        private List<int> reversed;
+        private int updated;
 
         public PriorityQueue()
         {
-            queueDic = new SortedDictionary<int, ConcurrentQueue<T>>();
+            queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
+            prioritySet = new ConcurrentSet<int>();
+            updated = 0;
         }
 
         public void Enqueue(T item, int priority)
         {
-            if (queueDic.ContainsKey(priority))
+            ConcurrentQueue<T> queue = queueDic.GetOrAdd(priority, _ =>
             {
-                queueDic[priority].Enqueue(item);
-            }
-            else
-            {
-                var queue = new ConcurrentQueue<T>();
-                queue.Enqueue(item);
-                queueDic.Add(priority, queue);
-            }
+                prioritySet.Add(priority);
+                Interlocked.Exchange(ref updated, 1);
+                return new ConcurrentQueue<T>();
+            });
+
+            queue.Enqueue(item);
         }
 
         public T Dequeue()
         {
-            if (queueDic.Count <= 0)
+            T item = default;
+
+            if (Interlocked.CompareExchange(ref updated, 0, 1) == 1)
             {
-                return default;
+                reversed = prioritySet.ToList();
+                reversed.Sort();
+                reversed.Reverse();
             }
 
-            var pair = queueDic.Last();
-
-            pair.Value.TryDequeue(out T item);
-
-            if (!pair.Value.Any())
+            for (int i = 0; i < reversed.Count; ++i)
             {
-                queueDic.Remove(pair.Key);
+                int priority = reversed[i];
+                if (queueDic.TryGetValue(priority, out ConcurrentQueue<T> queue))
+                {
+                    if (queue.TryDequeue(out item))
+                    {
+                        break;
+                    }
+                }
             }
 
             return item;
