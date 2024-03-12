@@ -20,7 +20,7 @@ namespace PowerThreadPool
         internal int workerState = WorkerStates.Idle;
         internal int gettedLock = WorkerGettedFlags.Unlocked;
 
-        private PriorityQueue<string> waitingWorkIDQueue = new PriorityQueue<string>();
+        private ConcurrentPriorityQueue<string> waitingWorkIDQueue = new ConcurrentPriorityQueue<string>();
         private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
 
         private System.Timers.Timer timeoutTimer;

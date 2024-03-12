@@ -6,14 +6,14 @@ using System.Threading;
 
 namespace PowerThreadPool.Collections
 {
-    public class PriorityQueue<T>
+    public class ConcurrentPriorityQueue<T>
     {
         private ConcurrentDictionary<int, ConcurrentQueue<T>> queueDic;
         private ConcurrentSet<int> prioritySet;
         private List<int> reversed;
         private int updated;
 
-        public PriorityQueue()
+        public ConcurrentPriorityQueue()
         {
             queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
             prioritySet = new ConcurrentSet<int>();
