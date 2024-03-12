@@ -378,7 +378,7 @@ namespace PowerThreadPool
                     int max = 0;
                     foreach (Worker runningWorker in powerPool.aliveWorkerList)
                     {
-                        if (runningWorker.workerState != WorkerStates.Running)
+                        if (runningWorker.workerState != WorkerStates.Running || runningWorker.ID == ID)
                         {
                             continue;
                         }
@@ -551,8 +551,8 @@ namespace PowerThreadPool
 
         internal void Kill()
         {
-            runSignal.Set();
             killFlag = true;
+            runSignal.Set();
         }
 
         internal void PauseTimer()
