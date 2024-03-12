@@ -33,7 +33,6 @@ namespace PowerThreadPool
         private Func<object[], TResult> function;
         private object[] param;
         private WorkOption<TResult> workOption;
-        private bool succeed = true;
         private CallbackEndEventHandler callbackEndHandler;
 
         internal override int WorkPriority { get => workOption.WorkPriority; }
@@ -58,7 +57,6 @@ namespace PowerThreadPool
                     if (powerPool.failedWorkSet.Contains(dependedId))
                     {
                         powerPool.CallbackEnd -= callbackEndHandler;
-                        this.succeed = false;
                         Interlocked.Decrement(ref powerPool.waitingWorkCount);
                         powerPool.CheckPoolIdle();
                         return;
@@ -86,7 +84,6 @@ namespace PowerThreadPool
                         if (powerPool.failedWorkSet.Contains(dependedId))
                         {
                             powerPool.CallbackEnd -= callbackEndHandler;
-                            this.succeed = false;
                             Interlocked.Decrement(ref powerPool.waitingWorkCount);
                             powerPool.CheckPoolIdle();
                             return;
