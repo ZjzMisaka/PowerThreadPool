@@ -7,7 +7,6 @@ using PowerThreadPool.EventArguments;
 using System.Linq;
 using System.Collections.Generic;
 using PowerThreadPool.Constants;
-using System.Timers;
 
 namespace PowerThreadPool
 {
@@ -34,8 +33,6 @@ namespace PowerThreadPool
         private bool killFlag = false;
         private int stealingLock = WorkerStealingFlags.Unlocked;
 
-        private ElapsedEventHandler onKillTimer;
-
         private PowerPool powerPool;
 
         private bool longRunning = true;
@@ -52,47 +49,6 @@ namespace PowerThreadPool
 
         internal Worker(PowerPool powerPool)
         {
-            if(powerPool.PowerPoolOption.DestroyThreadOption != null)
-            {
-                this.killTimer = new System.Timers.Timer(powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime);
-                this.killTimer.AutoReset = false;
-                this.killTimer.Elapsed += onKillTimer;
-            }
-            
-            onKillTimer = (s, e) =>
-            {
-                if (waitingWorkCount == 0 && powerPool.IdleWorkerCount > powerPool.PowerPoolOption.DestroyThreadOption.MinThreads)
-                {
-                    SpinWait.SpinUntil(() =>
-                    {
-                        int gettedStatus = Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Disabled, WorkerGettedFlags.Unlocked);
-                        return (gettedStatus == WorkerGettedFlags.Unlocked || gettedStatus == WorkerGettedFlags.Disabled);
-                    });
-                    
-                    if (waitingWorkCount == 0)
-                    {
-                        if (Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle) == WorkerStates.Idle)
-                        {
-                            if (powerPool.idleWorkerDic.TryRemove(ID, out _))
-                            {
-                                Interlocked.Decrement(ref powerPool.idleWorkerCount);
-                            }
-                            if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
-                            {
-                                Interlocked.Decrement(ref powerPool.aliveWorkerCount);
-                                powerPool.aliveWorkerList = powerPool.aliveWorkerDic.Values;
-                            }
-                            killTimer.Stop();
-                            Kill();
-                            return;
-                        }
-                    }
-
-                    Interlocked.Exchange(ref gettedLock, WorkerGettedFlags.Unlocked);
-                }
-                killTimer.Stop();
-            };
-
             this.powerPool = powerPool;
             this.ID = Guid.NewGuid().ToString();
             thread = new Thread(() =>
@@ -161,7 +117,7 @@ namespace PowerThreadPool
                     {
                         Interlocked.Decrement(ref powerPool.runningWorkerCount);
                     }
-                    
+
                     if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
                     {
                         Interlocked.Decrement(ref powerPool.aliveWorkerCount);
@@ -479,7 +435,10 @@ namespace PowerThreadPool
 
                     if (waitingWorkID == null || work == null)
                     {
+                        Interlocked.Exchange(ref workerState, WorkerStates.Idle);
                         runSignal.Reset();
+
+                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
 
                         Interlocked.Decrement(ref powerPool.runningWorkerCount);
                         PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
@@ -488,21 +447,56 @@ namespace PowerThreadPool
                         Interlocked.Increment(ref powerPool.idleWorkerCount);
                         powerPool.idleWorkerQueue.Enqueue(this.ID);
 
+                        powerPool.CheckPoolIdle();
+
                         if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
                         {
-                            this.killTimer.Start();
+                            this.killTimer = new System.Timers.Timer(powerPoolOption.DestroyThreadOption.KeepAliveTime);
+                            try
+                            {
+                                killTimer.AutoReset = false;
+                                killTimer.Elapsed += (s, e) =>
+                                {
+                                    if (powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
+                                    {
+                                        SpinWait.SpinUntil(() =>
+                                        {
+                                            int gettedStatus = Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Disabled, WorkerGettedFlags.Unlocked);
+                                            return (gettedStatus == WorkerGettedFlags.Unlocked || gettedStatus == WorkerGettedFlags.Disabled);
+                                        });
+                                        int originalState = Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle);
+                                        if (originalState == WorkerStates.Idle)
+                                        {
+                                            if (powerPool.idleWorkerDic.TryRemove(ID, out _))
+                                            {
+                                                Interlocked.Decrement(ref powerPool.idleWorkerCount);
+                                            }
+                                            if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
+                                            {
+                                                Interlocked.Decrement(ref powerPool.aliveWorkerCount);
+                                                powerPool.aliveWorkerList = powerPool.aliveWorkerDic.Values;
+                                            }
+                                            Kill();
+                                        }
+                                        else
+                                        {
+                                            Interlocked.Exchange(ref gettedLock, WorkerGettedFlags.Unlocked);
+                                        }
+                                    }
+                                    killTimer.Enabled = false;
+                                };
+
+                                killTimer.Start();
+                            }
+                            catch
+                            {
+                            }
                         }
-
-                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
-                        Interlocked.Exchange(ref workerState, WorkerStates.Idle);
-
-                        powerPool.CheckPoolIdle();
 
                         return;
                     }
                     else
                     {
-                        Interlocked.CompareExchange(ref workerState, WorkerStates.Running, WorkerStates.Idle);
                         Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
                     }
                 }
@@ -510,7 +504,7 @@ namespace PowerThreadPool
                 if (killTimer != null)
                 {
                     killTimer.Stop();
-                    killTimer.Interval = powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime;
+                    killTimer = null;
                 }
 
                 if (work == null)
