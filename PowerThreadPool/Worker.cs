@@ -443,30 +443,24 @@ namespace PowerThreadPool
 
                     if (waitingWorkID == null || work == null)
                     {
-                        Interlocked.Exchange(ref workerState, WorkerStates.Idle);
                         runSignal.Reset();
 
-                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
+                        PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
+                        if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
+                        {
+                            this.killTimer.Start();
+                        }
 
                         Interlocked.Decrement(ref powerPool.runningWorkerCount);
-                        PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
 
                         powerPool.idleWorkerDic[this.ID] = this;
                         Interlocked.Increment(ref powerPool.idleWorkerCount);
                         powerPool.idleWorkerQueue.Enqueue(this.ID);
 
-                        powerPool.CheckPoolIdle();
+                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
+                        Interlocked.Exchange(ref workerState, WorkerStates.Idle);
 
-                        if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
-                        {
-                            try
-                            {
-                                this.killTimer.Start();
-                            }
-                            catch
-                            {
-                            }
-                        }
+                        powerPool.CheckPoolIdle();
 
                         return;
                     }
