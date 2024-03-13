@@ -30,7 +30,7 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal IEnumerable<Worker> aliveWorkerList = new List<Worker>();
 
-        internal Dictionary<string, WorkBase> suspendedWork = new Dictionary<string, WorkBase>();
+        internal ConcurrentDictionary<string, WorkBase> suspendedWork = new ConcurrentDictionary<string, WorkBase>();
         private bool suspended;
 
         private int createWorkerLock = WorkerCreationFlags.Unlocked;
