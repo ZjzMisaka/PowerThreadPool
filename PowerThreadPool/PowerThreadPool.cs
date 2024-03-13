@@ -854,8 +854,8 @@ namespace PowerThreadPool
             {
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    Interlocked.Decrement(ref idleWorkerCount);
                     Interlocked.Exchange(ref worker.gettedLock, WorkerGettedFlags.Locked);
+                    Interlocked.Decrement(ref idleWorkerCount);
                     if (longRunning)
                     {
                         Interlocked.Increment(ref longRunningWorkerCount);
