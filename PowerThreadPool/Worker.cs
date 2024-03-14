@@ -438,10 +438,10 @@ namespace PowerThreadPool
                         if (waitingWorkDic.TryRemove(waitingWorkID, out work))
                         {
                             Interlocked.Decrement(ref waitingWorkCount);
+                            Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
                         }
                     }
-
-                    if (waitingWorkID == null || work == null)
+                    else
                     {
                         runSignal.Reset();
 
@@ -457,16 +457,12 @@ namespace PowerThreadPool
                         Interlocked.Increment(ref powerPool.idleWorkerCount);
                         powerPool.idleWorkerQueue.Enqueue(this.ID);
 
-                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
                         Interlocked.Exchange(ref workerState, WorkerStates.Idle);
+                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
 
                         powerPool.CheckPoolIdle();
 
                         return;
-                    }
-                    else
-                    {
-                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
                     }
                 }
 
@@ -527,8 +523,8 @@ namespace PowerThreadPool
                     int gettedStatus = Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Disabled, WorkerGettedFlags.Unlocked);
                     return (gettedStatus == WorkerGettedFlags.Unlocked || gettedStatus == WorkerGettedFlags.Disabled);
                 });
-                int originalState = Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle);
-                if (originalState == WorkerStates.Idle)
+
+                if (Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle) == WorkerStates.Idle)
                 {
                     if (powerPool.idleWorkerDic.TryRemove(ID, out _))
                     {

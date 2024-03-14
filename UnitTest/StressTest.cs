@@ -6,7 +6,6 @@ namespace UnitTest
 {
     public class StressTest
     {
-        private const int totalTasks = 100000;
         PowerPool powerPool;
 
         [Fact]
@@ -14,7 +13,9 @@ namespace UnitTest
         {
             powerPool = new PowerPool(new PowerPoolOption() { DestroyThreadOption = new DestroyThreadOption() });
 
-            for (int i = 0; i < 10; ++i)
+            int totalTasks = 500000;
+
+            for (int i = 0; i < 100; ++i)
             {
                 int doneCount = 0;
                 int failedCount = 0;
@@ -38,10 +39,6 @@ namespace UnitTest
 
                 await Task.WhenAll(tasks);
 
-                await powerPool.WaitAsync();
-
-                // TODO REMOVE
-                Thread.Sleep(3000);
                 await powerPool.WaitAsync();
 
                 Assert.Equal(totalTasks, doneCount);
