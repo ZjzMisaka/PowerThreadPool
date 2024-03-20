@@ -338,7 +338,6 @@ namespace PowerThreadPool
             if (killTimer != null)
             {
                 killTimer.Stop();
-                killTimer.Interval = powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime;
             }
 
             if (!resetted)
@@ -458,6 +457,7 @@ namespace PowerThreadPool
                         PowerPoolOption powerPoolOption = powerPool.PowerPoolOption;
                         if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
                         {
+                            killTimer.Interval = powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime;
                             this.killTimer.Start();
                         }
 
@@ -479,7 +479,6 @@ namespace PowerThreadPool
                 if (killTimer != null)
                 {
                     killTimer.Stop();
-                    killTimer.Interval = powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime;
                 }
 
                 if (work == null)
@@ -526,7 +525,7 @@ namespace PowerThreadPool
 
         private void OnKillTimerElapsed(object s, ElapsedEventArgs e)
         {
-            if (waitingWorkDic.IsEmpty && powerPool.IdleWorkerCount > powerPool.PowerPoolOption.DestroyThreadOption.MinThreads)
+            if (powerPool.IdleWorkerCount > powerPool.PowerPoolOption.DestroyThreadOption.MinThreads && waitingWorkDic.IsEmpty)
             {
                 SpinWait.SpinUntil(() =>
                 {
@@ -534,7 +533,7 @@ namespace PowerThreadPool
                     return (gettedStatus == WorkerGettedFlags.Unlocked || gettedStatus == WorkerGettedFlags.Disabled);
                 });
 
-                if (waitingWorkDic.IsEmpty && Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle) == WorkerStates.Idle)
+                if (Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle) == WorkerStates.Idle)
                 {
                     if (powerPool.idleWorkerDic.TryRemove(ID, out _))
                     {
