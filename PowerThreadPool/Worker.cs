@@ -558,16 +558,12 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Locked, WorkerGettedFlags.Disabled);
+                    Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.Disabled);
                     string waitingWorkID = waitingWorkIDQueue.Dequeue();
                     if (waitingWorkID != null && waitingWorkDic.TryRemove(waitingWorkID, out work))
                     {
                         Interlocked.Decrement(ref waitingWorkCount);
                         SetWork(work, true);
-                    }
-                    else
-                    {
-                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.Locked);
                     }
                 }
             }
