@@ -373,6 +373,8 @@ namespace PowerThreadPool
                 }
             }
 
+            Interlocked.Exchange(ref stealingLock, WorkerStealingFlags.Unlocked);
+
             return stolenList;
         }
 
@@ -419,11 +421,17 @@ namespace PowerThreadPool
                             List<WorkBase> stolenWorkList = worker.Steal(count);
                             foreach (WorkBase stolenWork in stolenWorkList)
                             {
-                                SetWork(stolenWork, true);
+                                if (waitingWorkID == null)
+                                {
+                                    waitingWorkID = stolenWork.ID;
+                                    work = stolenWork;
+                                }
+                                else
+                                {
+                                    SetWork(stolenWork, true);
+                                }
                             }
                         }
-
-                        Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
                     }
                 }
 
