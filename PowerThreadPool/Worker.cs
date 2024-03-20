@@ -525,7 +525,7 @@ namespace PowerThreadPool
 
         private void OnKillTimerElapsed(object s, ElapsedEventArgs e)
         {
-            if (powerPool.IdleWorkerCount > powerPool.PowerPoolOption.DestroyThreadOption.MinThreads && waitingWorkDic.IsEmpty)
+            if (waitingWorkDic.IsEmpty && powerPool.IdleWorkerCount > powerPool.PowerPoolOption.DestroyThreadOption.MinThreads)
             {
                 SpinWait.SpinUntil(() =>
                 {
@@ -533,7 +533,7 @@ namespace PowerThreadPool
                     return (gettedStatus == WorkerGettedFlags.Unlocked || gettedStatus == WorkerGettedFlags.Disabled);
                 });
 
-                if (Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle) == WorkerStates.Idle)
+                if (waitingWorkDic.IsEmpty && Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle) == WorkerStates.Idle)
                 {
                     if (powerPool.idleWorkerDic.TryRemove(ID, out _))
                     {
