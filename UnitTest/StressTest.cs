@@ -169,6 +169,37 @@ namespace UnitTest
             }
         }
 
+        [Fact]
+        public async Task StressTest3()
+        {
+            powerPool = new PowerPool(new PowerPoolOption() { DestroyThreadOption = new DestroyThreadOption() });
+
+            int totalTasks = 100;
+
+            for (int i = 0; i < 10000; ++i)
+            {
+                Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
+                    Task.Run(() =>
+                    {
+                        powerPool.QueueWorkItem(() =>
+                        {
+                        });
+                    })
+                ).ToArray();
+
+                await Task.WhenAll(tasks);
+
+                await powerPool.WaitAsync();
+                Thread.Sleep(1);
+                await powerPool.WaitAsync();
+
+                Assert.Equal(0, powerPool.RunningWorkerCount);
+                Assert.Equal(0, powerPool.WaitingWorkCount);
+
+                Assert.True(powerPool.IdleWorkerCount > 0);
+            }
+        }
+
         private void Sleep(int ms)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();

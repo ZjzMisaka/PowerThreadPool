@@ -854,13 +854,15 @@ namespace PowerThreadPool
             {
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    Interlocked.Exchange(ref worker.gettedLock, WorkerGettedFlags.Locked);
-                    Interlocked.Decrement(ref idleWorkerCount);
-                    if (longRunning)
+                    if(Interlocked.CompareExchange(ref worker.gettedLock, WorkerGettedFlags.Locked, WorkerGettedFlags.Unlocked) == WorkerGettedFlags.Unlocked)
                     {
-                        Interlocked.Increment(ref longRunningWorkerCount);
+                        Interlocked.Decrement(ref idleWorkerCount);
+                        if (longRunning)
+                        {
+                            Interlocked.Increment(ref longRunningWorkerCount);
+                        }
+                        return worker;
                     }
-                    return worker;
                 }
             }
 
