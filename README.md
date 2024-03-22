@@ -43,7 +43,7 @@ Support: Net46+ | Net5.0+
 PowerPool powerPool = new PowerPool(new PowerPoolOption() { /* Some options */ });
 powerPool.QueueWorkItem(() => 
 {
-    // DO SOMETHING
+    // Do something
 });
 ```
 
@@ -52,7 +52,7 @@ powerPool.QueueWorkItem(() =>
 PowerPool powerPool = new PowerPool(new PowerPoolOption() { /* Some options */ });
 powerPool.QueueWorkItem(() => 
 {
-    // DO SOMETHING
+    // Do something
     return result;
 }, (res) => 
 {
@@ -65,7 +65,7 @@ powerPool.QueueWorkItem(() =>
 PowerPool powerPool = new PowerPool(new PowerPoolOption() { /* Some options */ });
 powerPool.QueueWorkItem(() => 
 {
-    // DO SOMETHING
+    // Do something
     return result;
 }, new WorkOption()
 {
