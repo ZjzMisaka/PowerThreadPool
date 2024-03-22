@@ -984,6 +984,9 @@ namespace PowerThreadPool
             }
         }
 
+        /// <summary>
+        /// Reset some flags
+        /// </summary>
         private void IdleSetting()
         {
             if (poolTimer != null)
@@ -1004,6 +1007,11 @@ namespace PowerThreadPool
             }
         }
 
+        /// <summary>
+        /// Add worker into settedWorkDic
+        /// </summary>
+        /// <param name="workId"></param>
+        /// <param name="worker"></param>
         internal void SetWorkOwner(string workId, Worker worker)
         {
             settedWorkDic[workId] = worker;
