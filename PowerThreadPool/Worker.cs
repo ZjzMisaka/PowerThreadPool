@@ -356,20 +356,23 @@ namespace PowerThreadPool
         {
             List<WorkBase> stolenList = new List<WorkBase>();
 
-            while (stolenList.Count < count)
+            bool isContinue = true;
+            while (stolenList.Count < count && isContinue)
             {
+                isContinue = false;
+
                 string stolenWorkID;
                 stolenWorkID = waitingWorkIDQueue.Dequeue();
 
-                if (stolenWorkID == null)
+                if (stolenWorkID != null)
                 {
-                    return stolenList;
-                }
+                    if (waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
+                    {
+                        Interlocked.Decrement(ref waitingWorkCount);
+                        stolenList.Add(stolenWork);
 
-                if (waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
-                {
-                    Interlocked.Decrement(ref waitingWorkCount);
-                    stolenList.Add(stolenWork);
+                        isContinue = true;
+                    }
                 }
             }
 
@@ -394,12 +397,7 @@ namespace PowerThreadPool
 
                 if (waitingWorkID == null)
                 {
-                    TurnToIdle(ref waitingWorkID, ref work, out bool isContinue, out bool isReturn);
-                    if (isContinue)
-                    {
-                        continue;
-                    }
-                    else if (isReturn)
+                    if (TurnToIdle(ref waitingWorkID, ref work))
                     {
                         return;
                     }
@@ -479,30 +477,21 @@ namespace PowerThreadPool
             }
         }
 
-        private void TurnToIdle(ref string waitingWorkID, ref WorkBase work, out bool isContinue, out bool isReturn)
+        private bool TurnToIdle(ref string waitingWorkID, ref WorkBase work)
         {
-            isContinue = false;
-            isReturn = false;
             SpinWait.SpinUntil(() =>
             {
                 int gettedLockOrig = Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.ToBeDisabled, WorkerGettedFlags.Unlocked);
                 return (gettedLockOrig == WorkerGettedFlags.Unlocked);
             });
 
-            waitingWorkID = waitingWorkIDQueue.Dequeue();
-
-            if (waitingWorkID != null || !waitingWorkDic.IsEmpty)
+            if (!waitingWorkDic.IsEmpty)
             {
+                waitingWorkID = waitingWorkIDQueue.Dequeue();
                 if (waitingWorkID != null && waitingWorkDic.TryRemove(waitingWorkID, out work))
                 {
                     Interlocked.Decrement(ref waitingWorkCount);
                     Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
-                }
-                else
-                {
-                    Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
-                    isContinue = true;
-                    return;
                 }
             }
             else
@@ -527,9 +516,10 @@ namespace PowerThreadPool
 
                 powerPool.CheckPoolIdle();
 
-                isReturn = true;
-                return;
+                return true;
             }
+
+            return false;
         }
 
         private void SetWorkToRun(WorkBase work)
@@ -585,12 +575,6 @@ namespace PowerThreadPool
                 else
                 {
                     Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.Disabled);
-                    string waitingWorkID = waitingWorkIDQueue.Dequeue();
-                    if (waitingWorkID != null && waitingWorkDic.TryRemove(waitingWorkID, out work))
-                    {
-                        Interlocked.Decrement(ref waitingWorkCount);
-                        SetWork(work, true);
-                    }
                 }
             }
 
