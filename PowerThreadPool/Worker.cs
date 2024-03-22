@@ -466,17 +466,7 @@ namespace PowerThreadPool
                         if (powerPoolOption.DestroyThreadOption != null && powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
                         {
                             killTimer.Interval = powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime;
-                            try
-                            {
-                                killTimer.Start();
-                            }
-                            catch
-                            {
-                                killTimer = new System.Timers.Timer(powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime);
-                                killTimer.AutoReset = false;
-                                killTimer.Elapsed += OnKillTimerElapsed;
-                                killTimer.Start();
-                            }
+                            killTimer.Start();
                         }
 
                         Interlocked.Decrement(ref powerPool.runningWorkerCount);
