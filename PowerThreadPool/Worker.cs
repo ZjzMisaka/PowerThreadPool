@@ -403,14 +403,9 @@ namespace PowerThreadPool
                     }
                 }
 
-                if (killTimer != null)
-                {
-                    killTimer.Stop();
-                }
-
                 if (work == null)
                 {
-                    if (waitingWorkDic.TryRemove(waitingWorkID, out work))
+                    if (waitingWorkID != null && waitingWorkDic.TryRemove(waitingWorkID, out work))
                     {
                         Interlocked.Decrement(ref waitingWorkCount);
                     }
@@ -418,6 +413,11 @@ namespace PowerThreadPool
                     {
                         continue;
                     }
+                }
+
+                if (killTimer != null)
+                {
+                    killTimer.Stop();
                 }
 
                 Interlocked.Decrement(ref powerPool.waitingWorkCount);
