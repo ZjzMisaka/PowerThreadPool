@@ -50,12 +50,7 @@ namespace PowerThreadPool
 
         internal Worker(PowerPool powerPool)
         {
-            if (powerPool.PowerPoolOption.DestroyThreadOption != null)
-            {
-                this.killTimer = new System.Timers.Timer(powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime);
-                this.killTimer.AutoReset = false;
-                this.killTimer.Elapsed += OnKillTimerElapsed;
-            }
+            InitKillTimer(powerPool);
 
             this.powerPool = powerPool;
             this.ID = Guid.NewGuid().ToString();
@@ -74,22 +69,7 @@ namespace PowerThreadPool
 
                         powerPool.OnWorkStart(work.ID);
 
-                        ExecuteResultBase executeResult;
-                        try
-                        {
-                            object result = work.Execute();
-                            executeResult = work.SetExecuteResult(result, null, Status.Succeed);
-                        }
-                        catch (ThreadInterruptedException ex)
-                        {
-                            ex.Data.Add("ThrowedWhenExecuting", true);
-                            throw;
-                        }
-                        catch (Exception ex)
-                        {
-                            executeResult = work.SetExecuteResult(null, ex, Status.Failed);
-                        }
-                        executeResult.ID = work.ID;
+                        ExecuteResultBase executeResult = ExecuteWork();
 
                         powerPool.OneWorkEnd(executeResult);
                         work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
@@ -173,6 +153,38 @@ namespace PowerThreadPool
                 }
             });
             thread.Start();
+        }
+
+        private void InitKillTimer(PowerPool powerPool)
+        {
+            if (powerPool.PowerPoolOption.DestroyThreadOption != null)
+            {
+                this.killTimer = new System.Timers.Timer(powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime);
+                this.killTimer.AutoReset = false;
+                this.killTimer.Elapsed += OnKillTimerElapsed;
+            }
+        }
+
+        private ExecuteResultBase ExecuteWork()
+        {
+            ExecuteResultBase executeResult;
+            try
+            {
+                object result = work.Execute();
+                executeResult = work.SetExecuteResult(result, null, Status.Succeed);
+            }
+            catch (ThreadInterruptedException ex)
+            {
+                ex.Data.Add("ThrowedWhenExecuting", true);
+                throw;
+            }
+            catch (Exception ex)
+            {
+                executeResult = work.SetExecuteResult(null, ex, Status.Failed);
+            }
+            executeResult.ID = work.ID;
+
+            return executeResult;
         }
 
         public bool Wait(string workID)
