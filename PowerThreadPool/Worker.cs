@@ -4,7 +4,6 @@ using PowerThreadPool.Option;
 using System.Collections.Concurrent;
 using PowerThreadPool.Collections;
 using PowerThreadPool.EventArguments;
-using System.Linq;
 using System.Collections.Generic;
 using PowerThreadPool.Constants;
 using System.Timers;
@@ -150,8 +149,6 @@ namespace PowerThreadPool
                     {
                         powerPool.CheckPoolIdle();
                     }
-
-                    return;
                 }
             });
             thread.Start();
@@ -399,10 +396,8 @@ namespace PowerThreadPool
         {
             while (true)
             {
-                string waitingWorkID = null;
                 WorkBase work = null;
-
-                waitingWorkID = waitingWorkIDQueue.Dequeue();
+                string waitingWorkID = waitingWorkIDQueue.Dequeue();
 
                 if (waitingWorkID == null && powerPool.aliveWorkerCount <= powerPool.PowerPoolOption.MaxThreads)
                 {
