@@ -998,13 +998,14 @@ namespace PowerThreadPool
 
             cancellationTokenSource.Dispose();
             cancellationTokenSource = new CancellationTokenSource();
-            waitAllSignal.Set();
 
             Interlocked.Exchange(ref poolRunning, PoolRunningFlags.NotRunning);
             if (poolStopping)
             {
                 poolStopping = false;
             }
+
+            waitAllSignal.Set();
         }
 
         /// <summary>
