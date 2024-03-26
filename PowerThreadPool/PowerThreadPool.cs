@@ -997,6 +997,7 @@ namespace PowerThreadPool
 
             suspended = powerPoolOption.StartSuspended;
 
+            cancellationTokenSource.Dispose();
             cancellationTokenSource = new CancellationTokenSource();
             waitAllSignal.Set();
 
@@ -1546,6 +1547,7 @@ namespace PowerThreadPool
                     {
                         worker.Kill();
                     }
+                    cancellationTokenSource.Dispose();
                     aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
                     idleWorkerDic = new ConcurrentDictionary<string, Worker>();
                     idleWorkerQueue = new ConcurrentQueue<string>();
