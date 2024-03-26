@@ -1546,6 +1546,7 @@ namespace PowerThreadPool
                     foreach (Worker worker in aliveWorkerList)
                     {
                         worker.Kill();
+                        worker.Dispose();
                     }
                     cancellationTokenSource.Dispose();
                     aliveWorkerDic = new ConcurrentDictionary<string, Worker>();

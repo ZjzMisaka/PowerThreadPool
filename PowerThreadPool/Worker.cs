@@ -11,7 +11,7 @@ using System.Timers;
 
 namespace PowerThreadPool
 {
-    public class Worker
+    public class Worker : IDisposable
     {
         internal Thread thread;
 
@@ -35,6 +35,8 @@ namespace PowerThreadPool
         private int stealingLock = WorkerStealingFlags.Unlocked;
 
         private PowerPool powerPool;
+
+        private bool disposed = false;
 
         private bool longRunning = true;
         internal bool LongRunning { get => longRunning; set => longRunning = value; }
@@ -641,6 +643,37 @@ namespace PowerThreadPool
         internal bool IsPausing()
         {
             return work.IsPausing;
+        }
+
+        /// <summary>
+        /// Dispose the instance. 
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Dispose the instance
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    runSignal.Dispose();
+                }
+
+                disposed = true;
+            }
+        }
+
+        ~Worker()
+        {
+            Dispose(false);
         }
     }
 }
