@@ -85,11 +85,15 @@ namespace UnitTest
                     int r = random.Next(0, 101);
                     if (r == 100)
                     {
-                        powerPool.QueueWorkItem(() => { throw new Exception(); });
+                        string id = powerPool.QueueWorkItem(() => { throw new Exception(); });
+                        if (id == null)
+                        {
+                            Assert.Fail("PoolStopping");
+                        }
                     }
                     else if (r >= 95 && r <= 99)
                     {
-                        powerPool.QueueWorkItem(() =>
+                        string id = powerPool.QueueWorkItem(() =>
                         {
                             Sleep(10000);
                             int r1 = random.Next(0, 101);
@@ -98,10 +102,14 @@ namespace UnitTest
                                 Thread.Sleep(1);
                             }
                         });
+                        if (id == null)
+                        {
+                            Assert.Fail("PoolStopping");
+                        }
                     }
                     else if (r >= 94 && r <= 94)
                     {
-                        powerPool.QueueWorkItem(() =>
+                        string id = powerPool.QueueWorkItem(() =>
                         {
                             Sleep(30000);
                             int r1 = random.Next(0, 101);
@@ -110,10 +118,14 @@ namespace UnitTest
                                 Thread.Sleep(1);
                             }
                         });
+                        if (id == null)
+                        {
+                            Assert.Fail("PoolStopping");
+                        }
                     }
                     else
                     {
-                        powerPool.QueueWorkItem(() =>
+                        string id = powerPool.QueueWorkItem(() =>
                         {
                             Sleep(random.Next(500, 1000));
                             int r1 = random.Next(0, 101);
@@ -122,6 +134,10 @@ namespace UnitTest
                                 Thread.Sleep(1);
                             }
                         });
+                        if (id == null)
+                        {
+                            Assert.Fail("PoolStopping");
+                        }
                     }
                 }
 
