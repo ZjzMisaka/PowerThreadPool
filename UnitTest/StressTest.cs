@@ -141,8 +141,6 @@ namespace UnitTest
                     }
                 }
 
-                Thread.Sleep(10);
-
                 if (runCount != powerPool.WaitingWorkCount)
                 {
                     Assert.Fail();
@@ -154,6 +152,7 @@ namespace UnitTest
                 if (r1 >= 81 && r1 <= 100)
                 {
                     await powerPool.StopAsync();
+                    await powerPool.WaitAsync();
                     if (powerPool.RunningWorkerCount > 0 || powerPool.WaitingWorkCount > 0)
                     {
                         Assert.Fail();
@@ -162,6 +161,7 @@ namespace UnitTest
                 else if (r1 >= 61 && r1 <= 80)
                 {
                     await powerPool.StopAsync(true);
+                    await powerPool.WaitAsync();
                     if (powerPool.RunningWorkerCount > 0 || powerPool.WaitingWorkCount > 0)
                     {
                         Assert.Fail();
@@ -191,14 +191,15 @@ namespace UnitTest
             powerPool = new PowerPool(new PowerPoolOption() { DestroyThreadOption = new DestroyThreadOption() });
 
             int totalTasks = 100;
-
-            for (int i = 0; i < 10000; ++i)
+            int doneCount = 0;
+            for (int i = 0; i < 300000; ++i)
             {
                 Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
                     Task.Run(() =>
                     {
                         powerPool.QueueWorkItem(() =>
                         {
+                            Interlocked.Increment(ref doneCount);
                         });
                     })
                 ).ToArray();
@@ -206,14 +207,14 @@ namespace UnitTest
                 await Task.WhenAll(tasks);
 
                 await powerPool.WaitAsync();
-                Thread.Sleep(1);
-                await powerPool.WaitAsync();
-
-                Assert.Equal(0, powerPool.RunningWorkerCount);
-                Assert.Equal(0, powerPool.WaitingWorkCount);
-
-                Assert.True(powerPool.IdleWorkerCount > 0);
             }
+
+            Assert.Equal(100 * 300000, doneCount);
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+
+            Assert.True(powerPool.IdleWorkerCount > 0);
         }
 
         private void Sleep(int ms)

@@ -1239,14 +1239,11 @@ namespace PowerThreadPool
 
             if (forceStop)
             {
-                while (poolRunning == PoolRunningFlags.Running)
+                settedWorkDic.Clear();
+                IEnumerable<Worker> workersToStop = aliveWorkerList;
+                foreach (Worker worker in workersToStop)
                 {
-                    settedWorkDic.Clear();
-                    IEnumerable<Worker> workersToStop = aliveWorkerList;
-                    foreach (Worker worker in workersToStop)
-                    {
-                        worker.ForceStop();
-                    }
+                    worker.ForceStop();
                 }
             }
             else
@@ -1258,8 +1255,6 @@ namespace PowerThreadPool
                     worker.Cancel();
                 }
             }
-
-            Wait();
 
             return true;
         }

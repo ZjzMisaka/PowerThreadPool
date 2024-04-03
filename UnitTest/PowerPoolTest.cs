@@ -190,7 +190,6 @@ namespace UnitTest
 
             powerPool.Wait();
 
-
             Assert.Collection<string>(logList,
                 item => Assert.Equal("PoolTimeout", item)
                 );
@@ -594,9 +593,7 @@ namespace UnitTest
                 ThreadPriority = ThreadPriority.Highest
             });
 
-            Thread.Sleep(100);
             powerPool.Stop();
-            powerPool.Wait();
         }
 
         [Fact]
@@ -610,7 +607,6 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
             });
-            Thread.Sleep(10);
             Assert.Equal(0, powerPool.IdleWorkerCount);
             Assert.Equal(1, powerPool.RunningWorkerCount);
             Assert.Equal(1, powerPool.WaitingWorkCount);
@@ -618,9 +614,6 @@ namespace UnitTest
             Assert.Single(powerPool.WaitingWorkList);
 
             powerPool.Wait();
-
-            Thread.Sleep(10);
-
             Assert.Equal(1, powerPool.IdleWorkerCount);
         }
 

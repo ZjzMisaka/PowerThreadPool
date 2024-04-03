@@ -446,8 +446,6 @@ namespace UnitTest
             });
             powerPool.Wait();
 
-            Thread.Sleep(1000);
-
             Assert.Equal(resId, id);
         }
 
@@ -492,12 +490,10 @@ namespace UnitTest
                 logList.Add("Work2 END");
             });
             long start = GetNowSs();
-            Thread.Sleep(50);
             powerPool.Stop();
-            powerPool.Wait();
             long end = GetNowSs() - start;
 
-            Assert.True(end >= 50 && end <= 350);
+            Assert.True(end >= 0 && end <= 300);
         }
 
         [Fact]
@@ -541,12 +537,10 @@ namespace UnitTest
                 logList.Add("Work2 END");
             });
             long start = GetNowSs();
-            Thread.Sleep(50);
             await powerPool.StopAsync();
-            await powerPool.WaitAsync();
             long end = GetNowSs() - start;
 
-            Assert.True(end >= 50 && end <= 5000);
+            Assert.True(end >= 0 && end <= 300);
         }
 
         [Fact]
@@ -1045,10 +1039,8 @@ namespace UnitTest
                     Thread.Sleep(10);
                 }
             });
-            Thread.Sleep(100);
             Task<bool> task = powerPool.WaitAsync(id);
-
-            Thread.Sleep(500);
+            Thread.Sleep(100);
             powerPool.Stop(true);
 
             bool res = await task;
@@ -1100,8 +1092,6 @@ namespace UnitTest
                     Thread.Sleep(100);
                 }
             });
-
-            Thread.Sleep(100);
 
             powerPool.Pause(id);
             Thread.Sleep(1000);
@@ -1177,8 +1167,6 @@ namespace UnitTest
             Assert.False(powerPool.PoolRunning);
 
             powerPool.Start();
-
-            Thread.Sleep(100);
 
             Assert.Equal(1, powerPool.RunningWorkerCount);
             Assert.True(powerPool.PoolRunning);
