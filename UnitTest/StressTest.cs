@@ -41,12 +41,12 @@ namespace UnitTest
 
                 await powerPool.WaitAsync();
 
-                Assert.Equal(totalTasks, doneCount);
-                Assert.Equal(0, failedCount);
-                Assert.Equal(0, powerPool.RunningWorkerCount);
-                Assert.Equal(0, powerPool.WaitingWorkCount);
-
-                Assert.True(powerPool.IdleWorkerCount > 0);
+                string errLog = "";
+                errLog = "doneCount: " + doneCount + "/" + totalTasks + " | failedCount: " + failedCount + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount;
+                if (totalTasks != doneCount || 0 != failedCount || 0 != powerPool.RunningWorkerCount || 0 != powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
+                {
+                    Assert.Fail(errLog);
+                }
             }
         }
 
@@ -141,6 +141,8 @@ namespace UnitTest
                     }
                 }
 
+                Thread.Yield();
+
                 if (runCount != powerPool.WaitingWorkCount)
                 {
                     Assert.Fail();
@@ -209,12 +211,12 @@ namespace UnitTest
                 await powerPool.WaitAsync();
             }
 
-            Assert.Equal(100 * 300000, doneCount);
-
-            Assert.Equal(0, powerPool.RunningWorkerCount);
-            Assert.Equal(0, powerPool.WaitingWorkCount);
-
-            Assert.True(powerPool.IdleWorkerCount > 0);
+            string errLog = "";
+            errLog = "doneCount: " + doneCount + "/" + 100 * 300000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount;
+            if (100 * 300000 != doneCount || 0 != powerPool.RunningWorkerCount || 0!= powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
+            {
+                Assert.Fail(errLog);
+            }
         }
 
         private void Sleep(int ms)
