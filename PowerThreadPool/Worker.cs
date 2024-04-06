@@ -568,7 +568,7 @@ namespace PowerThreadPool
                     return (gettedStatus == WorkerGettedFlags.Unlocked || gettedStatus == WorkerGettedFlags.Disabled);
                 });
 
-                if (waitingWorkDic.IsEmpty && Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle) == WorkerStates.Idle)
+                if (Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle) == WorkerStates.Idle)
                 {
                     if (powerPool.idleWorkerDic.TryRemove(ID, out _))
                     {
