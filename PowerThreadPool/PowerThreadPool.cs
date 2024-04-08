@@ -101,14 +101,6 @@ namespace PowerThreadPool
             }
         }
 
-        public int IdleWorkerCountReal
-        {
-            get
-            {
-                return idleWorkerDic.Count;
-            }
-        }
-
         internal int waitingWorkCount = 0;
         public int WaitingWorkCount
         {
