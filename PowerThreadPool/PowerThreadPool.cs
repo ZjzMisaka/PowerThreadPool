@@ -861,13 +861,12 @@ namespace PowerThreadPool
             {
                 if (idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    Interlocked.Decrement(ref idleWorkerCount);
                     SpinWait.SpinUntil(() =>
                     {
                         int gettedStatus = Interlocked.CompareExchange(ref worker.gettedLock, WorkerGettedFlags.Locked, WorkerGettedFlags.Unlocked);
                         return (gettedStatus == WorkerGettedFlags.Unlocked);
                     });
-                    
+                    Interlocked.Decrement(ref idleWorkerCount);
                     if (longRunning)
                     {
                         Interlocked.Increment(ref longRunningWorkerCount);

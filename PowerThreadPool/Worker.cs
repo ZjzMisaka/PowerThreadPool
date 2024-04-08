@@ -519,9 +519,11 @@ namespace PowerThreadPool
                 Interlocked.Exchange(ref workerState, WorkerStates.Idle);
                 Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
 
-                powerPool.idleWorkerDic[this.ID] = this;
-                Interlocked.Increment(ref powerPool.idleWorkerCount);
-                powerPool.idleWorkerQueue.Enqueue(this.ID);
+                if (powerPool.idleWorkerDic.TryAdd(this.ID, this))
+                {
+                    Interlocked.Increment(ref powerPool.idleWorkerCount);
+                    powerPool.idleWorkerQueue.Enqueue(this.ID);
+                }
 
                 powerPool.CheckPoolIdle();
 
