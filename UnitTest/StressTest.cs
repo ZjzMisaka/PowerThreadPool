@@ -42,7 +42,7 @@ namespace UnitTest
                 await powerPool.WaitAsync();
 
                 string errLog = "";
-                errLog = "doneCount: " + doneCount + "/" + totalTasks + " | failedCount: " + failedCount + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
+                errLog = "doneCount: " + doneCount + "/" + totalTasks + " | failedCount: " + failedCount + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.IdleWorkerCountReal: " + powerPool.IdleWorkerCountReal + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
                 if (totalTasks != doneCount || 0 != failedCount || 0 != powerPool.RunningWorkerCount || 0 != powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
                 {
                     Assert.Fail(errLog);
@@ -212,7 +212,7 @@ namespace UnitTest
             }
 
             string errLog = "";
-            errLog = "doneCount: " + doneCount + "/" + 100 * 300000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
+            errLog = "doneCount: " + doneCount + "/" + 100 * 300000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.IdleWorkerCountReal: " + powerPool.IdleWorkerCountReal + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
             if (100 * 300000 != doneCount || 0 != powerPool.RunningWorkerCount || 0!= powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
             {
                 Assert.Fail(errLog);
