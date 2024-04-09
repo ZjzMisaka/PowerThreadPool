@@ -15,7 +15,7 @@ Read the [Wiki](https://github.com/ZjzMisaka/PowerThreadPool/wiki) here.
 
 ## Download
 PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/PowerThreadPool/) now.  
-Support: Net46+ | Net5.0+  
+Support: Net45+ | Net5.0+ | netstandard2.0+  
 
 ## Features
 - [Pool Control | Work Control](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control)
