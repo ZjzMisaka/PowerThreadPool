@@ -20,6 +20,8 @@ namespace UnitTest
                 int doneCount = 0;
                 int failedCount = 0;
 
+                powerPool.EnablePoolIdleCheck = false;
+
                 Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
                     Task.Run(() =>
                     {
@@ -38,6 +40,8 @@ namespace UnitTest
                 ).ToArray();
 
                 await Task.WhenAll(tasks);
+
+                powerPool.EnablePoolIdleCheck = true;
 
                 await powerPool.WaitAsync();
 
