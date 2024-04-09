@@ -34,6 +34,8 @@ namespace PowerThreadPool
 
         private int createWorkerLock = WorkerCreationFlags.Unlocked;
 
+        private static readonly object[] EmptyArray = new object[0];
+
         private PowerPoolOption powerPoolOption;
         public PowerPoolOption PowerPoolOption 
         { 
@@ -377,7 +379,7 @@ namespace PowerThreadPool
         {
             WorkOption option = new WorkOption();
             option.Callback = callBack;
-            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), Array.Empty<object>(), option);
+            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), EmptyArray, option);
         }
 
         /// <summary>
@@ -388,7 +390,7 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public string QueueWorkItem(Action action, WorkOption option)
         {
-            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), Array.Empty<object>(), option);
+            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), EmptyArray, option);
         }
 
         /// <summary>
@@ -619,7 +621,7 @@ namespace PowerThreadPool
         {
             WorkOption<TResult> option = new WorkOption<TResult>();
             option.Callback = callBack;
-            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), Array.Empty<object>(), option);
+            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), EmptyArray, option);
         }
 
         /// <summary>
@@ -631,7 +633,7 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public string QueueWorkItem<TResult>(Func<TResult> function, WorkOption<TResult> option)
         {
-            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), Array.Empty<object>(), option);
+            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), EmptyArray, option);
         }
 
         /// <summary>
