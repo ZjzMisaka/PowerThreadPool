@@ -1,0 +1,34 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using PowerThreadPool.Collections;
+using PowerThreadPool.Options;
+using PowerThreadPool.Results;
+
+namespace PowerThreadPool.Works
+{
+    internal abstract class WorkBase
+    {
+        private string id;
+        public string ID { get => id; set => id = value; }
+        private AutoResetEvent waitSignal;
+        public AutoResetEvent WaitSignal { get => waitSignal; set => waitSignal = value; }
+        private bool shouldStop;
+        public bool ShouldStop { get => shouldStop; set => shouldStop = value; }
+        private ManualResetEvent pauseSignal;
+        public ManualResetEvent PauseSignal { get => pauseSignal; set => pauseSignal = value; }
+        private bool isPausing;
+        public bool IsPausing { get => isPausing; set => isPausing = value; }
+        public abstract object Execute();
+        public abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
+        internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
+        internal abstract ThreadPriority ThreadPriority { get; }
+        internal abstract int WorkPriority { get; }
+        internal abstract TimeoutOption WorkTimeoutOption { get; }
+        internal abstract bool LongRunning { get; }
+        internal abstract ConcurrentSet<string> Dependents { get; }
+    }
+}

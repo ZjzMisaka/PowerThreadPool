@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PowerThreadPool.Option
+namespace PowerThreadPool.Options
 {
     public class DestroyThreadOption
     {

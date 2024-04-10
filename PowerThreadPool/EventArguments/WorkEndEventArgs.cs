@@ -1,5 +1,6 @@
 ﻿
 using System;
+using PowerThreadPool.Results;
 
 namespace PowerThreadPool.EventArguments
 {

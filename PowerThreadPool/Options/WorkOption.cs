@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Threading;
 using PowerThreadPool.Collections;
+using PowerThreadPool.Results;
 
-namespace PowerThreadPool.Option
+namespace PowerThreadPool.Options
 {
 
     public class WorkOption<TResult>

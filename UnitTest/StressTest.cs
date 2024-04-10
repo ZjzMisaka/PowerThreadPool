@@ -1,5 +1,6 @@
 ﻿using PowerThreadPool;
-using PowerThreadPool.Option;
+using PowerThreadPool.Options;
+using PowerThreadPool.Results;
 using System.Diagnostics;
 
 namespace UnitTest

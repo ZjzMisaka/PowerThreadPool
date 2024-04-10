@@ -1,6 +1,7 @@
 ﻿using System;
+using PowerThreadPool.Results;
 
-namespace PowerThreadPool.Option
+namespace PowerThreadPool.Options
 {
 
     public class PowerPoolOption

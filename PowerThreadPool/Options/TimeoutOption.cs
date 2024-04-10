@@ -1,4 +1,4 @@
-﻿namespace PowerThreadPool.Option
+﻿namespace PowerThreadPool.Options
 {
     public class TimeoutOption
     {

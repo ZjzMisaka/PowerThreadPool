@@ -1,8 +1,10 @@
 ﻿using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
-using PowerThreadPool.Helper;
-using PowerThreadPool.Option;
+using PowerThreadPool.Helpers;
+using PowerThreadPool.Options;
+using PowerThreadPool.Results;
+using PowerThreadPool.Works;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

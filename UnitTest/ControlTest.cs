@@ -1,5 +1,5 @@
 ﻿using PowerThreadPool;
-using PowerThreadPool.Option;
+using PowerThreadPool.Options;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

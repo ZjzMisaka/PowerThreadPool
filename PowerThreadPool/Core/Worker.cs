@@ -1,12 +1,14 @@
 ﻿using System.Threading;
 using System;
-using PowerThreadPool.Option;
+using PowerThreadPool.Options;
 using System.Collections.Concurrent;
 using PowerThreadPool.Collections;
 using PowerThreadPool.EventArguments;
 using System.Collections.Generic;
 using PowerThreadPool.Constants;
 using System.Timers;
+using PowerThreadPool.Results;
+using PowerThreadPool.Works;
 
 namespace PowerThreadPool
 {

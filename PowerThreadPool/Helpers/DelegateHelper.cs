@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace PowerThreadPool.Helper
+namespace PowerThreadPool.Helpers
 {
     internal static class DelegateHelper<TResult>
     {

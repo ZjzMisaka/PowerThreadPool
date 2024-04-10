@@ -1,6 +1,7 @@
 using PowerThreadPool;
 using PowerThreadPool.Collections;
-using PowerThreadPool.Option;
+using PowerThreadPool.Options;
+using PowerThreadPool.Results;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
