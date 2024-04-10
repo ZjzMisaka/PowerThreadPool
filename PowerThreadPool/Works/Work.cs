@@ -4,15 +4,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using static PowerThreadPool.PowerPool;
-
-/* プロジェクト 'PowerThreadPool (net5.0)' からのマージされていない変更
-前:
-using PowerThreadPool.Results;
-後:
-using PowerThreadPool.Results;
-using PowerThreadPool;
-using PowerThreadPool.Works;
-*/
 using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Works

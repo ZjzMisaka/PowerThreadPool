@@ -5,7 +5,6 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Options
 {
-
     public class WorkOption<TResult>
     {
         public WorkOption()

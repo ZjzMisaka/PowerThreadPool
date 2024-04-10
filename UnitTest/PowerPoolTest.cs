@@ -2,10 +2,6 @@ using PowerThreadPool;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
-using System;
-using System.Diagnostics;
-using System.Diagnostics.Metrics;
-using Xunit.Sdk;
 
 namespace UnitTest
 {

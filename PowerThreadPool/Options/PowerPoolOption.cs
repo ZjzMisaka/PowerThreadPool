@@ -3,7 +3,6 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Options
 {
-
     public class PowerPoolOption
     {
         public PowerPoolOption()
