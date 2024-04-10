@@ -14,7 +14,7 @@ namespace UnitTest
         {
             powerPool = new PowerPool(new PowerPoolOption() { DestroyThreadOption = new DestroyThreadOption() });
 
-            int totalTasks = 500000;
+            int totalTasks = 1000000;
 
             for (int i = 0; i < 100; ++i)
             {
@@ -199,7 +199,7 @@ namespace UnitTest
 
             int totalTasks = 100;
             int doneCount = 0;
-            for (int i = 0; i < 300000; ++i)
+            for (int i = 0; i < 1000000; ++i)
             {
                 Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
                     Task.Run(() =>
@@ -217,8 +217,8 @@ namespace UnitTest
             }
 
             string errLog = "";
-            errLog = "doneCount: " + doneCount + "/" + 100 * 300000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
-            if (100 * 300000 != doneCount || 0 != powerPool.RunningWorkerCount || 0!= powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
+            errLog = "doneCount: " + doneCount + "/" + 100 * 1000000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
+            if (100 * 1000000 != doneCount || 0 != powerPool.RunningWorkerCount || 0!= powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
             {
                 Assert.Fail(errLog);
             }
