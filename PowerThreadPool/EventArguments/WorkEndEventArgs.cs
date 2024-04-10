@@ -3,12 +3,9 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.EventArguments
 {
-    public class WorkEndEventArgs : EventArgs
+    public class WorkEndEventArgs : EventArgsBase
     {
         public WorkEndEventArgs() { }
-
-        private string id;
-        public string ID { get => id; set => id = value; }
 
         private object result;
         public object Result { get => result; internal set => result = value; }

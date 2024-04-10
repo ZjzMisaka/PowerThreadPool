@@ -1,12 +1,7 @@
-﻿using System;
-
-namespace PowerThreadPool.EventArguments
+﻿namespace PowerThreadPool.EventArguments
 {
-    public class TimeoutEventArgs : EventArgs
+    public class TimeoutEventArgs : EventArgsBase
     {
         public TimeoutEventArgs() { }
-
-        private string id;
-        public string ID { get => id; internal set => id = value; }
     }
 }
