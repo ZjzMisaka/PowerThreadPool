@@ -567,7 +567,7 @@ namespace PowerThreadPool
 
         private void OnKillTimerElapsed(object s, ElapsedEventArgs e)
         {
-            if (waitingWorkDic.IsEmpty && powerPool.IdleWorkerCount > powerPool.PowerPoolOption.DestroyThreadOption.MinThreads)
+            if (powerPool.IdleWorkerCount > powerPool.PowerPoolOption.DestroyThreadOption.MinThreads)
             {
                 SpinWait.SpinUntil(() =>
                 {
