@@ -1122,6 +1122,45 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestResumeByIDDirectlyWithoutPause()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.PauseIfRequested();
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            });
+
+            bool res = powerPool.Resume(id);
+
+            powerPool.Stop();
+
+            Assert.False(res);
+        }
+
+        [Fact]
+        public void TestResumeAllDirectlyWithoutPause()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.PauseIfRequested();
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            });
+
+            powerPool.Resume(true);
+            powerPool.Stop();
+        }
+
+        [Fact]
         public void TestStartSuspended()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });

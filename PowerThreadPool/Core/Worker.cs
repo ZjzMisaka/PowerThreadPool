@@ -275,18 +275,19 @@ namespace PowerThreadPool
 
             if (workerToResume != null)
             {
-                workerToResume.IsPausing = false;
-                workerToResume.PauseSignal.Set();
-                res = true;
+                if (workerToResume.IsPausing)
+                {
+                    workerToResume.IsPausing = false;
+                    workerToResume.PauseSignal.Set();
+                    res = true;
+                }
             }
 
             return res;
         }
 
-        public bool Resume()
+        public void Resume()
         {
-            bool res = false;
-
             foreach (WorkBase workerToResume in waitingWorkDic.Values)
             {
                 if (workerToResume.IsPausing)
@@ -300,8 +301,6 @@ namespace PowerThreadPool
                 work.IsPausing = false;
                 work.PauseSignal.Set();
             }
-
-            return res;
         }
 
         public bool Stop(string workID, bool forceStop)
