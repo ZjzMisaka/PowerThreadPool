@@ -414,16 +414,17 @@ namespace PowerThreadPool
                     }
                 }
 
-                if (work == null)
+                if (work == null && waitingWorkID != null)
                 {
-                    if (waitingWorkID != null && waitingWorkDic.TryRemove(waitingWorkID, out work))
+                    if (waitingWorkDic.TryRemove(waitingWorkID, out work))
                     {
                         Interlocked.Decrement(ref waitingWorkCount);
                     }
-                    else
-                    {
-                        continue;
-                    }
+                }
+
+                if (work == null)
+                {
+                    continue;
                 }
 
                 if (killTimer != null)
@@ -499,11 +500,16 @@ namespace PowerThreadPool
             if (!waitingWorkDic.IsEmpty)
             {
                 waitingWorkID = waitingWorkIDQueue.Dequeue();
-                if (waitingWorkID != null && waitingWorkDic.TryRemove(waitingWorkID, out work))
+                if (waitingWorkID != null)
                 {
-                    Interlocked.Decrement(ref waitingWorkCount);
-                    Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
+                    if (waitingWorkDic.TryRemove(waitingWorkID, out work))
+                    {
+                        Interlocked.Decrement(ref waitingWorkCount);
+                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
+                    }
                 }
+
+                return false;
             }
             else
             {
@@ -531,8 +537,6 @@ namespace PowerThreadPool
 
                 return true;
             }
-
-            return false;
         }
 
         private void SetWorkToRun(WorkBase work)
