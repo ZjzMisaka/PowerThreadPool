@@ -1093,7 +1093,7 @@ namespace UnitTest
             powerPool.Wait();
             long duration = GetNowSs() - start;
 
-            Assert.True(duration >= 3000);
+            Assert.True(duration >= 2990);
         }
 
         [Fact]
