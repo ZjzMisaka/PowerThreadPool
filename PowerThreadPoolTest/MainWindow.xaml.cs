@@ -108,6 +108,7 @@ namespace PowerThreadPoolTest
                 {
                     OutputMsg("Stopping...");
                     await powerPool.StopAsync();
+                    await powerPool.WaitAsync();
                     OutputMsg("AliveWorkerCount: " + powerPool.AliveWorkerCount + " | RunningWorkerCount: " + powerPool.RunningWorkerCount);
                     OutputMsg("IdleWorkerCount: " + powerPool.IdleWorkerCount);
                     OutputMsg("WaitingWorkCount: " + powerPool.WaitingWorkCount);
@@ -130,6 +131,7 @@ namespace PowerThreadPoolTest
                 {
                     OutputMsg("Force Stopping...");
                     await powerPool.StopAsync(true);
+                    await powerPool.WaitAsync();
                     OutputMsg("AliveWorkerCount: " + powerPool.AliveWorkerCount + " | RunningWorkerCount: " + powerPool.RunningWorkerCount);
                     OutputMsg("IdleWorkerCount: " + powerPool.IdleWorkerCount);
                     OutputMsg("WaitingWorkCount: " + powerPool.WaitingWorkCount);
