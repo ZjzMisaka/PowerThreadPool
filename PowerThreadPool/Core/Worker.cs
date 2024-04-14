@@ -504,9 +504,10 @@ namespace PowerThreadPool
                     if (waitingWorkDic.TryRemove(waitingWorkID, out work))
                     {
                         Interlocked.Decrement(ref waitingWorkCount);
-                        Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
                     }
                 }
+
+                Interlocked.CompareExchange(ref gettedLock, WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
 
                 return false;
             }
