@@ -236,24 +236,24 @@ namespace PowerThreadPool
         {
             bool res = false;
 
-            WorkBase workerToPause;
-            if (!waitingWorkDic.TryGetValue(workID, out workerToPause))
+            WorkBase workToPause;
+            if (!waitingWorkDic.TryGetValue(workID, out workToPause))
             {
                 if (workID == WorkID)
                 {
-                    workerToPause = work;
+                    workToPause = work;
                 }
             }
 
-            if (workerToPause != null)
+            if (workToPause != null)
             {
-                if (workerToPause.PauseSignal == null)
+                if (workToPause.PauseSignal == null)
                 {
-                    workerToPause.PauseSignal = new ManualResetEvent(true);
+                    workToPause.PauseSignal = new ManualResetEvent(true);
                 }
 
-                workerToPause.IsPausing = true;
-                workerToPause.PauseSignal.Reset();
+                workToPause.IsPausing = true;
+                workToPause.PauseSignal.Reset();
                 res = true;
             }
 
@@ -264,21 +264,21 @@ namespace PowerThreadPool
         {
             bool res = false;
 
-            WorkBase workerToResume;
-            if (!waitingWorkDic.TryGetValue(workID, out workerToResume))
+            WorkBase workToResume;
+            if (!waitingWorkDic.TryGetValue(workID, out workToResume))
             {
                 if (workID == WorkID)
                 {
-                    workerToResume = work;
+                    workToResume = work;
                 }
             }
 
-            if (workerToResume != null)
+            if (workToResume != null)
             {
-                if (workerToResume.IsPausing)
+                if (workToResume.IsPausing)
                 {
-                    workerToResume.IsPausing = false;
-                    workerToResume.PauseSignal.Set();
+                    workToResume.IsPausing = false;
+                    workToResume.PauseSignal.Set();
                     res = true;
                 }
             }
@@ -288,12 +288,12 @@ namespace PowerThreadPool
 
         public void Resume()
         {
-            foreach (WorkBase workerToResume in waitingWorkDic.Values)
+            foreach (WorkBase workToResume in waitingWorkDic.Values)
             {
-                if (workerToResume.IsPausing)
+                if (workToResume.IsPausing)
                 {
-                    workerToResume.IsPausing = false;
-                    workerToResume.PauseSignal.Set();
+                    workToResume.IsPausing = false;
+                    workToResume.PauseSignal.Set();
                 }
             }
             if (work.IsPausing)
