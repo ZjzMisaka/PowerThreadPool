@@ -33,6 +33,7 @@ Support: Net45+ | Net5.0+ | netstandard2.0+
 - [Work Timeout | Cumulative Work Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Timeout)
 - [Work Callback | Default Callback](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
 - [Error Handling](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
+- [Events](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPool#events)
 - [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPool#properties)
 - [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
 - [Lock-Free](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
