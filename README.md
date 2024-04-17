@@ -8,7 +8,7 @@
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/ZjzMisaka/PowerThreadPool/test.yml?style=for-the-badge)
 ![Codecov](https://img.shields.io/codecov/c/github/ZjzMisaka/PowerThreadPool?style=for-the-badge)
 
-Offers an comprehensive and efficient thread pool with granular work control, flexible concurrency, and robust error handling, alongside an easy-to-use API for diverse task submissions.  
+An comprehensive and efficient lock-free thread pool with granular work control, flexible concurrency, and robust error handling, alongside an easy-to-use API for diverse task submissions.  
 
 ## Documentation
 Read the [Wiki](https://github.com/ZjzMisaka/PowerThreadPool/wiki) here.  
@@ -29,6 +29,7 @@ Support: Net45+ | Net5.0+ | netstandard2.0+
 - [Thread Pool Sizing](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing)
     - [Idle Thread Scheduled Destruction](https://github.com/ZjzMisaka/PowerThreadPool/wiki/DestroyThreadOption)
     - [Thread Starvation Countermeasures (Long-running Task Support)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing#thread-starvation)
+- [Work Group](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Group)
 - [Work Priority | Thread Priority](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Priority)
 - [Work Timeout | Cumulative Work Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Timeout)
 - [Work Callback | Default Callback](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)

@@ -1,36 +1,21 @@
-OYAMA MAHIRO SAIKOU PUBLIC LICENSE
-Version 1, March 2023
+MIT License
 
-Copyright (C) 2023 Zhang Junzhi <zjzmisaka@outlook.com>
+Copyright (c) 2023-2024 Zhang Junzhi
 
-Software distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-You may do anything you want to do with the software, source code or documents
-covered by this license, as long as you comply with the following conditions:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-        For this license
-0. The above copyright notice and this permission notice shall be included in
-   all copies or substantial portions of the Software, but you may modify the
-   appendix section.
-1. You may not remove this license unless it causes inconvenience. If you
-   decide to remove it, you must comply with the 'Main restrictions' once more
-   before doing so.
-2. You may not remove or modify any existing restrictions.
-
-        For restrictions
-0. If you wish to modify the appendix section, you may only add compliments for
-   otaku characters.
-1. If you wish to add compliments for your favorite otaku characters, you must
-   include your own name (or nickname).
-2. If the character already exists, you may append your own name (or nick name)
-   to it.
-
-        Main restrictions
-0. Any developer using code covered by this license must first shout out the
-   contents enclosed in quotes in the appendix.
-0.0. If you feel embarrassed, you may choose to shout privately at home.
-0.0.0. If you really don't want to, just recite it inwardly.
-
-        Appendix
-0. "緒山まひろ最高！！！" [Zhang Junzhi]
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
