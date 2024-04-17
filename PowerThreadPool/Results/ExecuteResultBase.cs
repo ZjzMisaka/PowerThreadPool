@@ -2,7 +2,7 @@
 
 namespace PowerThreadPool.Results
 {
-    public enum Status { Succeed, Failed }
+    public enum Status { Succeed, Failed, Canceled }
 
     public abstract class ExecuteResultBase
     {

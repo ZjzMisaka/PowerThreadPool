@@ -622,15 +622,21 @@ namespace PowerThreadPool
 
         internal void Cancel()
         {
-            waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
-            int count = Interlocked.Exchange(ref waitingWorkCount, 0);
-            Interlocked.Exchange(ref powerPool.waitingWorkCount, powerPool.waitingWorkCount - count);
+            IEnumerable<string> waitingWorkIDList = waitingWorkDic.Keys;
+            foreach (string id in waitingWorkIDList)
+            {
+                Cancel(id);
+            }
         }
 
         internal bool Cancel(string id)
         {
             if (waitingWorkDic.TryRemove(id, out _))
             {
+                ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
+                executeResult.ID = id;
+                work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
+
                 Interlocked.Decrement(ref waitingWorkCount);
                 Interlocked.Decrement(ref powerPool.waitingWorkCount);
                 return true;

@@ -1,5 +1,7 @@
 ﻿using PowerThreadPool;
 using PowerThreadPool.Options;
+using PowerThreadPool.Results;
+using System.Diagnostics;
 
 namespace UnitTest
 {
@@ -385,28 +387,40 @@ namespace UnitTest
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                Interlocked.Increment(ref doneCount);
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
             });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                Interlocked.Increment(ref doneCount);
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
             });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                Interlocked.Increment(ref doneCount);
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
             });
             string id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                Interlocked.Increment(ref doneCount);
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
             });
 
             powerPool.Stop(id);
@@ -774,7 +788,10 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                logList.Add(res.Result);
+                if (res.Status == Status.Succeed)
+                {
+                    logList.Add(res.Result);
+                }
             });
             Thread.Sleep(100);
             powerPool.QueueWorkItem(() =>
@@ -788,7 +805,10 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                logList.Add(res.Result);
+                if (res.Status == Status.Succeed)
+                {
+                    logList.Add(res.Result);
+                }
             });
             Thread.Sleep(100);
             string id = powerPool.QueueWorkItem(() =>
@@ -802,7 +822,10 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                logList.Add(res.Result);
+                if (res.Status == Status.Succeed)
+                {
+                    logList.Add(res.Result);
+                }
             });
 
             powerPool.Cancel(id);
@@ -827,7 +850,10 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                logList.Add(res.Result);
+                if (res.Status == Status.Succeed)
+                {
+                    logList.Add(res.Result);
+                }
             });
             Thread.Sleep(100);
             powerPool.QueueWorkItem(() =>
@@ -841,7 +867,10 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                logList.Add(res.Result);
+                if (res.Status == Status.Succeed)
+                {
+                    logList.Add(res.Result);
+                }
             });
             Thread.Sleep(100);
             string id = powerPool.QueueWorkItem(() =>
@@ -855,7 +884,10 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                logList.Add(res.Result);
+                if (res.Status == Status.Succeed)
+                {
+                    logList.Add(res.Result);
+                }
             });
 
             powerPool.Cancel(new List<string>() { id });
@@ -880,7 +912,10 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                logList.Add(res.Result);
+                if (res.Status == Status.Succeed)
+                {
+                    logList.Add(res.Result);
+                }
             });
             Thread.Sleep(100);
             powerPool.QueueWorkItem(() =>
@@ -894,7 +929,10 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                logList.Add(res.Result);
+                if (res.Status == Status.Succeed)
+                {
+                    logList.Add(res.Result);
+                }
             });
             Thread.Sleep(100);
             string id = powerPool.QueueWorkItem(() =>
@@ -908,7 +946,10 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                logList.Add(res.Result);
+                if (res.Status == Status.Succeed)
+                {
+                    logList.Add(res.Result);
+                }
             });
 
             powerPool.Cancel();
