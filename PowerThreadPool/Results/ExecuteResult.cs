@@ -15,7 +15,7 @@ namespace PowerThreadPool.Results
 
         }
 
-        internal override void SetExecuteResult(object result, Exception exception, Status status)
+        internal override void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime)
         {
             if (result != null)
             {
@@ -23,6 +23,7 @@ namespace PowerThreadPool.Results
             }
             Exception = exception;
             Status = status;
+            QueueDateTime = queueDateTime;
         }
 
         internal override object GetResult()
@@ -32,7 +33,7 @@ namespace PowerThreadPool.Results
 
         internal override ExecuteResult<object> ToObjResult()
         {
-            return new ExecuteResult<object>() { Exception = Exception, Result = Result, ID = ID };
+            return new ExecuteResult<object>() { Exception = Exception, Result = Result, ID = ID, QueueDateTime =  QueueDateTime };
         }
     }
 }

@@ -95,6 +95,8 @@ namespace UnitTest
                 resId = res.ID;
                 Assert.Equal(Status.Succeed, res.Status);
                 Assert.Equal(1024, res.Result);
+                Assert.True(res.QueueDateTime < res.ExecuteDateTime);
+                Assert.True(res.ExecuteDateTime < res.CallbackDateTime);
             });
             powerPool.Wait();
             Assert.NotEqual("", id);

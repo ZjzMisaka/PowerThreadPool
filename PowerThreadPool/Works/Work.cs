@@ -103,7 +103,7 @@ namespace PowerThreadPool.Works
         internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status)
         {
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
-            executeResult.SetExecuteResult(result, exception, status);
+            executeResult.SetExecuteResult(result, exception, status, QueueDateTime);
             return executeResult;
         }
     }

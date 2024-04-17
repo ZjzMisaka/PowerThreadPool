@@ -42,7 +42,7 @@ namespace PowerThreadPool.Results
         /// </summary>
         public DateTime CallbackDateTime { get => callbackDateTime; internal set => callbackDateTime = value; }
 
-        internal abstract void SetExecuteResult(object result, Exception exception, Status status);
+        internal abstract void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime);
         internal abstract object GetResult();
         internal abstract ExecuteResult<object> ToObjResult();
     }
