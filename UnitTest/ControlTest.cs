@@ -813,7 +813,7 @@ namespace UnitTest
             string resID = null;
             powerPool.WorkStart += async (s, e) =>
             {
-                await powerPool.StopAsync(new List<string>() { e.ID });
+                await powerPool.StopAsync(powerPool.GetGroupMemberList("A"));
             };
 
             id = powerPool.QueueWorkItem(() =>
@@ -1249,6 +1249,24 @@ namespace UnitTest
             });
 
             powerPool.Wait(new List<string>() { id });
+
+            Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact]
+        public void TestWaitByGroup()
+        {
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+
+            powerPool.Wait(powerPool.GetGroupMemberList("A"));
 
             Assert.True(GetNowSs() - start >= 1000);
         }
