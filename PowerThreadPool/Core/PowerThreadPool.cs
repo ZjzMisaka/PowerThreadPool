@@ -858,7 +858,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Get a Worker
         /// </summary>
-        /// <returns></returns>
+        /// <returns>worker</returns>
         private Worker GetWorker(bool longRunning)
         {
             Worker worker = null;
@@ -1109,7 +1109,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Call this function inside the thread logic where you want to check if requested stop (if user call ForceStop(...))
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Requested stop or not</returns>
         public bool CheckIfRequestedStop()
         {
             if (cancellationTokenSource.Token.IsCancellationRequested)
@@ -1131,7 +1131,8 @@ namespace PowerThreadPool
         /// <summary>
         /// Call this function inside the thread logic where you want to check if requested stop (if user call ForceStop(...))
         /// </summary>
-        /// <returns></returns>
+        /// <param name="work">The work executing now in current thread</param>
+        /// <returns>Return false if stop all</returns>
         private bool CheckIfRequestedStopAndGetWork(ref WorkBase work)
         {
             if (cancellationTokenSource.Token.IsCancellationRequested)
