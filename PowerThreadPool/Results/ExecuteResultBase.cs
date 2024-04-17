@@ -10,7 +10,7 @@ namespace PowerThreadPool.Results
         /// <summary>
         /// Work id.
         /// </summary>
-        public string ID { get => id; set => id = value; }
+        public string ID { get => id; internal set => id = value; }
 
         private Status status;
         /// <summary>
