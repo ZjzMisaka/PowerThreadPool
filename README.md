@@ -84,7 +84,7 @@ string QueueWorkItem<T1, ..., TResult>(Func<T1, ..., TResult> function, T1 param
 string QueueWorkItem<TResult>(Func<TResult> function, *);
 string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, *);
 ```
-- Asterisk (*) denotes an optional parameter, either a WorkOption or a delegate (Action\<ExecuteResult\<object\>\> or Action\<ExecuteResult\<TResult\>\>), depending on whether the first parameter is an Action or a Func. 
+- Asterisk (*) denotes an optional parameter, either a WorkOption or a delegate (`Action<ExecuteResult<object>>` or `Action<ExecuteResult<TResult>>`), depending on whether the first parameter is an Action or a Func. 
 - In places where you see ellipses (...), you can provide up to five generic type parameters. 
 
 ## APIs
