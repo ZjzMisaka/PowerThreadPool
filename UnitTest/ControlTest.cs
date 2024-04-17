@@ -181,6 +181,72 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestPauseByGroup()
+        {
+            PowerPool powerPool = new PowerPool();
+            List<string> logList = new List<string>();
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.PauseIfRequested();
+                    Thread.Sleep(10);
+                }
+            }, new WorkOption()
+            {
+                Callback = (res) =>
+                {
+                    logList.Add("Work0 END");
+                },
+                Group = "B"
+            });
+            Thread.Sleep(200);
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.PauseIfRequested();
+                    Thread.Sleep(10);
+                }
+            }, new WorkOption()
+            {
+                Callback = (res) =>
+                {
+                    logList.Add("Work1 END");
+                },
+                Group = "A"
+            });
+            Thread.Sleep(200);
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.PauseIfRequested();
+                    Thread.Sleep(10);
+                }
+            }, new WorkOption()
+            {
+                Callback = (res) =>
+                {
+                    logList.Add("Work2 END");
+                }
+            });
+            Thread.Sleep(50);
+            List<string> pauseRes = powerPool.Pause(powerPool.GetGroupMemberList("A"));
+            Assert.Empty(pauseRes);
+            Thread.Sleep(1000);
+            List<string> resumeRes = powerPool.Resume(powerPool.GetGroupMemberList("A"));
+            Assert.Empty(resumeRes);
+            powerPool.Wait();
+
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("Work0 END", item),
+                item => Assert.Equal("Work2 END", item),
+                item => Assert.Equal("Work1 END", item)
+            );
+        }
+
+        [Fact]
         public void TestPauseByIDAndResumeAll()
         {
             PowerPool powerPool = new PowerPool();
@@ -736,6 +802,44 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestStopByGroup()
+        {
+            PowerPool powerPool = new PowerPool();
+            List<long> logList = new List<long>();
+
+            object lockObj = new object();
+
+            string id = null;
+            string resID = null;
+            powerPool.WorkStart += async (s, e) =>
+            {
+                await powerPool.StopAsync(new List<string>() { e.ID });
+            };
+
+            id = powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(1);
+                }
+            }, new WorkOption<object>()
+            {
+                Callback = (res) =>
+                {
+                    resID = res.ID;
+                }
+                , Group = "A"
+            });
+
+            await powerPool.WaitAsync(powerPool.GetGroupMemberList("A"));
+            await powerPool.WaitAsync();
+
+            Assert.Equal(id, resID);
+        }
+
+        [Fact]
         public async void TestStopByIDUseCheckIfRequestedStop()
         {
             PowerPool powerPool = new PowerPool();
@@ -905,6 +1009,79 @@ namespace UnitTest
             });
 
             powerPool.Cancel(new List<string>() { id });
+            powerPool.Wait();
+
+            Assert.Equal(2, logList.Count);
+        }
+
+        [Fact]
+        public void TestCancelByGroup()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
+            List<long> logList = new List<long>();
+            powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+                return GetNowSs() - start;
+            }, new WorkOption<long>()
+            {
+                Callback = (res) =>
+                {
+                    if (res.Status == Status.Succeed)
+                    {
+                        logList.Add(res.Result);
+                    }
+                }
+            });
+            Thread.Sleep(100);
+            powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+                return GetNowSs() - start;
+            }, new WorkOption<long>()
+            {
+                Callback = (res) =>
+                {
+                    if (res.Status == Status.Succeed)
+                    {
+                        logList.Add(res.Result);
+                    }
+                },
+                Group = "B"
+            });
+            Thread.Sleep(100);
+            powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+                return GetNowSs() - start;
+            }, new WorkOption<long>()
+            {
+                Callback = (res) =>
+                {
+                    if (res.Status == Status.Succeed)
+                    {
+                        logList.Add(res.Result);
+                    }
+                }, 
+                Group = "A"
+            });
+
+            powerPool.Cancel(powerPool.GetGroupMemberList("A"));
             powerPool.Wait();
 
             Assert.Equal(2, logList.Count);

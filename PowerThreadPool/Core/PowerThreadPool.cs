@@ -1544,6 +1544,16 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <returns></returns>
+        public IEnumerable<string> GetGroupMemberList(string groupName)
+        {
+            return workGroupDic[groupName];
+        }
+
+        /// <summary>
         /// Will try stop, force stop and kill all of the workers. 
         /// </summary>
         public void Dispose()
