@@ -635,6 +635,9 @@ namespace PowerThreadPool
             {
                 ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
                 executeResult.ID = id;
+
+                powerPool.OneWorkEnd(executeResult);
+
                 work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
 
                 Interlocked.Decrement(ref waitingWorkCount);

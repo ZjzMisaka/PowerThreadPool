@@ -777,6 +777,7 @@ namespace UnitTest
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
             List<long> logList = new List<long>();
+            string cid = "";
             powerPool.QueueWorkItem(() =>
             {
                 long start = GetNowSs();
@@ -791,6 +792,10 @@ namespace UnitTest
                 if (res.Status == Status.Succeed)
                 {
                     logList.Add(res.Result);
+                }
+                else if (res.Status == Status.Canceled)
+                {
+                    cid = res.ID;
                 }
             });
             Thread.Sleep(100);
@@ -808,6 +813,10 @@ namespace UnitTest
                 if (res.Status == Status.Succeed)
                 {
                     logList.Add(res.Result);
+                }
+                else if (res.Status == Status.Canceled)
+                {
+                    cid = res.ID;
                 }
             });
             Thread.Sleep(100);
@@ -826,11 +835,16 @@ namespace UnitTest
                 {
                     logList.Add(res.Result);
                 }
+                else if (res.Status == Status.Canceled)
+                {
+                    cid = res.ID;
+                }
             });
 
             powerPool.Cancel(id);
             powerPool.Wait();
 
+            Assert.Equal(id, cid);
             Assert.Equal(2, logList.Count);
         }
 
