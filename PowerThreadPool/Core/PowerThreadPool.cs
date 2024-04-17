@@ -1550,7 +1550,11 @@ namespace PowerThreadPool
         /// <returns>Work id list</returns>
         public IEnumerable<string> GetGroupMemberList(string groupName)
         {
-            return workGroupDic[groupName];
+            if (workGroupDic.TryGetValue(groupName, out ConcurrentSet<string> groupMemberList))
+            {
+                return groupMemberList;
+            }
+            return new ConcurrentSet<string>();
         }
 
         /// <summary>
