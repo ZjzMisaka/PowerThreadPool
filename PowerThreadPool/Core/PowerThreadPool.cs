@@ -28,6 +28,7 @@ namespace PowerThreadPool
         internal ConcurrentQueue<string> idleWorkerQueue = new ConcurrentQueue<string>();
 
         internal ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
+        internal ConcurrentDictionary<string, ConcurrentSet<string>> workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal IEnumerable<Worker> aliveWorkerList = new List<Worker>();
 
@@ -784,19 +785,26 @@ namespace PowerThreadPool
         /// Work end
         /// </summary>
         /// <param name="guid"></param>
-        internal void WorkCallbackEnd(string guid, Status status)
+        internal void WorkCallbackEnd(WorkBase work, Status status)
         {
             if (status == Status.Failed)
             {
-                failedWorkSet.Add(guid);
+                failedWorkSet.Add(work.ID);
             }
 
             if (CallbackEnd != null)
             {
-                CallbackEnd.Invoke(guid);
+                CallbackEnd.Invoke(work.ID);
             }
 
-            settedWorkDic.TryRemove(guid, out _);
+            settedWorkDic.TryRemove(work.ID, out _);
+            if (work.Group != null)
+            {
+                if (workGroupDic.TryGetValue(work.Group, out ConcurrentSet<string> idSet))
+                {
+                    idSet.Remove(work.ID);
+                }
+            }
         }
 
         /// <summary>
@@ -1018,9 +1026,13 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="workId"></param>
         /// <param name="worker"></param>
-        internal void SetWorkOwner(string workId, Worker worker)
+        internal void SetWorkOwner(WorkBase work, Worker worker)
         {
-            settedWorkDic[workId] = worker;
+            settedWorkDic[work.ID] = worker;
+            if (work.Group != null)
+            {
+                workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
+            }
         }
 
         /// <summary>
@@ -1071,16 +1083,24 @@ namespace PowerThreadPool
         /// </summary>
         public void StopIfRequested()
         {
-            string workID = CheckIfRequestedStopAndReturnWorkID();
-            if (workID != null)
+            WorkBase work = null;
+            bool res = CheckIfRequestedStopAndGetWork(ref work);
+
+            if (!res)
             {
-                if (workID == "")
+                settedWorkDic.Clear();
+                workGroupDic.Clear();
+                throw new OperationCanceledException();
+            }
+            else if (work != null)
+            {
+                settedWorkDic.TryRemove(work.ID, out _);
+                if (work.Group != null)
                 {
-                    settedWorkDic.Clear();
-                }
-                else
-                {
-                    settedWorkDic.TryRemove(workID, out _);
+                    if (workGroupDic.TryGetValue(work.Group, out ConcurrentSet<string> idSet))
+                    {
+                        idSet.Remove(work.ID);
+                    }
                 }
                 throw new OperationCanceledException();
             }
@@ -1112,22 +1132,23 @@ namespace PowerThreadPool
         /// Call this function inside the thread logic where you want to check if requested stop (if user call ForceStop(...))
         /// </summary>
         /// <returns></returns>
-        private string CheckIfRequestedStopAndReturnWorkID()
+        private bool CheckIfRequestedStopAndGetWork(ref WorkBase work)
         {
             if (cancellationTokenSource.Token.IsCancellationRequested)
             {
-                return "";
+                return false;
             }
 
             foreach (Worker worker in aliveWorkerList)
             {
                 if (worker.workerState == WorkerStates.Running && worker.thread == Thread.CurrentThread && worker.IsCancellationRequested())
                 {
-                    return worker.WorkID;
+                    work = worker.Work;
+                    return true;
                 }
             }
 
-            return null;
+            return true;
         }
 
         /// <summary>
@@ -1245,6 +1266,7 @@ namespace PowerThreadPool
             if (forceStop)
             {
                 settedWorkDic.Clear();
+                workGroupDic.Clear();
                 IEnumerable<Worker> workersToStop = aliveWorkerList;
                 foreach (Worker worker in workersToStop)
                 {
