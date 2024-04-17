@@ -23,6 +23,7 @@ namespace PowerThreadPool.Works
         public abstract object Execute();
         public abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
+        internal abstract string Group { get; }
         internal abstract ThreadPriority ThreadPriority { get; }
         internal abstract int WorkPriority { get; }
         internal abstract TimeoutOption WorkTimeoutOption { get; }

@@ -17,6 +17,11 @@ namespace PowerThreadPool.Options
         public string CustomWorkID { get; set; } = null;
 
         /// <summary>
+        /// The group name of the work.
+        /// </summary>
+        public string Group { get; set; } = null;
+
+        /// <summary>
         /// The maximum amount of time the work is allowed to run before it is terminated.
         /// </summary>
         public TimeoutOption Timeout { get; set; } = null;

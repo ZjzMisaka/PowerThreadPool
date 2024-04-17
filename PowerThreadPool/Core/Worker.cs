@@ -32,6 +32,7 @@ namespace PowerThreadPool
         private string workID;
         internal string WorkID { get => workID; set => workID = value; }
         private WorkBase work;
+        internal WorkBase Work { get => work; set => work = value; }
         private bool killFlag = false;
         private int stealingLock = WorkerStealingFlags.Unlocked;
 
@@ -77,7 +78,7 @@ namespace PowerThreadPool
                         powerPool.OneWorkEnd(executeResult);
                         work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
 
-                        powerPool.WorkCallbackEnd(workID, executeResult.Status);
+                        powerPool.WorkCallbackEnd(work, executeResult.Status);
 
                         if (work.WaitSignal != null)
                         {
@@ -132,7 +133,7 @@ namespace PowerThreadPool
                         work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
                     }
 
-                    powerPool.WorkCallbackEnd(workID, Status.Failed);
+                    powerPool.WorkCallbackEnd(work, Status.Failed);
 
                     bool hasWaitingWork = false;
                     IEnumerable<WorkBase> waitingWorkList = waitingWorkDic.Values;
@@ -344,7 +345,7 @@ namespace PowerThreadPool
         {
             int originalWorkerState;
             waitingWorkDic[work.ID] = work;
-            powerPool.SetWorkOwner(work.ID, this);
+            powerPool.SetWorkOwner(work, this);
             waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
             Interlocked.Increment(ref waitingWorkCount);
             originalWorkerState = Interlocked.CompareExchange(ref workerState, WorkerStates.Running, WorkerStates.Idle);

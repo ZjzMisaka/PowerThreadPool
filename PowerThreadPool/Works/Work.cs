@@ -16,6 +16,7 @@ namespace PowerThreadPool.Works
         private CallbackEndEventHandler callbackEndHandler;
 
         internal override int WorkPriority { get => workOption.WorkPriority; }
+        internal override string Group { get => workOption.Group; }
         internal override ThreadPriority ThreadPriority { get => workOption.ThreadPriority; }
         internal override TimeoutOption WorkTimeoutOption { get => workOption.Timeout; }
         internal override bool LongRunning { get => workOption.LongRunning; }
