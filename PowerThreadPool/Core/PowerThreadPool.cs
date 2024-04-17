@@ -843,6 +843,7 @@ namespace PowerThreadPool
             {
                 worker = GetWorker(work.LongRunning);
             }
+            work.QueueDateTime = DateTime.Now;
             worker.SetWork(work, false);
         }
 

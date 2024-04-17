@@ -23,6 +23,25 @@ namespace PowerThreadPool.Results
         /// If failed, Exception will be setted here.
         /// </summary>
         public Exception Exception { get => exception; internal set => exception = value; }
+
+        private DateTime queueDateTime;
+        /// <summary>
+        /// queue datetime.
+        /// </summary>
+        public DateTime QueueDateTime { get => queueDateTime; internal set => queueDateTime = value; }
+
+        private DateTime executeDateTime;
+        /// <summary>
+        /// execute datetime.
+        /// </summary>
+        public DateTime ExecuteDateTime { get => executeDateTime; internal set => executeDateTime = value; }
+
+        private DateTime callbackDateTime;
+        /// <summary>
+        /// callback datetime.
+        /// </summary>
+        public DateTime CallbackDateTime { get => callbackDateTime; internal set => callbackDateTime = value; }
+
         internal abstract void SetExecuteResult(object result, Exception exception, Status status);
         internal abstract object GetResult();
         internal abstract ExecuteResult<object> ToObjResult();

@@ -18,6 +18,8 @@ namespace PowerThreadPool.Works
         public ManualResetEvent PauseSignal { get => pauseSignal; set => pauseSignal = value; }
         private bool isPausing;
         public bool IsPausing { get => isPausing; set => isPausing = value; }
+        private DateTime queueDateTime;
+        public DateTime QueueDateTime { get => queueDateTime; internal set => queueDateTime = value; }
         public abstract object Execute();
         public abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);

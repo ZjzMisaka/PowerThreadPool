@@ -171,8 +171,10 @@ namespace PowerThreadPool
             ExecuteResultBase executeResult;
             try
             {
+                DateTime runDateTime = DateTime.Now;
                 object result = work.Execute();
                 executeResult = work.SetExecuteResult(result, null, Status.Succeed);
+                executeResult.ExecuteDateTime = runDateTime;
             }
             catch (ThreadInterruptedException ex)
             {
@@ -635,8 +637,6 @@ namespace PowerThreadPool
             {
                 ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
                 executeResult.ID = id;
-
-                powerPool.OneWorkEnd(executeResult);
 
                 work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
 
