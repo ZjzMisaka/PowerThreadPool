@@ -1544,10 +1544,10 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// 
+        /// Get all members of a group
         /// </summary>
         /// <param name="groupName"></param>
-        /// <returns></returns>
+        /// <returns>Work id list</returns>
         public IEnumerable<string> GetGroupMemberList(string groupName)
         {
             return workGroupDic[groupName];
