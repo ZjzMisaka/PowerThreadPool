@@ -1529,5 +1529,130 @@ namespace UnitTest
             Assert.Equal(0, powerPool.RunningWorkerCount);
             Assert.False(powerPool.PoolRunning);
         }
+
+        [Fact]
+        public void TestWorkGroup()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>() 
+            {
+                Group = "AAA"
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "AAA"
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "BBB"
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "BBB"
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "AAA"
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "BBB"
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "BBB"
+            });
+
+            Assert.Equal(3, powerPool.GetGroupMemberList("AAA").Count());
+            Assert.Equal(4, powerPool.GetGroupMemberList("BBB").Count());
+
+            powerPool.Stop(powerPool.GetGroupMemberList("AAA"));
+            powerPool.Wait(powerPool.GetGroupMemberList("AAA"));
+
+            Assert.Empty(powerPool.GetGroupMemberList("AAA"));
+            Assert.Equal(4, powerPool.GetGroupMemberList("BBB").Count());
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "AAA"
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "AAA"
+            });
+
+            Assert.Equal(2, powerPool.GetGroupMemberList("AAA").Count());
+            Assert.Equal(4, powerPool.GetGroupMemberList("BBB").Count());
+
+            powerPool.Stop();
+            powerPool.Wait();
+
+            Assert.Empty(powerPool.GetGroupMemberList("AAA"));
+            Assert.Empty(powerPool.GetGroupMemberList("BBB"));
+        }
     }
 }
