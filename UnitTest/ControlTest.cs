@@ -503,19 +503,25 @@ namespace UnitTest
             string id = null;
             powerPool.WorkEnd += (s, e) =>
             {
-                powerPool.Stop(true);
-            };
-            powerPool.ForceStop += (s, e) =>
-            {
-                resId = e.ID;
+                if (e.Status == Status.Succeed)
+                {
+                    powerPool.Stop(true);
+                }
+                else if (e.Status == Status.ForceStopped)
+                {
+                    resId = e.ID;
+                }
             };
             id = powerPool.QueueWorkItem(() =>
             {
             }, (res) =>
             {
-                while (true)
+                if (res.Status != Status.ForceStopped)
                 {
-                    Thread.Sleep(10);
+                    while (true)
+                    {
+                        Thread.Sleep(10);
+                    }
                 }
             });
             powerPool.Wait();
@@ -882,6 +888,14 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
             List<long> logList = new List<long>();
             string cid = "";
+            string eid = "";
+            powerPool.WorkEnd += (s, e) =>
+            {
+                if (e.Status == Status.Canceled)
+                {
+                    eid = e.ID;
+                }
+            };
             powerPool.QueueWorkItem(() =>
             {
                 long start = GetNowSs();
@@ -949,6 +963,7 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(id, cid);
+            Assert.Equal(id, eid);
             Assert.Equal(2, logList.Count);
         }
 

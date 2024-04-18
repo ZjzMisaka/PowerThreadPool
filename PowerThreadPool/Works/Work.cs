@@ -89,7 +89,6 @@ namespace PowerThreadPool.Works
 
         public override void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
-            executeResult.CallbackDateTime = DateTime.Now;
             if (workOption.Callback != null)
             {
                 workOption.Callback((ExecuteResult<TResult>)executeResult);

@@ -9,6 +9,7 @@ using PowerThreadPool.Constants;
 using System.Timers;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;
+using PowerThreadPool.Exceptions;
 
 namespace PowerThreadPool
 {
@@ -75,7 +76,7 @@ namespace PowerThreadPool
 
                         ExecuteResultBase executeResult = ExecuteWork();
 
-                        powerPool.OneWorkEnd(executeResult);
+                        powerPool.InvokeWorkEndEvent(executeResult);
                         work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
 
                         powerPool.WorkCallbackEnd(work, executeResult.Status);
@@ -120,18 +121,15 @@ namespace PowerThreadPool
                         Interlocked.Decrement(ref powerPool.idleWorkerCount);
                     }
 
-                    powerPool.OneThreadEndByForceStop(work.ID);
+                    ExecuteResultBase executeResult = work.SetExecuteResult(null, ex, Status.ForceStopped);
+                    executeResult.ID = work.ID;
+                    powerPool.InvokeWorkEndEvent(executeResult);
 
                     if (!ex.Data.Contains("ThrowedWhenExecuting"))
                     {
                         ex.Data.Add("ThrowedWhenExecuting", false);
                     }
-                    else
-                    {
-                        ExecuteResultBase executeResult = work.SetExecuteResult(null, ex, Status.Failed);
-                        executeResult.ID = work.ID;
-                        work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
-                    }
+                    work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
 
                     powerPool.WorkCallbackEnd(work, Status.Failed);
 
@@ -170,9 +168,9 @@ namespace PowerThreadPool
         private ExecuteResultBase ExecuteWork()
         {
             ExecuteResultBase executeResult;
+            DateTime runDateTime = DateTime.Now;
             try
             {
-                DateTime runDateTime = DateTime.Now;
                 object result = work.Execute();
                 executeResult = work.SetExecuteResult(result, null, Status.Succeed);
                 executeResult.ExecuteDateTime = runDateTime;
@@ -181,6 +179,10 @@ namespace PowerThreadPool
             {
                 ex.Data.Add("ThrowedWhenExecuting", true);
                 throw;
+            }
+            catch (WorkStopException ex)
+            {
+                executeResult = work.SetExecuteResult(null, ex, Status.Stopped);
             }
             catch (Exception ex)
             {
@@ -639,6 +641,7 @@ namespace PowerThreadPool
                 ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
                 executeResult.ID = id;
 
+                powerPool.InvokeWorkEndEvent(executeResult);
                 work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
 
                 Interlocked.Decrement(ref waitingWorkCount);

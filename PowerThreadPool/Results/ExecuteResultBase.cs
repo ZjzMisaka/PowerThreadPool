@@ -2,7 +2,7 @@
 
 namespace PowerThreadPool.Results
 {
-    public enum Status { Succeed, Failed, Canceled }
+    public enum Status { Succeed, Failed, Canceled, Stopped, ForceStopped }
 
     public abstract class ExecuteResultBase
     {
@@ -36,11 +36,11 @@ namespace PowerThreadPool.Results
         /// </summary>
         public DateTime ExecuteDateTime { get => executeDateTime; internal set => executeDateTime = value; }
 
-        private DateTime callbackDateTime;
+        private DateTime endDateTime;
         /// <summary>
         /// callback datetime.
         /// </summary>
-        public DateTime CallbackDateTime { get => callbackDateTime; internal set => callbackDateTime = value; }
+        public DateTime EndDateTime { get => endDateTime; internal set => endDateTime = value; }
 
         internal abstract void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime);
         internal abstract object GetResult();

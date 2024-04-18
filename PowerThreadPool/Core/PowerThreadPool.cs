@@ -1,6 +1,7 @@
 ﻿using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
+using PowerThreadPool.Exceptions;
 using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
@@ -63,8 +64,6 @@ namespace PowerThreadPool
         public event PoolTimeoutEventHandler PoolTimeout;
         public delegate void WorkTimeoutEventHandler(object sender, TimeoutEventArgs e);
         public event WorkTimeoutEventHandler WorkTimeout;
-        public delegate void ForceStopEventHandler(object sender, ForceStopEventArgs e);
-        public event ForceStopEventHandler ForceStop;
 
         internal delegate void CallbackEndEventHandler(string id);
         internal event CallbackEndEventHandler CallbackEnd;
@@ -740,35 +739,12 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// One thread end
-        /// </summary>
-        /// <param name="executeResult"></param>
-        internal void OneWorkEnd(ExecuteResultBase executeResult)
-        {
-            InvokeWorkEndEvent(executeResult);
-        }
-
-        /// <summary>
-        /// One thread end error
-        /// </summary>
-        /// <param name="executeResult"></param>
-        internal void OneThreadEndByForceStop(string id)
-        {
-            if (ForceStop != null)
-            {
-                ForceStop.Invoke(this, new ForceStopEventArgs()
-                {
-                    ID = id
-                });
-            }
-        }
-
-        /// <summary>
         /// Invoke thread end event
         /// </summary>
         /// <param name="executeResult"></param>
-        private void InvokeWorkEndEvent(ExecuteResultBase executeResult)
+        internal void InvokeWorkEndEvent(ExecuteResultBase executeResult)
         {
+            executeResult.EndDateTime = DateTime.Now;
             if (WorkEnd != null)
             {
                 WorkEnd.Invoke(this, new WorkEndEventArgs()
@@ -1090,7 +1066,7 @@ namespace PowerThreadPool
             {
                 settedWorkDic.Clear();
                 workGroupDic.Clear();
-                throw new OperationCanceledException();
+                throw new WorkStopException();
             }
             else if (work != null)
             {
@@ -1102,7 +1078,7 @@ namespace PowerThreadPool
                         idSet.Remove(work.ID);
                     }
                 }
-                throw new OperationCanceledException();
+                throw new WorkStopException();
             }
         }
 
