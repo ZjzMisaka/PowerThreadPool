@@ -14,7 +14,7 @@ namespace PowerThreadPool.Results
 
         private Status status;
         /// <summary>
-        /// Succeed or failed.
+        /// Status of the work.
         /// </summary>
         public Status Status { get => status; internal set => status = value; }
 
@@ -26,19 +26,19 @@ namespace PowerThreadPool.Results
 
         private DateTime queueDateTime;
         /// <summary>
-        /// queue datetime.
+        /// Queue datetime.
         /// </summary>
         public DateTime QueueDateTime { get => queueDateTime; internal set => queueDateTime = value; }
 
         private DateTime startDateTime;
         /// <summary>
-        /// start datetime.
+        /// Start datetime.
         /// </summary>
         public DateTime StartDateTime { get => startDateTime; internal set => startDateTime = value; }
 
         private DateTime endDateTime;
         /// <summary>
-        /// end datetime.
+        /// End datetime.
         /// </summary>
         public DateTime EndDateTime { get => endDateTime; internal set => endDateTime = value; }
 
