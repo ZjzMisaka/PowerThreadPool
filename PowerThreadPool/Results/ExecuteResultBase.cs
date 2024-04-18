@@ -38,7 +38,7 @@ namespace PowerThreadPool.Results
 
         private DateTime endDateTime;
         /// <summary>
-        /// callback datetime.
+        /// end datetime.
         /// </summary>
         public DateTime EndDateTime { get => endDateTime; internal set => endDateTime = value; }
 
