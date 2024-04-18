@@ -72,11 +72,18 @@ namespace PowerThreadPool
                             return;
                         }
 
-                        powerPool.OnWorkStart(work.ID);
+                        powerPool.OnWorkStarted(work.ID);
 
                         ExecuteResultBase executeResult = ExecuteWork();
 
-                        powerPool.InvokeWorkEndEvent(executeResult);
+                        if (executeResult.Status == Status.Stopped)
+                        {
+                            powerPool.InvokeWorkStoppedEvent(executeResult);
+                        }
+                        else
+                        {
+                            powerPool.InvokeWorkEndedEvent(executeResult);
+                        }
                         work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
 
                         powerPool.WorkCallbackEnd(work, executeResult.Status);
@@ -123,7 +130,7 @@ namespace PowerThreadPool
 
                     ExecuteResultBase executeResult = work.SetExecuteResult(null, ex, Status.ForceStopped);
                     executeResult.ID = work.ID;
-                    powerPool.InvokeWorkEndEvent(executeResult);
+                    powerPool.InvokeWorkStoppedEvent(executeResult);
 
                     if (!ex.Data.Contains("ThrowedWhenExecuting"))
                     {
@@ -553,7 +560,7 @@ namespace PowerThreadPool
                 timer.AutoReset = false;
                 timer.Elapsed += (s, e) =>
                 {
-                    powerPool.OnWorkTimeout(powerPool, new TimeoutEventArgs() { ID = workID });
+                    powerPool.OnWorkTimedOut(powerPool, new TimedOutEventArgs() { ID = workID });
                     powerPool.Stop(workID, workTimeoutOption.ForceStop);
                 };
                 timer.Start();
@@ -641,7 +648,7 @@ namespace PowerThreadPool
                 ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
                 executeResult.ID = id;
 
-                powerPool.InvokeWorkEndEvent(executeResult);
+                powerPool.InvokeWorkCanceledEvent(executeResult);
                 work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
 
                 Interlocked.Decrement(ref waitingWorkCount);

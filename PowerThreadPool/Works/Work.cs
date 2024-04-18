@@ -18,7 +18,7 @@ namespace PowerThreadPool.Works
         internal override int WorkPriority { get => workOption.WorkPriority; }
         internal override string Group { get => workOption.Group; }
         internal override ThreadPriority ThreadPriority { get => workOption.ThreadPriority; }
-        internal override TimeoutOption WorkTimeoutOption { get => workOption.Timeout; }
+        internal override TimeoutOption WorkTimeoutOption { get => workOption.TimeoutOption; }
         internal override bool LongRunning { get => workOption.LongRunning; }
         internal override ConcurrentSet<string> Dependents { get => workOption.Dependents; }
 

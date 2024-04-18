@@ -52,18 +52,22 @@ namespace PowerThreadPool
             }
         }
 
-        public delegate void PoolStartEventHandler(object sender, EventArgs e);
-        public event PoolStartEventHandler PoolStart;
-        public delegate void PoolIdleEventHandler(object sender, EventArgs e);
-        public event PoolIdleEventHandler PoolIdle;
-        public delegate void WorkStartEventHandler(object sender, WorkStartEventArgs e);
-        public event WorkStartEventHandler WorkStart;
-        public delegate void WorkEndEventHandler(object sender, WorkEndEventArgs e);
-        public event WorkEndEventHandler WorkEnd;
-        public delegate void PoolTimeoutEventHandler(object sender, EventArgs e);
-        public event PoolTimeoutEventHandler PoolTimeout;
-        public delegate void WorkTimeoutEventHandler(object sender, TimeoutEventArgs e);
-        public event WorkTimeoutEventHandler WorkTimeout;
+        public delegate void PoolStartedEventHandler(object sender, EventArgs e);
+        public event PoolStartedEventHandler PoolStarted;
+        public delegate void PoolIdledEventHandler(object sender, EventArgs e);
+        public event PoolIdledEventHandler PoolIdled;
+        public delegate void WorkStartedEventHandler(object sender, WorkStartedEventArgs e);
+        public event WorkStartedEventHandler WorkStarted;
+        public delegate void WorkEndedEventHandler(object sender, WorkEndedEventArgs e);
+        public event WorkEndedEventHandler WorkEnded;
+        public delegate void PoolTimedOutEventHandler(object sender, EventArgs e);
+        public event PoolTimedOutEventHandler PoolTimedOut;
+        public delegate void WorkTimedOutEventHandler(object sender, TimedOutEventArgs e);
+        public event WorkTimedOutEventHandler WorkTimedOut;
+        public delegate void WorkStoppedEventHandler(object sender, WorkStoppedEventArgs e);
+        public event WorkStoppedEventHandler WorkStopped;
+        public delegate void WorkCanceledEventHandler(object sender, WorkCanceledEventArgs e);
+        public event WorkCanceledEventHandler WorkCanceled;
 
         internal delegate void CallbackEndEventHandler(string id);
         internal event CallbackEndEventHandler CallbackEnd;
@@ -689,9 +693,9 @@ namespace PowerThreadPool
                 workID = Guid.NewGuid().ToString();
             }
 
-            if (workOption.Timeout == null && powerPoolOption.DefaultWorkTimeout != null)
+            if (workOption.TimeoutOption == null && powerPoolOption.DefaultWorkTimeoutOption != null)
             {
-                workOption.Timeout = powerPoolOption.DefaultWorkTimeout;
+                workOption.TimeoutOption = powerPoolOption.DefaultWorkTimeoutOption;
             }
 
             Work<TResult> work = new Work<TResult>(this, workID, function, param, workOption);
@@ -739,20 +743,53 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Invoke thread end event
+        /// Invoke work end event
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void InvokeWorkEndEvent(ExecuteResultBase executeResult)
+        internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult)
         {
             executeResult.EndDateTime = DateTime.Now;
-            if (WorkEnd != null)
+            if (WorkEnded != null)
             {
-                WorkEnd.Invoke(this, new WorkEndEventArgs()
+                WorkEnded.Invoke(this, new WorkEndedEventArgs()
                 {
                     ID = executeResult.ID,
                     Exception = executeResult.Exception,
                     Result = executeResult.GetResult(),
-                    Status = executeResult.Status
+                    Succeed = executeResult.Status == Status.Succeed
+                });
+            }
+        }
+
+        /// <summary>
+        /// Invoke work stopped event
+        /// </summary>
+        /// <param name="executeResult"></param>
+        internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult)
+        {
+            executeResult.EndDateTime = DateTime.Now;
+            if (WorkStopped != null)
+            {
+                WorkStopped.Invoke(this, new WorkStoppedEventArgs()
+                {
+                    ID = executeResult.ID,
+                    ForceStop = executeResult.Status == Status.ForceStopped
+                });
+            }
+        }
+
+        /// <summary>
+        /// Invoke work canceled event
+        /// </summary>
+        /// <param name="executeResult"></param>
+        internal void InvokeWorkCanceledEvent(ExecuteResultBase executeResult)
+        {
+            executeResult.EndDateTime = DateTime.Now;
+            if (WorkCanceled != null)
+            {
+                WorkCanceled.Invoke(this, new WorkCanceledEventArgs()
+                {
+                    ID = executeResult.ID,
                 });
             }
         }
@@ -915,25 +952,25 @@ namespace PowerThreadPool
         {
             if (Interlocked.CompareExchange(ref poolRunning, PoolRunningFlags.Running, PoolRunningFlags.NotRunning) == PoolRunningFlags.NotRunning)
             {
-                if (PoolStart != null)
+                if (PoolStarted != null)
                 {
-                    PoolStart.Invoke(this, new EventArgs());
+                    PoolStarted.Invoke(this, new EventArgs());
                 }
 
                 failedWorkSet = new ConcurrentSet<string>();
                 waitAllSignal.Reset();
 
-                if (powerPoolOption.Timeout != null)
+                if (powerPoolOption.TimeoutOption != null)
                 {
-                    poolTimer = new System.Timers.Timer(powerPoolOption.Timeout.Duration);
+                    poolTimer = new System.Timers.Timer(powerPoolOption.TimeoutOption.Duration);
                     poolTimer.AutoReset = false;
                     poolTimer.Elapsed += (s, e) =>
                     {
-                        if (PoolTimeout != null)
+                        if (PoolTimedOut != null)
                         {
-                            PoolTimeout.Invoke(this, new EventArgs());
+                            PoolTimedOut.Invoke(this, new EventArgs());
                         }
-                        this.Stop(powerPoolOption.Timeout.ForceStop);
+                        this.Stop(powerPoolOption.TimeoutOption.ForceStop);
                     };
                     poolTimer.Start();
                 }
@@ -954,11 +991,11 @@ namespace PowerThreadPool
 
             if (runningWorkerCount == 0 && waitingWorkCount == 0 && Interlocked.CompareExchange(ref poolRunning, PoolRunningFlags.IdleChecked, PoolRunningFlags.Running) == PoolRunningFlags.Running)
             {
-                if (PoolIdle != null)
+                if (PoolIdled != null)
                 {
                     try
                     {
-                        PoolIdle.Invoke(this, new EventArgs());
+                        PoolIdled.Invoke(this, new EventArgs());
                     }
                     finally
                     {
@@ -1012,27 +1049,27 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Invoke WorkTimeout event
+        /// Invoke WorkTimedOut event
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        internal void OnWorkTimeout(object sender, TimeoutEventArgs e)
+        internal void OnWorkTimedOut(object sender, TimedOutEventArgs e)
         {
-            if (WorkTimeout != null)
+            if (WorkTimedOut != null)
             {
-                WorkTimeout.Invoke(this, e);
+                WorkTimedOut.Invoke(this, e);
             }
         }
 
         /// <summary>
-        /// Invoke WorkStart event
+        /// Invoke WorkStarted event
         /// </summary>
         /// <param name="workID"></param>
-        internal void OnWorkStart(string workID)
+        internal void OnWorkStarted(string workID)
         {
-            if (WorkStart != null)
+            if (WorkStarted != null)
             {
-                WorkStart.Invoke(this, new WorkStartEventArgs() { ID = workID });
+                WorkStarted.Invoke(this, new WorkStartedEventArgs() { ID = workID });
             }
         }
 

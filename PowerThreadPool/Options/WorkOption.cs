@@ -24,7 +24,7 @@ namespace PowerThreadPool.Options
         /// <summary>
         /// The maximum amount of time the work is allowed to run before it is terminated.
         /// </summary>
-        public TimeoutOption Timeout { get; set; } = null;
+        public TimeoutOption TimeoutOption { get; set; } = null;
 
         /// <summary>
         /// The callback function that is called when the work finishes execution.

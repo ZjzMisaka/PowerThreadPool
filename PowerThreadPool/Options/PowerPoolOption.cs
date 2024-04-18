@@ -22,12 +22,12 @@ namespace PowerThreadPool.Options
         /// <summary>
         /// The total maximum amount of time that all works in the thread pool are permitted to run collectively before they are terminated.
         /// </summary>
-        public TimeoutOption Timeout { get; set; } = null;
+        public TimeoutOption TimeoutOption { get; set; } = null;
 
         /// <summary>
         /// The default maximum amount of time a work in the pool is allowed to run before it is terminated.
         /// </summary>
-        public TimeoutOption DefaultWorkTimeout { get; set; } = null;
+        public TimeoutOption DefaultWorkTimeoutOption { get; set; } = null;
 
         /// <summary>
         /// The default callback function that is called when a work finishes execution.

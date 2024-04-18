@@ -501,13 +501,16 @@ namespace UnitTest
             string resId = null;
             PowerPool powerPool = new PowerPool();
             string id = null;
-            powerPool.WorkEnd += (s, e) =>
+            powerPool.WorkEnded += (s, e) =>
             {
-                if (e.Status == Status.Succeed)
+                if (e.Succeed)
                 {
                     powerPool.Stop(true);
                 }
-                else if (e.Status == Status.ForceStopped)
+            };
+            powerPool.WorkStopped += (s, e) =>
+            {
+                if (e.ForceStop)
                 {
                     resId = e.ID;
                 }
@@ -749,7 +752,7 @@ namespace UnitTest
 
             string id = null;
             string resID = null;
-            powerPool.WorkStart += async (s, e) =>
+            powerPool.WorkStarted += async (s, e) =>
             {
                 await powerPool.StopAsync(e.ID);
             };
@@ -783,7 +786,7 @@ namespace UnitTest
 
             string id = null;
             string resID = null;
-            powerPool.WorkStart += async (s, e) =>
+            powerPool.WorkStarted += async (s, e) =>
             {
                 await powerPool.StopAsync(new List<string>() { e.ID });
             };
@@ -817,7 +820,7 @@ namespace UnitTest
 
             string id = null;
             string resID = null;
-            powerPool.WorkStart += async (s, e) =>
+            powerPool.WorkStarted += async (s, e) =>
             {
                 await powerPool.StopAsync(powerPool.GetGroupMemberList("A"));
             };
@@ -855,7 +858,7 @@ namespace UnitTest
 
             string id = null;
             string resID = null;
-            powerPool.WorkStart += async (s, e) =>
+            powerPool.WorkStarted += async (s, e) =>
             {
                 await powerPool.StopAsync(e.ID);
             };
@@ -889,12 +892,9 @@ namespace UnitTest
             List<long> logList = new List<long>();
             string cid = "";
             string eid = "";
-            powerPool.WorkEnd += (s, e) =>
+            powerPool.WorkCanceled += (s, e) =>
             {
-                if (e.Status == Status.Canceled)
-                {
-                    eid = e.ID;
-                }
+                eid = e.ID;
             };
             powerPool.QueueWorkItem(() =>
             {
@@ -1339,7 +1339,7 @@ namespace UnitTest
         [Fact]
         public void TestPauseWorkTimer()
         {
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeout = new TimeoutOption() { Duration = 2000, ForceStop = true } });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 2000, ForceStop = true } });
             List<long> logList = new List<long>();
             object lockObj = new object();
             long start = GetNowSs();
@@ -1364,7 +1364,7 @@ namespace UnitTest
         [Fact]
         public void TestPauseThreadTimer()
         {
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { Timeout = new TimeoutOption() { Duration = 2000, ForceStop = true } });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { TimeoutOption = new TimeoutOption() { Duration = 2000, ForceStop = true } });
             List<long> logList = new List<long>();
             object lockObj = new object();
             long start = GetNowSs();

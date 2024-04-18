@@ -22,30 +22,30 @@ namespace UnitTest
                     result = (string)res.Result;
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
-                Timeout = new TimeoutOption() { Duration = 10000, ForceStop = false },
-                DefaultWorkTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
+                TimeoutOption = new TimeoutOption() { Duration = 10000, ForceStop = false },
+                DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 3000, ForceStop = false },
             };
-            powerPool.PoolStart += (s, e) =>
+            powerPool.PoolStarted += (s, e) =>
             {
                 logList.Add("PoolStart");
             };
-            powerPool.PoolIdle += (s, e) =>
+            powerPool.PoolIdled += (s, e) =>
             {
                 logList.Add("PoolIdle");
             };
-            powerPool.WorkStart += (s, e) =>
+            powerPool.WorkStarted += (s, e) =>
             {
                 logList.Add("WorkStart");
             };
-            powerPool.WorkEnd += (s, e) =>
+            powerPool.WorkEnded += (s, e) =>
             {
                 logList.Add("WorkEnd");
             };
-            powerPool.WorkTimeout += (s, e) =>
+            powerPool.WorkTimedOut += (s, e) =>
             {
                 logList.Add("WorkTimeout");
             };
-            powerPool.PoolTimeout += (s, e) =>
+            powerPool.PoolTimedOut += (s, e) =>
             {
                 logList.Add("PoolTimeout");
             };
@@ -81,8 +81,8 @@ namespace UnitTest
                     Assert.Fail("Should not run DefaultCallback");
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
-                Timeout = new TimeoutOption() { Duration = 10000, ForceStop = false },
-                DefaultWorkTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
+                TimeoutOption = new TimeoutOption() { Duration = 10000, ForceStop = false },
+                DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 3000, ForceStop = false },
             };
 
             string id = "";
@@ -116,14 +116,14 @@ namespace UnitTest
                     Assert.IsType<ThreadInterruptedException>(res.Exception);
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
-                Timeout = new TimeoutOption() { Duration = 10000, ForceStop = true },
-                DefaultWorkTimeout = new TimeoutOption() { Duration = 3000, ForceStop = true },
+                TimeoutOption = new TimeoutOption() { Duration = 10000, ForceStop = true },
+                DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 3000, ForceStop = true },
             };
-            powerPool.WorkTimeout += (s, e) =>
+            powerPool.WorkTimedOut += (s, e) =>
             {
                 logList.Add("WorkTimeout");
             };
-            powerPool.PoolTimeout += (s, e) =>
+            powerPool.PoolTimedOut += (s, e) =>
             {
                 logList.Add("PoolTimeout");
             };
@@ -156,15 +156,15 @@ namespace UnitTest
                     // Assert.IsType<ThreadInterruptedException>(res.Exception);
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
-                Timeout = new TimeoutOption() { Duration = 1000, ForceStop = true },
-                DefaultWorkTimeout = new TimeoutOption() { Duration = 30000, ForceStop = true },
+                TimeoutOption = new TimeoutOption() { Duration = 1000, ForceStop = true },
+                DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 30000, ForceStop = true },
             };
             bool timeOut = false;
-            powerPool.WorkTimeout += (s, e) =>
+            powerPool.WorkTimedOut += (s, e) =>
             {
                 logList.Add("WorkTimeout");
             };
-            powerPool.PoolTimeout += (s, e) =>
+            powerPool.PoolTimedOut += (s, e) =>
             {
                 timeOut = true;
                 logList.Add("PoolTimeout");
@@ -207,14 +207,14 @@ namespace UnitTest
                     Assert.IsType<ThreadInterruptedException>(res.Exception);
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
-                Timeout = new TimeoutOption() { Duration = 10000, ForceStop = true },
-                DefaultWorkTimeout = new TimeoutOption() { Duration = 300000000, ForceStop = true },
+                TimeoutOption = new TimeoutOption() { Duration = 10000, ForceStop = true },
+                DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 300000000, ForceStop = true },
             };
-            powerPool.WorkTimeout += (s, e) =>
+            powerPool.WorkTimedOut += (s, e) =>
             {
                 logList.Add("WorkTimeout");
             };
-            powerPool.PoolTimeout += (s, e) =>
+            powerPool.PoolTimedOut += (s, e) =>
             {
                 logList.Add("PoolTimeout");
             };
@@ -228,7 +228,7 @@ namespace UnitTest
             },
             new WorkOption()
             {
-                Timeout = new TimeoutOption() { Duration = 100, ForceStop = true }
+                TimeoutOption = new TimeoutOption() { Duration = 100, ForceStop = true }
             });
 
             powerPool.Wait();
@@ -250,8 +250,8 @@ namespace UnitTest
                     Assert.Fail("Should not run DefaultCallback");
                 },
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
-                Timeout = new TimeoutOption() { Duration = 10000, ForceStop = false },
-                DefaultWorkTimeout = new TimeoutOption() { Duration = 3000, ForceStop = false },
+                TimeoutOption = new TimeoutOption() { Duration = 10000, ForceStop = false },
+                DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 3000, ForceStop = false },
             };
 
             powerPool.QueueWorkItem(() =>
@@ -274,11 +274,11 @@ namespace UnitTest
                 MaxThreads = 8,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
             };
-            powerPool.PoolStart += (s, e) =>
+            powerPool.PoolStarted += (s, e) =>
             {
                 logList.Add("PoolStart");
             };
-            powerPool.PoolIdle += (s, e) =>
+            powerPool.PoolIdled += (s, e) =>
             {
                 logList.Add("PoolIdle");
             };
@@ -345,7 +345,7 @@ namespace UnitTest
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
             };
 
-            powerPool.WorkEnd += (s, e) =>
+            powerPool.WorkEnded += (s, e) =>
             {
                 Interlocked.Increment(ref doneCount);
             };
@@ -390,7 +390,7 @@ namespace UnitTest
             };
             powerPool.EnablePoolIdleCheck = false;
 
-            powerPool.WorkEnd += (s, e) =>
+            powerPool.WorkEnded += (s, e) =>
             {
                 Interlocked.Increment(ref doneCount);
             };
@@ -444,7 +444,7 @@ namespace UnitTest
             };
             powerPool.EnablePoolIdleCheck = false;
 
-            powerPool.WorkEnd += (s, e) =>
+            powerPool.WorkEnded += (s, e) =>
             {
                 Interlocked.Increment(ref doneCount);
             };
@@ -629,7 +629,7 @@ namespace UnitTest
                 CustomWorkID = "1024"
             });
 
-            powerPool.WorkEnd += (s, e) =>
+            powerPool.WorkEnded += (s, e) =>
             {
                 Assert.Equal("1024", e.ID);
             };
@@ -808,7 +808,7 @@ namespace UnitTest
             };
 
             string id3 = null;
-            powerPool.WorkStart += (s, e) =>
+            powerPool.WorkStarted += (s, e) =>
             {
                 if (e.ID == id3)
                 {
@@ -984,7 +984,7 @@ namespace UnitTest
             int idleCount = 0;
             int doneCount = 0;
             PowerPool powerPool = new PowerPool();
-            powerPool.PoolIdle += (s, e) => 
+            powerPool.PoolIdled += (s, e) => 
             { 
                 Interlocked.Increment(ref idleCount); 
             };

@@ -32,8 +32,8 @@ namespace PowerThreadPoolTest
                     Interlocked.Increment(ref doneCount);
                 },
             };
-            powerPool.PoolStart += (s, e) => { OutputMsg("PoolStart"); };
-            powerPool.PoolIdle += (s, e) => { OutputMsg("PoolIdle"); };
+            powerPool.PoolStarted += (s, e) => { OutputMsg("PoolStart"); };
+            powerPool.PoolIdled += (s, e) => { OutputMsg("PoolIdle"); };
         }
 
         private async void start_Click(object sender, RoutedEventArgs e)
