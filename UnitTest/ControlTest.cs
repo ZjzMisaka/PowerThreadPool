@@ -892,9 +892,15 @@ namespace UnitTest
             List<long> logList = new List<long>();
             string cid = "";
             string eid = "";
+            DateTime queueTime = DateTime.MaxValue;
+            DateTime startTime = DateTime.MaxValue;
+            DateTime endTime = DateTime.MaxValue;
             powerPool.WorkCanceled += (s, e) =>
             {
                 eid = e.ID;
+                queueTime = e.QueueDateTime;
+                startTime = e.StartDateTime;
+                endTime = e.EndDateTime;
             };
             powerPool.QueueWorkItem(() =>
             {
@@ -962,6 +968,9 @@ namespace UnitTest
             powerPool.Cancel(id);
             powerPool.Wait();
 
+            Assert.NotEqual(queueTime, DateTime.MinValue);
+            Assert.Equal(startTime, DateTime.MinValue);
+            Assert.NotEqual(endTime, DateTime.MinValue);
             Assert.Equal(id, cid);
             Assert.Equal(id, eid);
             Assert.Equal(2, logList.Count);
