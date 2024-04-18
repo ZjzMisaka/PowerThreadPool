@@ -1,6 +1,6 @@
 ﻿namespace PowerThreadPool.EventArguments
 {
-    public class WorkStartedEventArgs : EventArgsBase
+    public class WorkStartedEventArgs : WorkEventArgsBase
     {
         public WorkStartedEventArgs() { }
     }

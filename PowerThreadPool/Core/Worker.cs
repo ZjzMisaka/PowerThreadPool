@@ -180,7 +180,7 @@ namespace PowerThreadPool
             {
                 object result = work.Execute();
                 executeResult = work.SetExecuteResult(result, null, Status.Succeed);
-                executeResult.ExecuteDateTime = runDateTime;
+                executeResult.StartDateTime = runDateTime;
             }
             catch (ThreadInterruptedException ex)
             {
@@ -560,7 +560,7 @@ namespace PowerThreadPool
                 timer.AutoReset = false;
                 timer.Elapsed += (s, e) =>
                 {
-                    powerPool.OnWorkTimedOut(powerPool, new TimedOutEventArgs() { ID = workID });
+                    powerPool.OnWorkTimedOut(powerPool, new WorkTimedOutEventArgs() { ID = workID });
                     powerPool.Stop(workID, workTimeoutOption.ForceStop);
                 };
                 timer.Start();

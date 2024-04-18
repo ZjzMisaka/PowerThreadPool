@@ -3,7 +3,7 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.EventArguments
 {
-    public class WorkEndedEventArgs : EventArgsBase
+    public class WorkEndedEventArgs : WorkEventArgsBase
     {
         public WorkEndedEventArgs() { }
 

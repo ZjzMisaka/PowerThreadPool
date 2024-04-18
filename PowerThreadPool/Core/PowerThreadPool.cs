@@ -62,7 +62,7 @@ namespace PowerThreadPool
         public event WorkEndedEventHandler WorkEnded;
         public delegate void PoolTimedOutEventHandler(object sender, EventArgs e);
         public event PoolTimedOutEventHandler PoolTimedOut;
-        public delegate void WorkTimedOutEventHandler(object sender, TimedOutEventArgs e);
+        public delegate void WorkTimedOutEventHandler(object sender, WorkTimedOutEventArgs e);
         public event WorkTimedOutEventHandler WorkTimedOut;
         public delegate void WorkStoppedEventHandler(object sender, WorkStoppedEventArgs e);
         public event WorkStoppedEventHandler WorkStopped;
@@ -756,7 +756,10 @@ namespace PowerThreadPool
                     ID = executeResult.ID,
                     Exception = executeResult.Exception,
                     Result = executeResult.GetResult(),
-                    Succeed = executeResult.Status == Status.Succeed
+                    Succeed = executeResult.Status == Status.Succeed,
+                    QueueDateTime = executeResult.QueueDateTime,
+                    StartDateTime = executeResult.StartDateTime,
+                    EndDateTime = executeResult.EndDateTime,
                 });
             }
         }
@@ -773,7 +776,10 @@ namespace PowerThreadPool
                 WorkStopped.Invoke(this, new WorkStoppedEventArgs()
                 {
                     ID = executeResult.ID,
-                    ForceStop = executeResult.Status == Status.ForceStopped
+                    ForceStop = executeResult.Status == Status.ForceStopped,
+                    QueueDateTime = executeResult.QueueDateTime,
+                    StartDateTime = executeResult.StartDateTime,
+                    EndDateTime = executeResult.EndDateTime,
                 });
             }
         }
@@ -790,6 +796,9 @@ namespace PowerThreadPool
                 WorkCanceled.Invoke(this, new WorkCanceledEventArgs()
                 {
                     ID = executeResult.ID,
+                    QueueDateTime = executeResult.QueueDateTime,
+                    StartDateTime = executeResult.StartDateTime,
+                    EndDateTime = executeResult.EndDateTime,
                 });
             }
         }
@@ -1053,7 +1062,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        internal void OnWorkTimedOut(object sender, TimedOutEventArgs e)
+        internal void OnWorkTimedOut(object sender, WorkTimedOutEventArgs e)
         {
             if (WorkTimedOut != null)
             {

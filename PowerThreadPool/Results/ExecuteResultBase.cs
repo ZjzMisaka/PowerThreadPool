@@ -30,11 +30,11 @@ namespace PowerThreadPool.Results
         /// </summary>
         public DateTime QueueDateTime { get => queueDateTime; internal set => queueDateTime = value; }
 
-        private DateTime executeDateTime;
+        private DateTime startDateTime;
         /// <summary>
-        /// execute datetime.
+        /// start datetime.
         /// </summary>
-        public DateTime ExecuteDateTime { get => executeDateTime; internal set => executeDateTime = value; }
+        public DateTime StartDateTime { get => startDateTime; internal set => startDateTime = value; }
 
         private DateTime endDateTime;
         /// <summary>
