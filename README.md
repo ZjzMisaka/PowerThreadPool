@@ -86,12 +86,3 @@ string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, 
 ```
 - Asterisk (*) denotes an optional parameter, either a WorkOption or a delegate (`Action<ExecuteResult<object>>` or `Action<ExecuteResult<TResult>>`), depending on whether the first parameter is an Action or a Func. 
 - In places where you see ellipses (...), you can provide up to five generic type parameters. 
-
-## APIs
-### [API Summary](https://github.com/ZjzMisaka/PowerThreadPool/wiki/API-Summary)  
-- #### [PowerPool](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPool)  
-- #### [ExecuteResult](https://github.com/ZjzMisaka/PowerThreadPool/wiki/ExecuteResult)  
-- #### [PowerPoolOption](https://github.com/ZjzMisaka/PowerThreadPool/wiki/PowerPoolOption)  
-- #### [DestroyThreadOption](https://github.com/ZjzMisaka/PowerThreadPool/wiki/DestroyThreadOption)  
-- #### [WorkOption](https://github.com/ZjzMisaka/PowerThreadPool/wiki/WorkOption)  
-- #### [TimeoutOption](https://github.com/ZjzMisaka/PowerThreadPool/wiki/TimeoutOption)  
