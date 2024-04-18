@@ -6,21 +6,21 @@ using System.Threading;
 
 namespace PowerThreadPool.Collections
 {
-    public class ConcurrentPriorityQueue<T>
+    internal class ConcurrentPriorityQueue<T>
     {
         private ConcurrentDictionary<int, ConcurrentQueue<T>> queueDic;
         private ConcurrentSet<int> prioritySet;
         private List<int> reversed;
         private int updated;
 
-        public ConcurrentPriorityQueue()
+        internal ConcurrentPriorityQueue()
         {
             queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
             prioritySet = new ConcurrentSet<int>();
             updated = 0;
         }
 
-        public void Enqueue(T item, int priority)
+        internal void Enqueue(T item, int priority)
         {
             ConcurrentQueue<T> queue = queueDic.GetOrAdd(priority, _ =>
             {
@@ -32,7 +32,7 @@ namespace PowerThreadPool.Collections
             queue.Enqueue(item);
         }
 
-        public T Dequeue()
+        internal T Dequeue()
         {
             T item = default;
 

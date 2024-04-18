@@ -13,7 +13,7 @@ using PowerThreadPool.Exceptions;
 
 namespace PowerThreadPool
 {
-    public class Worker : IDisposable
+    internal class Worker : IDisposable
     {
         internal Thread thread;
 
@@ -200,7 +200,7 @@ namespace PowerThreadPool
             return executeResult;
         }
 
-        public bool Wait(string workID)
+        internal bool Wait(string workID)
         {
             bool res = false;
             if (waitingWorkDic.TryGetValue(workID, out WorkBase needWaitWork))
@@ -229,7 +229,7 @@ namespace PowerThreadPool
             return res;
         }
 
-        public void ForceStop()
+        internal void ForceStop()
         {
             if (workerState == WorkerStates.Running)
             {
@@ -239,12 +239,12 @@ namespace PowerThreadPool
             }
         }
 
-        public void WaitForResume()
+        internal void WaitForResume()
         {
             work.PauseSignal.WaitOne();
         }
 
-        public bool Pause(string workID)
+        internal bool Pause(string workID)
         {
             bool res = false;
 
@@ -272,7 +272,7 @@ namespace PowerThreadPool
             return res;
         }
 
-        public bool Resume(string workID)
+        internal bool Resume(string workID)
         {
             bool res = false;
 
@@ -298,7 +298,7 @@ namespace PowerThreadPool
             return res;
         }
 
-        public void Resume()
+        internal void Resume()
         {
             foreach (WorkBase workToResume in waitingWorkDic.Values)
             {
@@ -315,7 +315,7 @@ namespace PowerThreadPool
             }
         }
 
-        public bool Stop(string workID, bool forceStop)
+        internal bool Stop(string workID, bool forceStop)
         {
             bool res = false;
             if (forceStop)
