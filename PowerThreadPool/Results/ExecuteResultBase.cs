@@ -45,7 +45,7 @@ namespace PowerThreadPool.Results
 
         private RetryInfo retryInfo;
         /// <summary>
-        /// End datetime.
+        /// Retry information.
         /// </summary>
         public RetryInfo RetryInfo { get => retryInfo; internal set => retryInfo = value; }
 
