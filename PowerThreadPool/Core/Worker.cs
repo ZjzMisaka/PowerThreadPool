@@ -98,7 +98,7 @@ namespace PowerThreadPool
                                 powerPool.InvokeWorkEndedEvent(executeResult);
                             }
                             work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
-                        } while (work.ShouldExecute(executeResult));
+                        } while (work.ShouldImmediateRetry(executeResult));
 
                         if (work.ShouldRequeue(executeResult))
                         {

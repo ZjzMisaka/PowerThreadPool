@@ -27,7 +27,7 @@ namespace PowerThreadPool.Works
         public abstract object Execute();
         public abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
-        internal abstract bool ShouldExecute(ExecuteResultBase executeResult);
+        internal abstract bool ShouldImmediateRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldRequeue(ExecuteResultBase executeResult);
         internal abstract string Group { get; }
         internal abstract ThreadPriority ThreadPriority { get; }
