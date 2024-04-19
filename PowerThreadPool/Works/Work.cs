@@ -112,11 +112,7 @@ namespace PowerThreadPool.Works
 
         internal override bool ShouldExecute(ExecuteResultBase executeResult)
         {
-            if (ExecuteCount == 0)
-            {
-                return true;
-            }
-            else if (executeResult != null && executeResult.RetryInfo != null && executeResult.RetryInfo.StopRetry)
+            if (executeResult != null && executeResult.RetryInfo != null && executeResult.RetryInfo.StopRetry)
             {
                 return false;
             }
