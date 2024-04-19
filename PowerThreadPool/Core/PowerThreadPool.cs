@@ -33,6 +33,7 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal IEnumerable<Worker> aliveWorkerList = new List<Worker>();
 
+        internal ConcurrentQueue<string> suspendedWorkQueue = new ConcurrentQueue<string>();
         internal ConcurrentDictionary<string, WorkBase> suspendedWork = new ConcurrentDictionary<string, WorkBase>();
         private bool suspended;
 
@@ -705,6 +706,7 @@ namespace PowerThreadPool
             if (powerPoolOption.StartSuspended)
             {
                 suspendedWork[workID] = work;
+                suspendedWorkQueue.Enqueue(workID);
             }
             else
             {
@@ -729,17 +731,20 @@ namespace PowerThreadPool
             }
 
             suspended = false;
-            foreach (KeyValuePair<string, WorkBase> kv in suspendedWork)
+            while (suspendedWorkQueue.TryDequeue(out string key))
             {
-                WorkBase work = kv.Value;
-                ConcurrentSet<string> dependents = work.Dependents;
-                if (dependents == null || dependents.Count == 0)
+                 if (suspendedWork.TryGetValue(key, out WorkBase work))
                 {
-                    CheckPoolStart();
-                    SetWork(work);
+                    ConcurrentSet<string> dependents = work.Dependents;
+                    if (dependents == null || dependents.Count == 0)
+                    {
+                        CheckPoolStart();
+                        SetWork(work);
+                    }
                 }
             }
             suspendedWork.Clear();
+            suspendedWorkQueue = new ConcurrentQueue<string>();
         }
 
         /// <summary>
