@@ -86,7 +86,7 @@ namespace PowerThreadPool.Works
 
         public override object Execute()
         {
-            ++ExecuteCount;
+            Interlocked.Increment(ref executeCount);
             return function(param);
         }
 

@@ -10,7 +10,7 @@ namespace PowerThreadPool.Works
     {
         private string id;
         public string ID { get => id; set => id = value; }
-        private int executeCount;
+        internal int executeCount;
         public int ExecuteCount { get => executeCount; set => executeCount = value; }
         private Status status;
         public Status Status { get => status; set => status = value; }
