@@ -6,30 +6,30 @@ using System.Threading;
 
 namespace PowerThreadPool.Collections
 {
-    internal class ConcurrentPriorityQueue<T> : IConcurrentPriorityCollection<T>
+    internal class ConcurrentPriorityStack<T> : IConcurrentPriorityCollection<T>
     {
-        private ConcurrentDictionary<int, ConcurrentQueue<T>> queueDic;
+        private ConcurrentDictionary<int, ConcurrentStack<T>> queueDic;
         private ConcurrentSet<int> prioritySet;
         private List<int> reversed;
         private int updated;
 
-        internal ConcurrentPriorityQueue()
+        internal ConcurrentPriorityStack()
         {
-            queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
+            queueDic = new ConcurrentDictionary<int, ConcurrentStack<T>>();
             prioritySet = new ConcurrentSet<int>();
             updated = 0;
         }
 
         public void Set(T item, int priority)
         {
-            ConcurrentQueue<T> queue = queueDic.GetOrAdd(priority, _ =>
+            ConcurrentStack<T> queue = queueDic.GetOrAdd(priority, _ =>
             {
                 prioritySet.Add(priority);
                 Interlocked.Exchange(ref updated, 1);
-                return new ConcurrentQueue<T>();
+                return new ConcurrentStack<T>();
             });
 
-            queue.Enqueue(item);
+            queue.Push(item);
         }
 
         public T Get()
@@ -46,9 +46,9 @@ namespace PowerThreadPool.Collections
             for (int i = 0; i < reversed.Count; ++i)
             {
                 int priority = reversed[i];
-                if (queueDic.TryGetValue(priority, out ConcurrentQueue<T> queue))
+                if (queueDic.TryGetValue(priority, out ConcurrentStack<T> queue))
                 {
-                    if (queue.TryDequeue(out item))
+                    if (queue.TryPop(out item))
                     {
                         break;
                     }

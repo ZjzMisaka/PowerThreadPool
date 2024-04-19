@@ -23,7 +23,7 @@ namespace PowerThreadPool
         internal int workerState = WorkerStates.Idle;
         internal int gettedLock = WorkerGettedFlags.Unlocked;
 
-        private ConcurrentPriorityQueue<string> waitingWorkIDQueue = new ConcurrentPriorityQueue<string>();
+        private IConcurrentPriorityCollection<string> waitingWorkIDPriorityCollection;
         private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
 
         private System.Timers.Timer timeoutTimer;
@@ -59,6 +59,16 @@ namespace PowerThreadPool
 
             this.powerPool = powerPool;
             this.ID = Guid.NewGuid().ToString();
+
+            if (powerPool.PowerPoolOption.QueueType == QueueType.FIFO)
+            {
+                waitingWorkIDPriorityCollection = new ConcurrentPriorityQueue<string>();
+            }
+            else
+            {
+                waitingWorkIDPriorityCollection = new ConcurrentPriorityStack<string>();
+            }
+
             thread = new Thread(() =>
             {
                 try
@@ -355,7 +365,7 @@ namespace PowerThreadPool
             int originalWorkerState;
             waitingWorkDic[work.ID] = work;
             powerPool.SetWorkOwner(work, this);
-            waitingWorkIDQueue.Enqueue(work.ID, work.WorkPriority);
+            waitingWorkIDPriorityCollection.Set(work.ID, work.WorkPriority);
             Interlocked.Increment(ref waitingWorkCount);
             originalWorkerState = Interlocked.CompareExchange(ref workerState, WorkerStates.Running, WorkerStates.Idle);
 
@@ -386,7 +396,7 @@ namespace PowerThreadPool
                 isContinue = false;
 
                 string stolenWorkID;
-                stolenWorkID = waitingWorkIDQueue.Dequeue();
+                stolenWorkID = waitingWorkIDPriorityCollection.Get();
 
                 if (stolenWorkID != null)
                 {
@@ -410,7 +420,7 @@ namespace PowerThreadPool
             while (true)
             {
                 WorkBase work = null;
-                string waitingWorkID = waitingWorkIDQueue.Dequeue();
+                string waitingWorkID = waitingWorkIDPriorityCollection.Get();
 
                 if (waitingWorkID == null && powerPool.aliveWorkerCount <= powerPool.PowerPoolOption.MaxThreads)
                 {
@@ -510,7 +520,7 @@ namespace PowerThreadPool
 
             if (!waitingWorkDic.IsEmpty)
             {
-                waitingWorkID = waitingWorkIDQueue.Dequeue();
+                waitingWorkID = waitingWorkIDPriorityCollection.Get();
                 if (waitingWorkID != null)
                 {
                     if (waitingWorkDic.TryRemove(waitingWorkID, out work))

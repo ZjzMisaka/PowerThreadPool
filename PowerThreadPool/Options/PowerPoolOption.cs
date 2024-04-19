@@ -3,6 +3,7 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Options
 {
+    public enum QueueType { FIFO, LIFO }
     public class PowerPoolOption
     {
         public PowerPoolOption()
@@ -38,5 +39,10 @@ namespace PowerThreadPool.Options
         /// Indicates whether the pool should begin in a suspended state.
         /// </summary>
         public bool StartSuspended { get; set; } = false;
+
+        /// <summary>
+        /// FIFO or LIFO.
+        /// </summary>
+        public QueueType QueueType { get; set; } = QueueType.FIFO;
     }
 }
