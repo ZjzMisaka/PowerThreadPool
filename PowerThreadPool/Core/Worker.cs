@@ -85,7 +85,7 @@ namespace PowerThreadPool
                         powerPool.OnWorkStarted(work.ID);
 
                         ExecuteResultBase executeResult = null;
-                        while (work.ShouldExecute(executeResult))
+                        do
                         {
                             executeResult = ExecuteWork();
 
@@ -98,7 +98,7 @@ namespace PowerThreadPool
                                 powerPool.InvokeWorkEndedEvent(executeResult);
                             }
                             work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
-                        }
+                        } while (work.ShouldExecute(executeResult));
 
                         if (work.ShouldRequeue(executeResult))
                         {

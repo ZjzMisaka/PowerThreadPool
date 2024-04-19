@@ -116,11 +116,11 @@ namespace PowerThreadPool.Works
             {
                 return true;
             }
-            else if (executeResult.RetryInfo != null && executeResult.RetryInfo.StopRetry)
+            else if (executeResult != null && executeResult.RetryInfo != null && executeResult.RetryInfo.StopRetry)
             {
                 return false;
             }
-            else if (workOption.RetryOption != null && Status == Status.Failed && ((workOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < workOption.RetryOption.MaxRetryCount) || workOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
+            else if (workOption.RetryOption != null && Status == Status.Failed && ((workOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry && workOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < workOption.RetryOption.MaxRetryCount) || workOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry && workOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
             {
                 return true;
             }
@@ -129,7 +129,7 @@ namespace PowerThreadPool.Works
 
         internal override bool ShouldRequeue(ExecuteResultBase executeResult)
         {
-            if (executeResult.RetryInfo != null && executeResult.RetryInfo.StopRetry)
+            if (executeResult != null && executeResult.RetryInfo != null && executeResult.RetryInfo.StopRetry)
             {
                 return false;
             }
