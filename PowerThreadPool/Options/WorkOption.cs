@@ -50,6 +50,11 @@ namespace PowerThreadPool.Options
         /// Is long running work.
         /// </summary>
         public bool LongRunning { get; set; } = false;
+
+        /// <summary>
+        /// Retry the work if execute failed.
+        /// </summary>
+        public RetryOption RetryOption { get; set; } = null;
     }
 
     public class WorkOption : WorkOption<object>

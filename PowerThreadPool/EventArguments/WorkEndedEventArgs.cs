@@ -15,5 +15,8 @@ namespace PowerThreadPool.EventArguments
 
         private Exception exception;
         public Exception Exception { get => exception; internal set => exception = value; }
+
+        private RetryInfo retryInfo;
+        public RetryInfo RetryInfo { get => retryInfo; internal set => retryInfo = value; }
     }
 }

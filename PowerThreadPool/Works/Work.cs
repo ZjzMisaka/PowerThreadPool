@@ -19,12 +19,14 @@ namespace PowerThreadPool.Works
         internal override string Group { get => workOption.Group; }
         internal override ThreadPriority ThreadPriority { get => workOption.ThreadPriority; }
         internal override TimeoutOption WorkTimeoutOption { get => workOption.TimeoutOption; }
+        internal override RetryOption RetryOption { get => workOption.RetryOption; }
         internal override bool LongRunning { get => workOption.LongRunning; }
         internal override ConcurrentSet<string> Dependents { get => workOption.Dependents; }
 
         public Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
         {
             ID = id;
+            ExecuteCount = 0;
             this.function = function;
             this.param = param;
             workOption = option;
@@ -84,6 +86,7 @@ namespace PowerThreadPool.Works
 
         public override object Execute()
         {
+            ++ExecuteCount;
             return function(param);
         }
 
@@ -101,9 +104,40 @@ namespace PowerThreadPool.Works
 
         internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status)
         {
+            Status = status;
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
-            executeResult.SetExecuteResult(result, exception, status, QueueDateTime);
+            executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, ExecuteCount);
             return executeResult;
+        }
+
+        internal override bool ShouldExecute(ExecuteResultBase executeResult)
+        {
+            if (ExecuteCount == 0)
+            {
+                return true;
+            }
+            else if (executeResult.RetryInfo != null && executeResult.RetryInfo.StopRetry)
+            {
+                return false;
+            }
+            else if (workOption.RetryOption != null && Status == Status.Failed && ((workOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < workOption.RetryOption.MaxRetryCount) || workOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        internal override bool ShouldRequeue(ExecuteResultBase executeResult)
+        {
+            if (executeResult.RetryInfo != null && executeResult.RetryInfo.StopRetry)
+            {
+                return false;
+            }
+            if (workOption.RetryOption != null && Status == Status.Failed && ((workOption.RetryOption.RetryBehavior == RetryBehavior.Requeue && workOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < workOption.RetryOption.MaxRetryCount) || workOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

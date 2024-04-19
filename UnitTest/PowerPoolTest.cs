@@ -1306,5 +1306,259 @@ namespace UnitTest
                 item => Assert.Equal("4", item)
                 );
         }
+
+        [Fact]
+        public void TestImmediateRetry()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+                Assert.Equal(5, e.RetryInfo.MaxRetryCount);
+                Assert.Equal(RetryPolicy.Limited, e.RetryInfo.RetryPolicy);
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                throw new Exception();
+                return;
+            }, new WorkOption()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(6, runCount);
+        }
+
+        [Fact]
+        public void TestImmediateRetryUnlimited()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            int retryCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                retryCount = e.RetryInfo.CurrentRetryCount;
+                if (e.RetryInfo.CurrentRetryCount == 100)
+                {
+                    e.RetryInfo.StopRetry = true;
+                }
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                throw new Exception();
+                return;
+            }, new WorkOption()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, RetryPolicy = RetryPolicy.Unlimited }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(100, retryCount);
+        }
+
+        [Fact]
+        public void TestImmediateRetryStopRetryByCallback()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                throw new Exception();
+                return;
+            }, new WorkOption()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
+                Callback = (res) => 
+                { 
+                    if (res.Status == Status.Failed)
+                    {
+                        if (res.RetryInfo.CurrentRetryCount == 2)
+                        {
+                            res.RetryInfo.StopRetry = true;
+                        }
+                    }
+                }
+            }); ;
+
+            powerPool.Wait();
+
+            Assert.Equal(3, runCount);
+        }
+
+        [Fact]
+        public void TestImmediateRetryStopRetryByEvent()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+                if (!e.Succeed)
+                {
+                    if (e.RetryInfo.CurrentRetryCount == 2)
+                    {
+                        e.RetryInfo.StopRetry = true;
+                    }
+                }
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                throw new Exception();
+                return;
+            }, new WorkOption()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
+            }); ;
+
+            powerPool.Wait();
+
+            Assert.Equal(3, runCount);
+        }
+
+        [Fact]
+        public void TestRequeue()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+                Assert.Equal(5, e.RetryInfo.MaxRetryCount);
+                Assert.Equal(RetryPolicy.Limited, e.RetryInfo.RetryPolicy);
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                throw new Exception();
+                return;
+            }, new WorkOption()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
+                Callback = (res) =>
+                {
+                    if (res.Status == Status.Failed)
+                    {
+                        if (res.RetryInfo.CurrentRetryCount == 2)
+                        {
+                            res.RetryInfo.StopRetry = true;
+                        }
+                    }
+                }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, runCount);
+        }
+
+        [Fact]
+        public void TestRequeueStopRetryByCallback()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                throw new Exception();
+                return;
+            }, new WorkOption()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(6, runCount);
+        }
+
+        [Fact]
+        public void TestRequeueStopRetryByEvent()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+                if (!e.Succeed)
+                {
+                    if (e.RetryInfo.CurrentRetryCount == 2)
+                    {
+                        e.RetryInfo.StopRetry = true;
+                    }
+                }
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                throw new Exception();
+                return;
+            }, new WorkOption()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, runCount);
+        }
+
+        [Fact]
+        public void TestRequeueUnlimited()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            int retryCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                retryCount = e.RetryInfo.CurrentRetryCount;
+                if (e.RetryInfo.CurrentRetryCount == 100)
+                {
+                    e.RetryInfo.StopRetry = true;
+                }
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                throw new Exception();
+                return;
+            }, new WorkOption()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, RetryPolicy = RetryPolicy.Unlimited }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(100, retryCount);
+        }
     }
 }

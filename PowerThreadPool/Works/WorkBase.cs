@@ -10,6 +10,10 @@ namespace PowerThreadPool.Works
     {
         private string id;
         public string ID { get => id; set => id = value; }
+        private int executeCount;
+        public int ExecuteCount { get => executeCount; set => executeCount = value; }
+        private Status status;
+        public Status Status { get => status; set => status = value; }
         private AutoResetEvent waitSignal;
         public AutoResetEvent WaitSignal { get => waitSignal; set => waitSignal = value; }
         private bool shouldStop;
@@ -23,10 +27,13 @@ namespace PowerThreadPool.Works
         public abstract object Execute();
         public abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
+        internal abstract bool ShouldExecute(ExecuteResultBase executeResult);
+        internal abstract bool ShouldRequeue(ExecuteResultBase executeResult);
         internal abstract string Group { get; }
         internal abstract ThreadPriority ThreadPriority { get; }
         internal abstract int WorkPriority { get; }
         internal abstract TimeoutOption WorkTimeoutOption { get; }
+        internal abstract RetryOption RetryOption { get; }
         internal abstract bool LongRunning { get; }
         internal abstract ConcurrentSet<string> Dependents { get; }
     }

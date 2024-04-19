@@ -756,7 +756,7 @@ namespace PowerThreadPool
             executeResult.EndDateTime = DateTime.Now;
             if (WorkEnded != null)
             {
-                WorkEnded.Invoke(this, new WorkEndedEventArgs()
+                WorkEndedEventArgs weea = new WorkEndedEventArgs()
                 {
                     ID = executeResult.ID,
                     Exception = executeResult.Exception,
@@ -765,7 +765,14 @@ namespace PowerThreadPool
                     QueueDateTime = executeResult.QueueDateTime,
                     StartDateTime = executeResult.StartDateTime,
                     EndDateTime = executeResult.EndDateTime,
-                });
+                    RetryInfo = executeResult.RetryInfo,
+                };
+                WorkEnded.Invoke(this, weea);
+
+                if (executeResult.RetryInfo != null)
+                {
+                    executeResult.RetryInfo.StopRetry = weea.RetryInfo.StopRetry;
+                }
             }
         }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using PowerThreadPool.Options;
 
 namespace PowerThreadPool.Results
 {
@@ -15,7 +16,7 @@ namespace PowerThreadPool.Results
 
         }
 
-        internal override void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime)
+        internal override void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime, RetryOption retryOption, int executeCount)
         {
             if (result != null)
             {
@@ -24,6 +25,11 @@ namespace PowerThreadPool.Results
             Exception = exception;
             Status = status;
             QueueDateTime = queueDateTime;
+
+            if (status == Status.Failed && retryOption != null)
+            {
+                RetryInfo = new RetryInfo() { CurrentRetryCount = executeCount - 1, MaxRetryCount = retryOption.MaxRetryCount, RetryPolicy = retryOption.RetryPolicy, StopRetry = false };
+            }
         }
 
         internal override object GetResult()

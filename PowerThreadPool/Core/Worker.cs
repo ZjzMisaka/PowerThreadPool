@@ -84,29 +84,41 @@ namespace PowerThreadPool
 
                         powerPool.OnWorkStarted(work.ID);
 
-                        ExecuteResultBase executeResult = ExecuteWork();
-
-                        if (executeResult.Status == Status.Stopped)
+                        ExecuteResultBase executeResult = null;
+                        while (work.ShouldExecute(executeResult))
                         {
-                            powerPool.InvokeWorkStoppedEvent(executeResult);
+                            executeResult = ExecuteWork();
+
+                            if (executeResult.Status == Status.Stopped)
+                            {
+                                powerPool.InvokeWorkStoppedEvent(executeResult);
+                            }
+                            else
+                            {
+                                powerPool.InvokeWorkEndedEvent(executeResult);
+                            }
+                            work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
+                        }
+
+                        if (work.ShouldRequeue(executeResult))
+                        {
+                            Interlocked.Increment(ref powerPool.waitingWorkCount);
+                            powerPool.SetWork(work);
                         }
                         else
                         {
-                            powerPool.InvokeWorkEndedEvent(executeResult);
-                        }
-                        work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
+                            powerPool.WorkCallbackEnd(work, executeResult.Status);
 
-                        powerPool.WorkCallbackEnd(work, executeResult.Status);
+                            if (work.WaitSignal != null)
+                            {
+                                work.WaitSignal.Set();
+                            }
 
-                        if (work.WaitSignal != null)
-                        {
-                            work.WaitSignal.Set();
-                        }
-
-                        if (work.LongRunning)
-                        {
-                            Interlocked.Decrement(ref powerPool.longRunningWorkerCount);
-                            this.LongRunning = false;
+                            if (work.LongRunning)
+                            {
+                                Interlocked.Decrement(ref powerPool.longRunningWorkerCount);
+                                this.LongRunning = false;
+                            }
                         }
 
                         AssignWork();

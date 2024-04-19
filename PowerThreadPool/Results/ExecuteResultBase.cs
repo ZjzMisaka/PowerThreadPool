@@ -1,4 +1,5 @@
 ﻿using System;
+using PowerThreadPool.Options;
 
 namespace PowerThreadPool.Results
 {
@@ -42,7 +43,13 @@ namespace PowerThreadPool.Results
         /// </summary>
         public DateTime EndDateTime { get => endDateTime; internal set => endDateTime = value; }
 
-        internal abstract void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime);
+        private RetryInfo retryInfo;
+        /// <summary>
+        /// End datetime.
+        /// </summary>
+        public RetryInfo RetryInfo { get => retryInfo; internal set => retryInfo = value; }
+
+        internal abstract void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime, RetryOption retryOption, int executeCount);
         internal abstract object GetResult();
         internal abstract ExecuteResult<object> ToObjResult();
     }
