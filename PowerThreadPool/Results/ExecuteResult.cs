@@ -28,7 +28,13 @@ namespace PowerThreadPool.Results
 
             if (status == Status.Failed && retryOption != null)
             {
-                RetryInfo = new RetryInfo() { CurrentRetryCount = executeCount - 1, MaxRetryCount = retryOption.MaxRetryCount, RetryPolicy = retryOption.RetryPolicy, StopRetry = false };
+                RetryInfo = new RetryInfo() 
+                { 
+                    CurrentRetryCount = executeCount - 1, 
+                    MaxRetryCount = retryOption.MaxRetryCount, 
+                    RetryPolicy = retryOption.RetryPolicy, 
+                    StopRetry = false 
+                };
             }
         }
 
@@ -39,7 +45,13 @@ namespace PowerThreadPool.Results
 
         internal override ExecuteResult<object> ToObjResult()
         {
-            return new ExecuteResult<object>() { Exception = Exception, Result = Result, ID = ID, QueueDateTime =  QueueDateTime };
+            return new ExecuteResult<object>() 
+            { 
+                Exception = Exception, 
+                Result = Result, 
+                ID = ID, 
+                QueueDateTime =  QueueDateTime 
+            };
         }
     }
 }
