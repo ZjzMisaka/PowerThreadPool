@@ -13,8 +13,8 @@ An comprehensive and efficient lock-free thread pool with granular work control,
 ## Documentation
 Read the [Wiki](https://github.com/ZjzMisaka/PowerThreadPool/wiki) here.  
 
-## Download
-PowerThreadPool is available as [Nuget Package](https://www.nuget.org/packages/PowerThreadPool/) now.  
+## Installation
+If you want to include PowerThreadPool in your project, you can [install it directly from NuGet](https://www.nuget.org/packages/PowerThreadPool/).  
 Support: Net45+ | Net5.0+ | netstandard2.0+  
 
 ## Features
