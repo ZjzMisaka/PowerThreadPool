@@ -2,7 +2,7 @@ using PowerThreadPool;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
-using System.Diagnostics;
+using PowerThreadPool.EventArguments;
 
 namespace UnitTest
 {
@@ -1559,6 +1559,343 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(100, retryCount);
+        }
+
+        [Fact]
+        public void TestErrorWhenCallback()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ErrorFrom errorFrom = ErrorFrom.WorkLogic;
+
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                errorFrom = e.ErrorFrom;
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                return;
+            }, (res) =>
+            {
+                throw new Exception();
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(ErrorFrom.Callback, errorFrom);
+        }
+
+        [Fact]
+        public void TestErrorWhenDefaultCallback()
+        {
+            PowerPool powerPool = new PowerPool()
+            {
+                PowerPoolOption = new PowerPoolOption()
+                {
+                    DefaultCallback = (res) =>
+                    {
+                        throw new Exception();
+                    }
+                }
+            };
+
+            ErrorFrom errorFrom = ErrorFrom.WorkLogic;
+
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                errorFrom = e.ErrorFrom;
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                return;
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(ErrorFrom.DefaultCallback, errorFrom);
+        }
+
+        [Fact]
+        public void TestErrorWhenPoolStarted()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ErrorFrom errorFrom = ErrorFrom.WorkLogic;
+
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                errorFrom = e.ErrorFrom;
+            };
+
+            powerPool.PoolStarted += (s, e) =>
+            {
+                throw new Exception();
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                return;
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(ErrorFrom.PoolStarted, errorFrom);
+        }
+
+        [Fact]
+        public void TestErrorWhenPoolIdled()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ErrorFrom errorFrom = ErrorFrom.WorkLogic;
+
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                errorFrom = e.ErrorFrom;
+            };
+
+            powerPool.PoolIdled += (s, e) =>
+            {
+                throw new Exception();
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                return;
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(ErrorFrom.PoolIdled, errorFrom);
+        }
+
+        [Fact]
+        public void TestErrorWhenWorkStarted()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ErrorFrom errorFrom = ErrorFrom.WorkLogic;
+
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                errorFrom = e.ErrorFrom;
+            };
+
+            powerPool.WorkStarted += (s, e) =>
+            {
+                throw new Exception();
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                return;
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(ErrorFrom.WorkStarted, errorFrom);
+        }
+
+        [Fact]
+        public void TestErrorWhenWorkEnded()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ErrorFrom errorFrom = ErrorFrom.WorkLogic;
+
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                errorFrom = e.ErrorFrom;
+            };
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                throw new Exception();
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                return;
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(ErrorFrom.WorkEnded, errorFrom);
+        }
+
+        [Fact]
+        public void TestErrorWhenPoolTimedOut()
+        {
+            PowerPool powerPool = new PowerPool()
+            {
+                PowerPoolOption = new PowerPoolOption()
+                {
+                    TimeoutOption = new TimeoutOption()
+                    {
+                        Duration = 100,
+                    }
+                }
+            };
+
+            ErrorFrom errorFrom = ErrorFrom.WorkLogic;
+
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                errorFrom = e.ErrorFrom;
+            };
+
+            powerPool.PoolTimedOut += (s, e) =>
+            {
+                throw new Exception();
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        return;
+                    }
+                }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(ErrorFrom.PoolTimedOut, errorFrom);
+        }
+
+        [Fact]
+        public void TestErrorWhenWorkTimedOut()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ErrorFrom errorFrom = ErrorFrom.WorkLogic;
+
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                errorFrom = e.ErrorFrom;
+            };
+
+            powerPool.WorkTimedOut += (s, e) =>
+            {
+                throw new Exception();
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        return;
+                    }
+                }
+            }, new WorkOption()
+            {
+                TimeoutOption = new TimeoutOption()
+                {
+                    Duration = 100,
+                }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(ErrorFrom.WorkTimedOut, errorFrom);
+        }
+
+        [Fact]
+        public void TestErrorWhenWorkStopped()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ErrorFrom errorFrom = ErrorFrom.WorkLogic;
+
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                errorFrom = e.ErrorFrom;
+            };
+
+            powerPool.WorkStopped += (s, e) =>
+            {
+                throw new Exception();
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(100);
+                    powerPool.StopIfRequested();
+                }
+            });
+
+            powerPool.Stop();
+            powerPool.Wait();
+
+            Assert.Equal(ErrorFrom.WorkStopped, errorFrom);
+        }
+
+        [Fact]
+        public void TestErrorWhenWorkCanceled()
+        {
+            PowerPool powerPool = new PowerPool()
+            {
+                PowerPoolOption = new PowerPoolOption()
+                {
+                    MaxThreads = 1
+                }
+            };
+
+            ErrorFrom errorFrom = ErrorFrom.WorkLogic;
+
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                errorFrom = e.ErrorFrom;
+            };
+
+            powerPool.WorkCanceled += (s, e) =>
+            {
+                throw new Exception();
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                return;
+            });
+
+            powerPool.Cancel();
+            powerPool.Wait();
+
+            Assert.Equal(ErrorFrom.WorkCanceled, errorFrom);
+        }
+
+        [Fact]
+        public void TestErrorWhenWorkLogic()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ErrorFrom errorFrom = ErrorFrom.Callback;
+
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                errorFrom = e.ErrorFrom;
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                throw new Exception();
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(ErrorFrom.WorkLogic, errorFrom);
         }
     }
 }

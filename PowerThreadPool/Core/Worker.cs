@@ -97,7 +97,7 @@ namespace PowerThreadPool
                             {
                                 powerPool.InvokeWorkEndedEvent(executeResult);
                             }
-                            work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
+                            work.InvokeCallback(powerPool, executeResult, powerPool.PowerPoolOption);
                         } while (work.ShouldImmediateRetry(executeResult));
 
                         if (work.ShouldRequeue(executeResult))
@@ -158,7 +158,7 @@ namespace PowerThreadPool
                     {
                         ex.Data.Add("ThrowedWhenExecuting", false);
                     }
-                    work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
+                    work.InvokeCallback(powerPool, executeResult, powerPool.PowerPoolOption);
 
                     powerPool.WorkCallbackEnd(work, Status.Failed);
 
@@ -216,6 +216,7 @@ namespace PowerThreadPool
             catch (Exception ex)
             {
                 executeResult = work.SetExecuteResult(null, ex, Status.Failed);
+                powerPool.OnCallbackErrorOccurred(ex, EventArguments.ErrorFrom.WorkLogic, executeResult);
             }
             executeResult.ID = work.ID;
 
@@ -671,7 +672,7 @@ namespace PowerThreadPool
                 executeResult.ID = id;
 
                 powerPool.InvokeWorkCanceledEvent(executeResult);
-                work.InvokeCallback(executeResult, powerPool.PowerPoolOption);
+                work.InvokeCallback(powerPool, executeResult, powerPool.PowerPoolOption);
 
                 Interlocked.Decrement(ref waitingWorkCount);
                 Interlocked.Decrement(ref powerPool.waitingWorkCount);

@@ -25,7 +25,7 @@ namespace PowerThreadPool.Works
         private DateTime queueDateTime;
         public DateTime QueueDateTime { get => queueDateTime; internal set => queueDateTime = value; }
         public abstract object Execute();
-        public abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
+        public abstract void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
         internal abstract bool ShouldImmediateRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldRequeue(ExecuteResultBase executeResult);
