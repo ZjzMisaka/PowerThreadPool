@@ -90,15 +90,15 @@ namespace PowerThreadPool.Works
             return function(param);
         }
 
-        public override void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
+        public override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
             if (workOption.Callback != null)
             {
-                workOption.Callback((ExecuteResult<TResult>)executeResult);
+                powerPool.SafeCallback(workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
             }
             else if (powerPoolOption.DefaultCallback != null)
             {
-                powerPoolOption.DefaultCallback(executeResult.ToObjResult());
+                powerPool.SafeCallback(powerPoolOption.DefaultCallback, EventArguments.ErrorFrom.DefaultCallback, executeResult.ToObjResult());
             }
         }
 
