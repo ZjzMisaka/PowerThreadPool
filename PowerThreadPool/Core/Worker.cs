@@ -216,7 +216,7 @@ namespace PowerThreadPool
             catch (Exception ex)
             {
                 executeResult = work.SetExecuteResult(null, ex, Status.Failed);
-                powerPool.OnCallbackErrorOccurred(ex, EventArguments.ErrorFrom.WorkLogic, executeResult);
+                powerPool.OnWorkErrorOccurred(ex, EventArguments.ErrorFrom.WorkLogic, executeResult);
             }
             executeResult.ID = work.ID;
 

@@ -94,33 +94,11 @@ namespace PowerThreadPool.Works
         {
             if (workOption.Callback != null)
             {
-                try
-                {
-                    workOption.Callback((ExecuteResult<TResult>)executeResult);
-                }
-                catch (ThreadInterruptedException _)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    powerPool.OnCallbackErrorOccurred(ex, EventArguments.ErrorFrom.Callback, executeResult);
-                }
+                powerPool.SafeCallback(workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
             }
             else if (powerPoolOption.DefaultCallback != null)
             {
-                try
-                {
-                    powerPoolOption.DefaultCallback(executeResult.ToObjResult());
-                }
-                catch (ThreadInterruptedException _)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    powerPool.OnCallbackErrorOccurred(ex, EventArguments.ErrorFrom.DefaultCallback, executeResult);
-                }
+                powerPool.SafeCallback(powerPoolOption.DefaultCallback, EventArguments.ErrorFrom.DefaultCallback, executeResult.ToObjResult());
             }
         }
 

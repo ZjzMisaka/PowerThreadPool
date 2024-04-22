@@ -1117,25 +1117,46 @@ namespace PowerThreadPool
             {
                 if (ErrorOccurred != null)
                 {
-                    ErrorOccurredEventArgs eoea = new ErrorOccurredEventArgs();
-                    eoea.Exception = ex;
-                    eoea.ErrorFrom = errorFrom;
+                    ErrorOccurredEventArgs ea = new ErrorOccurredEventArgs();
+                    ea.Exception = ex;
+                    ea.ErrorFrom = errorFrom;
 
-                    ErrorOccurred.Invoke(this, eoea);
+                    ErrorOccurred.Invoke(this, ea);
                 }
             }
         }
 
-        internal void OnCallbackErrorOccurred(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult)
+        internal void OnWorkErrorOccurred(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult)
         {
             if (ErrorOccurred != null)
             {
-                ErrorOccurredEventArgs eoea = new ErrorOccurredEventArgs();
-                eoea.Exception = exception;
-                eoea.ErrorFrom = errorFrom;
-                eoea.ExecuteResult = executeResult;
+                ErrorOccurredEventArgs e = new ErrorOccurredEventArgs();
+                e.Exception = exception;
+                e.ErrorFrom = errorFrom;
+                e.ExecuteResult = executeResult;
 
-                ErrorOccurred.Invoke(this, eoea);
+                ErrorOccurred.Invoke(this, e);
+            }
+        }
+
+        internal void SafeCallback<TResult>(Action<ExecuteResult<TResult>> callback, ErrorFrom errorFrom, ExecuteResultBase executeResult)
+        {
+            try
+            {
+                callback((ExecuteResult<TResult>)executeResult);
+            }
+            catch (ThreadInterruptedException _)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                ErrorOccurredEventArgs e = new ErrorOccurredEventArgs();
+                e.Exception = ex;
+                e.ErrorFrom = errorFrom;
+                e.ExecuteResult = executeResult;
+
+                ErrorOccurred.Invoke(this, e);
             }
         }
 
