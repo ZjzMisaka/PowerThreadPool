@@ -1139,6 +1139,10 @@ namespace PowerThreadPool
             if (ErrorOccurred != null)
             {
                 ErrorOccurredEventArgs e = new ErrorOccurredEventArgs();
+                e.ID = executeResult.ID;
+                e.QueueDateTime = executeResult.QueueDateTime;
+                e.StartDateTime = executeResult.StartDateTime;
+                e.EndDateTime = executeResult.EndDateTime;
                 e.Exception = exception;
                 e.ErrorFrom = errorFrom;
                 e.ExecuteResult = executeResult;
@@ -1167,6 +1171,10 @@ namespace PowerThreadPool
             catch (Exception ex)
             {
                 ErrorOccurredEventArgs e = new ErrorOccurredEventArgs();
+                e.ID = executeResult.ID;
+                e.QueueDateTime = executeResult.QueueDateTime;
+                e.StartDateTime = executeResult.StartDateTime;
+                e.EndDateTime = executeResult.EndDateTime;
                 e.Exception = ex;
                 e.ErrorFrom = errorFrom;
                 e.ExecuteResult = executeResult;
