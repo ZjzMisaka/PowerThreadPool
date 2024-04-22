@@ -769,12 +769,13 @@ namespace PowerThreadPool
                     EndDateTime = executeResult.EndDateTime,
                     RetryInfo = executeResult.RetryInfo,
                 };
-                SafeInvoke(WorkEnded, e, ErrorFrom.WorkEnded);
 
                 if (executeResult.RetryInfo != null)
                 {
                     executeResult.RetryInfo.StopRetry = e.RetryInfo.StopRetry;
                 }
+
+                SafeInvoke(WorkEnded, e, ErrorFrom.WorkEnded, executeResult);
             }
         }
 
@@ -795,7 +796,7 @@ namespace PowerThreadPool
                     StartDateTime = executeResult.StartDateTime,
                     EndDateTime = executeResult.EndDateTime,
                 };
-                SafeInvoke(WorkStopped, e, ErrorFrom.WorkStopped);
+                SafeInvoke(WorkStopped, e, ErrorFrom.WorkStopped, executeResult);
             }
         }
 
@@ -815,7 +816,7 @@ namespace PowerThreadPool
                     StartDateTime = executeResult.StartDateTime,
                     EndDateTime = executeResult.EndDateTime,
                 };
-                SafeInvoke(WorkCanceled, e, ErrorFrom.WorkCanceled);
+                SafeInvoke(WorkCanceled, e, ErrorFrom.WorkCanceled, executeResult);
             }
         }
 
@@ -979,7 +980,7 @@ namespace PowerThreadPool
             {
                 if (PoolStarted != null)
                 {
-                    SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted);
+                    SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted, null);
                 }
 
                 failedWorkSet = new ConcurrentSet<string>();
@@ -993,7 +994,7 @@ namespace PowerThreadPool
                     {
                         if (PoolTimedOut != null)
                         {
-                            SafeInvoke(PoolTimedOut, new EventArgs(), ErrorFrom.PoolTimedOut);
+                            SafeInvoke(PoolTimedOut, new EventArgs(), ErrorFrom.PoolTimedOut, null);
                         }
                         this.Stop(powerPoolOption.TimeoutOption.ForceStop);
                     };
@@ -1020,7 +1021,7 @@ namespace PowerThreadPool
                 {
                     try
                     {
-                        SafeInvoke(PoolIdled, new EventArgs(), ErrorFrom.PoolIdled);
+                        SafeInvoke(PoolIdled, new EventArgs(), ErrorFrom.PoolIdled, null);
                     }
                     finally
                     {
@@ -1082,7 +1083,7 @@ namespace PowerThreadPool
         {
             if (WorkTimedOut != null)
             {
-                SafeInvoke(WorkTimedOut, e, ErrorFrom.WorkTimedOut);
+                SafeInvoke(WorkTimedOut, e, ErrorFrom.WorkTimedOut, null);
             }
         }
 
@@ -1094,7 +1095,7 @@ namespace PowerThreadPool
         {
             if (WorkStarted != null)
             {
-                SafeInvoke(WorkStarted, new WorkStartedEventArgs() { ID = workID }, ErrorFrom.WorkStarted);
+                SafeInvoke(WorkStarted, new WorkStartedEventArgs() { ID = workID }, ErrorFrom.WorkStarted, null);
             }
         }
 
@@ -1105,7 +1106,8 @@ namespace PowerThreadPool
         /// <param name="eventHandler"></param>
         /// <param name="e"></param>
         /// <param name="errorFrom"></param>
-        internal void SafeInvoke<TEventArgs>(EventHandler<TEventArgs> eventHandler, TEventArgs e, ErrorFrom errorFrom)
+        /// <param name="executeResult"></param>
+        internal void SafeInvoke<TEventArgs>(EventHandler<TEventArgs> eventHandler, TEventArgs e, ErrorFrom errorFrom, ExecuteResultBase executeResult)
         {
             try
             {
@@ -1120,6 +1122,13 @@ namespace PowerThreadPool
                 if (ErrorOccurred != null)
                 {
                     ErrorOccurredEventArgs ea = new ErrorOccurredEventArgs();
+                    if (executeResult != null)
+                    {
+                        ea.ID = executeResult.ID;
+                        ea.QueueDateTime = executeResult.QueueDateTime;
+                        ea.StartDateTime = executeResult.StartDateTime;
+                        ea.EndDateTime = executeResult.EndDateTime;
+                    }
                     ea.Exception = ex;
                     ea.ErrorFrom = errorFrom;
 
