@@ -1113,7 +1113,7 @@ namespace PowerThreadPool
             {
                 eventHandler.Invoke(this, e);
             }
-            catch (ThreadInterruptedException _)
+            catch (ThreadInterruptedException)
             {
                 throw;
             }
@@ -1173,7 +1173,7 @@ namespace PowerThreadPool
             {
                 callback((ExecuteResult<TResult>)executeResult);
             }
-            catch (ThreadInterruptedException _)
+            catch (ThreadInterruptedException)
             {
                 throw;
             }

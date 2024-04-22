@@ -1144,12 +1144,8 @@ namespace UnitTest
                     {
                         throw new Exception();
                     }
-                    if (false)
-                    {
-                        return;
-                    }
                 }
-            }, new WorkOption()
+            }, new WorkOption<object>()
             {
                 LongRunning = true,
             });
@@ -1163,12 +1159,8 @@ namespace UnitTest
                     {
                         throw new Exception();
                     }
-                    if (false)
-                    {
-                        return;
-                    }
                 }
-            }, new WorkOption()
+            }, new WorkOption<object>()
             {
                 LongRunning = true,
             });
@@ -1324,8 +1316,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-                return;
-            }, new WorkOption()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 }
             });
@@ -1354,8 +1345,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-                return;
-            }, new WorkOption()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, RetryPolicy = RetryPolicy.Unlimited }
             });
@@ -1380,8 +1370,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-                return;
-            }, new WorkOption()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
                 Callback = (res) => 
@@ -1423,8 +1412,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-                return;
-            }, new WorkOption()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
             }); ;
@@ -1451,8 +1439,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-                return;
-            }, new WorkOption()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
                 Callback = (res) =>
@@ -1487,8 +1474,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-                return;
-            }, new WorkOption()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 }
             });
@@ -1520,8 +1506,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-                return;
-            }, new WorkOption()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
             });
@@ -1550,8 +1535,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-                return;
-            }, new WorkOption()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, RetryPolicy = RetryPolicy.Unlimited }
             });
