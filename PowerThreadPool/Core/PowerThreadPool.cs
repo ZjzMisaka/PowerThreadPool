@@ -1099,9 +1099,11 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// On event error occurred
+        /// Safe invoke
         /// </summary>
-        /// <param name="exception"></param>
+        /// <typeparam name="TEventArgs"></typeparam>
+        /// <param name="eventHandler"></param>
+        /// <param name="e"></param>
         /// <param name="errorFrom"></param>
         internal void SafeInvoke<TEventArgs>(EventHandler<TEventArgs> eventHandler, TEventArgs e, ErrorFrom errorFrom)
         {
@@ -1126,6 +1128,12 @@ namespace PowerThreadPool
             }
         }
 
+        /// <summary>
+        /// On work error occurred
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <param name="errorFrom"></param>
+        /// <param name="executeResult"></param>
         internal void OnWorkErrorOccurred(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult)
         {
             if (ErrorOccurred != null)
@@ -1139,6 +1147,13 @@ namespace PowerThreadPool
             }
         }
 
+        /// <summary>
+        /// Safe callback
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="callback"></param>
+        /// <param name="errorFrom"></param>
+        /// <param name="executeResult"></param>
         internal void SafeCallback<TResult>(Action<ExecuteResult<TResult>> callback, ErrorFrom errorFrom, ExecuteResultBase executeResult)
         {
             try
