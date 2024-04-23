@@ -1121,17 +1121,7 @@ namespace PowerThreadPool
             {
                 if (ErrorOccurred != null)
                 {
-                    ErrorOccurredEventArgs ea = new ErrorOccurredEventArgs();
-                    if (executeResult != null)
-                    {
-                        ea.ID = executeResult.ID;
-                        ea.QueueDateTime = executeResult.QueueDateTime;
-                        ea.StartDateTime = executeResult.StartDateTime;
-                        ea.EndDateTime = executeResult.EndDateTime;
-                    }
-                    ea.Exception = ex;
-                    ea.ErrorFrom = errorFrom;
-                    ea.ExecuteResult = executeResult;
+                    ErrorOccurredEventArgs ea = new ErrorOccurredEventArgs(ex, errorFrom, executeResult);
 
                     ErrorOccurred.Invoke(this, ea);
                 }
@@ -1148,14 +1138,7 @@ namespace PowerThreadPool
         {
             if (ErrorOccurred != null)
             {
-                ErrorOccurredEventArgs e = new ErrorOccurredEventArgs();
-                e.ID = executeResult.ID;
-                e.QueueDateTime = executeResult.QueueDateTime;
-                e.StartDateTime = executeResult.StartDateTime;
-                e.EndDateTime = executeResult.EndDateTime;
-                e.Exception = exception;
-                e.ErrorFrom = errorFrom;
-                e.ExecuteResult = executeResult;
+                ErrorOccurredEventArgs e = new ErrorOccurredEventArgs(exception, errorFrom, executeResult);
 
                 ErrorOccurred.Invoke(this, e);
             }
@@ -1180,14 +1163,7 @@ namespace PowerThreadPool
             }
             catch (Exception ex)
             {
-                ErrorOccurredEventArgs e = new ErrorOccurredEventArgs();
-                e.ID = executeResult.ID;
-                e.QueueDateTime = executeResult.QueueDateTime;
-                e.StartDateTime = executeResult.StartDateTime;
-                e.EndDateTime = executeResult.EndDateTime;
-                e.Exception = ex;
-                e.ErrorFrom = errorFrom;
-                e.ExecuteResult = executeResult;
+                ErrorOccurredEventArgs e = new ErrorOccurredEventArgs(ex, errorFrom, executeResult);
 
                 ErrorOccurred.Invoke(this, e);
             }

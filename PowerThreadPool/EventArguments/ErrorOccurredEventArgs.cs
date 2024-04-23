@@ -27,5 +27,19 @@ namespace PowerThreadPool.EventArguments
 
         private ExecuteResultBase executeResult;
         public ExecuteResultBase ExecuteResult { get => executeResult; internal set => executeResult = value; }
+
+        public ErrorOccurredEventArgs(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult)
+        {
+            if (executeResult != null)
+            {
+                ID = executeResult.ID;
+                QueueDateTime = executeResult.QueueDateTime;
+                StartDateTime = executeResult.StartDateTime;
+                EndDateTime = executeResult.EndDateTime;
+            }
+            Exception = exception;
+            ErrorFrom = errorFrom;
+            ExecuteResult = executeResult;
+        }
     }
 }
