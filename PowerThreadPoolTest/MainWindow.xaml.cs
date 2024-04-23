@@ -107,7 +107,7 @@ namespace PowerThreadPoolTest
                 if (r1 >= 81 && r1 <= 100)
                 {
                     OutputMsg("Stopping...");
-                    await powerPool.StopAsync();
+                    powerPool.Stop();
                     await powerPool.WaitAsync();
                     OutputMsg("AliveWorkerCount: " + powerPool.AliveWorkerCount + " | RunningWorkerCount: " + powerPool.RunningWorkerCount);
                     OutputMsg("IdleWorkerCount: " + powerPool.IdleWorkerCount);
@@ -130,7 +130,7 @@ namespace PowerThreadPoolTest
                 else if (r1 >= 61 && r1 <= 80)
                 {
                     OutputMsg("Force Stopping...");
-                    await powerPool.StopAsync(true);
+                    powerPool.Stop(true);
                     await powerPool.WaitAsync();
                     OutputMsg("AliveWorkerCount: " + powerPool.AliveWorkerCount + " | RunningWorkerCount: " + powerPool.RunningWorkerCount);
                     OutputMsg("IdleWorkerCount: " + powerPool.IdleWorkerCount);

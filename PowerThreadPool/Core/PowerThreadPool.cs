@@ -1440,57 +1440,6 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Stop all works
-        /// </summary>
-        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
-        /// <returns>Return false if no thread running</returns>
-        public async Task<bool> StopAsync(bool forceStop = false)
-        {
-            return await Task.Run(() =>
-            {
-                return Stop(forceStop);
-            });
-        }
-
-        /// <summary>
-        /// Stop work by id
-        /// </summary>
-        /// <param name="id">work id</param>
-        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
-        /// <returns>Return false if the thread isn't running</returns>
-        public async Task<bool> StopAsync(string id, bool forceStop = false)
-        {
-            return await Task.Run(() =>
-            {
-                return Stop(id, forceStop);
-            });
-        }
-
-        /// <summary>
-        /// Stop works by id list
-        /// </summary>
-        /// <param name="idList">work id list</param>
-        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
-        /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
-        public async Task<List<string>> StopAsync(IEnumerable<string> idList, bool forceStop = false)
-        {
-            return await Task.Run(() =>
-            {
-                List<string> failedIDList = new List<string>();
-
-                foreach (string id in idList)
-                {
-                    if (!Stop(id, forceStop))
-                    {
-                        failedIDList.Add(id);
-                    }
-                }
-
-                return failedIDList;
-            });
-        }
-
-        /// <summary>
         /// Pause all threads
         /// </summary>
         public void Pause()

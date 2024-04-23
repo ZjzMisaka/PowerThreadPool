@@ -158,7 +158,7 @@ namespace UnitTest
                 int r1 = random.Next(0, 101);
                 if (r1 >= 81 && r1 <= 100)
                 {
-                    await powerPool.StopAsync();
+                    powerPool.Stop();
                     await powerPool.WaitAsync();
                     if (powerPool.RunningWorkerCount > 0 || powerPool.WaitingWorkCount > 0)
                     {
@@ -167,7 +167,7 @@ namespace UnitTest
                 }
                 else if (r1 >= 61 && r1 <= 80)
                 {
-                    await powerPool.StopAsync(true);
+                    powerPool.Stop(true);
                     await powerPool.WaitAsync();
                     if (powerPool.RunningWorkerCount > 0 || powerPool.WaitingWorkCount > 0)
                     {
@@ -328,7 +328,7 @@ namespace UnitTest
                 int r1 = random.Next(0, 101);
                 if (r1 >= 81 && r1 <= 100)
                 {
-                    await powerPool.StopAsync();
+                    powerPool.Stop();
                     await powerPool.WaitAsync();
                     if (powerPool.RunningWorkerCount > 0 || powerPool.WaitingWorkCount > 0)
                     {
@@ -337,7 +337,7 @@ namespace UnitTest
                 }
                 else if (r1 >= 61 && r1 <= 80)
                 {
-                    await powerPool.StopAsync(true);
+                    powerPool.Stop(true);
                     await powerPool.WaitAsync();
                     if (powerPool.RunningWorkerCount > 0 || powerPool.WaitingWorkCount > 0)
                     {

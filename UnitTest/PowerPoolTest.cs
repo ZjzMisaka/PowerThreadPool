@@ -780,9 +780,10 @@ namespace UnitTest
             {
             });
 
-            Task<bool> task = powerPool.StopAsync(false);
+            powerPool.Stop(false);
 
-            await Task.Delay(1000);
+            await Task.Delay(100);
+
             string id = powerPool.QueueWorkItem(() =>
             {
             }, new WorkOption()
@@ -791,7 +792,7 @@ namespace UnitTest
 
             canReturn = true;
 
-            bool res = await task;
+            await powerPool.WaitAsync();
 
             Assert.Null(id);
         }

@@ -258,7 +258,6 @@ namespace PowerThreadPool
             {
                 Cancel();
                 thread.Interrupt();
-                thread.Join();
             }
         }
 
@@ -351,7 +350,6 @@ namespace PowerThreadPool
                 else
                 {
                     thread.Interrupt();
-                    thread.Join();
                 }
                 res = true;
             }

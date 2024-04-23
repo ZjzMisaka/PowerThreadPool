@@ -396,6 +396,7 @@ namespace UnitTest
             long start = GetNowSs();
             
             powerPool.Stop(true);
+            powerPool.Wait();
             long end = GetNowSs() - start;
 
             Assert.IsType<ThreadInterruptedException>(res0);
@@ -533,6 +534,63 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestForceStopWhenCallback()
+        {
+            PowerPool powerPool = new PowerPool() { PowerPoolOption = new PowerPoolOption() { MaxThreads = 1 } };
+            bool forceStopped = false;
+            powerPool.WorkStopped += (s, e) =>
+            {
+                forceStopped = e.ForceStop;
+            };
+            powerPool.QueueWorkItem(() =>
+            {
+            }, (res) =>
+            {
+                if (res.Status == Status.ForceStopped)
+                {
+                    return;
+                }
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            });
+            Thread.Sleep(10);
+
+            powerPool.Stop(true);
+            powerPool.Wait();
+
+            Assert.True(forceStopped);
+        }
+
+        [Fact]
+        public void TestForceStopWhenInvoke()
+        {
+            PowerPool powerPool = new PowerPool() { PowerPoolOption = new PowerPoolOption() { MaxThreads = 1 } };
+            bool forceStopped = false;
+            powerPool.WorkStopped += (s, e) =>
+            {
+                forceStopped = e.ForceStop;
+            };
+            powerPool.WorkEnded += (s, e) =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            };
+            powerPool.QueueWorkItem(() =>
+            {
+            });
+            Thread.Sleep(10);
+
+            powerPool.Stop(true);
+            powerPool.Wait();
+
+            Assert.True(forceStopped);
+        }
+
+        [Fact]
         public void TestStopAll()
         {
             PowerPool powerPool = new PowerPool();
@@ -574,53 +632,6 @@ namespace UnitTest
             });
             long start = GetNowSs();
             powerPool.Stop();
-            long end = GetNowSs() - start;
-
-            Assert.True(end >= 0 && end <= 300);
-        }
-
-        [Fact]
-        public async void TestStopAllAsync()
-        {
-            PowerPool powerPool = new PowerPool();
-            List<string> logList = new List<string>();
-            powerPool.QueueWorkItem(() =>
-            {
-                for (int i = 0; i < 1000; ++i)
-                {
-                    powerPool.StopIfRequested();
-                    Thread.Sleep(10);
-                }
-            }, (res) =>
-            {
-                logList.Add("Work0 END");
-            });
-            Thread.Sleep(100);
-            string id = powerPool.QueueWorkItem(() =>
-            {
-                for (int i = 0; i < 1000; ++i)
-                {
-                    powerPool.StopIfRequested();
-                    Thread.Sleep(10);
-                }
-            }, (res) =>
-            {
-                logList.Add("Work1 END");
-            });
-            Thread.Sleep(100);
-            powerPool.QueueWorkItem(() =>
-            {
-                for (int i = 0; i < 1000000; ++i)
-                {
-                    powerPool.StopIfRequested();
-                    Thread.Sleep(10);
-                }
-            }, (res) =>
-            {
-                logList.Add("Work2 END");
-            });
-            long start = GetNowSs();
-            await powerPool.StopAsync();
             long end = GetNowSs() - start;
 
             Assert.True(end >= 0 && end <= 300);
@@ -731,14 +742,15 @@ namespace UnitTest
 
             Assert.Equal(8, powerPool.RunningWorkerCount);
 
-            await powerPool.StopAsync(id);
+            powerPool.Stop(id);
 
             Thread.Sleep(100);
 
             Assert.Equal(7, powerPool.RunningWorkerCount);
             Assert.Equal(resID, id);
 
-            await powerPool.StopAsync(true);
+            powerPool.Stop(true);
+            await powerPool.WaitAsync();
             Assert.Equal(0, powerPool.RunningWorkerCount);
         }
 
@@ -752,9 +764,9 @@ namespace UnitTest
 
             string id = null;
             string resID = null;
-            powerPool.WorkStarted += async (s, e) =>
+            powerPool.WorkStarted += (s, e) =>
             {
-                await powerPool.StopAsync(e.ID);
+                powerPool.Stop(e.ID);
             };
 
             id = powerPool.QueueWorkItem(() =>
@@ -786,9 +798,9 @@ namespace UnitTest
 
             string id = null;
             string resID = null;
-            powerPool.WorkStarted += async (s, e) =>
+            powerPool.WorkStarted += (s, e) =>
             {
-                await powerPool.StopAsync(new List<string>() { e.ID });
+                powerPool.Stop(new List<string>() { e.ID });
             };
 
             id = powerPool.QueueWorkItem(() =>
@@ -820,9 +832,9 @@ namespace UnitTest
 
             string id = null;
             string resID = null;
-            powerPool.WorkStarted += async (s, e) =>
+            powerPool.WorkStarted += (s, e) =>
             {
-                await powerPool.StopAsync(powerPool.GetGroupMemberList("A"));
+                powerPool.Stop(powerPool.GetGroupMemberList("A"));
             };
 
             id = powerPool.QueueWorkItem(() =>
@@ -858,9 +870,9 @@ namespace UnitTest
 
             string id = null;
             string resID = null;
-            powerPool.WorkStarted += async (s, e) =>
+            powerPool.WorkStarted += (s, e) =>
             {
-                await powerPool.StopAsync(e.ID);
+                powerPool.Stop(e.ID);
             };
 
             id = powerPool.QueueWorkItem(() =>
@@ -1192,7 +1204,6 @@ namespace UnitTest
             Assert.Equal("", powerPool.Resume(new List<string>() { "" }).First());
             Assert.Equal("", powerPool.Stop(new List<string>() { "" }).First());
             Assert.Equal("", powerPool.Cancel(new List<string>() { "" }).First());
-            Assert.Equal("", (await powerPool.StopAsync(new List<string>() { "" })).First());
             Assert.Equal("", (await powerPool.WaitAsync(new List<string>() { "" })).First());
         }
 
