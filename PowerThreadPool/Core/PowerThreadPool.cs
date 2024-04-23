@@ -1131,6 +1131,7 @@ namespace PowerThreadPool
                     }
                     ea.Exception = ex;
                     ea.ErrorFrom = errorFrom;
+                    ea.ExecuteResult = executeResult;
 
                     ErrorOccurred.Invoke(this, ea);
                 }
