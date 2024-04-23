@@ -12,7 +12,7 @@
         public int Duration { get; set; }
 
         /// <summary>
-        /// If forceStop is true, Thread.Interrupt() and Thread.Join() will be called.
+        /// If forceStop is true, Thread.Interrupt() will be called.
         /// </summary>
         public bool ForceStop { get; set; } = false;
     }

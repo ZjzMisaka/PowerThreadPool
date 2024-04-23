@@ -1362,7 +1362,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Stop all works
         /// </summary>
-        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
+        /// <param name="forceStop">Call Thread.Interrupt() for force stop</param>
         /// <returns>Return false if no thread running</returns>
         public bool Stop(bool forceStop = false)
         {
@@ -1400,7 +1400,7 @@ namespace PowerThreadPool
         /// Stop work by id
         /// </summary>
         /// <param name="id">work id</param>
-        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
+        /// <param name="forceStop">Call Thread.Interrupt() for force stop</param>
         /// <returns>Return false if the work does not exist or has been done</returns>
         public bool Stop(string id, bool forceStop = false)
         {
@@ -1422,7 +1422,7 @@ namespace PowerThreadPool
         /// Stop works by id list
         /// </summary>
         /// <param name="idList">work id list</param>
-        /// <param name="forceStop">Call Thread.Interrupt() and Thread.Join() for force stop</param>
+        /// <param name="forceStop">Call Thread.Interrupt() for force stop</param>
         /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
         public List<string> Stop(IEnumerable<string> idList, bool forceStop = false)
         {
