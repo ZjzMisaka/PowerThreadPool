@@ -199,7 +199,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="action"></param>
@@ -214,7 +214,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="action"></param>
@@ -227,7 +227,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -244,7 +244,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -259,7 +259,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -278,7 +278,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -295,7 +295,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -316,7 +316,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -335,7 +335,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -358,7 +358,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -379,7 +379,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <param name="action"></param>
         /// <param name="callBack"></param>
@@ -392,7 +392,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <param name="action"></param>
         /// <param name="option"></param>
@@ -403,7 +403,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <param name="action"></param>
         /// <param name="param"></param>
@@ -417,7 +417,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <param name="action"></param>
         /// <param name="param"></param>
@@ -429,7 +429,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -445,7 +445,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -459,7 +459,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -477,7 +477,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -493,7 +493,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -513,7 +513,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -531,7 +531,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -553,7 +553,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -573,7 +573,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -597,7 +597,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -620,7 +620,7 @@ namespace PowerThreadPool
 
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="function"></param>
@@ -634,7 +634,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="function"></param>
@@ -646,7 +646,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="function"></param>
@@ -661,7 +661,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a method for execution. The method executes when a thread pool thread becomes available.
+        /// Queues a work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="function"></param>
@@ -1173,7 +1173,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Call this function inside the thread logic where you want to pause when user call Pause(...)
+        /// Call this function inside the work logic where you want to pause when user call Pause(...)
         /// </summary>
         public void PauseIfRequested()
         {
@@ -1191,7 +1191,9 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Call this function inside the thread logic where you want to stop when user call ForceStop(...)
+        /// Call this function inside the work logic where you want to stop when user call Stop(...)
+        /// To exit the logic, the function will throw a PowerThreadPool.Exceptions.WorkStopException. Do not catch it. 
+        /// If you do not want to exit the logic in this way (for example, if you have some unmanaged resources that need to be released before exiting), it is recommended to use CheckIfRequestedStop. 
         /// </summary>
         public void StopIfRequested()
         {
@@ -1219,7 +1221,8 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Call this function inside the thread logic where you want to check if requested stop (if user call ForceStop(...))
+        /// Call this function inside the work logic where you want to check if requested stop (if user call Stop(...))
+        /// When returning true, you can perform some pre operations (such as releasing unmanaged resources) and then safely exit the logic.
         /// </summary>
         /// <returns>Requested stop or not</returns>
         public bool CheckIfRequestedStop()
@@ -1241,7 +1244,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Call this function inside the thread logic where you want to check if requested stop (if user call ForceStop(...))
+        /// Call this function inside the work logic where you want to check if requested stop (if user call Stop(...))
         /// </summary>
         /// <param name="work">The work executing now in current thread</param>
         /// <returns>Return false if stop all</returns>
