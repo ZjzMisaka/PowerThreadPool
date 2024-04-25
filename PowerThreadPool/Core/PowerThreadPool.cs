@@ -1163,9 +1163,12 @@ namespace PowerThreadPool
             }
             catch (Exception ex)
             {
-                ErrorOccurredEventArgs e = new ErrorOccurredEventArgs(ex, errorFrom, executeResult);
+                if (ErrorOccurred != null)
+                {
+                    ErrorOccurredEventArgs e = new ErrorOccurredEventArgs(ex, errorFrom, executeResult);
 
-                ErrorOccurred.Invoke(this, e);
+                    ErrorOccurred.Invoke(this, e);
+                }
             }
         }
 
