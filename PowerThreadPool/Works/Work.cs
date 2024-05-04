@@ -176,16 +176,7 @@ namespace PowerThreadPool.Works
             {
                 if (workerTemp != null)
                 {
-                    SpinWait.SpinUntil(() =>
-                    {
-                        int stealingLockOrig = Interlocked.CompareExchange(ref workerTemp.stealingLock, WorkerStealingFlags.Unlocked, WorkerStealingFlags.Locked);
-                        return (stealingLockOrig == WorkerStealingFlags.Locked);
-                    });
-                    SpinWait.SpinUntil(() =>
-                    {
-                        int doneSpinOrig = Interlocked.CompareExchange(ref workerTemp.workHeld, WorkHeldFlags.NotHeld, WorkHeldFlags.Held);
-                        return (doneSpinOrig == WorkHeldFlags.Held);
-                    });
+                    UnlockWorker(workerTemp);
                 }
                 SpinWait.SpinUntil(() =>
                 {
@@ -210,16 +201,8 @@ namespace PowerThreadPool.Works
 
         internal override void UnlockWorker(Worker worker)
         {
-            SpinWait.SpinUntil(() =>
-            {
-                int stealingLockOrig = Interlocked.CompareExchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked, WorkerStealingFlags.Locked);
-                return (stealingLockOrig == WorkerStealingFlags.Locked);
-            });
-            SpinWait.SpinUntil(() =>
-            {
-                int doneSpinOrig = Interlocked.CompareExchange(ref worker.workHeld, WorkHeldFlags.NotHeld, WorkHeldFlags.Held);
-                return (doneSpinOrig == WorkHeldFlags.Held);
-            });
+            Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
+            Interlocked.Exchange(ref worker.workHeld, WorkHeldFlags.NotHeld);
         }
 
         internal override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)

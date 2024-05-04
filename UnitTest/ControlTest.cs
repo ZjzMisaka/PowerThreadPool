@@ -810,6 +810,25 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestStopByIDAfterWorkStart()
+        {
+            PowerPool powerPool = new PowerPool() { PowerPoolOption = new PowerPoolOption() { StartSuspended = true } };
+            powerPool.WorkStarted += (s, e) =>
+            {
+                powerPool.Stop(e.ID);
+            };
+            for (int i = 0; i < 100000; ++i)
+            {
+                powerPool.QueueWorkItem(() =>
+                {
+                });
+            }
+
+            powerPool.Start();
+            powerPool.Wait();
+        }
+
+        [Fact]
         public async void TestStopByIDList()
         {
             PowerPool powerPool = new PowerPool();
