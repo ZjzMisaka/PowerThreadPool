@@ -394,10 +394,14 @@ namespace PowerThreadPool
             if (worker != null)
             {
                 int count = max / 2;
+                List<WorkBase> stolenWorkList = null;
                 if (count > 0)
                 {
-                    List<WorkBase> stolenWorkList = worker.Steal(count);
-                    Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
+                    stolenWorkList = worker.Steal(count);
+                }
+                Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
+                if (stolenWorkList != null)
+                {
                     foreach (WorkBase stolenWork in stolenWorkList)
                     {
                         if (waitingWorkID == null)
@@ -411,10 +415,6 @@ namespace PowerThreadPool
                             SetWork(stolenWork, true);
                         }
                     }
-                }
-                else
-                {
-                    Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
                 }
             }
         }
