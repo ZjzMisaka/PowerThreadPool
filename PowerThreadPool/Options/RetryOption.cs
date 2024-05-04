@@ -22,7 +22,7 @@ namespace PowerThreadPool.Options
 
         /// <summary>
         /// Max retry count.
-        /// Enable id RetryPolicy is Limited
+        /// Enable if RetryPolicy is Limited
         /// </summary>
         public int MaxRetryCount { get; set; } = 3;
     }

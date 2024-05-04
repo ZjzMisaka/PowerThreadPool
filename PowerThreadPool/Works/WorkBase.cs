@@ -9,23 +9,38 @@ namespace PowerThreadPool.Works
     internal abstract class WorkBase
     {
         private string id;
-        public string ID { get => id; set => id = value; }
+        internal string ID { get => id; set => id = value; }
+        private Worker worker;
+        internal Worker Worker { get => worker; set => worker = value; }
         internal int executeCount;
-        public int ExecuteCount { get => executeCount; set => executeCount = value; }
+        internal int ExecuteCount { get => executeCount; set => executeCount = value; }
         private Status status;
-        public Status Status { get => status; set => status = value; }
+        internal Status Status { get => status; set => status = value; }
         private AutoResetEvent waitSignal;
-        public AutoResetEvent WaitSignal { get => waitSignal; set => waitSignal = value; }
+        internal AutoResetEvent WaitSignal { get => waitSignal; set => waitSignal = value; }
         private bool shouldStop;
-        public bool ShouldStop { get => shouldStop; set => shouldStop = value; }
+        internal bool ShouldStop { get => shouldStop; set => shouldStop = value; }
         private ManualResetEvent pauseSignal;
-        public ManualResetEvent PauseSignal { get => pauseSignal; set => pauseSignal = value; }
+        internal ManualResetEvent PauseSignal { get => pauseSignal; set => pauseSignal = value; }
         private bool isPausing;
-        public bool IsPausing { get => isPausing; set => isPausing = value; }
+        internal bool IsPausing { get => isPausing; set => isPausing = value; }
         private DateTime queueDateTime;
-        public DateTime QueueDateTime { get => queueDateTime; internal set => queueDateTime = value; }
-        public abstract object Execute();
-        public abstract void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
+        internal DateTime QueueDateTime { get => queueDateTime; set => queueDateTime = value; }
+        internal abstract object Execute();
+        internal abstract bool Stop(bool forceStop);
+        internal abstract bool Wait();
+        internal abstract bool Pause();
+        internal abstract bool Resume();
+        internal abstract bool Cancel(bool lockWorker);
+
+        /// <summary>
+        /// Prevent work theft by other threads after acquiring a Worker.
+        /// Prevent the forced termination of works that should not end, caused by the target work ending right after acquiring a Worker.
+        /// </summary>
+        /// <returns></returns>
+        internal abstract Worker LockWorker();
+        internal abstract void UnlockWorker(Worker worker);
+        internal abstract void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
         internal abstract bool ShouldImmediateRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldRequeue(ExecuteResultBase executeResult);

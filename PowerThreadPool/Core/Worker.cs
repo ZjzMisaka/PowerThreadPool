@@ -22,6 +22,7 @@ namespace PowerThreadPool
 
         internal int workerState = WorkerStates.Idle;
         internal int gettedLock = WorkerGettedFlags.Unlocked;
+        internal int workHeld = WorkHeldFlags.NotHeld;
 
         private IConcurrentPriorityCollection<string> waitingWorkIDPriorityCollection;
         private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
@@ -35,7 +36,7 @@ namespace PowerThreadPool
         private WorkBase work;
         internal WorkBase Work { get => work; set => work = value; }
         private bool killFlag = false;
-        private int stealingLock = WorkerStealingFlags.Unlocked;
+        internal int stealingLock = WorkerStealingFlags.Unlocked;
 
         private PowerPool powerPool;
 
@@ -218,45 +219,24 @@ namespace PowerThreadPool
                 executeResult = work.SetExecuteResult(null, ex, Status.Failed);
                 powerPool.OnWorkErrorOccurred(ex, EventArguments.ErrorFrom.WorkLogic, executeResult);
             }
+            SpinWait.SpinUntil(() =>
+            {
+                return workHeld == WorkHeldFlags.NotHeld;
+            });
+            work.Worker = null;
             executeResult.ID = work.ID;
 
             return executeResult;
         }
 
-        internal bool Wait(string workID)
-        {
-            bool res = false;
-            if (waitingWorkDic.TryGetValue(workID, out WorkBase needWaitWork))
-            {
-                if (needWaitWork.WaitSignal == null)
-                {
-                    needWaitWork.WaitSignal = new AutoResetEvent(false);
-                }
-                needWaitWork.WaitSignal.WaitOne();
-                res = true;
-            }
-            else
-            {
-                needWaitWork = work;
-                if (workID == needWaitWork.ID)
-                {
-                    if (needWaitWork.WaitSignal == null)
-                    {
-                        needWaitWork.WaitSignal = new AutoResetEvent(false);
-                    }
-                    needWaitWork.WaitSignal.WaitOne();
-                    res = true;
-                }
-            }
-
-            return res;
-        }
-
-        internal void ForceStop()
+        internal void ForceStop(bool cancelOtherWorks)
         {
             if (workerState == WorkerStates.Running)
             {
-                Cancel();
+                if (cancelOtherWorks)
+                {
+                    Cancel();
+                }
                 thread.Interrupt();
             }
         }
@@ -264,60 +244,6 @@ namespace PowerThreadPool
         internal void WaitForResume()
         {
             work.PauseSignal.WaitOne();
-        }
-
-        internal bool Pause(string workID)
-        {
-            bool res = false;
-
-            WorkBase workToPause;
-            if (!waitingWorkDic.TryGetValue(workID, out workToPause))
-            {
-                if (workID == WorkID)
-                {
-                    workToPause = work;
-                }
-            }
-
-            if (workToPause != null)
-            {
-                if (workToPause.PauseSignal == null)
-                {
-                    workToPause.PauseSignal = new ManualResetEvent(true);
-                }
-
-                workToPause.IsPausing = true;
-                workToPause.PauseSignal.Reset();
-                res = true;
-            }
-
-            return res;
-        }
-
-        internal bool Resume(string workID)
-        {
-            bool res = false;
-
-            WorkBase workToResume;
-            if (!waitingWorkDic.TryGetValue(workID, out workToResume))
-            {
-                if (workID == WorkID)
-                {
-                    workToResume = work;
-                }
-            }
-
-            if (workToResume != null)
-            {
-                if (workToResume.IsPausing)
-                {
-                    workToResume.IsPausing = false;
-                    workToResume.PauseSignal.Set();
-                    res = true;
-                }
-            }
-
-            return res;
         }
 
         internal void Resume()
@@ -337,46 +263,13 @@ namespace PowerThreadPool
             }
         }
 
-        internal bool Stop(string workID, bool forceStop)
-        {
-            bool res = false;
-            if (forceStop)
-            {
-                if (waitingWorkDic.TryRemove(workID, out _))
-                {
-                    Interlocked.Decrement(ref waitingWorkCount);
-                    Interlocked.Decrement(ref powerPool.waitingWorkCount);
-                }
-                else
-                {
-                    thread.Interrupt();
-                }
-                res = true;
-            }
-            else
-            {
-                if (!Cancel(workID))
-                {
-                    if (workID == WorkID)
-                    {
-                        work.ShouldStop = true;
-                        res = true;
-                    }
-                }
-                else
-                {
-                    res = true;
-                }
-            }
-            return res;
-        }
-
         internal void SetWork(WorkBase work, bool resetted)
         {
             int originalWorkerState;
             waitingWorkDic[work.ID] = work;
-            powerPool.SetWorkOwner(work, this);
+            powerPool.SetWorkOwner(work);
             waitingWorkIDPriorityCollection.Set(work.ID, work.WorkPriority);
+            work.Worker = this;
             Interlocked.Increment(ref waitingWorkCount);
             originalWorkerState = Interlocked.CompareExchange(ref workerState, WorkerStates.Running, WorkerStates.Idle);
 
@@ -414,14 +307,13 @@ namespace PowerThreadPool
                     if (waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
                     {
                         Interlocked.Decrement(ref waitingWorkCount);
+                        stolenWork.Worker = null;
                         stolenList.Add(stolenWork);
 
                         isContinue = true;
                     }
                 }
             }
-
-            Interlocked.Exchange(ref stealingLock, WorkerStealingFlags.Unlocked);
 
             return stolenList;
         }
@@ -505,18 +397,24 @@ namespace PowerThreadPool
                 if (count > 0)
                 {
                     List<WorkBase> stolenWorkList = worker.Steal(count);
+                    Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
                     foreach (WorkBase stolenWork in stolenWorkList)
                     {
                         if (waitingWorkID == null)
                         {
                             waitingWorkID = stolenWork.ID;
                             work = stolenWork;
+                            work.Worker = this;
                         }
                         else
                         {
                             SetWork(stolenWork, true);
                         }
                     }
+                }
+                else
+                {
+                    Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
                 }
             }
         }

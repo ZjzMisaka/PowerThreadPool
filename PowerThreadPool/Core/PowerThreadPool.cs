@@ -28,7 +28,7 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, Worker> idleWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal ConcurrentQueue<string> idleWorkerQueue = new ConcurrentQueue<string>();
 
-        internal ConcurrentDictionary<string, Worker> settedWorkDic = new ConcurrentDictionary<string, Worker>();
+        internal ConcurrentDictionary<string, WorkBase> settedWorkDic = new ConcurrentDictionary<string, WorkBase>();
         internal ConcurrentDictionary<string, ConcurrentSet<string>> workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<string, Worker> aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
         internal IEnumerable<Worker> aliveWorkerList = new List<Worker>();
@@ -1065,9 +1065,9 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="workId"></param>
         /// <param name="worker"></param>
-        internal void SetWorkOwner(WorkBase work, Worker worker)
+        internal void SetWorkOwner(WorkBase work)
         {
-            settedWorkDic[work.ID] = worker;
+            settedWorkDic[work.ID] = work;
             if (work.Group != null)
             {
                 workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
@@ -1290,9 +1290,9 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            if (settedWorkDic.TryGetValue(id, out Worker worker))
+            if (settedWorkDic.TryGetValue(id, out WorkBase work))
             {
-                return worker.Wait(id);
+                return work.Wait();
             }
             return false;
         }
@@ -1386,7 +1386,7 @@ namespace PowerThreadPool
                 IEnumerable<Worker> workersToStop = aliveWorkerList;
                 foreach (Worker worker in workersToStop)
                 {
-                    worker.ForceStop();
+                    worker.ForceStop(true);
                 }
             }
             else
@@ -1416,9 +1416,9 @@ namespace PowerThreadPool
             }
 
             bool res = false;
-            if (settedWorkDic.TryGetValue(id, out Worker workerToStop))
+            if (settedWorkDic.TryGetValue(id, out WorkBase work))
             {
-                res = workerToStop.Stop(id, forceStop);
+                res = work.Stop(forceStop);
             }
 
             return res;
@@ -1468,9 +1468,9 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            if (settedWorkDic.TryGetValue(id, out Worker workerToPause))
+            if (settedWorkDic.TryGetValue(id, out WorkBase work))
             {
-                return workerToPause.Pause(id);
+                return work.Pause();
             }
             return false;
         }
@@ -1530,9 +1530,9 @@ namespace PowerThreadPool
             {
                 res = false;
             }
-            else if (settedWorkDic.TryGetValue(id, out Worker workerToPause))
+            else if (settedWorkDic.TryGetValue(id, out WorkBase work))
             {
-                res = workerToPause.Resume(id);
+                res = work.Resume();
             }
             return res;
         }
@@ -1580,9 +1580,9 @@ namespace PowerThreadPool
                 return false;
             }
 
-            if (settedWorkDic.TryGetValue(id, out Worker worker))
+            if (settedWorkDic.TryGetValue(id, out WorkBase work))
             {
-                return worker.Cancel(id);
+                return work.Cancel(true);
             }
 
             return false;

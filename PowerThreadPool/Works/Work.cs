@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using static PowerThreadPool.PowerPool;
 using PowerThreadPool.Results;
+using PowerThreadPool.Constants;
 
 namespace PowerThreadPool.Works
 {
@@ -23,7 +24,7 @@ namespace PowerThreadPool.Works
         internal override bool LongRunning { get => workOption.LongRunning; }
         internal override ConcurrentSet<string> Dependents { get => workOption.Dependents; }
 
-        public Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
+        internal Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
         {
             ID = id;
             ExecuteCount = 0;
@@ -84,13 +85,127 @@ namespace PowerThreadPool.Works
             }
         }
 
-        public override object Execute()
+        internal override object Execute()
         {
             Interlocked.Increment(ref executeCount);
             return function(param);
         }
 
-        public override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
+        internal override bool Stop(bool forceStop)
+        {
+            Worker workerTemp = LockWorker();
+
+            bool res;
+            if (forceStop)
+            {
+                if (Worker.WorkID == ID)
+                { 
+                    Worker.ForceStop(false);
+                    res = true;
+                }
+                else
+                {
+                    res = Cancel(false);
+                }
+            }
+            else
+            {
+                ShouldStop = true;
+                Cancel(false);
+                res = true;
+            }
+
+            UnlockWorker(workerTemp);
+
+            return res;
+        }
+
+        internal override bool Wait()
+        {
+            if (WaitSignal == null)
+            {
+                WaitSignal = new AutoResetEvent(false);
+            }
+            WaitSignal.WaitOne();
+            return true;
+        }
+
+        internal override bool Pause()
+        {
+            if (PauseSignal == null)
+            {
+                PauseSignal = new ManualResetEvent(true);
+            }
+
+            IsPausing = true;
+            PauseSignal.Reset();
+            return true;
+        }
+
+        internal override bool Resume()
+        {
+            bool res = false;
+            if (IsPausing)
+            {
+                IsPausing = false;
+                PauseSignal.Set();
+                res = true;
+            }
+            return res;
+        }
+
+        internal override bool Cancel(bool lockWorker)
+        {
+            Worker workerTemp = null;
+            if (lockWorker)
+            {
+                workerTemp = LockWorker();
+            }
+            bool res = Worker.Cancel(ID);
+            if (lockWorker)
+            {
+                UnlockWorker(workerTemp);
+            }
+            return res;
+        }
+
+        internal override Worker LockWorker()
+        {
+            Worker workerTemp = null;
+            do
+            {
+                if (workerTemp != null)
+                {
+                    UnlockWorker(workerTemp);
+                }
+                SpinWait.SpinUntil(() =>
+                {
+                    workerTemp = Worker;
+                    return (workerTemp != null);
+                });
+                SpinWait.SpinUntil(() =>
+                {
+                    int stealingLockOrig = Interlocked.CompareExchange(ref workerTemp.stealingLock, WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked);
+                    return (stealingLockOrig == WorkerStealingFlags.Unlocked);
+                });
+                SpinWait.SpinUntil(() =>
+                {
+                    int doneSpinOrig = Interlocked.CompareExchange(ref workerTemp.workHeld, WorkHeldFlags.Held, WorkHeldFlags.NotHeld);
+                    return (doneSpinOrig == WorkHeldFlags.NotHeld);
+                });
+            }
+            while (Worker == null || (Worker != null && Worker.ID != workerTemp.ID));
+
+            return workerTemp;
+        }
+
+        internal override void UnlockWorker(Worker worker)
+        {
+            Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
+            Interlocked.Exchange(ref worker.workHeld, WorkHeldFlags.NotHeld);
+        }
+
+        internal override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
             if (workOption.Callback != null)
             {
