@@ -24,7 +24,7 @@ namespace PowerThreadPool.Works
         internal override bool LongRunning { get => workOption.LongRunning; }
         internal override ConcurrentSet<string> Dependents { get => workOption.Dependents; }
 
-        public Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
+        internal Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
         {
             ID = id;
             ExecuteCount = 0;
@@ -85,13 +85,13 @@ namespace PowerThreadPool.Works
             }
         }
 
-        public override object Execute()
+        internal override object Execute()
         {
             Interlocked.Increment(ref executeCount);
             return function(param);
         }
 
-        public override bool Stop(bool forceStop)
+        internal override bool Stop(bool forceStop)
         {
             Worker workerTemp = LockWorker();
 
@@ -120,7 +120,7 @@ namespace PowerThreadPool.Works
             return res;
         }
 
-        public override bool Wait()
+        internal override bool Wait()
         {
             if (WaitSignal == null)
             {
@@ -130,7 +130,7 @@ namespace PowerThreadPool.Works
             return true;
         }
 
-        public override bool Pause()
+        internal override bool Pause()
         {
             if (PauseSignal == null)
             {
@@ -142,7 +142,7 @@ namespace PowerThreadPool.Works
             return true;
         }
 
-        public override bool Resume()
+        internal override bool Resume()
         {
             bool res = false;
             if (IsPausing)
@@ -154,7 +154,7 @@ namespace PowerThreadPool.Works
             return res;
         }
 
-        public override bool Cancel(bool lockWorker)
+        internal override bool Cancel(bool lockWorker)
         {
             Worker workerTemp = null;
             if (lockWorker)
@@ -169,7 +169,7 @@ namespace PowerThreadPool.Works
             return res;
         }
 
-        public override Worker LockWorker()
+        internal override Worker LockWorker()
         {
             Worker workerTemp = null;
             do
@@ -184,7 +184,7 @@ namespace PowerThreadPool.Works
                     SpinWait.SpinUntil(() =>
                     {
                         int doneSpinOrig = Interlocked.CompareExchange(ref workerTemp.workHeld, WorkHeldFlags.NotHeld, WorkHeldFlags.Held);
-                        return (doneSpinOrig == 1);
+                        return (doneSpinOrig == WorkHeldFlags.Held);
                     });
                 }
                 SpinWait.SpinUntil(() =>
@@ -200,7 +200,7 @@ namespace PowerThreadPool.Works
                 SpinWait.SpinUntil(() =>
                 {
                     int doneSpinOrig = Interlocked.CompareExchange(ref workerTemp.workHeld, WorkHeldFlags.Held, WorkHeldFlags.NotHeld);
-                    return (doneSpinOrig == 0);
+                    return (doneSpinOrig == WorkHeldFlags.NotHeld);
                 });
             }
             while (Worker == null || (Worker != null && Worker.ID != workerTemp.ID));
@@ -208,7 +208,7 @@ namespace PowerThreadPool.Works
             return workerTemp;
         }
 
-        public override void UnlockWorker(Worker worker)
+        internal override void UnlockWorker(Worker worker)
         {
             SpinWait.SpinUntil(() =>
             {
@@ -218,11 +218,11 @@ namespace PowerThreadPool.Works
             SpinWait.SpinUntil(() =>
             {
                 int doneSpinOrig = Interlocked.CompareExchange(ref worker.workHeld, WorkHeldFlags.NotHeld, WorkHeldFlags.Held);
-                return (doneSpinOrig == 1);
+                return (doneSpinOrig == WorkHeldFlags.Held);
             });
         }
 
-        public override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
+        internal override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
             if (workOption.Callback != null)
             {
