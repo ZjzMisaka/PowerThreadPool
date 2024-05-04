@@ -377,7 +377,7 @@ namespace PowerThreadPool
                 }
 
                 int waitingWorkCountTemp = runningWorker.WaitingWorkCount;
-                if (waitingWorkCountTemp > max)
+                if (waitingWorkCountTemp >= 2 && waitingWorkCountTemp > max)
                 {
                     if (Interlocked.CompareExchange(ref runningWorker.stealingLock, WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked) == WorkerStealingFlags.Locked)
                     {
