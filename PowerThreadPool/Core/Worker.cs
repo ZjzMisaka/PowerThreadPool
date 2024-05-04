@@ -22,6 +22,7 @@ namespace PowerThreadPool
 
         internal int workerState = WorkerStates.Idle;
         internal int gettedLock = WorkerGettedFlags.Unlocked;
+        internal int workHeld = WorkHeldFlags.NotHeld;
 
         private IConcurrentPriorityCollection<string> waitingWorkIDPriorityCollection;
         private ConcurrentDictionary<string, WorkBase> waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
@@ -35,7 +36,7 @@ namespace PowerThreadPool
         private WorkBase work;
         internal WorkBase Work { get => work; set => work = value; }
         private bool killFlag = false;
-        private int stealingLock = WorkerStealingFlags.Unlocked;
+        internal int stealingLock = WorkerStealingFlags.Unlocked;
 
         private PowerPool powerPool;
 
@@ -218,6 +219,10 @@ namespace PowerThreadPool
                 executeResult = work.SetExecuteResult(null, ex, Status.Failed);
                 powerPool.OnWorkErrorOccurred(ex, EventArguments.ErrorFrom.WorkLogic, executeResult);
             }
+            SpinWait.SpinUntil(() =>
+            {
+                return workHeld == WorkHeldFlags.NotHeld;
+            });
             work.Worker = null;
             executeResult.ID = work.ID;
 

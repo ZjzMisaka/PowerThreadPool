@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using static PowerThreadPool.PowerPool;
 using PowerThreadPool.Results;
+using PowerThreadPool.Constants;
 
 namespace PowerThreadPool.Works
 {
@@ -92,24 +93,31 @@ namespace PowerThreadPool.Works
 
         public override bool Stop(bool forceStop)
         {
+            Worker workerTemp = LockWorker();
+
+            bool res;
             if (forceStop)
             {
                 if (Worker.WorkID == ID)
-                {
+                { 
                     Worker.ForceStop(false);
-                    return true;
+                    res = true;
                 }
                 else
                 {
-                    return Cancel();
+                    res = Cancel(false);
                 }
             }
             else
             {
                 ShouldStop = true;
-                Cancel();
-                return true;
+                Cancel(false);
+                res = true;
             }
+
+            UnlockWorker(workerTemp);
+
+            return res;
         }
 
         public override bool Wait()
@@ -146,9 +154,72 @@ namespace PowerThreadPool.Works
             return res;
         }
 
-        public override bool Cancel()
+        public override bool Cancel(bool lockWorker)
         {
-            return Worker.Cancel(ID);
+            Worker workerTemp = null;
+            if (lockWorker)
+            {
+                workerTemp = LockWorker();
+            }
+            bool res = Worker.Cancel(ID);
+            if (lockWorker)
+            {
+                UnlockWorker(workerTemp);
+            }
+            return res;
+        }
+
+        public override Worker LockWorker()
+        {
+            Worker workerTemp = null;
+            do
+            {
+                if (workerTemp != null)
+                {
+                    SpinWait.SpinUntil(() =>
+                    {
+                        int stealingLockOrig = Interlocked.CompareExchange(ref workerTemp.stealingLock, WorkerStealingFlags.Unlocked, WorkerStealingFlags.Locked);
+                        return (stealingLockOrig == WorkerStealingFlags.Locked);
+                    });
+                    SpinWait.SpinUntil(() =>
+                    {
+                        int doneSpinOrig = Interlocked.CompareExchange(ref workerTemp.workHeld, WorkHeldFlags.NotHeld, WorkHeldFlags.Held);
+                        return (doneSpinOrig == 1);
+                    });
+                }
+                SpinWait.SpinUntil(() =>
+                {
+                    workerTemp = Worker;
+                    return (workerTemp != null);
+                });
+                SpinWait.SpinUntil(() =>
+                {
+                    int stealingLockOrig = Interlocked.CompareExchange(ref workerTemp.stealingLock, WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked);
+                    return (stealingLockOrig == WorkerStealingFlags.Unlocked);
+                });
+                SpinWait.SpinUntil(() =>
+                {
+                    int doneSpinOrig = Interlocked.CompareExchange(ref workerTemp.workHeld, WorkHeldFlags.Held, WorkHeldFlags.NotHeld);
+                    return (doneSpinOrig == 0);
+                });
+            }
+            while (Worker == null || (Worker != null && Worker.ID != workerTemp.ID));
+
+            return workerTemp;
+        }
+
+        public override void UnlockWorker(Worker worker)
+        {
+            SpinWait.SpinUntil(() =>
+            {
+                int stealingLockOrig = Interlocked.CompareExchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked, WorkerStealingFlags.Locked);
+                return (stealingLockOrig == WorkerStealingFlags.Locked);
+            });
+            SpinWait.SpinUntil(() =>
+            {
+                int doneSpinOrig = Interlocked.CompareExchange(ref worker.workHeld, WorkHeldFlags.NotHeld, WorkHeldFlags.Held);
+                return (doneSpinOrig == 1);
+            });
         }
 
         public override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)

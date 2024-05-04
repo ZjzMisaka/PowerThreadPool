@@ -1582,7 +1582,7 @@ namespace PowerThreadPool
 
             if (settedWorkDic.TryGetValue(id, out WorkBase work))
             {
-                return work.Cancel();
+                return work.Cancel(true);
             }
 
             return false;

@@ -32,7 +32,9 @@ namespace PowerThreadPool.Works
         public abstract bool Wait();
         public abstract bool Pause();
         public abstract bool Resume();
-        public abstract bool Cancel();
+        public abstract bool Cancel(bool lockWorker);
+        public abstract Worker LockWorker();
+        public abstract void UnlockWorker(Worker worker);
         public abstract void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
         internal abstract bool ShouldImmediateRetry(ExecuteResultBase executeResult);
