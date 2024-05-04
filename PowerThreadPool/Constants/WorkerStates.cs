@@ -1,6 +1,6 @@
 ﻿namespace PowerThreadPool.Constants
 {
-    internal class WorkerStates
+    internal static class WorkerStates
     {
         internal const int Idle = 0;
         internal const int Running = 1;

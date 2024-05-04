@@ -1,6 +1,6 @@
 ﻿namespace PowerThreadPool.Constants
 {
-    internal class PoolRunningFlags
+    internal static class PoolRunningFlags
     {
         internal const int NotRunning = 0;
         internal const int IdleChecked = 1;

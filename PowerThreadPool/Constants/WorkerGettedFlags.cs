@@ -1,6 +1,6 @@
 ﻿namespace PowerThreadPool.Constants
 {
-    internal class WorkerGettedFlags
+    internal static class WorkerGettedFlags
     {
         internal const int Unlocked = 0;
         internal const int Locked = 1;
