@@ -90,6 +90,67 @@ namespace PowerThreadPool.Works
             return function(param);
         }
 
+        public override bool Stop(bool forceStop)
+        {
+            if (forceStop)
+            {
+                if (Worker.WorkID == ID)
+                {
+                    Worker.ForceStop(false);
+                    return true;
+                }
+                else
+                {
+                    return Cancel();
+                }
+            }
+            else
+            {
+                ShouldStop = true;
+                Cancel();
+                return true;
+            }
+        }
+
+        public override bool Wait()
+        {
+            if (WaitSignal == null)
+            {
+                WaitSignal = new AutoResetEvent(false);
+            }
+            WaitSignal.WaitOne();
+            return true;
+        }
+
+        public override bool Pause()
+        {
+            if (PauseSignal == null)
+            {
+                PauseSignal = new ManualResetEvent(true);
+            }
+
+            IsPausing = true;
+            PauseSignal.Reset();
+            return true;
+        }
+
+        public override bool Resume()
+        {
+            bool res = false;
+            if (IsPausing)
+            {
+                IsPausing = false;
+                PauseSignal.Set();
+                res = true;
+            }
+            return res;
+        }
+
+        public override bool Cancel()
+        {
+            return Worker.Cancel(ID);
+        }
+
         public override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
             if (workOption.Callback != null)

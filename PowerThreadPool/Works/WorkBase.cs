@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using PowerThreadPool.Collections;
+using PowerThreadPool.Constants;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 
@@ -10,6 +11,8 @@ namespace PowerThreadPool.Works
     {
         private string id;
         public string ID { get => id; set => id = value; }
+        private Worker worker;
+        public Worker Worker { get => worker; set => worker = value; }
         internal int executeCount;
         public int ExecuteCount { get => executeCount; set => executeCount = value; }
         private Status status;
@@ -25,6 +28,11 @@ namespace PowerThreadPool.Works
         private DateTime queueDateTime;
         public DateTime QueueDateTime { get => queueDateTime; internal set => queueDateTime = value; }
         public abstract object Execute();
+        public abstract bool Stop(bool forceStop);
+        public abstract bool Wait();
+        public abstract bool Pause();
+        public abstract bool Resume();
+        public abstract bool Cancel();
         public abstract void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
         internal abstract bool ShouldImmediateRetry(ExecuteResultBase executeResult);

@@ -408,40 +408,61 @@ namespace UnitTest
         public void TestForceStopBeforeRunning()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
+            
             int doneCount = 0;
+            int cancelCount = 0;
+
+            powerPool.WorkCanceled += (s, e) =>
+            {
+                Interlocked.Increment(ref cancelCount);
+            };
+
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                Interlocked.Increment(ref doneCount);
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
             });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                Interlocked.Increment(ref doneCount);
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
             });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                Interlocked.Increment(ref doneCount);
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
             });
             string id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                Interlocked.Increment(ref doneCount);
+                if (res.Status == Status.Succeed)
+                {
+                    Interlocked.Increment(ref doneCount);
+                }
             });
 
             powerPool.Stop(id, true);
             powerPool.Wait();
 
             Assert.Equal(3, doneCount);
+            Assert.Equal(1, cancelCount);
         }
 
         [Fact]
