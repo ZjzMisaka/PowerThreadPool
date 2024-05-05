@@ -42,6 +42,7 @@ namespace PowerThreadPool.Works
         internal abstract void UnlockWorker(Worker worker);
         internal abstract void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
+        internal abstract bool ShouldRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldImmediateRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldRequeue(ExecuteResultBase executeResult);
         internal abstract string Group { get; }

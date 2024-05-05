@@ -225,30 +225,44 @@ namespace PowerThreadPool.Works
             return executeResult;
         }
 
-        internal override bool ShouldImmediateRetry(ExecuteResultBase executeResult)
+        internal override bool ShouldRetry(ExecuteResultBase executeResult)
         {
             if (executeResult != null && executeResult.RetryInfo != null && executeResult.RetryInfo.StopRetry)
             {
                 return false;
             }
-            else if (workOption.RetryOption != null && Status == Status.Failed && ((workOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry && workOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < workOption.RetryOption.MaxRetryCount) || workOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry && workOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
+            else if (workOption.RetryOption != null && Status == Status.Failed && ((workOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < workOption.RetryOption.MaxRetryCount) || workOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
             {
                 return true;
             }
-            return false;
+            else
+            {
+                return false;
+            }
+        }
+
+        internal override bool ShouldImmediateRetry(ExecuteResultBase executeResult)
+        {
+            if (ShouldRetry(executeResult) && workOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         internal override bool ShouldRequeue(ExecuteResultBase executeResult)
         {
-            if (executeResult != null && executeResult.RetryInfo != null && executeResult.RetryInfo.StopRetry)
-            {
-                return false;
-            }
-            if (workOption.RetryOption != null && Status == Status.Failed && ((workOption.RetryOption.RetryBehavior == RetryBehavior.Requeue && workOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < workOption.RetryOption.MaxRetryCount) || workOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
+            if (ShouldRetry(executeResult) && workOption.RetryOption.RetryBehavior == RetryBehavior.Requeue)
             {
                 return true;
             }
-            return false;
+            else
+            {
+                return false;
+            }
         }
     }
 }

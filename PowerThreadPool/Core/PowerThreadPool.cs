@@ -1294,7 +1294,10 @@ namespace PowerThreadPool
             {
                 return work.Wait();
             }
-            return false;
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -1472,7 +1475,10 @@ namespace PowerThreadPool
             {
                 return work.Pause();
             }
-            return false;
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -1584,8 +1590,10 @@ namespace PowerThreadPool
             {
                 return work.Cancel(true);
             }
-
-            return false;
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
