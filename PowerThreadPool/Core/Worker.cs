@@ -114,12 +114,12 @@ namespace PowerThreadPool
                             {
                                 work.WaitSignal.Set();
                             }
+                        }
 
-                            if (work.LongRunning)
-                            {
-                                Interlocked.Decrement(ref powerPool.longRunningWorkerCount);
-                                this.LongRunning = false;
-                            }
+                        if (work.LongRunning)
+                        {
+                            Interlocked.Decrement(ref powerPool.longRunningWorkerCount);
+                            this.LongRunning = false;
                         }
 
                         AssignWork();
