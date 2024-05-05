@@ -44,7 +44,7 @@ Support: Net45+ | Net5.0+ | netstandard2.0+
 ## Getting started
 ### Simple example: run a work
 ```csharp
-PowerPool powerPool = new PowerPool(new PowerPoolOption() { /* Some options */ });
+PowerPool powerPool = new PowerPool();
 powerPool.QueueWorkItem(() => 
 {
     // Do something
