@@ -886,10 +886,11 @@ namespace PowerThreadPool
             CheckPoolStart();
 
             Worker worker = null;
-            while (worker == null)
+            SpinWait.SpinUntil(() =>
             {
                 worker = GetWorker(work.LongRunning);
-            }
+                return worker != null;
+            });
             work.QueueDateTime = DateTime.Now;
             worker.SetWork(work, false);
         }
