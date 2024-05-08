@@ -93,7 +93,7 @@ namespace PowerThreadPool.Works
 
         internal override bool Stop(bool forceStop)
         {
-            Worker workerTemp = LockWorker();
+            Worker workerTemp = LockWorker(true);
 
             bool res;
             if (forceStop)
@@ -115,7 +115,7 @@ namespace PowerThreadPool.Works
                 res = true;
             }
 
-            UnlockWorker(workerTemp);
+            UnlockWorker(workerTemp, true);
 
             return res;
         }
@@ -159,25 +159,22 @@ namespace PowerThreadPool.Works
             Worker workerTemp = null;
             if (lockWorker)
             {
-                workerTemp = LockWorker();
+                workerTemp = LockWorker(false);
             }
             bool res = Worker.Cancel(ID);
             if (lockWorker)
             {
-                UnlockWorker(workerTemp);
+                UnlockWorker(workerTemp, false);
             }
             return res;
         }
 
-        internal override Worker LockWorker()
+        internal override Worker LockWorker(bool holdWork)
         {
             Worker workerTemp = null;
             do
             {
-                if (workerTemp != null)
-                {
-                    UnlockWorker(workerTemp);
-                }
+                UnlockWorker(workerTemp, holdWork);
                 SpinWait.SpinUntil(() =>
                 {
                     workerTemp = Worker;
@@ -188,21 +185,30 @@ namespace PowerThreadPool.Works
                     int stealingLockOrig = Interlocked.CompareExchange(ref workerTemp.stealingLock, WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked);
                     return (stealingLockOrig == WorkerStealingFlags.Unlocked);
                 });
-                SpinWait.SpinUntil(() =>
+                if (holdWork)
                 {
-                    int doneSpinOrig = Interlocked.CompareExchange(ref workerTemp.workHeld, WorkHeldFlags.Held, WorkHeldFlags.NotHeld);
-                    return (doneSpinOrig == WorkHeldFlags.NotHeld);
-                });
+                    SpinWait.SpinUntil(() =>
+                    {
+                        int workHeldOrig = Interlocked.CompareExchange(ref workerTemp.workHeld, WorkHeldFlags.Held, WorkHeldFlags.NotHeld);
+                        return (workHeldOrig == WorkHeldFlags.NotHeld);
+                    });
+                }
             }
             while (Worker == null || (Worker != null && Worker.ID != workerTemp.ID));
 
             return workerTemp;
         }
 
-        internal override void UnlockWorker(Worker worker)
+        internal override void UnlockWorker(Worker worker, bool holdWork)
         {
-            Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
-            Interlocked.Exchange(ref worker.workHeld, WorkHeldFlags.NotHeld);
+            if (worker != null)
+            {
+                Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
+                if (holdWork)
+                {
+                    Interlocked.Exchange(ref worker.workHeld, WorkHeldFlags.NotHeld);
+                }
+            }
         }
 
         internal override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
