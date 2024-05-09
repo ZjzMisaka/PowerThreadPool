@@ -851,6 +851,11 @@ namespace PowerThreadPool
         /// </summary>
         private void InitWorkerQueue()
         {
+            if (disposed)
+            {
+                return;
+            }
+
             if (powerPoolOption.DestroyThreadOption != null)
             {
                 if (powerPoolOption.DestroyThreadOption.MinThreads > powerPoolOption.MaxThreads)
@@ -1658,14 +1663,11 @@ namespace PowerThreadPool
                         worker.Kill();
                         worker.Dispose();
                     }
+                    Wait();
                     cancellationTokenSource.Dispose();
-                    aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
                     idleWorkerDic = new ConcurrentDictionary<string, Worker>();
                     idleWorkerQueue = new ConcurrentQueue<string>();
                     idleWorkerCount = 0;
-                    aliveWorkerCount = 0;
-                    runningWorkerCount = 0;
-                    waitingWorkCount = 0;
                 }
 
                 disposed = true;

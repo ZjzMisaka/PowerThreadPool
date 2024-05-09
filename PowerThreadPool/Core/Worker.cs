@@ -509,16 +509,7 @@ namespace PowerThreadPool
 
                 if (Interlocked.CompareExchange(ref workerState, WorkerStates.ToBeDisposed, WorkerStates.Idle) == WorkerStates.Idle)
                 {
-                    if (powerPool.idleWorkerDic.TryRemove(ID, out _))
-                    {
-                        Interlocked.Decrement(ref powerPool.idleWorkerCount);
-                    }
-                    if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
-                    {
-                        Interlocked.Decrement(ref powerPool.aliveWorkerCount);
-                        powerPool.aliveWorkerList = powerPool.aliveWorkerDic.Values;
-                    }
-                    Kill();
+                    RemoveSelf();
                 }
                 else
                 {
@@ -527,6 +518,20 @@ namespace PowerThreadPool
             }
 
             killTimer.Stop();
+        }
+
+        private void RemoveSelf()
+        {
+            if (powerPool.idleWorkerDic.TryRemove(ID, out _))
+            {
+                Interlocked.Decrement(ref powerPool.idleWorkerCount);
+            }
+            if (powerPool.aliveWorkerDic.TryRemove(ID, out _))
+            {
+                Interlocked.Decrement(ref powerPool.aliveWorkerCount);
+                powerPool.aliveWorkerList = powerPool.aliveWorkerDic.Values;
+            }
+            Kill();
         }
 
         internal void Kill()
@@ -606,6 +611,8 @@ namespace PowerThreadPool
             {
                 if (disposing)
                 {
+                    RemoveSelf();
+
                     runSignal.Dispose();
                 }
 
