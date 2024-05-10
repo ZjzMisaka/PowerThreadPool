@@ -6,6 +6,7 @@ using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;
+using PowerThreadPool.Groups;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -1634,6 +1635,16 @@ namespace PowerThreadPool
                 return groupMemberList;
             }
             return new ConcurrentSet<string>();
+        }
+
+        /// <summary>
+        /// Get group object
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <returns>Group object</returns>
+        public Group GetGroup(string groupName)
+        {
+            return new Group(this, groupName);
         }
 
         /// <summary>
