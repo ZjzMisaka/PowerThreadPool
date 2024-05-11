@@ -76,6 +76,11 @@ namespace PowerThreadPool
                 {
                     while (true)
                     {
+                        if (disposed && killFlag)
+                        {
+                            return;
+                        }
+
                         runSignal.WaitOne();
 
                         if (killFlag)

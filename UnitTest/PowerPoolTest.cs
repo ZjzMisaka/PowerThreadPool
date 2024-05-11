@@ -482,6 +482,7 @@ namespace UnitTest
         {
             PowerPool powerPool = new PowerPool();
             List<string> logList = new List<string>();
+            powerPool.EnablePoolIdleCheck = false;
             powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 2,
@@ -532,7 +533,7 @@ namespace UnitTest
             {
                 WorkPriority = 1
             });
-
+            powerPool.EnablePoolIdleCheck = true;
             powerPool.Wait();
 
             //Assert.Collection<string>(logList,

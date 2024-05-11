@@ -858,11 +858,6 @@ namespace PowerThreadPool
         /// </summary>
         private void InitWorkerQueue()
         {
-            if (disposing || disposed)
-            {
-                return;
-            }
-
             if (powerPoolOption.DestroyThreadOption != null)
             {
                 if (powerPoolOption.DestroyThreadOption.MinThreads > powerPoolOption.MaxThreads)
@@ -1022,6 +1017,11 @@ namespace PowerThreadPool
         /// </summary>
         internal void CheckPoolIdle()
         {
+            if (disposing || disposed)
+            {
+                return;
+            }
+
             if (!enablePoolIdleCheck)
             {
                 return;
@@ -1676,13 +1676,19 @@ namespace PowerThreadPool
                     this.disposing = true;
                     Stop();
                     Stop(true);
-                    foreach (Worker worker in aliveWorkerList)
+                    while (aliveWorkerCount > 0 || idleWorkerCount > 0)
                     {
-                        worker.Kill();
-                        worker.Dispose();
+                        foreach (Worker worker in aliveWorkerList)
+                        {
+                            worker.ForceStop(true);
+                            worker.Kill();
+                            worker.Dispose();
+                        }
+                        Thread.Yield();
                     }
-                    Wait();
+                    runningWorkerCount = 0;
                     cancellationTokenSource.Dispose();
+                    pauseSignal.Dispose();
                     waitAllSignal.Dispose();
                 }
 
