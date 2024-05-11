@@ -619,7 +619,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestCustomWorkIDStatus()
+        public void TestCustomWorkID()
         {
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
@@ -636,6 +636,38 @@ namespace UnitTest
                 Assert.Equal("1024", e.ID);
             };
             Assert.Equal("1024", id);
+        }
+
+        [Fact]
+        public void TestDuplicateCustomWorkID()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            },
+            new WorkOption()
+            {
+                CustomWorkID = "1024"
+            });
+            ArgumentException ex = null;
+            try
+            {
+                string id1 = powerPool.QueueWorkItem(() =>
+                {
+                    Thread.Sleep(1000);
+                },
+                new WorkOption()
+                {
+                    CustomWorkID = "1024"
+                });
+            }
+            catch (ArgumentException e)
+            {
+                ex = e;
+            }
+
+            Assert.Equal("CustomWorkID", ex.ParamName);
         }
 
         [Fact]

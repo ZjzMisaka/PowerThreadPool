@@ -691,6 +691,10 @@ namespace PowerThreadPool
 
             if (workOption.CustomWorkID != null)
             {
+                if (settedWorkDic.ContainsKey(workOption.CustomWorkID))
+                {
+                    throw new ArgumentException($"The work ID '{workOption.CustomWorkID}' already exists.", nameof(workOption.CustomWorkID));
+                }
                 workID = workOption.CustomWorkID;
             }
             else
