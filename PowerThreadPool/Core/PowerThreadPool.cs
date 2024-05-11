@@ -1680,9 +1680,12 @@ namespace PowerThreadPool
                     {
                         foreach (Worker worker in aliveWorkerList)
                         {
-                            worker.ForceStop(true);
-                            worker.Kill();
-                            worker.Dispose();
+                            if (!worker.disposed)
+                            {
+                                worker.ForceStop(true);
+                                worker.Kill();
+                                worker.Dispose();
+                            }
                         }
                         Thread.Yield();
                     }

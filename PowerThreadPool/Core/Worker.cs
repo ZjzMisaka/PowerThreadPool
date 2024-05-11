@@ -15,7 +15,7 @@ namespace PowerThreadPool
 {
     internal class Worker : IDisposable
     {
-        private bool disposed = false;
+        internal bool disposed = false;
 
         internal Thread thread;
 
@@ -76,11 +76,6 @@ namespace PowerThreadPool
                 {
                     while (true)
                     {
-                        if (disposed && killFlag)
-                        {
-                            return;
-                        }
-
                         runSignal.WaitOne();
 
                         if (killFlag)
