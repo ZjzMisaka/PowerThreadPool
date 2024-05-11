@@ -707,6 +707,11 @@ namespace PowerThreadPool
 
             Interlocked.Increment(ref waitingWorkCount);
 
+            if (work.Group != null)
+            {
+                workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
+            }
+
             if (powerPoolOption.StartSuspended)
             {
                 suspendedWork[workID] = work;
@@ -1082,10 +1087,6 @@ namespace PowerThreadPool
         internal void SetWorkOwner(WorkBase work)
         {
             settedWorkDic[work.ID] = work;
-            if (work.Group != null)
-            {
-                workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
-            }
         }
 
         /// <summary>
