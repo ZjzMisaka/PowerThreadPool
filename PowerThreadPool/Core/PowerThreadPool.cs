@@ -19,6 +19,7 @@ namespace PowerThreadPool
     public class PowerPool : IDisposable
     {
         private bool disposed = false;
+        private bool disposing = false;
 
         private ManualResetEvent waitAllSignal = new ManualResetEvent(false);
         private ManualResetEvent pauseSignal = new ManualResetEvent(true);
@@ -671,7 +672,7 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption<TResult> workOption)
         {
-            if (disposed)
+            if (disposing || disposed)
             { 
                 throw new ObjectDisposedException(GetType().FullName);
             }
@@ -728,7 +729,7 @@ namespace PowerThreadPool
         /// </summary>
         public void Start()
         {
-            if (disposed)
+            if (disposing || disposed)
             {
                 throw new ObjectDisposedException(GetType().FullName);
             }
@@ -857,6 +858,11 @@ namespace PowerThreadPool
         /// </summary>
         private void InitWorkerQueue()
         {
+            if (disposing || disposed)
+            {
+                return;
+            }
+
             if (powerPoolOption.DestroyThreadOption != null)
             {
                 if (powerPoolOption.DestroyThreadOption.MinThreads > powerPoolOption.MaxThreads)
@@ -871,27 +877,17 @@ namespace PowerThreadPool
                 minThreads = powerPoolOption.DestroyThreadOption.MinThreads;
             }
 
-            try
+            while (aliveWorkerCount < minThreads)
             {
-                while (aliveWorkerCount < minThreads)
+                Worker worker = new Worker(this);
+                if (aliveWorkerDic.TryAdd(worker.ID, worker))
                 {
-                    Worker worker = new Worker(this);
-                    if (aliveWorkerDic.TryAdd(worker.ID, worker))
-                    {
-                        Interlocked.Increment(ref aliveWorkerCount);
-                        aliveWorkerList = aliveWorkerDic.Values;
-                    }
-                    idleWorkerDic[worker.ID] = worker;
-                    Interlocked.Increment(ref idleWorkerCount);
-                    idleWorkerQueue.Enqueue(worker.ID);
+                    Interlocked.Increment(ref aliveWorkerCount);
+                    aliveWorkerList = aliveWorkerDic.Values;
                 }
-            }
-            catch
-            {
-                if (disposed)
-                {
-                    return;
-                }
+                idleWorkerDic[worker.ID] = worker;
+                Interlocked.Increment(ref idleWorkerCount);
+                idleWorkerQueue.Enqueue(worker.ID);
             }
         }
 
@@ -1677,6 +1673,7 @@ namespace PowerThreadPool
             {
                 if (disposing)
                 {
+                    this.disposing = true;
                     Stop();
                     Stop(true);
                     foreach (Worker worker in aliveWorkerList)
@@ -1687,12 +1684,6 @@ namespace PowerThreadPool
                     Wait();
                     cancellationTokenSource.Dispose();
                     waitAllSignal.Dispose();
-                    idleWorkerDic = null;
-                    idleWorkerQueue = null;
-                    idleWorkerCount = 0;
-                    aliveWorkerDic = null;
-                    aliveWorkerList = null;
-                    aliveWorkerCount = 0;
                 }
 
                 disposed = true;

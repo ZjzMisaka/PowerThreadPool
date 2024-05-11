@@ -15,6 +15,8 @@ namespace PowerThreadPool
 {
     internal class Worker : IDisposable
     {
+        private bool disposed = false;
+
         internal Thread thread;
 
         private string id;
@@ -39,8 +41,6 @@ namespace PowerThreadPool
         internal int stealingLock = WorkerStealingFlags.Unlocked;
 
         private PowerPool powerPool;
-
-        private bool disposed = false;
 
         private bool longRunning = true;
         internal bool LongRunning { get => longRunning; set => longRunning = value; }
