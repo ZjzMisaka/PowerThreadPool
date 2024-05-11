@@ -728,6 +728,11 @@ namespace PowerThreadPool
         /// </summary>
         public void Start()
         {
+            if (disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+
             if (!suspended)
             {
                 return;
@@ -852,11 +857,6 @@ namespace PowerThreadPool
         /// </summary>
         private void InitWorkerQueue()
         {
-            if (disposed)
-            {
-                return;
-            }
-
             if (powerPoolOption.DestroyThreadOption != null)
             {
                 if (powerPoolOption.DestroyThreadOption.MinThreads > powerPoolOption.MaxThreads)
@@ -870,17 +870,28 @@ namespace PowerThreadPool
             {
                 minThreads = powerPoolOption.DestroyThreadOption.MinThreads;
             }
-            while (aliveWorkerCount < minThreads)
+
+            try
             {
-                Worker worker = new Worker(this);
-                if (aliveWorkerDic.TryAdd(worker.ID, worker))
+                while (aliveWorkerCount < minThreads)
                 {
-                    Interlocked.Increment(ref aliveWorkerCount);
-                    aliveWorkerList = aliveWorkerDic.Values;
+                    Worker worker = new Worker(this);
+                    if (aliveWorkerDic.TryAdd(worker.ID, worker))
+                    {
+                        Interlocked.Increment(ref aliveWorkerCount);
+                        aliveWorkerList = aliveWorkerDic.Values;
+                    }
+                    idleWorkerDic[worker.ID] = worker;
+                    Interlocked.Increment(ref idleWorkerCount);
+                    idleWorkerQueue.Enqueue(worker.ID);
                 }
-                idleWorkerDic[worker.ID] = worker;
-                Interlocked.Increment(ref idleWorkerCount);
-                idleWorkerQueue.Enqueue(worker.ID);
+            }
+            catch
+            {
+                if (disposed)
+                {
+                    return;
+                }
             }
         }
 
@@ -1624,6 +1635,16 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Get group object
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <returns>Group object</returns>
+        public Group GetGroup(string groupName)
+        {
+            return new Group(this, groupName);
+        }
+
+        /// <summary>
         /// Get all members of a group
         /// </summary>
         /// <param name="groupName"></param>
@@ -1635,16 +1656,6 @@ namespace PowerThreadPool
                 return groupMemberList;
             }
             return new ConcurrentSet<string>();
-        }
-
-        /// <summary>
-        /// Get group object
-        /// </summary>
-        /// <param name="groupName"></param>
-        /// <returns>Group object</returns>
-        public Group GetGroup(string groupName)
-        {
-            return new Group(this, groupName);
         }
 
         /// <summary>
@@ -1666,7 +1677,6 @@ namespace PowerThreadPool
             {
                 if (disposing)
                 {
-                    waitAllSignal.Set();
                     Stop();
                     Stop(true);
                     foreach (Worker worker in aliveWorkerList)
@@ -1676,9 +1686,13 @@ namespace PowerThreadPool
                     }
                     Wait();
                     cancellationTokenSource.Dispose();
-                    idleWorkerDic = new ConcurrentDictionary<string, Worker>();
-                    idleWorkerQueue = new ConcurrentQueue<string>();
+                    waitAllSignal.Dispose();
+                    idleWorkerDic = null;
+                    idleWorkerQueue = null;
                     idleWorkerCount = 0;
+                    aliveWorkerDic = null;
+                    aliveWorkerList = null;
+                    aliveWorkerCount = 0;
                 }
 
                 disposed = true;

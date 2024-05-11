@@ -976,6 +976,7 @@ namespace UnitTest
 
             powerPool.Dispose();
 
+            Assert.Equal(0, powerPool.RunningWorkerCount);
             Assert.Equal(0, powerPool.AliveWorkerCount);
             Assert.Equal(0, powerPool.IdleWorkerCount);
         }
@@ -1031,6 +1032,31 @@ namespace UnitTest
                 powerPool.QueueWorkItem(() =>
                 {
                 });
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            Assert.NotNull(exception);
+            Assert.Equal("ObjectDisposedException", exception.GetType().Name);
+        }
+
+        [Fact]
+        public void TestStartSuspendAfterDispose()
+        {
+            PowerPool powerPool = new PowerPool() { PowerPoolOption = new PowerPoolOption() { StartSuspended = true } };
+            
+            Exception exception = null;
+
+            powerPool.QueueWorkItem(() =>
+            {
+            });
+            powerPool.Dispose();
+
+            try
+            {
+                powerPool.Start();
             }
             catch (Exception ex)
             {
