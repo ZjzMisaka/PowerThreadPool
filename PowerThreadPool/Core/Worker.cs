@@ -359,7 +359,7 @@ namespace PowerThreadPool
                 Interlocked.Decrement(ref powerPool.waitingWorkCount);
 
                 SetWorkToRun(work);
-                
+
                 runSignal.Set();
                 break;
             }
@@ -495,6 +495,8 @@ namespace PowerThreadPool
             {
                 thread.Priority = threadPriority;
             }
+
+            thread.IsBackground = work.IsBackground;
         }
 
         private void OnKillTimerElapsed(object s, ElapsedEventArgs e)

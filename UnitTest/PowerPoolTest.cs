@@ -3,6 +3,7 @@ using PowerThreadPool.Collections;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using PowerThreadPool.EventArguments;
+using System.Threading;
 
 namespace UnitTest
 {
@@ -568,7 +569,7 @@ namespace UnitTest
                     }
                     Thread.Sleep(1);
                 }
-                
+
             }, new WorkOption()
             {
                 ThreadPriority = ThreadPriority.Lowest
@@ -595,6 +596,31 @@ namespace UnitTest
             });
 
             powerPool.Stop();
+        }
+
+        [Fact]
+        public void TestThreadSwitchOnForegroundOrBackground()
+        {
+            var powerPool = new PowerPool(new PowerPoolOption()
+            {
+                MaxThreads = 1,
+            });
+
+
+            foreach (var i in new[] { false, true, false, true, false })
+            {
+                powerPool.QueueWorkItem(value =>
+                                        {
+                                            Assert.Equal(Thread.CurrentThread.IsBackground, value);
+
+                                        }, i,
+                                        new WorkOption()
+                                        {
+                                            IsBackground = i
+                                        });
+            }
+
+            powerPool.Wait();
         }
 
         [Fact]
@@ -625,8 +651,8 @@ namespace UnitTest
             string id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
-            }, 
-            new WorkOption() 
+            },
+            new WorkOption()
             {
                 CustomWorkID = "1024"
             });
@@ -682,7 +708,7 @@ namespace UnitTest
                     Thread.Sleep(1000);
                 });
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 Assert.Equal("The minimum number of threads cannot be greater than the maximum number of threads.", ex.Message);
                 errored = true;
@@ -1020,9 +1046,9 @@ namespace UnitTest
             int idleCount = 0;
             int doneCount = 0;
             PowerPool powerPool = new PowerPool();
-            powerPool.PoolIdled += (s, e) => 
-            { 
-                Interlocked.Increment(ref idleCount); 
+            powerPool.PoolIdled += (s, e) =>
+            {
+                Interlocked.Increment(ref idleCount);
             };
 
             Assert.True(powerPool.EnablePoolIdleCheck);
@@ -1079,7 +1105,7 @@ namespace UnitTest
         public void TestStartSuspendAfterDispose()
         {
             PowerPool powerPool = new PowerPool() { PowerPoolOption = new PowerPoolOption() { StartSuspended = true } };
-            
+
             Exception exception = null;
 
             powerPool.QueueWorkItem(() =>
@@ -1433,8 +1459,8 @@ namespace UnitTest
             }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
-                Callback = (res) => 
-                { 
+                Callback = (res) =>
+                {
                     if (res.Status == Status.Failed)
                     {
                         if (res.RetryInfo.CurrentRetryCount == 2)

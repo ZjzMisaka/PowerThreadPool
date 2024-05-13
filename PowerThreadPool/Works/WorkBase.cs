@@ -47,6 +47,7 @@ namespace PowerThreadPool.Works
         internal abstract bool ShouldRequeue(ExecuteResultBase executeResult);
         internal abstract string Group { get; }
         internal abstract ThreadPriority ThreadPriority { get; }
+        internal abstract bool IsBackground { get; }
         internal abstract int WorkPriority { get; }
         internal abstract TimeoutOption WorkTimeoutOption { get; }
         internal abstract RetryOption RetryOption { get; }

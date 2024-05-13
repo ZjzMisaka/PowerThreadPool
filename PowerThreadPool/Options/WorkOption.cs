@@ -42,6 +42,11 @@ namespace PowerThreadPool.Options
         public ThreadPriority ThreadPriority { get; set; } = ThreadPriority.Normal;
 
         /// <summary>
+        ///  Get/Set backgroundness of thread in thread pool.
+        /// </summary>
+        public bool IsBackground { get; set; } = true;
+
+        /// <summary>
         /// A set of works that this work depends on. This work will not start until all dependent works have completed execution.
         /// </summary>
         public ConcurrentSet<string> Dependents { get; set; } = null;
