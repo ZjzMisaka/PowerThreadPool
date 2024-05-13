@@ -17,16 +17,17 @@ namespace PowerThreadPool.EventArguments
         WorkCanceled,
         WorkLogic,
     }
+
     public class ErrorOccurredEventArgs : WorkEventArgsBase
     {
-        private Exception exception;
-        public Exception Exception { get => exception; internal set => exception = value; }
+        private Exception _exception;
+        public Exception Exception { get => _exception; internal set => _exception = value; }
 
-        private ErrorFrom errorFrom;
-        public ErrorFrom ErrorFrom { get => errorFrom; internal set => errorFrom = value; }
+        private ErrorFrom _errorFrom;
+        public ErrorFrom ErrorFrom { get => _errorFrom; internal set => _errorFrom = value; }
 
-        private ExecuteResultBase executeResult;
-        public ExecuteResultBase ExecuteResult { get => executeResult; internal set => executeResult = value; }
+        private ExecuteResultBase _executeResult;
+        public ExecuteResultBase ExecuteResult { get => _executeResult; internal set => _executeResult = value; }
 
         public ErrorOccurredEventArgs(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult)
         {

@@ -21,7 +21,7 @@ namespace PowerThreadPool.Results
         /// </summary>
         public RetryPolicy RetryPolicy { get; internal set; }
 
-        private bool stopRetry = false;
+        private bool _stopRetry = false;
         /// <summary>
         /// If set to true, even if the retry count is not full or unlimited, subsequent retries will be aborted.
         /// </summary>
@@ -29,13 +29,13 @@ namespace PowerThreadPool.Results
         { 
             get
             {
-                return stopRetry;
+                return _stopRetry;
             }
             set
             { 
                 if (value == true)
                 {
-                    stopRetry = value;
+                    _stopRetry = value;
                 }
             }
         }

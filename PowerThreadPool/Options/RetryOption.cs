@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PowerThreadPool.Options
+﻿namespace PowerThreadPool.Options
 {
     public enum RetryBehavior { ImmediateRetry, Requeue };
     public enum RetryPolicy { Limited, Unlimited };

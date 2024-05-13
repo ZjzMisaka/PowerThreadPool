@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace PowerThreadPool.Groups
 {
     public class Group
     {
-        internal string groupName;
-        internal PowerPool powerPool;
+        internal string _groupName;
+        internal PowerPool _powerPool;
         internal Group(PowerPool powerPool, string groupName)
         {
-            this.powerPool = powerPool;
-            this.groupName = groupName;
+            _powerPool = powerPool;
+            _groupName = groupName;
         }
 
         /// <summary>
@@ -21,7 +18,7 @@ namespace PowerThreadPool.Groups
         /// </summary>
         public void Wait()
         {
-            powerPool.Wait(powerPool.GetGroupMemberList(groupName));
+            _powerPool.Wait(_powerPool.GetGroupMemberList(_groupName));
         }
 
         /// <summary>
@@ -43,7 +40,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return false if no thread running</returns>
         public List<string> Stop(bool forceStop = false)
         {
-            return powerPool.Stop(powerPool.GetGroupMemberList(groupName), forceStop);
+            return _powerPool.Stop(_powerPool.GetGroupMemberList(_groupName), forceStop);
         }
 
         /// <summary>
@@ -52,7 +49,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
         public List<string> Pause()
         {
-            return powerPool.Pause(powerPool.GetGroupMemberList(groupName));
+            return _powerPool.Pause(_powerPool.GetGroupMemberList(_groupName));
         }
 
         /// <summary>
@@ -61,7 +58,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
         public List<string> Resume()
         {
-            return powerPool.Resume(powerPool.GetGroupMemberList(groupName));
+            return _powerPool.Resume(_powerPool.GetGroupMemberList(_groupName));
         }
 
         /// <summary>
@@ -70,7 +67,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
         public List<string> Cancel()
         {
-            return powerPool.Cancel(powerPool.GetGroupMemberList(groupName));
+            return _powerPool.Cancel(_powerPool.GetGroupMemberList(_groupName));
         }
     }
 }

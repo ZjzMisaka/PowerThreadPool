@@ -8,24 +8,24 @@ namespace PowerThreadPool.Works
 {
     internal abstract class WorkBase
     {
-        private string id;
-        internal string ID { get => id; set => id = value; }
-        private Worker worker;
-        internal Worker Worker { get => worker; set => worker = value; }
-        internal int executeCount;
-        internal int ExecuteCount { get => executeCount; set => executeCount = value; }
-        private Status status;
-        internal Status Status { get => status; set => status = value; }
-        private AutoResetEvent waitSignal;
-        internal AutoResetEvent WaitSignal { get => waitSignal; set => waitSignal = value; }
-        private bool shouldStop;
-        internal bool ShouldStop { get => shouldStop; set => shouldStop = value; }
-        private ManualResetEvent pauseSignal;
-        internal ManualResetEvent PauseSignal { get => pauseSignal; set => pauseSignal = value; }
-        private bool isPausing;
-        internal bool IsPausing { get => isPausing; set => isPausing = value; }
-        private DateTime queueDateTime;
-        internal DateTime QueueDateTime { get => queueDateTime; set => queueDateTime = value; }
+        private string _id;
+        internal string ID { get => _id; set => _id = value; }
+        private Worker _worker;
+        internal Worker Worker { get => _worker; set => _worker = value; }
+        internal int _executeCount;
+        internal int ExecuteCount { get => _executeCount; set => _executeCount = value; }
+        private Status _status;
+        internal Status Status { get => _status; set => _status = value; }
+        private AutoResetEvent _waitSignal;
+        internal AutoResetEvent WaitSignal { get => _waitSignal; set => _waitSignal = value; }
+        private bool _shouldStop;
+        internal bool ShouldStop { get => _shouldStop; set => _shouldStop = value; }
+        private ManualResetEvent _pauseSignal;
+        internal ManualResetEvent PauseSignal { get => _pauseSignal; set => _pauseSignal = value; }
+        private bool _isPausing;
+        internal bool IsPausing { get => _isPausing; set => _isPausing = value; }
+        private DateTime _queueDateTime;
+        internal DateTime QueueDateTime { get => _queueDateTime; set => _queueDateTime = value; }
         internal abstract object Execute();
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Wait();

@@ -7,45 +7,45 @@ namespace PowerThreadPool.Collections
 {
     public class ConcurrentSet<T> : IEnumerable<T>
     {
-        private readonly ConcurrentDictionary<T, byte> dictionary;
+        private readonly ConcurrentDictionary<T, byte> _dictionary;
 
-        private static readonly byte DummyValue = default;
+        private static readonly byte s_dummyValue = default;
 
         public ConcurrentSet()
         {
-            dictionary = new ConcurrentDictionary<T, byte>();
+            _dictionary = new ConcurrentDictionary<T, byte>();
         }
 
         public ConcurrentSet(IEnumerable<T> items)
         {
-            dictionary = new ConcurrentDictionary<T, byte>();
+            _dictionary = new ConcurrentDictionary<T, byte>();
             foreach (var item in items)
             {
-                dictionary.TryAdd(item, DummyValue);
+                _dictionary.TryAdd(item, s_dummyValue);
             }
         }
 
         public bool Add(T item)
         {
-            return dictionary.TryAdd(item, DummyValue);
+            return _dictionary.TryAdd(item, s_dummyValue);
         }
 
         public bool Remove(T item)
         {
-            return dictionary.TryRemove(item, out _);
+            return _dictionary.TryRemove(item, out _);
         }
 
         public int Count
         {
             get
             {
-                return dictionary.Count;
+                return _dictionary.Count;
             }
         }
 
         public IEnumerator<T> GetEnumerator()
         {
-            return dictionary.Keys.GetEnumerator();
+            return _dictionary.Keys.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -55,7 +55,7 @@ namespace PowerThreadPool.Collections
 
         public List<T> ToList()
         {
-            return dictionary.Keys.ToList();
+            return _dictionary.Keys.ToList();
         }
     }
 }

@@ -4,7 +4,7 @@
     {
         public WorkStoppedEventArgs() { }
 
-        private bool forceStop;
-        public bool ForceStop { get => forceStop; internal set => forceStop = value; }
+        private bool _forceStop;
+        public bool ForceStop { get => _forceStop; internal set => _forceStop = value; }
     }
 }

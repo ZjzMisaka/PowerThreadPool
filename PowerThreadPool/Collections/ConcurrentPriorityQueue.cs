@@ -1,31 +1,29 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 
 namespace PowerThreadPool.Collections
 {
     internal class ConcurrentPriorityQueue<T> : IConcurrentPriorityCollection<T>
     {
-        private ConcurrentDictionary<int, ConcurrentQueue<T>> queueDic;
-        private ConcurrentSet<int> prioritySet;
-        private List<int> reversed;
-        private int updated;
+        private ConcurrentDictionary<int, ConcurrentQueue<T>> _queueDic;
+        private ConcurrentSet<int> _prioritySet;
+        private List<int> _reversed;
+        private int _updated;
 
         internal ConcurrentPriorityQueue()
         {
-            queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
-            prioritySet = new ConcurrentSet<int>();
-            updated = 0;
+            _queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
+            _prioritySet = new ConcurrentSet<int>();
+            _updated = 0;
         }
 
         public void Set(T item, int priority)
         {
-            ConcurrentQueue<T> queue = queueDic.GetOrAdd(priority, _ =>
+            ConcurrentQueue<T> queue = _queueDic.GetOrAdd(priority, _ =>
             {
-                prioritySet.Add(priority);
-                Interlocked.Exchange(ref updated, 1);
+                _prioritySet.Add(priority);
+                Interlocked.Exchange(ref _updated, 1);
                 return new ConcurrentQueue<T>();
             });
 
@@ -36,17 +34,17 @@ namespace PowerThreadPool.Collections
         {
             T item = default;
 
-            if (Interlocked.CompareExchange(ref updated, 0, 1) == 1)
+            if (Interlocked.CompareExchange(ref _updated, 0, 1) == 1)
             {
-                reversed = prioritySet.ToList();
-                reversed.Sort();
-                reversed.Reverse();
+                _reversed = _prioritySet.ToList();
+                _reversed.Sort();
+                _reversed.Reverse();
             }
 
-            for (int i = 0; i < reversed.Count; ++i)
+            for (int i = 0; i < _reversed.Count; ++i)
             {
-                int priority = reversed[i];
-                if (queueDic.TryGetValue(priority, out ConcurrentQueue<T> queue))
+                int priority = _reversed[i];
+                if (_queueDic.TryGetValue(priority, out ConcurrentQueue<T> queue))
                 {
                     if (queue.TryDequeue(out item))
                     {

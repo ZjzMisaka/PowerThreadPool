@@ -1,83 +1,83 @@
-﻿using PowerThreadPool.Options;
-using PowerThreadPool.Collections;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
-using static PowerThreadPool.PowerPool;
-using PowerThreadPool.Results;
+using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
+using PowerThreadPool.Options;
+using PowerThreadPool.Results;
+using static PowerThreadPool.PowerPool;
 
 namespace PowerThreadPool.Works
 {
     internal class Work<TResult> : WorkBase
     {
-        private Func<object[], TResult> function;
-        private object[] param;
-        private WorkOption<TResult> workOption;
-        private CallbackEndEventHandler callbackEndHandler;
+        private Func<object[], TResult> _function;
+        private object[] _param;
+        private WorkOption<TResult> _workOption;
+        private CallbackEndEventHandler _callbackEndHandler;
 
-        internal override int WorkPriority { get => workOption.WorkPriority; }
-        internal override string Group { get => workOption.Group; }
-        internal override ThreadPriority ThreadPriority { get => workOption.ThreadPriority; }
-        internal override bool IsBackground { get => workOption.IsBackground; }
-        internal override TimeoutOption WorkTimeoutOption { get => workOption.TimeoutOption; }
-        internal override RetryOption RetryOption { get => workOption.RetryOption; }
-        internal override bool LongRunning { get => workOption.LongRunning; }
-        internal override ConcurrentSet<string> Dependents { get => workOption.Dependents; }
+        internal override int WorkPriority=> _workOption.WorkPriority;
+        internal override string Group=> _workOption.Group;
+        internal override ThreadPriority ThreadPriority=> _workOption.ThreadPriority;
+        internal override bool IsBackground => _workOption.IsBackground;
+        internal override TimeoutOption WorkTimeoutOption=> _workOption.TimeoutOption;
+        internal override RetryOption RetryOption=> _workOption.RetryOption;
+        internal override bool LongRunning=> _workOption.LongRunning;
+        internal override ConcurrentSet<string> Dependents=> _workOption.Dependents;
 
         internal Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
         {
             ID = id;
             ExecuteCount = 0;
-            this.function = function;
-            this.param = param;
-            workOption = option;
+            _function = function;
+            _param = param;
+            _workOption = option;
             ShouldStop = false;
             IsPausing = false;
 
-            callbackEndHandler = (workId) =>
+            _callbackEndHandler = (workId) =>
             {
-                foreach (string dependedId in workOption.Dependents)
+                foreach (string dependedId in _workOption.Dependents)
                 {
-                    if (powerPool.failedWorkSet.Contains(dependedId))
+                    if (powerPool._failedWorkSet.Contains(dependedId))
                     {
-                        powerPool.CallbackEnd -= callbackEndHandler;
-                        Interlocked.Decrement(ref powerPool.waitingWorkCount);
+                        powerPool.CallbackEnd -= _callbackEndHandler;
+                        Interlocked.Decrement(ref powerPool._waitingWorkCount);
                         powerPool.CheckPoolIdle();
                         return;
                     }
                 }
 
-                if (workOption.Dependents.Remove(workId))
+                if (_workOption.Dependents.Remove(workId))
                 {
-                    if (workOption.Dependents.Count == 0)
+                    if (_workOption.Dependents.Count == 0)
                     {
-                        powerPool.CallbackEnd -= callbackEndHandler;
+                        powerPool.CallbackEnd -= _callbackEndHandler;
                         powerPool.SetWork(this);
                     }
                 }
             };
 
-            if (workOption != null && workOption.Dependents != null && workOption.Dependents.Count != 0)
+            if (_workOption != null && _workOption.Dependents != null && _workOption.Dependents.Count != 0)
             {
-                powerPool.CallbackEnd += callbackEndHandler;
+                powerPool.CallbackEnd += _callbackEndHandler;
 
-                foreach (string dependedId in workOption.Dependents)
+                foreach (string dependedId in _workOption.Dependents)
                 {
-                    if (!powerPool.settedWorkDic.ContainsKey(dependedId) && !powerPool.suspendedWork.ContainsKey(dependedId))
+                    if (!powerPool._settedWorkDic.ContainsKey(dependedId) && !powerPool._suspendedWork.ContainsKey(dependedId))
                     {
-                        if (powerPool.failedWorkSet.Contains(dependedId))
+                        if (powerPool._failedWorkSet.Contains(dependedId))
                         {
-                            powerPool.CallbackEnd -= callbackEndHandler;
-                            Interlocked.Decrement(ref powerPool.waitingWorkCount);
+                            powerPool.CallbackEnd -= _callbackEndHandler;
+                            Interlocked.Decrement(ref powerPool._waitingWorkCount);
                             powerPool.CheckPoolIdle();
                             return;
                         }
-                        else if (workOption.Dependents.Remove(dependedId))
+                        else if (_workOption.Dependents.Remove(dependedId))
                         {
-                            if (workOption.Dependents.Count == 0)
+                            if (_workOption.Dependents.Count == 0)
                             {
-                                powerPool.CallbackEnd -= callbackEndHandler;
+                                powerPool.CallbackEnd -= _callbackEndHandler;
                                 // No need to call powerPool.SetWork here
                             }
                         }
@@ -88,8 +88,8 @@ namespace PowerThreadPool.Works
 
         internal override object Execute()
         {
-            Interlocked.Increment(ref executeCount);
-            return function(param);
+            Interlocked.Increment(ref _executeCount);
+            return _function(_param);
         }
 
         internal override bool Stop(bool forceStop)
@@ -183,14 +183,14 @@ namespace PowerThreadPool.Works
                 });
                 SpinWait.SpinUntil(() =>
                 {
-                    int stealingLockOrig = Interlocked.CompareExchange(ref workerTemp.stealingLock, WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked);
+                    int stealingLockOrig = Interlocked.CompareExchange(ref workerTemp._stealingLock, WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked);
                     return (stealingLockOrig == WorkerStealingFlags.Unlocked);
                 });
                 if (holdWork)
                 {
                     SpinWait.SpinUntil(() =>
                     {
-                        int workHeldOrig = Interlocked.CompareExchange(ref workerTemp.workHeld, WorkHeldFlags.Held, WorkHeldFlags.NotHeld);
+                        int workHeldOrig = Interlocked.CompareExchange(ref workerTemp._workHeld, WorkHeldFlags.Held, WorkHeldFlags.NotHeld);
                         return (workHeldOrig == WorkHeldFlags.NotHeld);
                     });
                 }
@@ -204,19 +204,19 @@ namespace PowerThreadPool.Works
         {
             if (worker != null)
             {
-                Interlocked.Exchange(ref worker.stealingLock, WorkerStealingFlags.Unlocked);
+                Interlocked.Exchange(ref worker._stealingLock, WorkerStealingFlags.Unlocked);
                 if (holdWork)
                 {
-                    Interlocked.Exchange(ref worker.workHeld, WorkHeldFlags.NotHeld);
+                    Interlocked.Exchange(ref worker._workHeld, WorkHeldFlags.NotHeld);
                 }
             }
         }
 
         internal override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
-            if (workOption.Callback != null)
+            if (_workOption.Callback != null)
             {
-                powerPool.SafeCallback(workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
+                powerPool.SafeCallback(_workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
             }
             else if (powerPoolOption.DefaultCallback != null)
             {
@@ -238,7 +238,7 @@ namespace PowerThreadPool.Works
             {
                 return false;
             }
-            else if (workOption.RetryOption != null && Status == Status.Failed && ((workOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < workOption.RetryOption.MaxRetryCount) || workOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
+            else if (_workOption.RetryOption != null && Status == Status.Failed && ((_workOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < _workOption.RetryOption.MaxRetryCount) || _workOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
             {
                 return true;
             }
@@ -250,7 +250,7 @@ namespace PowerThreadPool.Works
 
         internal override bool ShouldImmediateRetry(ExecuteResultBase executeResult)
         {
-            if (ShouldRetry(executeResult) && workOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry)
+            if (ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry)
             {
                 return true;
             }
@@ -262,7 +262,7 @@ namespace PowerThreadPool.Works
 
         internal override bool ShouldRequeue(ExecuteResultBase executeResult)
         {
-            if (ShouldRetry(executeResult) && workOption.RetryOption.RetryBehavior == RetryBehavior.Requeue)
+            if (ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.Requeue)
             {
                 return true;
             }

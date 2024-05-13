@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace PowerThreadPool.EventArguments
 {
     public class WorkEventArgsBase : EventArgs
@@ -8,25 +9,25 @@ namespace PowerThreadPool.EventArguments
         /// <summary>
         /// work id
         /// </summary>
-        private string id;
-        public string ID { get => id; internal set => id = value; }
+        private string _id;
+        public string ID { get => _id; internal set => _id = value; }
 
-        private DateTime queueDateTime;
+        private DateTime _queueDateTime;
         /// <summary>
         /// queue datetime.
         /// </summary>
-        public DateTime QueueDateTime { get => queueDateTime; internal set => queueDateTime = value; }
+        public DateTime QueueDateTime { get => _queueDateTime; internal set => _queueDateTime = value; }
 
-        private DateTime startDateTime;
+        private DateTime _startDateTime;
         /// <summary>
         /// start datetime.
         /// </summary>
-        public DateTime StartDateTime { get => startDateTime; internal set => startDateTime = value; }
+        public DateTime StartDateTime { get => _startDateTime; internal set => _startDateTime = value; }
 
-        private DateTime endDateTime;
+        private DateTime _endDateTime;
         /// <summary>
         /// callback datetime.
         /// </summary>
-        public DateTime EndDateTime { get => endDateTime; internal set => endDateTime = value; }
+        public DateTime EndDateTime { get => _endDateTime; internal set => _endDateTime = value; }
     }
 }
