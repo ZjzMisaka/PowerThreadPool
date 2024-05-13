@@ -491,8 +491,15 @@ namespace PowerThreadPool
             _workID = work.ID;
             _longRunning = work.LongRunning;
 
-            _thread.Priority = work.ThreadPriority;
-            _thread.IsBackground = work.IsBackground;
+            // Only update thread properties if they differ from current values to minimize performance overhead and unnecessary system calls.
+            if (_thread.Priority != work.ThreadPriority)
+            {
+                _thread.Priority = work.ThreadPriority;
+            }
+            if (_thread.IsBackground != work.IsBackground)
+            {
+                _thread.IsBackground = work.IsBackground;
+            }
         }
 
         private void OnKillTimerElapsed(object s, ElapsedEventArgs e)
