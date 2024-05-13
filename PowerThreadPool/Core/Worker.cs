@@ -490,12 +490,8 @@ namespace PowerThreadPool
             this.work = work;
             this.workID = work.ID;
             this.longRunning = work.LongRunning;
-            ThreadPriority threadPriority = work.ThreadPriority;
-            if (thread.Priority != threadPriority)
-            {
-                thread.Priority = threadPriority;
-            }
 
+            thread.Priority = work.ThreadPriority;
             thread.IsBackground = work.IsBackground;
         }
 

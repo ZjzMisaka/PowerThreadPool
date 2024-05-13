@@ -19,7 +19,7 @@ namespace PowerThreadPool.Works
         internal override int WorkPriority { get => workOption.WorkPriority; }
         internal override string Group { get => workOption.Group; }
         internal override ThreadPriority ThreadPriority { get => workOption.ThreadPriority; }
-        internal override bool IsBackground => workOption.IsBackground;
+        internal override bool IsBackground { get => workOption.IsBackground; }
         internal override TimeoutOption WorkTimeoutOption { get => workOption.TimeoutOption; }
         internal override RetryOption RetryOption { get => workOption.RetryOption; }
         internal override bool LongRunning { get => workOption.LongRunning; }

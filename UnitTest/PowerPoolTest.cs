@@ -606,13 +606,11 @@ namespace UnitTest
                 MaxThreads = 1,
             });
 
-
             foreach (var i in new[] { false, true, false, true, false })
             {
                 powerPool.QueueWorkItem(value =>
                                         {
                                             Assert.Equal(Thread.CurrentThread.IsBackground, value);
-
                                         }, i,
                                         new WorkOption()
                                         {
