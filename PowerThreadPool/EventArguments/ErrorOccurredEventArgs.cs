@@ -20,14 +20,11 @@ namespace PowerThreadPool.EventArguments
 
     public class ErrorOccurredEventArgs : WorkEventArgsBase
     {
-        private Exception _exception;
-        public Exception Exception { get => _exception; internal set => _exception = value; }
+        public Exception Exception { get; internal set; }
 
-        private ErrorFrom _errorFrom;
-        public ErrorFrom ErrorFrom { get => _errorFrom; internal set => _errorFrom = value; }
+        public ErrorFrom ErrorFrom { get; internal set; }
 
-        private ExecuteResultBase _executeResult;
-        public ExecuteResultBase ExecuteResult { get => _executeResult; internal set => _executeResult = value; }
+        public ExecuteResultBase ExecuteResult { get; internal set; }
 
         public ErrorOccurredEventArgs(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult)
         {

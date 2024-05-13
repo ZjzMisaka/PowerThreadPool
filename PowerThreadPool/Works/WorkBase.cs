@@ -8,24 +8,20 @@ namespace PowerThreadPool.Works
 {
     internal abstract class WorkBase
     {
-        private string _id;
-        internal string ID { get => _id; set => _id = value; }
-        private Worker _worker;
-        internal Worker Worker { get => _worker; set => _worker = value; }
+        internal string ID { get; set; }
+        internal Worker Worker { get; set; }
         internal int _executeCount;
-        internal int ExecuteCount { get => _executeCount; set => _executeCount = value; }
-        private Status _status;
-        internal Status Status { get => _status; set => _status = value; }
-        private AutoResetEvent _waitSignal;
-        internal AutoResetEvent WaitSignal { get => _waitSignal; set => _waitSignal = value; }
-        private bool _shouldStop;
-        internal bool ShouldStop { get => _shouldStop; set => _shouldStop = value; }
-        private ManualResetEvent _pauseSignal;
-        internal ManualResetEvent PauseSignal { get => _pauseSignal; set => _pauseSignal = value; }
-        private bool _isPausing;
-        internal bool IsPausing { get => _isPausing; set => _isPausing = value; }
-        private DateTime _queueDateTime;
-        internal DateTime QueueDateTime { get => _queueDateTime; set => _queueDateTime = value; }
+        internal int ExecuteCount
+        { 
+            get => _executeCount; 
+            set => _executeCount = value;
+        }
+        internal Status Status { get; set; }
+        internal AutoResetEvent WaitSignal { get; set; }
+        internal bool ShouldStop { get; set; }
+        internal ManualResetEvent PauseSignal { get; set; }
+        internal bool IsPausing { get; set; }
+        internal DateTime QueueDateTime { get; set; }
         internal abstract object Execute();
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Wait();

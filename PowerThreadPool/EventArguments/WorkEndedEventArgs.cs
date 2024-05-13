@@ -7,16 +7,12 @@ namespace PowerThreadPool.EventArguments
     {
         public WorkEndedEventArgs() { }
 
-        private object _result;
-        public object Result { get => _result; internal set => _result = value; }
+        public object Result { get; internal set; }
 
-        private bool _succeed;
-        public bool Succeed { get => _succeed; internal set => _succeed = value; }
+        public bool Succeed { get; internal set; }
 
-        private Exception _exception;
-        public Exception Exception { get => _exception; internal set => _exception = value; }
+        public Exception Exception { get; internal set; }
 
-        private RetryInfo _retryInfo;
-        public RetryInfo RetryInfo { get => _retryInfo; internal set => _retryInfo = value; }
+        public RetryInfo RetryInfo { get; internal set; }
     }
 }
