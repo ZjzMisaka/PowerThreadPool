@@ -6,8 +6,8 @@ namespace PowerThreadPool.Collections
 {
     internal class ConcurrentPriorityStack<T> : IConcurrentPriorityCollection<T>
     {
-        private ConcurrentDictionary<int, ConcurrentStack<T>> _queueDic;
-        private ConcurrentSet<int> _prioritySet;
+        private readonly ConcurrentDictionary<int, ConcurrentStack<T>> _queueDic;
+        private readonly ConcurrentSet<int> _prioritySet;
         private List<int> _reversed;
         private int _updated;
 
