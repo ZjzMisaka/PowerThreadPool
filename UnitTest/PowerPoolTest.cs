@@ -606,11 +606,16 @@ namespace UnitTest
                 MaxThreads = 1,
             });
 
+            bool allSame = true;
+
             foreach (var i in new[] { false, true, false, true, false })
             {
                 powerPool.QueueWorkItem(value =>
                                         {
-                                            Assert.Equal(Thread.CurrentThread.IsBackground, value);
+                                            if (Thread.CurrentThread.IsBackground != value)
+                                            {
+                                                allSame = false;
+                                            }
                                         }, i,
                                         new WorkOption()
                                         {
@@ -619,6 +624,8 @@ namespace UnitTest
             }
 
             powerPool.Wait();
+
+            Assert.True(allSame);
         }
 
         [Fact]
