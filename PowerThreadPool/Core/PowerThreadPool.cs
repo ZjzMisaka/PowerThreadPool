@@ -44,11 +44,11 @@ namespace PowerThreadPool
         private static readonly object[] s_emptyArray = new object[0];
 
         private PowerPoolOption _powerPoolOption;
-        public PowerPoolOption PowerPoolOption 
-        { 
+        public PowerPoolOption PowerPoolOption
+        {
             get => _powerPoolOption;
             set
-            { 
+            {
                 _powerPoolOption = value;
                 _suspended = value.StartSuspended;
                 InitWorkerQueue();
@@ -82,11 +82,11 @@ namespace PowerThreadPool
         /// </summary>
         public bool EnablePoolIdleCheck
         {
-            get 
-            { 
-                return _enablePoolIdleCheck; 
-            } 
-            set 
+            get
+            {
+                return _enablePoolIdleCheck;
+            }
+            set
             {
                 _enablePoolIdleCheck = value;
                 if (_enablePoolIdleCheck)
@@ -119,7 +119,7 @@ namespace PowerThreadPool
             get
             {
                 List<string> list = _settedWorkDic.Keys.ToList();
-                foreach (Worker worker in _aliveWorkerList) 
+                foreach (Worker worker in _aliveWorkerList)
                 {
                     if (worker._workerState == WorkerStates.Running)
                     {
@@ -157,7 +157,7 @@ namespace PowerThreadPool
         internal int _runningWorkerCount = 0;
         public int RunningWorkerCount
         {
-            get 
+            get
             {
                 return _runningWorkerCount;
             }
@@ -664,7 +664,7 @@ namespace PowerThreadPool
         public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption<TResult> workOption)
         {
             if (_disposing || _disposed)
-            { 
+            {
                 throw new ObjectDisposedException(GetType().FullName);
             }
 
@@ -742,7 +742,7 @@ namespace PowerThreadPool
             _suspended = false;
             while (_suspendedWorkQueue.TryDequeue(out string key))
             {
-                 if (_suspendedWork.TryGetValue(key, out WorkBase work))
+                if (_suspendedWork.TryGetValue(key, out WorkBase work))
                 {
                     ConcurrentSet<string> dependents = work.Dependents;
                     if (dependents == null || dependents.Count == 0)

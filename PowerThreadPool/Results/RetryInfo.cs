@@ -25,14 +25,14 @@ namespace PowerThreadPool.Results
         /// <summary>
         /// If set to true, even if the retry count is not full or unlimited, subsequent retries will be aborted.
         /// </summary>
-        public bool StopRetry 
-        { 
+        public bool StopRetry
+        {
             get
             {
                 return _stopRetry;
             }
             set
-            { 
+            {
                 if (value == true)
                 {
                     _stopRetry = value;

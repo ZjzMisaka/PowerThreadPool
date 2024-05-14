@@ -15,7 +15,7 @@ namespace PowerThreadPool.Helpers
             TResult func() { action(); return default; }
             return DelegateHelper<TResult>.ToNormalFunc(func);
         }
-        
+
         internal static Func<object[], TResult> ToNormalFunc(Action<object[]> action, object[] param)
         {
             TResult func(object[] p) { action(param); return default; }

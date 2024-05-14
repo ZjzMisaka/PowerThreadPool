@@ -12,8 +12,8 @@ namespace PowerThreadPool.Works
         internal Worker Worker { get; set; }
         internal int _executeCount;
         internal int ExecuteCount
-        { 
-            get => _executeCount; 
+        {
+            get => _executeCount;
             set => _executeCount = value;
         }
         internal Status Status { get; set; }

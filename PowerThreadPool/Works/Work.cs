@@ -16,14 +16,14 @@ namespace PowerThreadPool.Works
         private WorkOption<TResult> _workOption;
         private CallbackEndEventHandler _callbackEndHandler;
 
-        internal override int WorkPriority=> _workOption.WorkPriority;
-        internal override string Group=> _workOption.Group;
-        internal override ThreadPriority ThreadPriority=> _workOption.ThreadPriority;
+        internal override int WorkPriority => _workOption.WorkPriority;
+        internal override string Group => _workOption.Group;
+        internal override ThreadPriority ThreadPriority => _workOption.ThreadPriority;
         internal override bool IsBackground => _workOption.IsBackground;
-        internal override TimeoutOption WorkTimeoutOption=> _workOption.TimeoutOption;
-        internal override RetryOption RetryOption=> _workOption.RetryOption;
-        internal override bool LongRunning=> _workOption.LongRunning;
-        internal override ConcurrentSet<string> Dependents=> _workOption.Dependents;
+        internal override TimeoutOption WorkTimeoutOption => _workOption.TimeoutOption;
+        internal override RetryOption RetryOption => _workOption.RetryOption;
+        internal override bool LongRunning => _workOption.LongRunning;
+        internal override ConcurrentSet<string> Dependents => _workOption.Dependents;
 
         internal Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
         {
