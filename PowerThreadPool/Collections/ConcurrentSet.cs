@@ -19,7 +19,7 @@ namespace PowerThreadPool.Collections
         public ConcurrentSet(IEnumerable<T> items)
         {
             _dictionary = new ConcurrentDictionary<T, byte>();
-            foreach (var item in items)
+            foreach (T item in items)
             {
                 _dictionary.TryAdd(item, s_dummyValue);
             }
