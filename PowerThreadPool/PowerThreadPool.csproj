@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net5.0;net6.0;net7.0;net8.0;net45;net451;net452;net46;net461;net462;net47;net471;net472;net48;net481;netstandard2.0;netstandard2.1;</TargetFrameworks>
@@ -21,11 +21,9 @@
     <None Include="..\LICENSE" Pack="true" PackagePath="\" />
     <None Include="..\README.md" Pack="true" PackagePath="\" />
     <None Include="..\icon.png" Pack="true" PackagePath="\" />
-    <None Include="D:\PowerThreadPool\PowerThreadPool\.editorconfig" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EditorConfigFiles Remove="D:\PowerThreadPool\PowerThreadPool\.editorconfig" />
+    <None Include=".\.editorconfig" />
+    <EditorConfigFiles Remove=".\.editorconfig" />
+    <InternalsVisibleTo Include="UnitTest" />
   </ItemGroup>
 
 </Project>
