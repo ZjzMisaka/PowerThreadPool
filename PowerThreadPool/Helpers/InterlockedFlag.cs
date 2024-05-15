@@ -50,7 +50,7 @@ namespace PowerThreadPool.Helpers
             {
                 return ReferenceEquals(flag2, null);
             }
-            if (ReferenceEquals(flag2, null))
+            else if (ReferenceEquals(flag2, null))
             {
                 return ReferenceEquals(flag1, null);
             }
@@ -66,10 +66,6 @@ namespace PowerThreadPool.Helpers
             if (ReferenceEquals(flag1, null))
             {
                 return ReferenceEquals(flag2, null);
-            }
-            if (ReferenceEquals(flag2, null))
-            {
-                return ReferenceEquals(flag1, null);
             }
 
             return Interlocked.Read(ref flag1._innerValue) == Convert.ToInt64(flag2);

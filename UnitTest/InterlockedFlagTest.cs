@@ -129,11 +129,8 @@ namespace UnitTest
             res = gettedLock0 == WorkerGettedFlags.Unlocked;
             Assert.False(res);
             gettedLock0 = null;
-            res = gettedLock0 == gettedLock1;
+            res = gettedLock0 == WorkerGettedFlags.Unlocked;
             Assert.False(res);
-            gettedLock1 = null;
-            res = gettedLock0 == gettedLock1;
-            Assert.True(res);
         }
 
         [Fact]
@@ -194,11 +191,11 @@ namespace UnitTest
         {
             InitFlags();
 
-            int hash0 = gettedLock0.InterlockedValue.GetHashCode();
-            int hash1 = gettedLock0.InterlockedValue.GetHashCode();
-            int hash2 = gettedLock1.InterlockedValue.GetHashCode();
+            int hash0 = gettedLock0.GetHashCode();
+            int hash1 = gettedLock0.GetHashCode();
+            int hash2 = gettedLock1.GetHashCode();
             gettedLock1 = WorkerGettedFlags.ToBeDisabled;
-            int hash3 = gettedLock1.InterlockedValue.GetHashCode();
+            int hash3 = gettedLock1.GetHashCode();
             Assert.Equal(hash0, hash1);
             Assert.Equal(hash1, hash2);
             Assert.NotEqual(hash2, hash3);
