@@ -43,8 +43,6 @@ namespace PowerThreadPool
 
         private InterlockedFlag<WorkerCreationFlags> _createWorkerLock = WorkerCreationFlags.Unlocked;
 
-
-
         private PowerPoolOption _powerPoolOption;
         public PowerPoolOption PowerPoolOption
         {
@@ -919,9 +917,6 @@ namespace PowerThreadPool
                 {
                     SpinWait.SpinUntil(() =>
                     {
-                        //int gettedStatus = Interlocked.CompareExchange(ref worker._gettedLock, WorkerGettedFlags.Locked, WorkerGettedFlags.Unlocked);
-                        //return (gettedStatus == WorkerGettedFlags.Unlocked);
-
                         return worker.GettedLock.TrySet(WorkerGettedFlags.Locked, WorkerGettedFlags.Unlocked);
                     });
                     Interlocked.Decrement(ref _idleWorkerCount);
@@ -935,14 +930,12 @@ namespace PowerThreadPool
 
             if (_aliveWorkerCount < _powerPoolOption.MaxThreads + _longRunningWorkerCount)
             {
-                //if (Interlocked.CompareExchange(ref _createWorkerLock, WorkerCreationFlags.Locked, WorkerCreationFlags.Unlocked) == WorkerCreationFlags.Unlocked)
                 if (_createWorkerLock.TrySet(WorkerCreationFlags.Locked, WorkerCreationFlags.Unlocked))
                 {
                     if (_aliveWorkerCount < _powerPoolOption.MaxThreads + _longRunningWorkerCount)
                     {
                         worker = new Worker(this);
 
-                        //Interlocked.Exchange(ref worker.GettedLock, WorkerGettedFlags.Locked);
                         worker.GettedLock.InterlockedValue = WorkerGettedFlags.Locked;
 
                         if (_aliveWorkerDic.TryAdd(worker.ID, worker))
@@ -956,7 +949,6 @@ namespace PowerThreadPool
                         }
                     }
 
-                    //Interlocked.Exchange(ref _createWorkerLock, WorkerCreationFlags.Unlocked);
                     _createWorkerLock.InterlockedValue = WorkerCreationFlags.Unlocked;
                 }
             }
@@ -974,14 +966,11 @@ namespace PowerThreadPool
                     int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
                     if (waitingWorkCountTemp < min)
                     {
-                        //if (Interlocked.CompareExchange(ref aliveWorker.GettedLock, WorkerGettedFlags.Locked, WorkerGettedFlags.Unlocked) == WorkerGettedFlags.Unlocked)
                         if (aliveWorker.GettedLock.TrySet(WorkerGettedFlags.Locked, WorkerGettedFlags.Unlocked))
                         {
                             if (worker != null)
                             {
-                                //Interlocked.CompareExchange(ref worker.GettedLock, WorkerGettedFlags.Unlocked,WorkerGettedFlags.Locked);
                                 worker.GettedLock.TrySet(WorkerGettedFlags.Unlocked, WorkerGettedFlags.Locked);
-
                             }
                             min = waitingWorkCountTemp;
                             worker = aliveWorker;
@@ -998,7 +987,6 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckPoolStart()
         {
-            //if (Interlocked.CompareExchange(ref _poolRunning, PoolRunningFlags.Running, PoolRunningFlags.NotRunning) == PoolRunningFlags.NotRunning)
             if (_poolRunning.TrySet(PoolRunningFlags.Running, PoolRunningFlags.NotRunning))
             {
                 if (PoolStarted != null)
@@ -1046,7 +1034,6 @@ namespace PowerThreadPool
             if (_runningWorkerCount == 0 &&
                 _waitingWorkCount == 0 &&
                 _poolRunning.TrySet(PoolRunningFlags.IdleChecked, PoolRunningFlags.Running)
-                //Interlocked.CompareExchange(ref _poolRunning, PoolRunningFlags.IdleChecked, PoolRunningFlags.Running) == PoolRunningFlags.Running
                 )
             {
                 if (PoolIdled != null)
@@ -1083,7 +1070,6 @@ namespace PowerThreadPool
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = new CancellationTokenSource();
 
-            //Interlocked.Exchange(ref _poolRunning, PoolRunningFlags.NotRunning);
             _poolRunning.InterlockedValue = PoolRunningFlags.NotRunning;
             if (_poolStopping)
             {

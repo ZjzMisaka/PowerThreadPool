@@ -1,11 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace PowerThreadPool
+namespace PowerThreadPool.Helpers
 {
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     internal class InterlockedFlag<T> where T : Enum
@@ -19,7 +16,6 @@ namespace PowerThreadPool
         }
 
         public T Value => InnerValueToT(_innerValue);
-
 
         private string TypeName { get; } = typeof(T).Name;
 
@@ -48,7 +44,6 @@ namespace PowerThreadPool
             return origInnerValue == Convert.ToInt64(comparand);
         }
 
-
         public static bool operator ==(InterlockedFlag<T> flag1, InterlockedFlag<T> flag2)
         {
             if (ReferenceEquals(flag1, null))
@@ -75,7 +70,6 @@ namespace PowerThreadPool
         public static bool operator !=(InterlockedFlag<T> flag1, T flag2)
             => !(flag1 == flag2);
 
-
         public static implicit operator InterlockedFlag<T>(T value)
             => new InterlockedFlag<T>(value);
 
@@ -94,7 +88,6 @@ namespace PowerThreadPool
                 {
                     return this == otherValue;
                 }
-
             }
 
             return false;

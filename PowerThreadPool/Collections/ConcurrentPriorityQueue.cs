@@ -1,8 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using PowerThreadPool.Constants;
 
 namespace PowerThreadPool.Collections
 {
@@ -25,7 +23,6 @@ namespace PowerThreadPool.Collections
             ConcurrentQueue<T> queue = _queueDic.GetOrAdd(priority, _ =>
             {
                 _prioritySet.Add(priority);
-                //Interlocked.Exchange(ref _updated, UpdatedFlags.Updated);
                 _updated = true;
                 return new ConcurrentQueue<T>();
             });
@@ -37,7 +34,6 @@ namespace PowerThreadPool.Collections
         {
             T item = default;
 
-            //if (Interlocked.CompareExchange(ref _updated, UpdatedFlags.NotUpdated, UpdatedFlags.Updated) == UpdatedFlags.Updated)
             if (_updated)
             {
                 _updated = false;

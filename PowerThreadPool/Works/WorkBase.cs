@@ -28,13 +28,6 @@ namespace PowerThreadPool.Works
         internal abstract bool Pause();
         internal abstract bool Resume();
         internal abstract bool Cancel(bool lockWorker);
-
-        /// <summary>
-        /// Prevent work theft by other threads after acquiring a Worker.
-        /// Prevent the forced termination of works that should not end, caused by the target work ending right after acquiring a Worker.
-        /// </summary>
-        /// <returns></returns>
-
         internal abstract void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
         internal abstract bool ShouldRetry(ExecuteResultBase executeResult);

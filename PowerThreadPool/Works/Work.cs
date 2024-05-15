@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Threading;
 using PowerThreadPool.Collections;
-using PowerThreadPool.Constants;
+using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using static PowerThreadPool.PowerPool;
@@ -162,9 +162,6 @@ namespace PowerThreadPool.Works
                 return Worker.Cancel(ID);
             }
         }
-
-
-
 
         internal override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
