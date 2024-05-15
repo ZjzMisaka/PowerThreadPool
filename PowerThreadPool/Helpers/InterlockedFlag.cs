@@ -19,7 +19,7 @@ namespace PowerThreadPool.Helpers
 
         private string TypeName { get; } = typeof(T).Name;
 
-        private string DebuggerDisplay => $"{TypeName}.{InterlockedValue}";
+        internal string DebuggerDisplay => $"{TypeName}.{InterlockedValue}";
 
         private InterlockedFlag(T initialValue)
         {
@@ -50,6 +50,10 @@ namespace PowerThreadPool.Helpers
             {
                 return ReferenceEquals(flag2, null);
             }
+            if (ReferenceEquals(flag2, null))
+            {
+                return ReferenceEquals(flag1, null);
+            }
 
             return Interlocked.Read(ref flag1._innerValue) == Interlocked.Read(ref flag2._innerValue);
         }
@@ -62,6 +66,10 @@ namespace PowerThreadPool.Helpers
             if (ReferenceEquals(flag1, null))
             {
                 return ReferenceEquals(flag2, null);
+            }
+            if (ReferenceEquals(flag2, null))
+            {
+                return ReferenceEquals(flag1, null);
             }
 
             return Interlocked.Read(ref flag1._innerValue) == Convert.ToInt64(flag2);

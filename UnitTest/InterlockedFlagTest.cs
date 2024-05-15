@@ -38,6 +38,15 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestDebuggerDisplay()
+        {
+            InitFlags();
+
+            string dd = gettedLock0.DebuggerDisplay;
+            Assert.Equal("WorkerGettedFlags.Unlocked", dd);
+        }
+
+        [Fact]
         public void TestGet()
         {
             InitFlags();
@@ -93,6 +102,15 @@ namespace UnitTest
             Assert.False(res);
             res = gettedLock0 == gettedLock1;
             Assert.False(res);
+            gettedLock0 = null;
+            res = gettedLock0 == gettedLock1;
+            Assert.False(res);
+            gettedLock1 = null;
+            res = gettedLock0 == gettedLock1;
+            Assert.True(res);
+            gettedLock0 = WorkerGettedFlags.ToBeDisabled;
+            res = gettedLock0 == gettedLock1;
+            Assert.False(res);
         }
 
         [Fact]
@@ -110,6 +128,12 @@ namespace UnitTest
             Assert.False(res);
             res = gettedLock0 == WorkerGettedFlags.Unlocked;
             Assert.False(res);
+            gettedLock0 = null;
+            res = gettedLock0 == gettedLock1;
+            Assert.False(res);
+            gettedLock1 = null;
+            res = gettedLock0 == gettedLock1;
+            Assert.True(res);
         }
 
         [Fact]
@@ -150,6 +174,18 @@ namespace UnitTest
             res = gettedLock0.Equals(WorkerGettedFlags.Unlocked);
             Assert.False(res);
             res = gettedLock0.Equals(WorkerGettedFlags.Unlocked);
+            Assert.False(res);
+        }
+
+        [Fact]
+        public void TestEquals3()
+        {
+            InitFlags();
+
+            bool res;
+            res = gettedLock0.Equals(null);
+            Assert.False(res);
+            res = gettedLock0.Equals(new PowerThreadPool.PowerPool());
             Assert.False(res);
         }
 
