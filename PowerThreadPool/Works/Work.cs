@@ -183,15 +183,18 @@ namespace PowerThreadPool.Works
                 });
                 SpinWait.SpinUntil(() =>
                 {
-                    int stealingLockOrig = Interlocked.CompareExchange(ref workerTemp._stealingLock, WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked);
-                    return (stealingLockOrig == WorkerStealingFlags.Unlocked);
+                    //int stealingLockOrig = Interlocked.CompareExchange(ref workerTemp.StealingLock, WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked);
+                    //return (stealingLockOrig == WorkerStealingFlags.Unlocked);
+                    return workerTemp.StealingLock.TrySet(WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked);
                 });
                 if (holdWork)
                 {
                     SpinWait.SpinUntil(() =>
                     {
-                        int workHeldOrig = Interlocked.CompareExchange(ref workerTemp._workHeld, WorkHeldFlags.Held, WorkHeldFlags.NotHeld);
-                        return (workHeldOrig == WorkHeldFlags.NotHeld);
+                        //int workHeldOrig = Interlocked.CompareExchange(ref workerTemp._workHeld, WorkHeldFlags.Held, WorkHeldFlags.NotHeld);
+                        //return (workHeldOrig == WorkHeldFlags.NotHeld);
+
+                        return workerTemp.WorkHeld.TrySet(WorkHeldFlags.Held, WorkHeldFlags.NotHeld);
                     });
                 }
             }
@@ -204,10 +207,12 @@ namespace PowerThreadPool.Works
         {
             if (worker != null)
             {
-                Interlocked.Exchange(ref worker._stealingLock, WorkerStealingFlags.Unlocked);
+                //Interlocked.Exchange(ref worker.StealingLock, WorkerStealingFlags.Unlocked);
+                worker.StealingLock.InterlockedValue = WorkerStealingFlags.Unlocked;
                 if (holdWork)
                 {
-                    Interlocked.Exchange(ref worker._workHeld, WorkHeldFlags.NotHeld);
+                    //Interlocked.Exchange(ref worker.WorkHeld, WorkHeldFlags.NotHeld);
+                    worker.WorkHeld.InterlockedValue = WorkHeldFlags.NotHeld;
                 }
             }
         }
