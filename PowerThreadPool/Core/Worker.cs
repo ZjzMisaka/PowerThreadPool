@@ -384,7 +384,7 @@ namespace PowerThreadPool
                 int waitingWorkCountTemp = runningWorker.WaitingWorkCount;
                 if (waitingWorkCountTemp >= 2 && waitingWorkCountTemp > max)
                 {
-                    if (runningWorker.StealingLock.TrySet(WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked))
+                    if (!runningWorker.StealingLock.TrySet(WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked))
                     {
                         continue;
                     }
