@@ -34,8 +34,7 @@ namespace PowerThreadPool.Works
         /// Prevent the forced termination of works that should not end, caused by the target work ending right after acquiring a Worker.
         /// </summary>
         /// <returns></returns>
-        internal abstract Worker LockWorker(bool holdWork);
-        internal abstract void UnlockWorker(Worker worker, bool holdWork);
+
         internal abstract void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
         internal abstract bool ShouldRetry(ExecuteResultBase executeResult);

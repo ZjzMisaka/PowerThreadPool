@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using PowerThreadPool.Constants;
 
@@ -10,13 +11,13 @@ namespace PowerThreadPool.Collections
         private readonly ConcurrentDictionary<int, ConcurrentQueue<T>> _queueDic;
         private readonly ConcurrentSet<int> _prioritySet;
         private List<int> _reversed;
-        private int _updated;
+        private volatile bool _updated;
 
         internal ConcurrentPriorityQueue()
         {
             _queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
             _prioritySet = new ConcurrentSet<int>();
-            _updated = UpdatedFlags.NotUpdated;
+            _updated = false;
         }
 
         public void Set(T item, int priority)
@@ -24,7 +25,8 @@ namespace PowerThreadPool.Collections
             ConcurrentQueue<T> queue = _queueDic.GetOrAdd(priority, _ =>
             {
                 _prioritySet.Add(priority);
-                Interlocked.Exchange(ref _updated, UpdatedFlags.Updated);
+                //Interlocked.Exchange(ref _updated, UpdatedFlags.Updated);
+                _updated = true;
                 return new ConcurrentQueue<T>();
             });
 
@@ -35,11 +37,11 @@ namespace PowerThreadPool.Collections
         {
             T item = default;
 
-            if (Interlocked.CompareExchange(ref _updated, UpdatedFlags.NotUpdated, UpdatedFlags.Updated) == UpdatedFlags.Updated)
+            //if (Interlocked.CompareExchange(ref _updated, UpdatedFlags.NotUpdated, UpdatedFlags.Updated) == UpdatedFlags.Updated)
+            if (_updated)
             {
-                _reversed = _prioritySet.ToList();
-                _reversed.Sort();
-                _reversed.Reverse();
+                _updated = false;
+                _reversed = _prioritySet.OrderByDescending(x => x).ToList();
             }
 
             for (int i = 0; i < _reversed.Count; ++i)

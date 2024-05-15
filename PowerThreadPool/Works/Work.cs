@@ -94,29 +94,29 @@ namespace PowerThreadPool.Works
 
         internal override bool Stop(bool forceStop)
         {
-            Worker workerTemp = LockWorker(true);
+            var res = false;
 
-            bool res;
-            if (forceStop)
+            using (new WorkerLocker(this))
             {
-                if (Worker.WorkID == ID)
+                if (forceStop)
                 {
-                    Worker.ForceStop(false);
-                    res = true;
+                    if (Worker.WorkID == ID)
+                    {
+                        Worker.ForceStop(false);
+                        res = true;
+                    }
+                    else
+                    {
+                        res = Cancel(false);
+                    }
                 }
                 else
                 {
-                    res = Cancel(false);
+                    ShouldStop = true;
+                    Cancel(false);
+                    res = true;
                 }
             }
-            else
-            {
-                ShouldStop = true;
-                Cancel(false);
-                res = true;
-            }
-
-            UnlockWorker(workerTemp, true);
 
             return res;
         }
@@ -157,60 +157,14 @@ namespace PowerThreadPool.Works
 
         internal override bool Cancel(bool lockWorker)
         {
-            Worker workerTemp = null;
-            if (lockWorker)
+            using (new WorkerLocker(this, false, lockWorker))
             {
-                workerTemp = LockWorker(false);
-            }
-            bool res = Worker.Cancel(ID);
-            if (lockWorker)
-            {
-                UnlockWorker(workerTemp, false);
-            }
-            return res;
-        }
-
-        internal override Worker LockWorker(bool holdWork)
-        {
-            Worker workerTemp = null;
-            do
-            {
-                UnlockWorker(workerTemp, holdWork);
-                SpinWait.SpinUntil(() =>
-                {
-                    workerTemp = Worker;
-                    return (workerTemp != null);
-                });
-                SpinWait.SpinUntil(() =>
-                {
-                    int stealingLockOrig = Interlocked.CompareExchange(ref workerTemp._stealingLock, WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked);
-                    return (stealingLockOrig == WorkerStealingFlags.Unlocked);
-                });
-                if (holdWork)
-                {
-                    SpinWait.SpinUntil(() =>
-                    {
-                        int workHeldOrig = Interlocked.CompareExchange(ref workerTemp._workHeld, WorkHeldFlags.Held, WorkHeldFlags.NotHeld);
-                        return (workHeldOrig == WorkHeldFlags.NotHeld);
-                    });
-                }
-            }
-            while (Worker == null || (Worker != null && Worker.ID != workerTemp.ID));
-
-            return workerTemp;
-        }
-
-        internal override void UnlockWorker(Worker worker, bool holdWork)
-        {
-            if (worker != null)
-            {
-                Interlocked.Exchange(ref worker._stealingLock, WorkerStealingFlags.Unlocked);
-                if (holdWork)
-                {
-                    Interlocked.Exchange(ref worker._workHeld, WorkHeldFlags.NotHeld);
-                }
+                return Worker.Cancel(ID);
             }
         }
+
+
+
 
         internal override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
