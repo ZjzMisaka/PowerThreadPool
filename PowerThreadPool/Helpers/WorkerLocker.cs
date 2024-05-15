@@ -38,7 +38,7 @@ namespace PowerThreadPool.Helpers
                     SpinWait.SpinUntil(() => _worker.WorkHeld.TrySet(WorkHeldFlags.Held, WorkHeldFlags.NotHeld));
                 }
             }
-            while (_work.Worker == null || _work.Worker != null && _work.Worker.ID != _worker.ID);
+            while (_work.Worker == null || (_work.Worker != null && _work.Worker.ID != _worker.ID));
         }
 
         private void Unlock()
