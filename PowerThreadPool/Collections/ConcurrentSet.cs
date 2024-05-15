@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace PowerThreadPool.Collections
 {
@@ -51,11 +50,6 @@ namespace PowerThreadPool.Collections
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
-        }
-
-        public List<T> ToList()
-        {
-            return _dictionary.Keys.ToList();
         }
     }
 }
