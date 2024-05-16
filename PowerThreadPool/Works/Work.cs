@@ -94,7 +94,7 @@ namespace PowerThreadPool.Works
 
         internal override bool Stop(bool forceStop)
         {
-            var res = false;
+            bool res = false;
 
             using (new WorkerLocker(this))
             {

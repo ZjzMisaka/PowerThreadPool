@@ -133,7 +133,7 @@ namespace PowerThreadPool
                 {
                     GettedLock.InterlockedValue = WorkerGettedFlags.Disabled;
 
-                    var origWorkState = WorkerState.InterlockedValue;
+                    WorkerStates origWorkState = WorkerState.InterlockedValue;
                     WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
 
                     if (Work.LongRunning)
@@ -278,7 +278,7 @@ namespace PowerThreadPool
             _waitingWorkIDPriorityCollection.Set(work.ID, work.WorkPriority);
             work.Worker = this;
             Interlocked.Increment(ref _waitingWorkCount);
-            WorkerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out var originalWorkerState);
+            WorkerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
 
             if (_killTimer != null)
             {
@@ -513,7 +513,7 @@ namespace PowerThreadPool
             {
                 SpinWait.SpinUntil(() =>
                 {
-                    GettedLock.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Unlocked, out var origValue);
+                    GettedLock.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Unlocked, out WorkerGettedFlags origValue);
                     return origValue == WorkerGettedFlags.Unlocked || origValue == WorkerGettedFlags.Disabled;
                 });
 

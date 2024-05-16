@@ -18,7 +18,6 @@ namespace PowerThreadPool
 {
     public partial class PowerPool : IDisposable
     {
-
         private bool _disposed = false;
         private bool _disposing = false;
 
@@ -59,8 +58,6 @@ namespace PowerThreadPool
                 InitWorkerQueue();
             }
         }
-
-
 
         private System.Timers.Timer _poolTimer;
 
@@ -290,7 +287,6 @@ namespace PowerThreadPool
             _suspendedWorkQueue = new ConcurrentQueue<string>();
         }
 
-      
         /// <summary>
         /// Init worker queue
         /// </summary>
