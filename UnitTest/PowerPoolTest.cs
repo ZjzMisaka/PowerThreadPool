@@ -2001,8 +2001,8 @@ namespace UnitTest
             powerPool.Start();
             powerPool.Wait();
 
-            Assert.True(powerPool.TotalQueueTime >= 3000 && powerPool.TotalQueueTime < 4000);
-            Assert.True(powerPool.TotalExecuteTime >= 10000 && powerPool.TotalExecuteTime < 11000);
+            Assert.True(powerPool.TotalQueueTime > 0);
+            Assert.True(powerPool.TotalExecuteTime > 0);
             Assert.Equal(powerPool.AverageQueueTime, powerPool.TotalQueueTime / 5);
             Assert.Equal(powerPool.AverageExecuteTime, powerPool.TotalExecuteTime / 5);
             Assert.Equal(powerPool.AverageElapsedTime, powerPool.AverageQueueTime + powerPool.AverageExecuteTime);

@@ -843,7 +843,7 @@ namespace PowerThreadPool
         {
             executeResult.EndDateTime = DateTime.Now;
             Interlocked.Increment(ref _endCount);
-            Interlocked.Add(ref _executeTime, (int)(executeResult.EndDateTime - executeResult.StartDateTime).TotalMilliseconds);
+            Interlocked.Add(ref _executeTime, (long)(executeResult.EndDateTime - executeResult.StartDateTime).TotalMilliseconds);
             if (WorkEnded != null)
             {
                 WorkEndedEventArgs e = new WorkEndedEventArgs()
@@ -875,7 +875,7 @@ namespace PowerThreadPool
         {
             executeResult.EndDateTime = DateTime.Now;
             Interlocked.Increment(ref _endCount);
-            Interlocked.Add(ref _executeTime, (int)(executeResult.EndDateTime - executeResult.StartDateTime).TotalMilliseconds);
+            Interlocked.Add(ref _executeTime, (long)(executeResult.EndDateTime - executeResult.StartDateTime).TotalMilliseconds);
             if (WorkStopped != null)
             {
                 WorkStoppedEventArgs e = new WorkStoppedEventArgs()
@@ -898,7 +898,7 @@ namespace PowerThreadPool
         {
             executeResult.EndDateTime = DateTime.Now;
             Interlocked.Increment(ref _endCount);
-            Interlocked.Add(ref _executeTime, (int)(executeResult.EndDateTime - executeResult.StartDateTime).TotalMilliseconds);
+            Interlocked.Add(ref _executeTime, (long)(executeResult.EndDateTime - executeResult.StartDateTime).TotalMilliseconds);
             if (WorkCanceled != null)
             {
                 WorkCanceledEventArgs e = new WorkCanceledEventArgs()
