@@ -11,7 +11,6 @@ using PowerThreadPool.Exceptions;
 using PowerThreadPool.Groups;
 using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
-using PowerThreadPool.Results;
 using PowerThreadPool.Works;
 
 namespace PowerThreadPool
