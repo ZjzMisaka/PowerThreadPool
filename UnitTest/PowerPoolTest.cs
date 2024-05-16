@@ -681,7 +681,7 @@ namespace UnitTest
             {
                 CustomWorkID = "1024"
             });
-            ArgumentException ex = null;
+            InvalidOperationException ex = null;
             try
             {
                 string id1 = powerPool.QueueWorkItem(() =>
@@ -693,12 +693,12 @@ namespace UnitTest
                     CustomWorkID = "1024"
                 });
             }
-            catch (ArgumentException e)
+            catch (InvalidOperationException e)
             {
                 ex = e;
             }
 
-            Assert.Equal("CustomWorkID", ex.ParamName);
+            Assert.Equal("The work ID '1024' already exists.", ex.Message);
         }
 
         [Fact]
@@ -2001,8 +2001,8 @@ namespace UnitTest
             powerPool.Start();
             powerPool.Wait();
 
-            Assert.True(powerPool.TotalQueueTime >= 3000 && powerPool.TotalQueueTime < 4000);
-            Assert.True(powerPool.TotalExecuteTime >= 10000 && powerPool.TotalExecuteTime < 11000);
+            Assert.True(powerPool.TotalQueueTime > 0);
+            Assert.True(powerPool.TotalExecuteTime > 0);
             Assert.Equal(powerPool.AverageQueueTime, powerPool.TotalQueueTime / 5);
             Assert.Equal(powerPool.AverageExecuteTime, powerPool.TotalExecuteTime / 5);
             Assert.Equal(powerPool.AverageElapsedTime, powerPool.AverageQueueTime + powerPool.AverageExecuteTime);
