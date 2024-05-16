@@ -681,7 +681,7 @@ namespace UnitTest
             {
                 CustomWorkID = "1024"
             });
-            ArgumentException ex = null;
+            InvalidOperationException ex = null;
             try
             {
                 string id1 = powerPool.QueueWorkItem(() =>
@@ -693,12 +693,12 @@ namespace UnitTest
                     CustomWorkID = "1024"
                 });
             }
-            catch (ArgumentException e)
+            catch (InvalidOperationException e)
             {
                 ex = e;
             }
 
-            Assert.Equal("CustomWorkID", ex.ParamName);
+            Assert.Equal("The work ID '1024' already exists.", ex.Message);
         }
 
         [Fact]
@@ -1971,6 +1971,42 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(ErrorFrom.WorkLogic, errorFrom);
+        }
+
+        [Fact]
+        public void TestTimes()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true, MaxThreads = 2 });
+
+            powerPool.QueueWorkItem(() =>
+            {
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(2000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(3000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(4000);
+            });
+
+            powerPool.Start();
+            powerPool.Wait();
+
+            Assert.True(powerPool.TotalQueueTime > 0);
+            Assert.True(powerPool.TotalExecuteTime > 0);
+            Assert.Equal(powerPool.AverageQueueTime, powerPool.TotalQueueTime / 5);
+            Assert.Equal(powerPool.AverageExecuteTime, powerPool.TotalExecuteTime / 5);
+            Assert.Equal(powerPool.AverageElapsedTime, powerPool.AverageQueueTime + powerPool.AverageExecuteTime);
+            Assert.Equal(powerPool.TotalElapsedTime, powerPool.TotalQueueTime + powerPool.TotalExecuteTime);
         }
     }
 }
