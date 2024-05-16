@@ -225,7 +225,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// The average time taken for execution (ms);
+        /// The average time taken for execution (ms).
         /// Will be reset when the thread pool starts again.
         /// </summary>
         public long AverageExecuteTime
