@@ -681,7 +681,7 @@ namespace UnitTest
             {
                 CustomWorkID = "1024"
             });
-            ArgumentException ex = null;
+            InvalidOperationException ex = null;
             try
             {
                 string id1 = powerPool.QueueWorkItem(() =>
@@ -693,12 +693,12 @@ namespace UnitTest
                     CustomWorkID = "1024"
                 });
             }
-            catch (ArgumentException e)
+            catch (InvalidOperationException e)
             {
                 ex = e;
             }
 
-            Assert.Equal("CustomWorkID", ex.ParamName);
+            Assert.Equal("The work ID '1024' already exists.", ex.Message);
         }
 
         [Fact]
