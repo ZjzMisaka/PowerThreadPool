@@ -207,8 +207,6 @@ namespace PowerThreadPool
             DateTime runDateTime = DateTime.Now;
             try
             {
-                Interlocked.Increment(ref _powerPool._startCount);
-                Interlocked.Add(ref _powerPool._queueTime, (long)(runDateTime - Work.QueueDateTime).TotalMilliseconds);
                 object result = Work.Execute();
                 executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
                 executeResult.StartDateTime = runDateTime;

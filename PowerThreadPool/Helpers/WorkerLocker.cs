@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Threading;
 using PowerThreadPool.Constants;
+using System.Threading;
 using PowerThreadPool.Works;
 
 namespace PowerThreadPool.Helpers

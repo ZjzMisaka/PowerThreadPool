@@ -3,6 +3,6 @@
     internal enum WorkHeldFlags
     {
         NotHeld = 0,
-        Held = 1
+        Held    = 1
     }
 }

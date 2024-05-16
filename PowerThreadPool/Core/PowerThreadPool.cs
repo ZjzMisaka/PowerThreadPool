@@ -16,8 +16,10 @@ using PowerThreadPool.Works;
 
 namespace PowerThreadPool
 {
-    public partial class PowerPool : IDisposable
+    public class PowerPool : IDisposable
     {
+        private static readonly object[] s_emptyArray = new object[0];
+
         private bool _disposed = false;
         private bool _disposing = false;
 
@@ -37,12 +39,6 @@ namespace PowerThreadPool
 
         internal ConcurrentQueue<string> _suspendedWorkQueue = new ConcurrentQueue<string>();
         internal ConcurrentDictionary<string, WorkBase> _suspendedWork = new ConcurrentDictionary<string, WorkBase>();
-
-        internal long _startCount = 0;
-        internal long _endCount = 0;
-        internal long _queueTime = 0;
-        internal long _executeTime = 0;
-
         private bool _suspended;
 
         private InterlockedFlag<WorkerCreationFlags> _createWorkerLock = WorkerCreationFlags.Unlocked;
@@ -59,7 +55,18 @@ namespace PowerThreadPool
             }
         }
 
+        public event EventHandler<EventArgs> PoolStarted;
+        public event EventHandler<EventArgs> PoolIdled;
+        public event EventHandler<WorkStartedEventArgs> WorkStarted;
+        public event EventHandler<WorkEndedEventArgs> WorkEnded;
+        public event EventHandler<EventArgs> PoolTimedOut;
+        public event EventHandler<WorkTimedOutEventArgs> WorkTimedOut;
+        public event EventHandler<WorkStoppedEventArgs> WorkStopped;
+        public event EventHandler<WorkCanceledEventArgs> WorkCanceled;
+        public event EventHandler<ErrorOccurredEventArgs> ErrorOccurred;
 
+        internal delegate void CallbackEndEventHandler(string id);
+        internal event CallbackEndEventHandler CallbackEnd;
 
         private System.Timers.Timer _poolTimer;
 
@@ -175,78 +182,6 @@ namespace PowerThreadPool
             }
         }
 
-        /// <summary>
-        /// The total time spent in the queue (ms).
-        /// Will be reset when the thread pool starts again.
-        /// </summary>
-        public long TotalQueueTime
-        {
-            get
-            {
-                return _queueTime;
-            }
-        }
-
-        /// <summary>
-        /// The total time taken for execution (ms).
-        /// Will be reset when the thread pool starts again.
-        /// </summary>
-        public long TotalExecuteTime
-        {
-            get
-            {
-                return _executeTime;
-            }
-        }
-
-        /// <summary>
-        /// The average time spent in the queue (ms).
-        /// Will be reset when the thread pool starts again.
-        /// </summary>
-        public long AverageQueueTime
-        {
-            get
-            {
-                return _queueTime / _startCount;
-            }
-        }
-
-        /// <summary>
-        /// The average time taken for execution (ms).
-        /// Will be reset when the thread pool starts again.
-        /// </summary>
-        public long AverageExecuteTime
-        {
-            get
-            {
-                return _executeTime / _endCount;
-            }
-        }
-
-        /// <summary>
-        /// The average elapsed time from start queue to finish (ms).
-        /// Will be reset when the thread pool starts again.
-        /// </summary>
-        public long AverageElapsedTime
-        {
-            get
-            {
-                return AverageQueueTime + AverageExecuteTime;
-            }
-        }
-
-        /// <summary>
-        /// The total elapsed time from start queue to finish (ms).
-        /// Will be reset when the thread pool starts again.
-        /// </summary>
-        public long TotalElapsedTime
-        {
-            get
-            {
-                return TotalQueueTime + TotalExecuteTime;
-            }
-        }
-
         public PowerPool()
         {
 
@@ -255,6 +190,539 @@ namespace PowerThreadPool
         public PowerPool(PowerPoolOption powerPoolOption)
         {
             PowerPoolOption = powerPoolOption;
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1>(Action<T1> action, T1 param1, Action<ExecuteResult<object>> callBack = null)
+        {
+            WorkOption option = new WorkOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<T1, object>.ToNormalFunc(action, param1), new object[] { param1 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1>(Action<T1> action, T1 param1, WorkOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<T1, object>.ToNormalFunc(action, param1), new object[] { param1 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, Action<ExecuteResult<object>> callBack = null)
+        {
+            WorkOption option = new WorkOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, object>.ToNormalFunc(action, param1, param2), new object[] { param1, param2 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, WorkOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, object>.ToNormalFunc(action, param1, param2), new object[] { param1, param2 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<object>> callBack = null)
+        {
+            WorkOption option = new WorkOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, object>.ToNormalFunc(action, param1, param2, param3), new object[] { param1, param2, param3 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, WorkOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, object>.ToNormalFunc(action, param1, param2, param3), new object[] { param1, param2, param3 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<object>> callBack = null)
+        {
+            WorkOption option = new WorkOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, T4, object>.ToNormalFunc(action, param1, param2, param3, param4), new object[] { param1, param2, param3, param4 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, T4, object>.ToNormalFunc(action, param1, param2, param3, param4), new object[] { param1, param2, param3, param4 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="T5"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="param5"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<object>> callBack = null)
+        {
+            WorkOption option = new WorkOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, T4, T5, object>.ToNormalFunc(action, param1, param2, param3, param4, param5), new object[] { param1, param2, param3, param4, param5 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="T5"></typeparam>
+        /// <param name="action"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="param5"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<T1, T2, T3, T4, T5, object>.ToNormalFunc(action, param1, param2, param3, param4, param5), new object[] { param1, param2, param3, param4, param5 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem(Action action, Action<ExecuteResult<object>> callBack = null)
+        {
+            WorkOption option = new WorkOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), s_emptyArray, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem(Action action, WorkOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<object>.ToNormalFunc(action), s_emptyArray, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="param"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem(Action<object[]> action, object[] param, Action<ExecuteResult<object>> callBack = null)
+        {
+            WorkOption option = new WorkOption();
+            option.Callback = callBack;
+            return QueueWorkItem<object>(DelegateHelper<object[]>.ToNormalFunc(action, param), param, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <param name="action"></param>
+        /// <param name="param"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem(Action<object[]> action, object[] param, WorkOption option)
+        {
+            return QueueWorkItem<object>(DelegateHelper<object[]>.ToNormalFunc(action, param), param, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, Action<ExecuteResult<TResult>> callBack = null)
+        {
+            WorkOption<TResult> option = new WorkOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(DelegateHelper<T1, TResult>.ToNormalFunc(function, param1), new object[] { param1 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, WorkOption<TResult> option)
+        {
+            return QueueWorkItem<TResult>(DelegateHelper<T1, TResult>.ToNormalFunc(function, param1), new object[] { param1 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, Action<ExecuteResult<TResult>> callBack = null)
+        {
+            WorkOption<TResult> option = new WorkOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, TResult>.ToNormalFunc(function, param1, param2), new object[] { param1, param2 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, WorkOption<TResult> option)
+        {
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, TResult>.ToNormalFunc(function, param1, param2), new object[] { param1, param2 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<TResult>> callBack = null)
+        {
+            WorkOption<TResult> option = new WorkOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, TResult>.ToNormalFunc(function, param1, param2, param3), new object[] { param1, param2, param3 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, WorkOption<TResult> option)
+        {
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, TResult>.ToNormalFunc(function, param1, param2, param3), new object[] { param1, param2, param3 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<TResult>> callBack = null)
+        {
+            WorkOption<TResult> option = new WorkOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, T4, TResult>.ToNormalFunc(function, param1, param2, param3, param4), new object[] { param1, param2, param3, param4 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption<TResult> option)
+        {
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, T4, TResult>.ToNormalFunc(function, param1, param2, param3, param4), new object[] { param1, param2, param3, param4 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="T5"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="param5"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<TResult>> callBack = null)
+        {
+            WorkOption<TResult> option = new WorkOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, T4, T5, TResult>.ToNormalFunc(function, param1, param2, param3, param4, param5), new object[] { param1, param2, param3, param4, param5 }, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="T5"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="param5"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption<TResult> option)
+        {
+            return QueueWorkItem<TResult>(DelegateHelper<T1, T2, T3, T4, T5, TResult>.ToNormalFunc(function, param1, param2, param3, param4, param5), new object[] { param1, param2, param3, param4, param5 }, option);
+        }
+
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<TResult>(Func<TResult> function, Action<ExecuteResult<TResult>> callBack = null)
+        {
+            WorkOption<TResult> option = new WorkOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), s_emptyArray, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="option"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<TResult>(Func<TResult> function, WorkOption<TResult> option)
+        {
+            return QueueWorkItem<TResult>(DelegateHelper<TResult>.ToNormalFunc(function), s_emptyArray, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, Action<ExecuteResult<TResult>> callBack = null)
+        {
+            WorkOption<TResult> option = new WorkOption<TResult>();
+            option.Callback = callBack;
+            return QueueWorkItem<TResult>(function, param, option);
+        }
+
+        /// <summary>
+        /// Queues a work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="function"></param>
+        /// <param name="param"></param>
+        /// <param name="callBack"></param>
+        /// <returns>work id</returns>
+        public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption<TResult> workOption)
+        {
+            if (_disposing || _disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+
+            string workID;
+
+            if (PoolStopping)
+            {
+                return null;
+            }
+
+            if (_powerPoolOption == null)
+            {
+                PowerPoolOption = new PowerPoolOption();
+            }
+
+            if (workOption.CustomWorkID != null)
+            {
+                if (_settedWorkDic.ContainsKey(workOption.CustomWorkID))
+                {
+                    throw new ArgumentException($"The work ID '{workOption.CustomWorkID}' already exists.", nameof(workOption.CustomWorkID));
+                }
+                workID = workOption.CustomWorkID;
+            }
+            else
+            {
+                workID = Guid.NewGuid().ToString();
+            }
+
+            if (workOption.TimeoutOption == null && _powerPoolOption.DefaultWorkTimeoutOption != null)
+            {
+                workOption.TimeoutOption = _powerPoolOption.DefaultWorkTimeoutOption;
+            }
+
+            Work<TResult> work = new Work<TResult>(this, workID, function, param, workOption);
+
+            Interlocked.Increment(ref _waitingWorkCount);
+
+            if (work.Group != null)
+            {
+                _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
+            }
+
+            if (_powerPoolOption.StartSuspended)
+            {
+                _suspendedWork[workID] = work;
+                _suspendedWorkQueue.Enqueue(workID);
+            }
+            else
+            {
+                if (workOption.Dependents == null || workOption.Dependents.Count == 0)
+                {
+                    CheckPoolStart();
+                    SetWork(work);
+                }
+            }
+
+            return workID;
         }
 
         /// <summary>
@@ -289,6 +757,102 @@ namespace PowerThreadPool
             _suspendedWorkQueue = new ConcurrentQueue<string>();
         }
 
+        /// <summary>
+        /// Invoke work end event
+        /// </summary>
+        /// <param name="executeResult"></param>
+        internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult)
+        {
+            executeResult.EndDateTime = DateTime.Now;
+            if (WorkEnded != null)
+            {
+                WorkEndedEventArgs e = new WorkEndedEventArgs()
+                {
+                    ID = executeResult.ID,
+                    Exception = executeResult.Exception,
+                    Result = executeResult.GetResult(),
+                    Succeed = executeResult.Status == Status.Succeed,
+                    QueueDateTime = executeResult.QueueDateTime,
+                    StartDateTime = executeResult.StartDateTime,
+                    EndDateTime = executeResult.EndDateTime,
+                    RetryInfo = executeResult.RetryInfo,
+                };
+
+                if (executeResult.RetryInfo != null)
+                {
+                    executeResult.RetryInfo.StopRetry = e.RetryInfo.StopRetry;
+                }
+
+                SafeInvoke(WorkEnded, e, ErrorFrom.WorkEnded, executeResult);
+            }
+        }
+
+        /// <summary>
+        /// Invoke work stopped event
+        /// </summary>
+        /// <param name="executeResult"></param>
+        internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult)
+        {
+            executeResult.EndDateTime = DateTime.Now;
+            if (WorkStopped != null)
+            {
+                WorkStoppedEventArgs e = new WorkStoppedEventArgs()
+                {
+                    ID = executeResult.ID,
+                    ForceStop = executeResult.Status == Status.ForceStopped,
+                    QueueDateTime = executeResult.QueueDateTime,
+                    StartDateTime = executeResult.StartDateTime,
+                    EndDateTime = executeResult.EndDateTime,
+                };
+                SafeInvoke(WorkStopped, e, ErrorFrom.WorkStopped, executeResult);
+            }
+        }
+
+        /// <summary>
+        /// Invoke work canceled event
+        /// </summary>
+        /// <param name="executeResult"></param>
+        internal void InvokeWorkCanceledEvent(ExecuteResultBase executeResult)
+        {
+            executeResult.EndDateTime = DateTime.Now;
+            if (WorkCanceled != null)
+            {
+                WorkCanceledEventArgs e = new WorkCanceledEventArgs()
+                {
+                    ID = executeResult.ID,
+                    QueueDateTime = executeResult.QueueDateTime,
+                    StartDateTime = executeResult.StartDateTime,
+                    EndDateTime = executeResult.EndDateTime,
+                };
+                SafeInvoke(WorkCanceled, e, ErrorFrom.WorkCanceled, executeResult);
+            }
+        }
+
+        /// <summary>
+        /// Work end
+        /// </summary>
+        /// <param name="guid"></param>
+        internal void WorkCallbackEnd(WorkBase work, Status status)
+        {
+            if (status == Status.Failed)
+            {
+                _failedWorkSet.Add(work.ID);
+            }
+
+            if (CallbackEnd != null)
+            {
+                CallbackEnd.Invoke(work.ID);
+            }
+
+            _settedWorkDic.TryRemove(work.ID, out _);
+            if (work.Group != null)
+            {
+                if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<string> idSet))
+                {
+                    idSet.Remove(work.ID);
+                }
+            }
+        }
 
         /// <summary>
         /// Init worker queue
@@ -430,10 +994,6 @@ namespace PowerThreadPool
                     SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted, null);
                 }
 
-                _startCount = 0;
-                _endCount = 0;
-                _queueTime = 0;
-                _executeTime = 0;
                 _failedWorkSet = new ConcurrentSet<string>();
                 _waitAllSignal.Reset();
 
@@ -527,6 +1087,104 @@ namespace PowerThreadPool
         internal void SetWorkOwner(WorkBase work)
         {
             _settedWorkDic[work.ID] = work;
+        }
+
+        /// <summary>
+        /// Invoke WorkTimedOut event
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        internal void OnWorkTimedOut(object sender, WorkTimedOutEventArgs e)
+        {
+            if (WorkTimedOut != null)
+            {
+                SafeInvoke(WorkTimedOut, e, ErrorFrom.WorkTimedOut, null);
+            }
+        }
+
+        /// <summary>
+        /// Invoke WorkStarted event
+        /// </summary>
+        /// <param name="workID"></param>
+        internal void OnWorkStarted(string workID)
+        {
+            if (WorkStarted != null)
+            {
+                SafeInvoke(WorkStarted, new WorkStartedEventArgs() { ID = workID }, ErrorFrom.WorkStarted, null);
+            }
+        }
+
+        /// <summary>
+        /// Safe invoke
+        /// </summary>
+        /// <typeparam name="TEventArgs"></typeparam>
+        /// <param name="eventHandler"></param>
+        /// <param name="e"></param>
+        /// <param name="errorFrom"></param>
+        /// <param name="executeResult"></param>
+        internal void SafeInvoke<TEventArgs>(EventHandler<TEventArgs> eventHandler, TEventArgs e, ErrorFrom errorFrom, ExecuteResultBase executeResult)
+        {
+            try
+            {
+                eventHandler.Invoke(this, e);
+            }
+            catch (ThreadInterruptedException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                if (ErrorOccurred != null)
+                {
+                    ErrorOccurredEventArgs ea = new ErrorOccurredEventArgs(ex, errorFrom, executeResult);
+
+                    ErrorOccurred.Invoke(this, ea);
+                }
+            }
+        }
+
+        /// <summary>
+        /// On work error occurred
+        /// </summary>
+        /// <param name="exception"></param>
+        /// <param name="errorFrom"></param>
+        /// <param name="executeResult"></param>
+        internal void OnWorkErrorOccurred(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult)
+        {
+            if (ErrorOccurred != null)
+            {
+                ErrorOccurredEventArgs e = new ErrorOccurredEventArgs(exception, errorFrom, executeResult);
+
+                ErrorOccurred.Invoke(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Safe callback
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="callback"></param>
+        /// <param name="errorFrom"></param>
+        /// <param name="executeResult"></param>
+        internal void SafeCallback<TResult>(Action<ExecuteResult<TResult>> callback, ErrorFrom errorFrom, ExecuteResultBase executeResult)
+        {
+            try
+            {
+                callback((ExecuteResult<TResult>)executeResult);
+            }
+            catch (ThreadInterruptedException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                if (ErrorOccurred != null)
+                {
+                    ErrorOccurredEventArgs e = new ErrorOccurredEventArgs(ex, errorFrom, executeResult);
+
+                    ErrorOccurred.Invoke(this, e);
+                }
+            }
         }
 
         /// <summary>
