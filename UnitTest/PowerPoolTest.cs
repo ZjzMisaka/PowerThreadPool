@@ -1972,5 +1972,41 @@ namespace UnitTest
 
             Assert.Equal(ErrorFrom.WorkLogic, errorFrom);
         }
+
+        [Fact]
+        public void TestTimes()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true, MaxThreads = 2 });
+
+            powerPool.QueueWorkItem(() =>
+            {
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(2000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(3000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(4000);
+            });
+
+            powerPool.Start();
+            powerPool.Wait();
+
+            Assert.True(powerPool.TotalQueueTime >= 3000 && powerPool.TotalQueueTime < 4000);
+            Assert.True(powerPool.TotalExecuteTime >= 10000 && powerPool.TotalExecuteTime < 11000);
+            Assert.Equal(powerPool.AverageQueueTime, powerPool.TotalQueueTime / 5);
+            Assert.Equal(powerPool.AverageExecuteTime, powerPool.TotalExecuteTime / 5);
+            Assert.Equal(powerPool.AverageElapsedTime, powerPool.AverageQueueTime + powerPool.AverageExecuteTime);
+            Assert.Equal(powerPool.TotalElapsedTime, powerPool.TotalQueueTime + powerPool.TotalExecuteTime);
+        }
     }
 }

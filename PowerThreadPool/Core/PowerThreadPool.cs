@@ -39,6 +39,12 @@ namespace PowerThreadPool
 
         internal ConcurrentQueue<string> _suspendedWorkQueue = new ConcurrentQueue<string>();
         internal ConcurrentDictionary<string, WorkBase> _suspendedWork = new ConcurrentDictionary<string, WorkBase>();
+
+        internal long _startCount = 0;
+        internal long _endCount = 0;
+        internal long _queueTime = 0;
+        internal long _executeTime = 0;
+
         private bool _suspended;
 
         private InterlockedFlag<WorkerCreationFlags> _createWorkerLock = WorkerCreationFlags.Unlocked;
@@ -179,6 +185,78 @@ namespace PowerThreadPool
             get
             {
                 return _longRunningWorkerCount;
+            }
+        }
+
+        /// <summary>
+        /// The total time spent in the queue (ms).
+        /// Will be reset when the thread pool starts again.
+        /// </summary>
+        public long TotalQueueTime
+        {
+            get
+            {
+                return _queueTime;
+            }
+        }
+
+        /// <summary>
+        /// The total time taken for execution (ms).
+        /// Will be reset when the thread pool starts again.
+        /// </summary>
+        public long TotalExecuteTime
+        {
+            get
+            {
+                return _executeTime;
+            }
+        }
+
+        /// <summary>
+        /// The average time spent in the queue (ms).
+        /// Will be reset when the thread pool starts again.
+        /// </summary>
+        public long AverageQueueTime
+        {
+            get
+            {
+                return _queueTime / _startCount;
+            }
+        }
+
+        /// <summary>
+        /// The average time taken for execution (ms);
+        /// Will be reset when the thread pool starts again.
+        /// </summary>
+        public long AverageExecuteTime
+        {
+            get
+            {
+                return _executeTime / _endCount;
+            }
+        }
+
+        /// <summary>
+        /// The average elapsed time from start queue to finish (ms).
+        /// Will be reset when the thread pool starts again.
+        /// </summary>
+        public long AverageElapsedTime
+        {
+            get
+            {
+                return AverageQueueTime + AverageExecuteTime;
+            }
+        }
+
+        /// <summary>
+        /// The total elapsed time from start queue to finish (ms).
+        /// Will be reset when the thread pool starts again.
+        /// </summary>
+        public long TotalElapsedTime
+        {
+            get
+            {
+                return TotalQueueTime + TotalExecuteTime;
             }
         }
 
@@ -764,6 +842,8 @@ namespace PowerThreadPool
         internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult)
         {
             executeResult.EndDateTime = DateTime.Now;
+            Interlocked.Increment(ref _endCount);
+            Interlocked.Add(ref _executeTime, (int)(executeResult.EndDateTime - executeResult.StartDateTime).TotalMilliseconds);
             if (WorkEnded != null)
             {
                 WorkEndedEventArgs e = new WorkEndedEventArgs()
@@ -794,6 +874,8 @@ namespace PowerThreadPool
         internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult)
         {
             executeResult.EndDateTime = DateTime.Now;
+            Interlocked.Increment(ref _endCount);
+            Interlocked.Add(ref _executeTime, (int)(executeResult.EndDateTime - executeResult.StartDateTime).TotalMilliseconds);
             if (WorkStopped != null)
             {
                 WorkStoppedEventArgs e = new WorkStoppedEventArgs()
@@ -815,6 +897,8 @@ namespace PowerThreadPool
         internal void InvokeWorkCanceledEvent(ExecuteResultBase executeResult)
         {
             executeResult.EndDateTime = DateTime.Now;
+            Interlocked.Increment(ref _endCount);
+            Interlocked.Add(ref _executeTime, (int)(executeResult.EndDateTime - executeResult.StartDateTime).TotalMilliseconds);
             if (WorkCanceled != null)
             {
                 WorkCanceledEventArgs e = new WorkCanceledEventArgs()
@@ -994,6 +1078,10 @@ namespace PowerThreadPool
                     SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted, null);
                 }
 
+                _startCount = 0;
+                _endCount = 0;
+                _queueTime = 0;
+                _executeTime = 0;
                 _failedWorkSet = new ConcurrentSet<string>();
                 _waitAllSignal.Reset();
 
