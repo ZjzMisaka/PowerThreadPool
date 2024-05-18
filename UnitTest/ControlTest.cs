@@ -1683,6 +1683,21 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestFetchObjByIDAsync()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+
+            ExecuteResult<object> resObj = await powerPool.FetchAsync(id);
+
+            Assert.True((bool)resObj.Result);
+        }
+
+        [Fact]
         public void TestFetchByIDNotExist()
         {
             PowerPool powerPool = new PowerPool();
@@ -1772,6 +1787,74 @@ namespace UnitTest
                 if (res.ID == id1)
                 {
                     Assert.False((bool)res.Result);
+                }
+                if (res.ID == "id")
+                {
+                    Assert.True(res.Result == null);
+                }
+            }
+        }
+
+        [Fact]
+        public void TestFetchByIDList()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "0";
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "1";
+            });
+
+            List<ExecuteResult<string>> resList = powerPool.Fetch<string>(new List<string>() { id0, id1, "id" });
+
+            foreach (ExecuteResult<string> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.Equal("0", (string)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.Equal("1", (string)res.Result);
+                }
+                if (res.ID == "id")
+                {
+                    Assert.True(res.Result == null);
+                }
+            }
+        }
+
+        [Fact]
+        public async void TestFetchByIDListAsync()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "0";
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "1";
+            });
+
+            List<ExecuteResult<string>> resList = await powerPool.FetchAsync<string>(new List<string>() { id0, id1, "id" });
+
+            foreach (ExecuteResult<string> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.Equal("0", (string)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.Equal("1", (string)res.Result);
                 }
                 if (res.ID == "id")
                 {

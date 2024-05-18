@@ -670,7 +670,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestDuplicateCustomWorkID()
+        public void TestDuplicateCustomWorkID1()
         {
             PowerPool powerPool = new PowerPool();
             string id0 = powerPool.QueueWorkItem(() =>
@@ -697,6 +697,40 @@ namespace UnitTest
             {
                 ex = e;
             }
+
+            Assert.Equal("The work ID '1024' already exists.", ex.Message);
+        }
+
+        [Fact]
+        public void TestDuplicateCustomWorkID2()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            },
+            new WorkOption()
+            {
+                CustomWorkID = "1024"
+            });
+            InvalidOperationException ex = null;
+            try
+            {
+                string id1 = powerPool.QueueWorkItem(() =>
+                {
+                    Thread.Sleep(1000);
+                },
+                new WorkOption()
+                {
+                    CustomWorkID = "1024"
+                });
+            }
+            catch (InvalidOperationException e)
+            {
+                ex = e;
+            }
+
+            powerPool.Start();
 
             Assert.Equal("The work ID '1024' already exists.", ex.Message);
         }
