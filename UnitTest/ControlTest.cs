@@ -1125,9 +1125,9 @@ namespace UnitTest
             powerPool.Cancel(id);
             powerPool.Wait();
 
-            Assert.NotEqual(queueTime, DateTime.MinValue);
-            Assert.Equal(startTime, DateTime.MinValue);
-            Assert.NotEqual(endTime, DateTime.MinValue);
+            Assert.NotEqual(queueTime, DateTime.MinValue.ToLocalTime());
+            Assert.Equal(startTime, DateTime.MinValue.ToLocalTime());
+            Assert.NotEqual(endTime, DateTime.MinValue.ToLocalTime());
             Assert.Equal(id, cid);
             Assert.Equal(id, eid);
             Assert.Equal(2, logList.Count);

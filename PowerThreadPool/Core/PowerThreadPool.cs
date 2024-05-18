@@ -332,7 +332,7 @@ namespace PowerThreadPool
                 worker = GetWorker(work.LongRunning);
                 return worker != null;
             });
-            work.QueueDateTime = DateTime.Now;
+            work.QueueDateTime = DateTime.UtcNow;
             worker.SetWork(work, false);
         }
 

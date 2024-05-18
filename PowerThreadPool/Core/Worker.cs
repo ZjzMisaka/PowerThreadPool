@@ -204,7 +204,7 @@ namespace PowerThreadPool
         private ExecuteResultBase ExecuteWork()
         {
             ExecuteResultBase executeResult;
-            DateTime runDateTime = DateTime.Now;
+            DateTime runDateTime = DateTime.UtcNow;
             try
             {
                 Interlocked.Increment(ref _powerPool._startCount);
@@ -433,15 +433,12 @@ namespace PowerThreadPool
                 return GettedLock.TrySet(WorkerGettedFlags.ToBeDisabled, WorkerGettedFlags.Unlocked);
             });
 
-            if (!_waitingWorkDic.IsEmpty)
+            waitingWorkID = _waitingWorkIDPriorityCollection.Get();
+            if (waitingWorkID != null)
             {
-                waitingWorkID = _waitingWorkIDPriorityCollection.Get();
-                if (waitingWorkID != null)
+                if (_waitingWorkDic.TryRemove(waitingWorkID, out work))
                 {
-                    if (_waitingWorkDic.TryRemove(waitingWorkID, out work))
-                    {
-                        Interlocked.Decrement(ref _waitingWorkCount);
-                    }
+                    Interlocked.Decrement(ref _waitingWorkCount);
                 }
 
                 GettedLock.TrySet(WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);

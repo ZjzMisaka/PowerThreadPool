@@ -22,20 +22,35 @@ namespace PowerThreadPool.Results
         /// </summary>
         public Exception Exception { get; internal set; }
 
+        private DateTime queueDateTime;
         /// <summary>
         /// Queue datetime.
         /// </summary>
-        public DateTime QueueDateTime { get; internal set; }
+        public DateTime QueueDateTime
+        {
+            get => queueDateTime.ToLocalTime();
+            internal set => queueDateTime = value;
+        }
 
+        private DateTime startDateTime;
         /// <summary>
         /// Start datetime.
         /// </summary>
-        public DateTime StartDateTime { get; internal set; }
+        public DateTime StartDateTime
+        {
+            get => startDateTime.ToLocalTime();
+            internal set => startDateTime = value;
+        }
 
+        private DateTime endDateTime;
         /// <summary>
         /// End datetime.
         /// </summary>
-        public DateTime EndDateTime { get; internal set; }
+        public DateTime EndDateTime
+        {
+            get => endDateTime.ToLocalTime();
+            internal set => endDateTime = value;
+        }
 
         /// <summary>
         /// Retry information.
