@@ -1704,7 +1704,7 @@ namespace UnitTest
 
             ExecuteResult<object> res = powerPool.Fetch("id");
 
-            Assert.Null(res);
+            Assert.Null(res.Result);
         }
 
         [Fact]

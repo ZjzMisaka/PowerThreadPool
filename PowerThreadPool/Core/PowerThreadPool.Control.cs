@@ -228,7 +228,7 @@ namespace PowerThreadPool
             }
             else
             {
-                return null;
+                return new ExecuteResult<TResult>() { ID = id };
             }
         }
 
