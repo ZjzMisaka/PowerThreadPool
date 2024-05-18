@@ -1912,6 +1912,150 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestFetchObjByGroupObject()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            }, new WorkOption() 
+            { 
+                Group = "A" 
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return false;
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+
+            List<ExecuteResult<object>> resList = powerPool.GetGroup("A").Fetch();
+
+            foreach (ExecuteResult<object> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.True((bool)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.False((bool)res.Result);
+                }
+            }
+        }
+
+        [Fact]
+        public async void TestFetchObjByGroupObjectAsync()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return false;
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+
+            List<ExecuteResult<object>> resList = await powerPool.GetGroup("A").FetchAsync();
+
+            foreach (ExecuteResult<object> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.True((bool)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.False((bool)res.Result);
+                }
+            }
+        }
+
+        [Fact]
+        public void TestFetchByGroupObject()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "0";
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "1";
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+
+            List<ExecuteResult<string>> resList = powerPool.GetGroup("A").Fetch<string>();
+
+            foreach (ExecuteResult<string> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.Equal("0", (string)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.Equal("1", (string)res.Result);
+                }
+            }
+        }
+
+        [Fact]
+        public async void TestFetchByGroupObjectAsync()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "0";
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "1";
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+
+            List<ExecuteResult<string>> resList = await powerPool.GetGroup("A").FetchAsync<string>();
+
+            foreach (ExecuteResult<string> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.Equal("0", (string)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.Equal("1", (string)res.Result);
+                }
+            }
+        }
+
+        [Fact]
         public void TestPauseWorkTimer()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 2000, ForceStop = true } });

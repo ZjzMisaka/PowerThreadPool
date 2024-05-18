@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Groups
 {
@@ -30,6 +31,48 @@ namespace PowerThreadPool.Groups
             await Task.Run(() =>
             {
                 Wait();
+            });
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <returns>Work result</returns>
+        public List<ExecuteResult<TResult>> Fetch<TResult>()
+        {
+            return _powerPool.Fetch<TResult>(_powerPool.GetGroupMemberList(_groupName));
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <returns>Work result</returns>
+        public List<ExecuteResult<object>> Fetch()
+        {
+            return _powerPool.Fetch<object>(_powerPool.GetGroupMemberList(_groupName));
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <returns>Return a list of work result</returns>
+        public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>()
+        {
+            return await Task.Run(() =>
+            {
+                return Fetch<TResult>();
+            });
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <returns>Return a list of work result</returns>
+        public async Task<List<ExecuteResult<object>>> FetchAsync()
+        {
+            return await Task.Run(() =>
+            {
+                return Fetch();
             });
         }
 
