@@ -53,5 +53,16 @@ namespace PowerThreadPool.Results
                 QueueDateTime = QueueDateTime
             };
         }
+
+        internal override ExecuteResult<TRes> ToTypedResult<TRes>()
+        {
+            return new ExecuteResult<TRes>()
+            {
+                Exception = Exception,
+                Result = (TRes)(object)Result,
+                ID = ID,
+                QueueDateTime = QueueDateTime
+            };
+        }
     }
 }

@@ -544,6 +544,5 @@ namespace PowerThreadPool
 
             return workID;
         }
-
     }
 }

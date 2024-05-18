@@ -11,6 +11,7 @@ using PowerThreadPool.Exceptions;
 using PowerThreadPool.Groups;
 using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
+using PowerThreadPool.Results;
 using PowerThreadPool.Works;
 
 namespace PowerThreadPool
@@ -718,6 +719,133 @@ namespace PowerThreadPool
                 }
 
                 return failedIDList;
+            });
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <param name="id">work id</param>
+        /// <returns>Work result</returns>
+        public ExecuteResult<TResult> Fetch<TResult>(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return null;
+            }
+
+            WorkBase work;
+            if (_suspendedWork.TryGetValue(id, out work) || _settedWorkDic.TryGetValue(id, out work))
+            {
+                return work.Fetch().ToTypedResult<TResult>();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <param name="id">work id</param>
+        /// <returns>Work result</returns>
+        public ExecuteResult<object> Fetch(string id)
+        {
+            return Fetch<object>(id);
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of work result</returns>
+        public List<ExecuteResult<TResult>> Fetch<TResult>(IEnumerable<string> idList)
+        {
+            List<ExecuteResult<TResult>> resultList = new List<ExecuteResult<TResult>>();
+
+            List<WorkBase> workList = new List<WorkBase>();
+
+            foreach (string id in idList)
+            {
+                WorkBase workBase;
+                if (_suspendedWork.TryGetValue(id, out workBase) || _settedWorkDic.TryGetValue(id, out workBase))
+                {
+                    workList.Add(workBase);
+                }
+                else
+                {
+                    resultList.Add(new ExecuteResult<TResult>() { ID = id });
+                }
+            }
+
+            foreach (WorkBase work in workList)
+            {
+                resultList.Add(work.Fetch().ToTypedResult<TResult>());
+            }
+
+            return resultList;
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of work result</returns>
+        public List<ExecuteResult<object>> Fetch(IEnumerable<string> idList)
+        {
+            return Fetch<object>(idList);
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <param name="id">work id</param>
+        /// <returns>Work result</returns>
+        public async Task<ExecuteResult<TResult>> FetchAsync<TResult>(string id)
+        {
+            return await Task.Run(() =>
+            {
+                return Fetch<TResult>(id);
+            });
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <param name="id">work id</param>
+        /// <returns>Work result</returns>
+        public async Task<ExecuteResult<object>> FetchAsync(string id)
+        {
+            return await Task.Run(() =>
+            {
+                return Fetch(id);
+            });
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of work result</returns>
+        public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(IEnumerable<string> idList)
+        {
+            return await Task.Run(() =>
+            {
+                return Fetch<TResult>(idList);
+            });
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of work result</returns>
+        public async Task<List<ExecuteResult<object>>> FetchAsync(IEnumerable<string> idList)
+        {
+            return await Task.Run(() =>
+            {
+                return Fetch(idList);
             });
         }
 

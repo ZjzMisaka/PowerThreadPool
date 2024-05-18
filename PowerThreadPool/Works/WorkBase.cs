@@ -18,6 +18,7 @@ namespace PowerThreadPool.Works
         }
         internal Status Status { get; set; }
         internal AutoResetEvent WaitSignal { get; set; }
+        internal AutoResetEvent FetchSignal { get; set; }
         internal bool ShouldStop { get; set; }
         internal ManualResetEvent PauseSignal { get; set; }
         internal bool IsPausing { get; set; }
@@ -25,6 +26,7 @@ namespace PowerThreadPool.Works
         internal abstract object Execute();
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Wait();
+        internal abstract ExecuteResultBase Fetch();
         internal abstract bool Pause();
         internal abstract bool Resume();
         internal abstract bool Cancel(bool lockWorker);

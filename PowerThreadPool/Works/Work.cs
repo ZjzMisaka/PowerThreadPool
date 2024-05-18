@@ -16,10 +16,17 @@ namespace PowerThreadPool.Works
         private WorkOption<TResult> _workOption;
         private CallbackEndEventHandler _callbackEndHandler;
 
-        internal override int WorkPriority => _workOption.WorkPriority;
+        internal ExecuteResult<TResult> _executeResult;
+        internal ExecuteResult<TResult> ExecuteResult
+        {
+            get => _executeResult;
+            set => _executeResult = value;
+        }
+
         internal override string Group => _workOption.Group;
         internal override ThreadPriority ThreadPriority => _workOption.ThreadPriority;
         internal override bool IsBackground => _workOption.IsBackground;
+        internal override int WorkPriority => _workOption.WorkPriority;
         internal override TimeoutOption WorkTimeoutOption => _workOption.TimeoutOption;
         internal override RetryOption RetryOption => _workOption.RetryOption;
         internal override bool LongRunning => _workOption.LongRunning;
@@ -131,6 +138,22 @@ namespace PowerThreadPool.Works
             return true;
         }
 
+        internal override ExecuteResultBase Fetch()
+        {
+            if (FetchSignal == null)
+            {
+                FetchSignal = new AutoResetEvent(false);
+            }
+
+            if (ExecuteResult != null)
+            {
+                return ExecuteResult;
+            }
+
+            FetchSignal.WaitOne();
+            return ExecuteResult;
+        }
+
         internal override bool Pause()
         {
             if (PauseSignal == null)
@@ -180,6 +203,11 @@ namespace PowerThreadPool.Works
             Status = status;
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
             executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, ExecuteCount);
+            ExecuteResult = executeResult;
+            if (FetchSignal != null)
+            {
+                FetchSignal.Set();
+            }
             return executeResult;
         }
 

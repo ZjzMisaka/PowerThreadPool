@@ -1611,6 +1611,134 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestFetchByID()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+
+            ExecuteResult<bool> res = powerPool.Fetch<bool>(id);
+
+            Assert.True(res.Result);
+        }
+
+        [Fact]
+        public void TestFetchObjByID()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+
+            ExecuteResult<object> resObj = powerPool.Fetch(id);
+
+            Assert.True((bool)resObj.Result);
+        }
+
+        [Fact]
+        public void TestFetchByIDNotExist()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ExecuteResult<object> res = powerPool.Fetch("id");
+
+            Assert.Null(res);
+        }
+
+        [Fact]
+        public async void TestFetchByIDSuspending()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
+
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+            Task<ExecuteResult<bool>> resTask = powerPool.FetchAsync<bool>(id);
+
+            powerPool.Start();
+            powerPool.Wait();
+
+            ExecuteResult<bool> res = await resTask;
+
+            Assert.True(res.Result);
+        }
+
+        [Fact]
+        public void TestFetchObjByIDList()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return false;
+            });
+
+            List<ExecuteResult<object>> resList = powerPool.Fetch(new List<string>() { id0, id1, "id" });
+
+            foreach (ExecuteResult<object> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.True((bool)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.False((bool)res.Result);
+                }
+                if (res.ID == "id")
+                {
+                    Assert.True(res.Result == null);
+                }
+            }
+        }
+
+        [Fact]
+        public async void TestFetchObjByIDListAsync()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return false;
+            });
+
+            List<ExecuteResult<object>> resList = await powerPool.FetchAsync(new List<string>() { id0, id1, "id" });
+
+            foreach (ExecuteResult<object> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.True((bool)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.False((bool)res.Result);
+                }
+                if (res.ID == "id")
+                {
+                    Assert.True(res.Result == null);
+                }
+            }
+        }
+
+        [Fact]
         public void TestPauseWorkTimer()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 2000, ForceStop = true } });
