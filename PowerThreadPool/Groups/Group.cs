@@ -37,7 +37,7 @@ namespace PowerThreadPool.Groups
         /// <summary>
         /// Fetch the work result.
         /// </summary>
-        /// <returns>Work result</returns>
+        /// <returns>Return a list of work result</returns>
         public List<ExecuteResult<TResult>> Fetch<TResult>()
         {
             return _powerPool.Fetch<TResult>(_powerPool.GetGroupMemberList(_groupName));
@@ -46,7 +46,7 @@ namespace PowerThreadPool.Groups
         /// <summary>
         /// Fetch the work result.
         /// </summary>
-        /// <returns>Work result</returns>
+        /// <returns>Return a list of work result</returns>
         public List<ExecuteResult<object>> Fetch()
         {
             return _powerPool.Fetch<object>(_powerPool.GetGroupMemberList(_groupName));
