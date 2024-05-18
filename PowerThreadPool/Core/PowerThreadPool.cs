@@ -644,7 +644,9 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            if (_settedWorkDic.TryGetValue(id, out WorkBase work))
+
+            WorkBase work;
+            if (_suspendedWork.TryGetValue(id, out work) || _settedWorkDic.TryGetValue(id, out work))
             {
                 return work.Wait();
             }
@@ -1067,7 +1069,11 @@ namespace PowerThreadPool
                 return false;
             }
 
-            if (_settedWorkDic.TryGetValue(id, out WorkBase work))
+            if(_suspendedWork.TryRemove(id, out _))
+            {
+                return true;
+            }
+            else if (_settedWorkDic.TryGetValue(id, out WorkBase work))
             {
                 return work.Cancel(true);
             }

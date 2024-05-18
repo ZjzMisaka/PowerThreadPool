@@ -1134,6 +1134,26 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestCancelByIDSuspended()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
+
+            bool canceled = true;
+
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                canceled = false;
+            });
+
+            powerPool.Cancel(id);
+
+            powerPool.Start();
+            powerPool.Wait();
+
+            Assert.True(canceled);
+        }
+
+        [Fact]
         public void TestCancelByIDList()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
@@ -1573,6 +1593,28 @@ namespace UnitTest
                 }
             });
             Task<bool> task = powerPool.WaitAsync(id);
+            Thread.Sleep(100);
+            powerPool.Stop(true);
+
+            bool res = await task;
+            Assert.True(res);
+        }
+
+        [Fact]
+        public async Task TestWaitByIDSuspended()
+        {
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            });
+            Task<bool> task = powerPool.WaitAsync(id);
+
+            powerPool.Start();
             Thread.Sleep(100);
             powerPool.Stop(true);
 
