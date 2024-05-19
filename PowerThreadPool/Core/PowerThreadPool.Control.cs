@@ -222,9 +222,17 @@ namespace PowerThreadPool
             }
 
             WorkBase work;
-            if (_suspendedWork.TryGetValue(id, out work) || _settedWorkDic.TryGetValue(id, out work))
+            ExecuteResultBase executeResultBase = null;
+            if (_suspendedWork.TryGetValue(id, out work) || _settedWorkDic.TryGetValue(id, out work) || _resultDic.TryGetValue(id, out executeResultBase))
             {
-                return work.Fetch().ToTypedResult<TResult>();
+                if (executeResultBase != null)
+                {
+                    return executeResultBase.ToTypedResult<TResult>();
+                }
+                else
+                {
+                    return work.Fetch().ToTypedResult<TResult>();
+                }
             }
             else
             {
@@ -256,9 +264,17 @@ namespace PowerThreadPool
             foreach (string id in idList)
             {
                 WorkBase workBase;
-                if (_suspendedWork.TryGetValue(id, out workBase) || _settedWorkDic.TryGetValue(id, out workBase))
+                ExecuteResultBase executeResultBase = null;
+                if (_suspendedWork.TryGetValue(id, out workBase) || _settedWorkDic.TryGetValue(id, out workBase) || _resultDic.TryGetValue(id, out executeResultBase))
                 {
-                    workList.Add(workBase);
+                    if (executeResultBase != null)
+                    {
+                        resultList.Add(executeResultBase.ToTypedResult<TResult>());
+                    }
+                    else
+                    {
+                        workList.Add(workBase);
+                    }
                 }
                 else
                 {

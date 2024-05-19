@@ -9,6 +9,7 @@ using PowerThreadPool.EventArguments;
 using PowerThreadPool.Groups;
 using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
+using PowerThreadPool.Results;
 using PowerThreadPool.Works;
 
 namespace PowerThreadPool
@@ -34,6 +35,8 @@ namespace PowerThreadPool
 
         internal ConcurrentQueue<string> _suspendedWorkQueue = new ConcurrentQueue<string>();
         internal ConcurrentDictionary<string, WorkBase> _suspendedWork = new ConcurrentDictionary<string, WorkBase>();
+
+        internal ConcurrentDictionary<string, ExecuteResultBase> _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
 
         internal long _startCount = 0;
         internal long _endCount = 0;
@@ -428,7 +431,14 @@ namespace PowerThreadPool
                 _endCount = 0;
                 _queueTime = 0;
                 _executeTime = 0;
-                _failedWorkSet = new ConcurrentSet<string>();
+                if (PowerPoolOption.ClearFailedWorkRecordWhenPoolStart)
+                {
+                    _failedWorkSet = new ConcurrentSet<string>();
+                }
+                if (PowerPoolOption.ClearResultStorageWhenPoolStart)
+                {
+                    _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
+                }
                 _waitAllSignal.Reset();
 
                 if (_powerPoolOption.TimeoutOption != null)

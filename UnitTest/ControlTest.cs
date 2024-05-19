@@ -1668,6 +1668,26 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestFetchByIDAlreadyDone()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = false });
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return true;
+            }, new WorkOption()
+            {
+                StorageResult = true
+            });
+
+            powerPool.Wait();
+
+            ExecuteResult<bool> res = powerPool.Fetch<bool>(id);
+
+            Assert.True(res.Result);
+        }
+
+        [Fact]
         public void TestFetchObjByID()
         {
             PowerPool powerPool = new PowerPool();
@@ -1819,6 +1839,47 @@ namespace UnitTest
                 Thread.Sleep(1000);
                 return "1";
             });
+
+            List<ExecuteResult<string>> resList = powerPool.Fetch<string>(new List<string>() { id0, id1, "id" });
+
+            foreach (ExecuteResult<string> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.Equal("0", (string)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.Equal("1", (string)res.Result);
+                }
+                if (res.ID == "id")
+                {
+                    Assert.True(res.Result == null);
+                }
+            }
+        }
+
+        [Fact]
+        public void TestFetchByIDListAlreadyDone()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = false });
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                return "0";
+            }, new WorkOption()
+            {
+                StorageResult = true
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "1";
+            }, new WorkOption()
+            {
+                StorageResult = true
+            });
+
+            powerPool.Wait(id0);
 
             List<ExecuteResult<string>> resList = powerPool.Fetch<string>(new List<string>() { id0, id1, "id" });
 

@@ -380,6 +380,53 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestDependentsFailedHoldFailtureRecord()
+        {
+            int doneCount = 0;
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 },
+                ClearFailedWorkRecordWhenPoolStart = false,
+            };
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            };
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                throw new Exception();
+            });
+
+            powerPool.Wait();
+
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+            },
+           new WorkOption()
+           {
+               Dependents = new ConcurrentSet<string>() { id0, id1 }
+           });
+
+            powerPool.Wait();
+
+            Assert.Equal(2, doneCount);
+            Assert.Equal(1, powerPool.FailedWorkCount);
+            Assert.Equal(id0, powerPool.FailedWorkList.First());
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
         public void TestDependentsFailedBeforeWorkRun()
         {
             int doneCount = 0;

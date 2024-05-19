@@ -157,7 +157,7 @@ namespace PowerThreadPool
                         Interlocked.Decrement(ref powerPool._idleWorkerCount);
                     }
 
-                    ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
+                    ExecuteResultBase executeResult = Work.SetExecuteResult(powerPool, null, ex, Status.ForceStopped);
                     executeResult.ID = Work.ID;
                     powerPool.InvokeWorkStoppedEvent(executeResult);
 
@@ -210,7 +210,7 @@ namespace PowerThreadPool
                 Interlocked.Increment(ref _powerPool._startCount);
                 Interlocked.Add(ref _powerPool._queueTime, (long)(runDateTime - Work.QueueDateTime).TotalMilliseconds);
                 object result = Work.Execute();
-                executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
+                executeResult = Work.SetExecuteResult(_powerPool, result, null, Status.Succeed);
                 executeResult.StartDateTime = runDateTime;
             }
             catch (ThreadInterruptedException ex)
@@ -220,11 +220,11 @@ namespace PowerThreadPool
             }
             catch (WorkStopException ex)
             {
-                executeResult = Work.SetExecuteResult(null, ex, Status.Stopped);
+                executeResult = Work.SetExecuteResult(_powerPool, null, ex, Status.Stopped);
             }
             catch (Exception ex)
             {
-                executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
+                executeResult = Work.SetExecuteResult(_powerPool, null, ex, Status.Failed);
                 _powerPool.OnWorkErrorOccurred(ex, EventArguments.ErrorFrom.WorkLogic, executeResult);
             }
             SpinWait.SpinUntil(() =>
@@ -576,7 +576,7 @@ namespace PowerThreadPool
         {
             if (_waitingWorkDic.TryRemove(id, out _))
             {
-                ExecuteResultBase executeResult = Work.SetExecuteResult(null, null, Status.Canceled);
+                ExecuteResultBase executeResult = Work.SetExecuteResult(_powerPool, null, null, Status.Canceled);
                 executeResult.ID = id;
 
                 _powerPool.InvokeWorkCanceledEvent(executeResult);

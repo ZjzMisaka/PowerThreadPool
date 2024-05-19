@@ -198,12 +198,16 @@ namespace PowerThreadPool.Works
             }
         }
 
-        internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status)
+        internal override ExecuteResultBase SetExecuteResult(PowerPool powerPool, object result, Exception exception, Status status)
         {
             Status = status;
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
             executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, ExecuteCount);
             ExecuteResult = executeResult;
+            if (_workOption.StorageResult)
+            {
+                powerPool._resultDic[ID] = ExecuteResult;
+            }
             if (FetchSignal != null)
             {
                 FetchSignal.Set();

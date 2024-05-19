@@ -31,7 +31,7 @@ namespace PowerThreadPool.Works
         internal abstract bool Resume();
         internal abstract bool Cancel(bool lockWorker);
         internal abstract void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
-        internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
+        internal abstract ExecuteResultBase SetExecuteResult(PowerPool powerPool, object result, Exception exception, Status status);
         internal abstract bool ShouldRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldImmediateRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldRequeue(ExecuteResultBase executeResult);

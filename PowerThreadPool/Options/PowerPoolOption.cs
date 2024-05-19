@@ -44,5 +44,15 @@ namespace PowerThreadPool.Options
         /// FIFO or LIFO.
         /// </summary>
         public QueueType QueueType { get; set; } = QueueType.FIFO;
+
+        /// <summary>
+        /// Determines whether to clear the result storage when the pool starts.
+        /// </summary>
+        public bool ClearResultStorageWhenPoolStart { get; set; } = true;
+
+        /// <summary>
+        /// Determines whether to clear the records of failed work when the pool starts.
+        /// </summary>
+        public bool ClearFailedWorkRecordWhenPoolStart { get; set; } = true;
     }
 }
