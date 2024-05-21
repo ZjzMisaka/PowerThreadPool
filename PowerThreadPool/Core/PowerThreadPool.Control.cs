@@ -214,7 +214,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="id">work id</param>
         /// <returns>Work result</returns>
-        public ExecuteResult<TResult> Fetch<TResult>(string id)
+        public ExecuteResult<TResult> Fetch<TResult>(string id, bool removeAfterFetch = false)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -223,7 +223,7 @@ namespace PowerThreadPool
 
             WorkBase work;
             ExecuteResultBase executeResultBase = null;
-            if (_suspendedWork.TryGetValue(id, out work) || _settedWorkDic.TryGetValue(id, out work) || _resultDic.TryGetValue(id, out executeResultBase))
+            if (_suspendedWork.TryGetValue(id, out work) || _settedWorkDic.TryGetValue(id, out work) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
             {
                 if (executeResultBase != null)
                 {
@@ -245,9 +245,9 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="id">work id</param>
         /// <returns>Work result</returns>
-        public ExecuteResult<object> Fetch(string id)
+        public ExecuteResult<object> Fetch(string id, bool removeAfterFetch = false)
         {
-            return Fetch<object>(id);
+            return Fetch<object>(id, removeAfterFetch);
         }
 
         /// <summary>
@@ -255,7 +255,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="idList">work id list</param>
         /// <returns>Return a list of work result</returns>
-        public List<ExecuteResult<TResult>> Fetch<TResult>(IEnumerable<string> idList)
+        public List<ExecuteResult<TResult>> Fetch<TResult>(IEnumerable<string> idList, bool removeAfterFetch = false)
         {
             List<ExecuteResult<TResult>> resultList = new List<ExecuteResult<TResult>>();
 
@@ -265,7 +265,7 @@ namespace PowerThreadPool
             {
                 WorkBase workBase;
                 ExecuteResultBase executeResultBase = null;
-                if (_suspendedWork.TryGetValue(id, out workBase) || _settedWorkDic.TryGetValue(id, out workBase) || _resultDic.TryGetValue(id, out executeResultBase))
+                if (_suspendedWork.TryGetValue(id, out workBase) || _settedWorkDic.TryGetValue(id, out workBase) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
                 {
                     if (executeResultBase != null)
                     {
@@ -295,9 +295,9 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="idList">work id list</param>
         /// <returns>Return a list of work result</returns>
-        public List<ExecuteResult<object>> Fetch(IEnumerable<string> idList)
+        public List<ExecuteResult<object>> Fetch(IEnumerable<string> idList, bool removeAfterFetch = false)
         {
-            return Fetch<object>(idList);
+            return Fetch<object>(idList, removeAfterFetch);
         }
 
         /// <summary>
@@ -305,11 +305,11 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="id">work id</param>
         /// <returns>Work result</returns>
-        public async Task<ExecuteResult<TResult>> FetchAsync<TResult>(string id)
+        public async Task<ExecuteResult<TResult>> FetchAsync<TResult>(string id, bool removeAfterFetch = false)
         {
             return await Task.Run(() =>
             {
-                return Fetch<TResult>(id);
+                return Fetch<TResult>(id, removeAfterFetch);
             });
         }
 
@@ -318,11 +318,11 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="id">work id</param>
         /// <returns>Work result</returns>
-        public async Task<ExecuteResult<object>> FetchAsync(string id)
+        public async Task<ExecuteResult<object>> FetchAsync(string id, bool removeAfterFetch = false)
         {
             return await Task.Run(() =>
             {
-                return Fetch(id);
+                return Fetch(id, removeAfterFetch);
             });
         }
 
@@ -331,11 +331,11 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="idList">work id list</param>
         /// <returns>Return a list of work result</returns>
-        public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(IEnumerable<string> idList)
+        public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(IEnumerable<string> idList, bool removeAfterFetch = false)
         {
             return await Task.Run(() =>
             {
-                return Fetch<TResult>(idList);
+                return Fetch<TResult>(idList, removeAfterFetch);
             });
         }
 
@@ -344,11 +344,11 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="idList">work id list</param>
         /// <returns>Return a list of work result</returns>
-        public async Task<List<ExecuteResult<object>>> FetchAsync(IEnumerable<string> idList)
+        public async Task<List<ExecuteResult<object>>> FetchAsync(IEnumerable<string> idList, bool removeAfterFetch = false)
         {
             return await Task.Run(() =>
             {
-                return Fetch(idList);
+                return Fetch(idList, removeAfterFetch);
             });
         }
 

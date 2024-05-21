@@ -1688,6 +1688,58 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestFetchByIDClearResultStorageWhenPoolStart()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = true });
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return "1";
+            }, new WorkOption()
+            {
+                StorageResult = true
+            });
+
+            powerPool.Wait();
+
+            powerPool.QueueWorkItem(() =>
+            {
+            }, new WorkOption()
+            {
+                StorageResult = true
+            });
+
+            ExecuteResult<string> res = powerPool.Fetch<string>(id);
+
+            Assert.Null(res.Result);
+        }
+
+        [Fact]
+        public void TestFetchByIDRemoveAfterFetch()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = true });
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return "1";
+            }, new WorkOption()
+            {
+                StorageResult = true
+            });
+
+            powerPool.Wait();
+
+            ExecuteResult<string> res = powerPool.Fetch<string>(id);
+            Assert.Equal("1", res.Result);
+
+            res = powerPool.Fetch<string>(id, true);
+            Assert.Equal("1", res.Result);
+
+            res = powerPool.Fetch<string>(id, true);
+            Assert.Null(res.Result);
+        }
+
+        [Fact]
         public void TestFetchObjByID()
         {
             PowerPool powerPool = new PowerPool();
