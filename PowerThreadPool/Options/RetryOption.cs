@@ -16,7 +16,7 @@
 
         /// <summary>
         /// Max retry count.
-        /// Enable if RetryPolicy is Limited
+        /// Enable if RetryPolicy is Limited.
         /// </summary>
         public int MaxRetryCount { get; set; } = 3;
     }

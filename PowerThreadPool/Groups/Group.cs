@@ -37,42 +37,46 @@ namespace PowerThreadPool.Groups
         /// <summary>
         /// Fetch the work result.
         /// </summary>
+        /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
-        public List<ExecuteResult<TResult>> Fetch<TResult>()
+        public List<ExecuteResult<TResult>> Fetch<TResult>(bool removeAfterFetch = false)
         {
-            return _powerPool.Fetch<TResult>(_powerPool.GetGroupMemberList(_groupName));
+            return _powerPool.Fetch<TResult>(_powerPool.GetGroupMemberList(_groupName), removeAfterFetch);
         }
 
         /// <summary>
         /// Fetch the work result.
         /// </summary>
+        /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
-        public List<ExecuteResult<object>> Fetch()
+        public List<ExecuteResult<object>> Fetch(bool removeAfterFetch = false)
         {
-            return _powerPool.Fetch<object>(_powerPool.GetGroupMemberList(_groupName));
+            return _powerPool.Fetch<object>(_powerPool.GetGroupMemberList(_groupName), removeAfterFetch);
         }
 
         /// <summary>
         /// Fetch the work result.
         /// </summary>
+        /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
-        public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>()
+        public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false)
         {
             return await Task.Run(() =>
             {
-                return Fetch<TResult>();
+                return Fetch<TResult>(removeAfterFetch);
             });
         }
 
         /// <summary>
         /// Fetch the work result.
         /// </summary>
+        /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
-        public async Task<List<ExecuteResult<object>>> FetchAsync()
+        public async Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false)
         {
             return await Task.Run(() =>
             {
-                return Fetch();
+                return Fetch(removeAfterFetch);
             });
         }
 

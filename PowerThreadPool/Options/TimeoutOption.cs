@@ -7,7 +7,7 @@
         }
 
         /// <summary>
-        /// The maximum amount of time (ms)
+        /// The maximum amount of time (ms).
         /// </summary>
         public int Duration { get; set; }
 

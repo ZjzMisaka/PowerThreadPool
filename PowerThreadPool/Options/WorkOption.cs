@@ -62,7 +62,7 @@ namespace PowerThreadPool.Options
         public RetryOption RetryOption { get; set; } = null;
 
         /// <summary>
-        /// Should storage the work result
+        /// Should storage the work result.
         /// </summary>
         public bool StorageResult { get; set; } = false;
     }

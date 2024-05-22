@@ -213,7 +213,7 @@ namespace PowerThreadPool
         /// Fetch the work result.
         /// </summary>
         /// <param name="id">work id</param>.
-        /// <param name="removeAfterFetch">remove the result from storage</param>.
+        /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Work result</returns>
         public ExecuteResult<TResult> Fetch<TResult>(string id, bool removeAfterFetch = false)
         {
@@ -245,7 +245,7 @@ namespace PowerThreadPool
         /// Fetch the work result.
         /// </summary>
         /// <param name="id">work id</param>
-        /// <param name="removeAfterFetch">remove the result from storage</param>.
+        /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Work result</returns>
         public ExecuteResult<object> Fetch(string id, bool removeAfterFetch = false)
         {
@@ -256,7 +256,7 @@ namespace PowerThreadPool
         /// Fetch the work result.
         /// </summary>
         /// <param name="idList">work id list</param>
-        /// <param name="removeAfterFetch">remove the result from storage</param>.
+        /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
         public List<ExecuteResult<TResult>> Fetch<TResult>(IEnumerable<string> idList, bool removeAfterFetch = false)
         {
@@ -297,7 +297,7 @@ namespace PowerThreadPool
         /// Fetch the work result.
         /// </summary>
         /// <param name="idList">work id list</param>
-        /// <param name="removeAfterFetch">remove the result from storage</param>.
+        /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
         public List<ExecuteResult<object>> Fetch(IEnumerable<string> idList, bool removeAfterFetch = false)
         {
@@ -308,7 +308,7 @@ namespace PowerThreadPool
         /// Fetch the work result.
         /// </summary>
         /// <param name="id">work id</param>
-        /// <param name="removeAfterFetch">remove the result from storage</param>.
+        /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Work result</returns>
         public async Task<ExecuteResult<TResult>> FetchAsync<TResult>(string id, bool removeAfterFetch = false)
         {
@@ -322,7 +322,7 @@ namespace PowerThreadPool
         /// Fetch the work result.
         /// </summary>
         /// <param name="id">work id</param>
-        /// <param name="removeAfterFetch">remove the result from storage</param>.
+        /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Work result</returns>
         public async Task<ExecuteResult<object>> FetchAsync(string id, bool removeAfterFetch = false)
         {
@@ -336,7 +336,7 @@ namespace PowerThreadPool
         /// Fetch the work result.
         /// </summary>
         /// <param name="idList">work id list</param>
-        /// <param name="removeAfterFetch">remove the result from storage</param>.
+        /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
         public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(IEnumerable<string> idList, bool removeAfterFetch = false)
         {
@@ -350,7 +350,7 @@ namespace PowerThreadPool
         /// Fetch the work result.
         /// </summary>
         /// <param name="idList">work id list</param>
-        /// <param name="removeAfterFetch">remove the result from storage</param>.
+        /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
         public async Task<List<ExecuteResult<object>>> FetchAsync(IEnumerable<string> idList, bool removeAfterFetch = false)
         {
