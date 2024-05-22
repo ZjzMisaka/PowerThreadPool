@@ -2089,5 +2089,50 @@ namespace UnitTest
             Assert.Equal(powerPool.AverageElapsedTime, powerPool.AverageQueueTime + powerPool.AverageExecuteTime);
             Assert.Equal(powerPool.TotalElapsedTime, powerPool.TotalQueueTime + powerPool.TotalExecuteTime);
         }
+
+        [Fact]
+        public void TestClearFailedWorkRecord()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
+            };
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                throw new Exception();
+            });
+
+            powerPool.Wait();
+            Assert.Equal(1, powerPool.FailedWorkCount);
+
+            powerPool.ClearFailedWorkRecord();
+            Assert.Equal(0, powerPool.FailedWorkCount);
+        }
+
+        [Fact]
+        public void TestClearResultStorage()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
+            };
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                return "0";
+            });
+
+            ExecuteResult<string> res = powerPool.Fetch<string>(id0);
+            Assert.Equal("0", res.Result);
+
+            powerPool.ClearResultStorage();
+            res = powerPool.Fetch<string>(id0);
+            Assert.Null(res.Result);
+        }
     }
 }

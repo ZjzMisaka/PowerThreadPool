@@ -431,14 +431,16 @@ namespace PowerThreadPool
                 _endCount = 0;
                 _queueTime = 0;
                 _executeTime = 0;
-                if (PowerPoolOption.ClearFailedWorkRecordWhenPoolStart)
-                {
-                    _failedWorkSet = new ConcurrentSet<string>();
-                }
+
                 if (PowerPoolOption.ClearResultStorageWhenPoolStart)
                 {
                     _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
                 }
+                if (PowerPoolOption.ClearFailedWorkRecordWhenPoolStart)
+                {
+                    _failedWorkSet = new ConcurrentSet<string>();
+                }
+                
                 _waitAllSignal.Reset();
 
                 if (_powerPoolOption.TimeoutOption != null)
@@ -555,6 +557,22 @@ namespace PowerThreadPool
                 return groupMemberList;
             }
             return new ConcurrentSet<string>();
+        }
+
+        /// <summary>
+        /// Clear result storage
+        /// </summary>
+        public void ClearResultStorage()
+        {
+            _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
+        }
+
+        /// <summary>
+        /// Clear failed work record
+        /// </summary>
+        public void ClearFailedWorkRecord()
+        {
+            _failedWorkSet = new ConcurrentSet<string>();
         }
 
         /// <summary>
