@@ -1612,10 +1612,13 @@ namespace UnitTest
                     Thread.Sleep(10);
                 }
             });
+
             Task<bool> task = powerPool.WaitAsync(id);
+            Thread.Sleep(50);
 
             powerPool.Start();
-            Thread.Sleep(100);
+            Thread.Sleep(50);
+
             powerPool.Stop(true);
 
             bool res = await task;
