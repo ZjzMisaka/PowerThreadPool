@@ -2127,7 +2127,7 @@ namespace UnitTest
                 return "0";
             }, new WorkOption()
             {
-                StorageResult = true
+                ShouldStoreResult = true
             });
 
             ExecuteResult<string> res = powerPool.Fetch<string>(id0);
@@ -2153,14 +2153,14 @@ namespace UnitTest
                 return "0";
             }, new WorkOption() 
             {
-                StorageResult = true
+                ShouldStoreResult = true
             });
             string id1 = powerPool.QueueWorkItem(() =>
             {
                 return "1";
             }, new WorkOption()
             {
-                StorageResult = true
+                ShouldStoreResult = true
             });
 
             ExecuteResult<string> res0 = powerPool.Fetch<string>(id0);
@@ -2190,14 +2190,14 @@ namespace UnitTest
                 return "0";
             }, new WorkOption()
             {
-                StorageResult = true,
+                ShouldStoreResult = true,
             });
             string id1 = powerPool.QueueWorkItem(() =>
             {
                 return "1";
             }, new WorkOption()
             {
-                StorageResult = true,
+                ShouldStoreResult = true,
             });
 
             ExecuteResult<string> res0 = powerPool.Fetch<string>(id0);

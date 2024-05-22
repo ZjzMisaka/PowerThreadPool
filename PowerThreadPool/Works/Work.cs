@@ -204,7 +204,7 @@ namespace PowerThreadPool.Works
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
             executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, ExecuteCount);
             ExecuteResult = executeResult;
-            if (_workOption.StorageResult)
+            if (_workOption.ShouldStoreResult)
             {
                 powerPool._resultDic[ID] = ExecuteResult;
             }

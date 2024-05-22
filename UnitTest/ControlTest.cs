@@ -1677,7 +1677,7 @@ namespace UnitTest
                 return true;
             }, new WorkOption()
             {
-                StorageResult = true
+                ShouldStoreResult = true
             });
 
             powerPool.Wait();
@@ -1697,7 +1697,7 @@ namespace UnitTest
                 return "1";
             }, new WorkOption()
             {
-                StorageResult = true
+                ShouldStoreResult = true
             });
 
             powerPool.Wait();
@@ -1706,7 +1706,7 @@ namespace UnitTest
             {
             }, new WorkOption()
             {
-                StorageResult = true
+                ShouldStoreResult = true
             });
 
             ExecuteResult<string> res = powerPool.Fetch<string>(id);
@@ -1724,7 +1724,7 @@ namespace UnitTest
                 return "1";
             }, new WorkOption()
             {
-                StorageResult = true
+                ShouldStoreResult = true
             });
 
             powerPool.Wait();
@@ -1819,7 +1819,7 @@ namespace UnitTest
                 return "0";
             }, new WorkOption()
             {
-                StorageResult = true
+                ShouldStoreResult = true
             });
             string id1 = powerPool.QueueWorkItem(() =>
             {
@@ -1827,7 +1827,7 @@ namespace UnitTest
                 return "1";
             }, new WorkOption()
             {
-                StorageResult = true
+                ShouldStoreResult = true
             });
 
             powerPool.Wait();
@@ -1956,7 +1956,7 @@ namespace UnitTest
                 return "0";
             }, new WorkOption()
             {
-                StorageResult = true
+                ShouldStoreResult = true
             });
             string id1 = powerPool.QueueWorkItem(() =>
             {
@@ -1964,7 +1964,7 @@ namespace UnitTest
                 return "1";
             }, new WorkOption()
             {
-                StorageResult = true
+                ShouldStoreResult = true
             });
 
             powerPool.Wait(id0);
