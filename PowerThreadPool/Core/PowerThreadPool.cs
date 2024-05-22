@@ -568,6 +568,27 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Clear result storage
+        /// </summary>
+        /// <param name="workID">work ID</param>
+        public void ClearResultStorage(string workID)
+        {
+            _resultDic.TryRemove(workID, out _);
+        }
+
+        /// <summary>
+        /// Clear result storage
+        /// </summary>
+        /// <param name="workID">work ID list</param>
+        public void ClearResultStorage(IEnumerable<string> workIDList)
+        {
+            foreach (string workID in workIDList)
+            {
+                _resultDic.TryRemove(workID, out _);
+            }
+        }
+
+        /// <summary>
         /// Clear failed work record
         /// </summary>
         public void ClearFailedWorkRecord()

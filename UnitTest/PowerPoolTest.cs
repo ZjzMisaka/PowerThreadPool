@@ -2125,6 +2125,9 @@ namespace UnitTest
             string id0 = powerPool.QueueWorkItem(() =>
             {
                 return "0";
+            }, new WorkOption()
+            {
+                StorageResult = true
             });
 
             ExecuteResult<string> res = powerPool.Fetch<string>(id0);
@@ -2133,6 +2136,80 @@ namespace UnitTest
             powerPool.ClearResultStorage();
             res = powerPool.Fetch<string>(id0);
             Assert.Null(res.Result);
+        }
+
+        [Fact]
+        public void TestClearResultStorageByID()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
+            };
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                return "0";
+            }, new WorkOption() 
+            {
+                StorageResult = true
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                return "1";
+            }, new WorkOption()
+            {
+                StorageResult = true
+            });
+
+            ExecuteResult<string> res0 = powerPool.Fetch<string>(id0);
+            Assert.Equal("0", res0.Result);
+            ExecuteResult<string> res1 = powerPool.Fetch<string>(id1);
+            Assert.Equal("1", res1.Result);
+
+            powerPool.ClearResultStorage(id0);
+            res0 = powerPool.Fetch<string>(id0);
+            res1 = powerPool.Fetch<string>(id1);
+            Assert.Null(res0.Result);
+            Assert.Equal("1", res1.Result);
+        }
+
+        [Fact]
+        public void TestClearResultStorageByIDList()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
+            };
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                return "0";
+            }, new WorkOption()
+            {
+                StorageResult = true,
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                return "1";
+            }, new WorkOption()
+            {
+                StorageResult = true,
+            });
+
+            ExecuteResult<string> res0 = powerPool.Fetch<string>(id0);
+            Assert.Equal("0", res0.Result);
+            ExecuteResult<string> res1 = powerPool.Fetch<string>(id1);
+            Assert.Equal("1", res1.Result);
+
+            powerPool.ClearResultStorage(new List<string> { id0 });
+            res0 = powerPool.Fetch<string>(id0);
+            res1 = powerPool.Fetch<string>(id1);
+            Assert.Null(res0.Result);
+            Assert.Equal("1", res1.Result);
         }
     }
 }
