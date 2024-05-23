@@ -20,10 +20,19 @@ namespace PowerThreadPool.EventArguments
 
     public class ErrorOccurredEventArgs : WorkEventArgsBase
     {
+        /// <summary>
+        /// The uncaught exception that occurred.
+        /// </summary>
         public Exception Exception { get; internal set; }
 
+        /// <summary>
+        /// The location where the error occurred.
+        /// </summary>
         public ErrorFrom ErrorFrom { get; internal set; }
 
+        /// <summary>
+        /// The result of the work's execution.
+        /// </summary>
         public ExecuteResultBase ExecuteResult { get; internal set; }
 
         public ErrorOccurredEventArgs(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult)

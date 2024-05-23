@@ -47,7 +47,8 @@ namespace PowerThreadPool.Options
         public bool IsBackground { get; set; } = true;
 
         /// <summary>
-        /// A set of works that this work depends on. This work will not start until all dependent works have completed execution.
+        /// A set of works that this work depends on.
+        /// This work will not start until all dependent works have completed execution.
         /// </summary>
         public ConcurrentSet<string> Dependents { get; set; } = null;
 

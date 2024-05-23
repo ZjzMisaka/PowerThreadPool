@@ -440,7 +440,7 @@ namespace PowerThreadPool
                 {
                     _failedWorkSet = new ConcurrentSet<string>();
                 }
-                
+
                 _waitAllSignal.Reset();
 
                 if (_powerPoolOption.TimeoutOption != null)
