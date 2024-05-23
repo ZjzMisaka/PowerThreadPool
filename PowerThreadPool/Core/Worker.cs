@@ -80,7 +80,14 @@ namespace PowerThreadPool
                 {
                     while (true)
                     {
-                        _runSignal.WaitOne();
+                        try
+                        {
+                            _runSignal.WaitOne();
+                        }
+                        finally
+                        {
+                            // Do nothing here even if an exception is caught because the worker will be killed soon. 
+                        }
 
                         if (_killFlag)
                         {
