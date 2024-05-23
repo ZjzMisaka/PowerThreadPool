@@ -24,32 +24,31 @@ namespace PowerThreadPool.Collections
             }
         }
 
-        public bool Add(T item)
-        {
-            return _dictionary.TryAdd(item, s_dummyValue);
-        }
+        /// <summary>
+        /// Adds an item.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public bool Add(T item) => _dictionary.TryAdd(item, s_dummyValue);
 
-        public bool Remove(T item)
-        {
-            return _dictionary.TryRemove(item, out _);
-        }
+        /// <summary>
+        /// Removes an item.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public bool Remove(T item) => _dictionary.TryRemove(item, out _);
 
-        public int Count
-        {
-            get
-            {
-                return _dictionary.Count;
-            }
-        }
+        /// <summary>
+        /// Gets the count of items.
+        /// </summary>
+        public int Count => _dictionary.Count;
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            return _dictionary.Keys.GetEnumerator();
-        }
+        /// <summary>
+        /// Returns an enumerator that iterates through the items.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator<T> GetEnumerator() => _dictionary.Keys.GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }
