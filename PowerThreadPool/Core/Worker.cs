@@ -231,10 +231,7 @@ namespace PowerThreadPool
                 executeResult = Work.SetExecuteResult(_powerPool, null, ex, Status.Failed);
                 _powerPool.OnWorkErrorOccurred(ex, EventArguments.ErrorFrom.WorkLogic, executeResult);
             }
-            SpinWait.SpinUntil(() =>
-            {
-                return WorkHeld == WorkHeldFlags.NotHeld;
-            });
+            SpinWait.SpinUntil(() => WorkHeld == WorkHeldFlags.NotHeld);
             Work.Worker = null;
             executeResult.ID = Work.ID;
 
@@ -432,10 +429,7 @@ namespace PowerThreadPool
 
         private bool TurnToIdle(ref string waitingWorkID, ref WorkBase work)
         {
-            SpinWait.SpinUntil(() =>
-            {
-                return GettedLock.TrySet(WorkerGettedFlags.ToBeDisabled, WorkerGettedFlags.Unlocked);
-            });
+            SpinWait.SpinUntil(() => GettedLock.TrySet(WorkerGettedFlags.ToBeDisabled, WorkerGettedFlags.Unlocked));
 
             waitingWorkID = _waitingWorkIDPriorityCollection.Get();
             if (waitingWorkID != null)

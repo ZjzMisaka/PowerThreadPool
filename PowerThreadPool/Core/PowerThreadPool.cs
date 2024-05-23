@@ -328,11 +328,7 @@ namespace PowerThreadPool
             CheckPoolStart();
 
             Worker worker = null;
-            SpinWait.SpinUntil(() =>
-            {
-                worker = GetWorker(work.LongRunning);
-                return worker != null;
-            });
+            SpinWait.SpinUntil(() => (worker = GetWorker(work.LongRunning)) != null);
             work.QueueDateTime = DateTime.UtcNow;
             worker.SetWork(work, false);
         }
@@ -348,10 +344,7 @@ namespace PowerThreadPool
             {
                 if (_idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    SpinWait.SpinUntil(() =>
-                    {
-                        return worker.GettedLock.TrySet(WorkerGettedFlags.Locked, WorkerGettedFlags.Unlocked);
-                    });
+                    SpinWait.SpinUntil(() => worker.GettedLock.TrySet(WorkerGettedFlags.Locked, WorkerGettedFlags.Unlocked));
                     Interlocked.Decrement(ref _idleWorkerCount);
                     if (longRunning)
                     {
