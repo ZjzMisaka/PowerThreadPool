@@ -17,6 +17,7 @@ namespace PowerThreadPool
     internal class Worker : IDisposable
     {
         internal bool _disposed = false;
+        internal bool _workerLoopEnded = false;
 
         internal Thread _thread;
 
@@ -84,6 +85,7 @@ namespace PowerThreadPool
 
                         if (_killFlag)
                         {
+                            _workerLoopEnded = true;
                             return;
                         }
 
@@ -128,10 +130,6 @@ namespace PowerThreadPool
 
                         AssignWork();
                     }
-                }
-                catch (ObjectDisposedException)
-                {
-                    // Do nothing here because the worker will be killed soon. 
                 }
                 catch (ThreadInterruptedException ex)
                 {
@@ -190,6 +188,8 @@ namespace PowerThreadPool
                     {
                         powerPool.CheckPoolIdle();
                     }
+
+                    _workerLoopEnded = true;
                 }
             });
             _thread.Start();
@@ -624,6 +624,7 @@ namespace PowerThreadPool
                 {
                     RemoveSelf();
 
+                    SpinWait.SpinUntil(() => _workerLoopEnded);
                     _runSignal.Dispose();
                 }
 
