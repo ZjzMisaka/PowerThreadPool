@@ -80,14 +80,7 @@ namespace PowerThreadPool
                 {
                     while (true)
                     {
-                        try
-                        {
-                            _runSignal.WaitOne();
-                        }
-                        finally
-                        {
-                            // Do nothing here even if an exception is caught because the worker will be killed soon. 
-                        }
+                        _runSignal.WaitOne();
 
                         if (_killFlag)
                         {
@@ -135,6 +128,10 @@ namespace PowerThreadPool
 
                         AssignWork();
                     }
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Do nothing here because the worker will be killed soon. 
                 }
                 catch (ThreadInterruptedException ex)
                 {
