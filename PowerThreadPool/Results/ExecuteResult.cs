@@ -5,11 +5,10 @@ namespace PowerThreadPool.Results
 {
     public class ExecuteResult<TResult> : ExecuteResultBase
     {
-        private TResult _result;
         /// <summary>
         /// Result of the work.
         /// </summary>
-        public TResult Result { get => _result; internal set => _result = value; }
+        public TResult Result { get; internal set; }
 
         internal ExecuteResult()
         {
@@ -20,7 +19,7 @@ namespace PowerThreadPool.Results
         {
             if (result != null)
             {
-                _result = (TResult)result;
+                Result = (TResult)result;
             }
             Exception = exception;
             Status = status;
@@ -40,7 +39,7 @@ namespace PowerThreadPool.Results
 
         internal override object GetResult()
         {
-            return _result;
+            return Result;
         }
 
         internal override ExecuteResult<object> ToObjResult()
