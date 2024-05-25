@@ -2091,6 +2091,19 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestGetTimesBeforePoolStart()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true, MaxThreads = 2 });
+
+            Assert.Equal(0, powerPool.TotalQueueTime);
+            Assert.Equal(0, powerPool.TotalExecuteTime);
+            Assert.Equal(0, powerPool.AverageQueueTime);
+            Assert.Equal(0, powerPool.AverageExecuteTime);
+            Assert.Equal(0, powerPool.AverageElapsedTime);
+            Assert.Equal(0, powerPool.TotalElapsedTime);
+        }
+
+        [Fact]
         public void TestClearFailedWorkRecord()
         {
             PowerPool powerPool = new PowerPool();

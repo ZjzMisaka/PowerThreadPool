@@ -205,6 +205,10 @@ namespace PowerThreadPool
         {
             get
             {
+                if (_startCount == 0)
+                {
+                    return 0;
+                }
                 return _queueTime / _startCount;
             }
         }
@@ -217,6 +221,10 @@ namespace PowerThreadPool
         {
             get
             {
+                if (_endCount == 0)
+                {
+                    return 0;
+                }
                 return _executeTime / _endCount;
             }
         }
