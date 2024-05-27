@@ -286,7 +286,6 @@ namespace PowerThreadPool
                     ConcurrentSet<string> dependents = work.Dependents;
                     if (dependents == null || dependents.Count == 0)
                     {
-                        CheckPoolStart();
                         SetWork(work);
                     }
                 }

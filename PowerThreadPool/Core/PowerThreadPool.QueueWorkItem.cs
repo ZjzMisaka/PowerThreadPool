@@ -537,7 +537,6 @@ namespace PowerThreadPool
             {
                 if (workOption.Dependents == null || workOption.Dependents.Count == 0)
                 {
-                    CheckPoolStart();
                     SetWork(work);
                 }
             }
