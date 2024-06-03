@@ -25,12 +25,12 @@ namespace PowerThreadPool
 
         internal ConcurrentSet<string> _failedWorkSet = new ConcurrentSet<string>();
 
-        internal ConcurrentDictionary<string, Worker> _idleWorkerDic = new ConcurrentDictionary<string, Worker>();
-        internal ConcurrentQueue<string> _idleWorkerQueue = new ConcurrentQueue<string>();
+        internal ConcurrentDictionary<Guid, Worker> _idleWorkerDic = new ConcurrentDictionary<Guid, Worker>();
+        internal ConcurrentQueue<Guid> _idleWorkerQueue = new ConcurrentQueue<Guid>();
 
         internal ConcurrentDictionary<string, WorkBase> _settedWorkDic = new ConcurrentDictionary<string, WorkBase>();
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
-        internal ConcurrentDictionary<string, Worker> _aliveWorkerDic = new ConcurrentDictionary<string, Worker>();
+        internal ConcurrentDictionary<Guid, Worker> _aliveWorkerDic = new ConcurrentDictionary<Guid, Worker>();
         internal IEnumerable<Worker> _aliveWorkerList = new List<Worker>();
 
         internal ConcurrentQueue<string> _suspendedWorkQueue = new ConcurrentQueue<string>();
@@ -347,7 +347,7 @@ namespace PowerThreadPool
         private Worker GetWorker(bool longRunning)
         {
             Worker worker = null;
-            while (_idleWorkerQueue.TryDequeue(out string firstWorkerID))
+            while (_idleWorkerQueue.TryDequeue(out Guid firstWorkerID))
             {
                 if (_idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
