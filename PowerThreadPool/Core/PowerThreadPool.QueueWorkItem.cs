@@ -511,7 +511,7 @@ namespace PowerThreadPool
             }
             else
             {
-                workID = IDGenerator.NextId();
+                workID = Guid.NewGuid().ToString();
             }
 
             if (workOption.TimeoutOption == null && _powerPoolOption.DefaultWorkTimeoutOption != null)
