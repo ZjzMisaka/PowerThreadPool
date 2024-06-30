@@ -2164,7 +2164,7 @@ namespace UnitTest
             string id0 = powerPool.QueueWorkItem(() =>
             {
                 return "0";
-            }, new WorkOption() 
+            }, new WorkOption()
             {
                 ShouldStoreResult = true
             });

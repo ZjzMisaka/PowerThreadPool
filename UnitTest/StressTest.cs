@@ -78,7 +78,7 @@ namespace UnitTest
             run = true;
             while (run)
             {
-                if (GetNowSs() -start >= 300000)
+                if (GetNowSs() - start >= 300000)
                 {
                     break;
                 }
@@ -218,7 +218,7 @@ namespace UnitTest
 
             string errLog = "";
             errLog = "doneCount: " + doneCount + "/" + 100 * 1000000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
-            if (100 * 1000000 != doneCount || 0 != powerPool.RunningWorkerCount || 0!= powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
+            if (100 * 1000000 != doneCount || 0 != powerPool.RunningWorkerCount || 0 != powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
             {
                 Assert.Fail(errLog);
             }

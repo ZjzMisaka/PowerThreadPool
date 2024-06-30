@@ -47,15 +47,15 @@ namespace PowerThreadPoolTest
                 doneCount = 0;
                 for (int i = 0; i < runCount; ++i)
                 {
-                    int r =random.Next(0, 101);
+                    int r = random.Next(0, 101);
                     if (r == 100)
                     {
                         powerPool.QueueWorkItem(() => { throw new Exception(); });
                     }
-                    else if(r >= 95 && r <= 99)
+                    else if (r >= 95 && r <= 99)
                     {
-                        powerPool.QueueWorkItem(() => 
-                        { 
+                        powerPool.QueueWorkItem(() =>
+                        {
                             Sleep(10000);
                             int r1 = random.Next(0, 101);
                             if (r1 >= 100 && r1 <= 100)
@@ -66,8 +66,8 @@ namespace PowerThreadPoolTest
                     }
                     else if (r >= 94 && r <= 94)
                     {
-                        powerPool.QueueWorkItem(() => 
-                        { 
+                        powerPool.QueueWorkItem(() =>
+                        {
                             Sleep(30000);
                             int r1 = random.Next(0, 101);
                             if (r1 >= 100 && r1 <= 100)
@@ -78,8 +78,8 @@ namespace PowerThreadPoolTest
                     }
                     else
                     {
-                        powerPool.QueueWorkItem(() => 
-                        { 
+                        powerPool.QueueWorkItem(() =>
+                        {
                             Sleep(random.Next(500, 1000));
                             int r1 = random.Next(0, 101);
                             if (r1 >= 100 && r1 <= 100)
