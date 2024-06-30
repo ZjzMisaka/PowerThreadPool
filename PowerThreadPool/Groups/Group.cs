@@ -87,7 +87,6 @@ namespace PowerThreadPool.Groups
         }
 #endif
 
-
         /// <summary>
         /// Fetch the work result.
         /// </summary>
@@ -110,7 +109,6 @@ namespace PowerThreadPool.Groups
             });
         }
 #endif
-
 
         /// <summary>
         /// Stop all the work belonging to the group.
