@@ -44,6 +44,14 @@ namespace PowerThreadPool.Collections
         public int Count => _dictionary.Count;
 
         /// <summary>
+        /// Clear all items.
+        /// </summary>
+        public void Clear()
+        {
+            _dictionary.Clear();
+        }
+
+        /// <summary>
         /// Returns an enumerator that iterates through the items.
         /// </summary>
         /// <returns></returns>

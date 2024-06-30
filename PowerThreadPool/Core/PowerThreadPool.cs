@@ -291,7 +291,11 @@ namespace PowerThreadPool
                 }
             }
             _suspendedWork.Clear();
+#if NET5_0_OR_GREATER
+            _suspendedWorkQueue.Clear();
+#else
             _suspendedWorkQueue = new ConcurrentQueue<string>();
+#endif
         }
 
         /// <summary>
@@ -434,11 +438,11 @@ namespace PowerThreadPool
 
                 if (PowerPoolOption.ClearResultStorageWhenPoolStart)
                 {
-                    _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
+                    _resultDic.Clear();
                 }
                 if (PowerPoolOption.ClearFailedWorkRecordWhenPoolStart)
                 {
-                    _failedWorkSet = new ConcurrentSet<string>();
+                    _failedWorkSet.Clear();
                 }
 
                 _waitAllSignal.Reset();
@@ -564,7 +568,7 @@ namespace PowerThreadPool
         /// </summary>
         public void ClearResultStorage()
         {
-            _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
+            _resultDic.Clear();
         }
 
         /// <summary>
@@ -593,7 +597,7 @@ namespace PowerThreadPool
         /// </summary>
         public void ClearFailedWorkRecord()
         {
-            _failedWorkSet = new ConcurrentSet<string>();
+            _failedWorkSet.Clear();
         }
 
         /// <summary>
