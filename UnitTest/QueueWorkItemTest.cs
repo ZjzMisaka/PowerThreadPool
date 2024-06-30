@@ -30,7 +30,7 @@ namespace UnitTest
         {
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem((object[] param) => { p = param[0]; }, new[] { "1" } , (res) => { });
+            powerPool.QueueWorkItem((object[] param) => { p = param[0]; }, new[] { "1" }, (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -280,7 +280,7 @@ namespace UnitTest
         {
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<int>((param) => { p = param[0]; return 0; }, new[] { "1" }, new WorkOption<int>()); 
+            powerPool.QueueWorkItem<int>((param) => { p = param[0]; return 0; }, new[] { "1" }, new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }

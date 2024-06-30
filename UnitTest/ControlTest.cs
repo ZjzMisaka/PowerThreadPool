@@ -1,7 +1,6 @@
 ﻿using PowerThreadPool;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
-using System.Diagnostics;
 
 namespace UnitTest
 {
@@ -18,13 +17,13 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
             object lockObj = new object();
-            powerPool.QueueWorkItem(() => 
+            powerPool.QueueWorkItem(() =>
             {
                 long start = GetNowSs();
                 Thread.Sleep(1000);
                 powerPool.PauseIfRequested();
                 return GetNowSs() - start;
-            }, (res) => 
+            }, (res) =>
             {
                 lock (lockObj)
                 {
@@ -460,7 +459,7 @@ namespace UnitTest
                 res2 = res.Exception;
             });
             long start = GetNowSs();
-            
+
             powerPool.Stop(true);
             powerPool.Wait();
             long end = GetNowSs() - start;
@@ -474,7 +473,7 @@ namespace UnitTest
         public void TestForceStopBeforeRunning()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
-            
+
             int doneCount = 0;
             int cancelCount = 0;
 
@@ -957,7 +956,8 @@ namespace UnitTest
                 {
                     resID = res.ID;
                 }
-                , Group = "A"
+                ,
+                Group = "A"
             });
 
             await powerPool.WaitAsync(powerPool.GetGroupMemberList("A"));
@@ -1278,7 +1278,7 @@ namespace UnitTest
                     {
                         logList.Add(res.Result);
                     }
-                }, 
+                },
                 Group = "A"
             });
 
@@ -2071,9 +2071,9 @@ namespace UnitTest
             {
                 Thread.Sleep(1000);
                 return true;
-            }, new WorkOption() 
-            { 
-                Group = "A" 
+            }, new WorkOption()
+            {
+                Group = "A"
             });
             string id1 = powerPool.QueueWorkItem(() =>
             {
@@ -2396,8 +2396,8 @@ namespace UnitTest
                     powerPool.StopIfRequested();
                     Thread.Sleep(100);
                 }
-            }, new WorkOption() 
-            { 
+            }, new WorkOption()
+            {
                 Dependents = new PowerThreadPool.Collections.ConcurrentSet<string>() { id }
             });
 
@@ -2427,7 +2427,7 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }, new WorkOption<object>() 
+            }, new WorkOption<object>()
             {
                 Group = "AAA"
             });
