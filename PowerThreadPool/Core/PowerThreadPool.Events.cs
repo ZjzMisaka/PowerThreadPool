@@ -159,6 +159,7 @@ namespace PowerThreadPool
         /// <param name="errorFrom"></param>
         /// <param name="executeResult"></param>
         internal void SafeInvoke<TEventArgs>(EventHandler<TEventArgs> eventHandler, TEventArgs e, ErrorFrom errorFrom, ExecuteResultBase executeResult)
+            where TEventArgs : EventArgs
         {
             try
             {
