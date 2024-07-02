@@ -538,36 +538,39 @@ namespace UnitTest
             };
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(400);
                 logList.Add("Work0 Priority0 END");
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1100);
+                Thread.Sleep(410);
                 logList.Add("Work1 Priority0 END");
             }, new WorkOption()
             {
             });
-            Thread.Sleep(200);
+            while (powerPool.RunningWorkerCount < 2)
+            {
+                Thread.Sleep(1);
+            }
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(100);
+                Thread.Sleep(400);
                 logList.Add("Work2 Priority0 END");
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(200);
+                Thread.Sleep(410);
                 logList.Add("Work3 Priority0 END");
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(100);
+                Thread.Sleep(400);
                 logList.Add("Work4 Priority1 END");
             }, new WorkOption()
             {
@@ -575,7 +578,7 @@ namespace UnitTest
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(200);
+                Thread.Sleep(410);
                 logList.Add("Work5 Priority1 END");
             }, new WorkOption()
             {
@@ -584,14 +587,14 @@ namespace UnitTest
             powerPool.EnablePoolIdleCheck = true;
             powerPool.Wait();
 
-            //Assert.Collection<string>(logList,
-            //    item => Assert.Equal("Work0 Priority0 END", item),
-            //    item => Assert.Equal("Work1 Priority0 END", item),
-            //    item => Assert.Equal("Work4 Priority1 END", item),
-            //    item => Assert.Equal("Work5 Priority1 END", item),
-            //    item => Assert.Equal("Work2 Priority0 END", item),
-            //    item => Assert.Equal("Work3 Priority0 END", item)
-            //    );
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("Work0 Priority0 END", item),
+                item => Assert.Equal("Work1 Priority0 END", item),
+                item => Assert.Equal("Work4 Priority1 END", item),
+                item => Assert.Equal("Work5 Priority1 END", item),
+                item => Assert.Equal("Work2 Priority0 END", item),
+                item => Assert.Equal("Work3 Priority0 END", item)
+                );
         }
 
         [Fact]
