@@ -74,10 +74,7 @@ namespace PowerThreadPool
         /// </summary>
         public bool EnablePoolIdleCheck
         {
-            get
-            {
-                return _enablePoolIdleCheck;
-            }
+            get => _enablePoolIdleCheck;
             set
             {
                 _enablePoolIdleCheck = value;
@@ -89,22 +86,10 @@ namespace PowerThreadPool
         }
 
         internal int _idleWorkerCount = 0;
-        public int IdleWorkerCount
-        {
-            get
-            {
-                return _idleWorkerCount;
-            }
-        }
+        public int IdleWorkerCount => _idleWorkerCount;
 
         internal int _waitingWorkCount = 0;
-        public int WaitingWorkCount
-        {
-            get
-            {
-                return _waitingWorkCount;
-            }
-        }
+        public int WaitingWorkCount => _waitingWorkCount;
 
         public IEnumerable<string> WaitingWorkList
         {
@@ -126,76 +111,34 @@ namespace PowerThreadPool
         /// Failed work count
         /// Will be reset to zero when the thread pool starts again
         /// </summary>
-        public int FailedWorkCount
-        {
-            get
-            {
-                return _failedWorkSet.Count;
-            }
-        }
+        public int FailedWorkCount => _failedWorkSet.Count;
 
         /// <summary>
         /// ID list of failed works
         /// Will be cleared when the thread pool starts again
         /// </summary>
-        public IEnumerable<string> FailedWorkList
-        {
-            get
-            {
-                return _failedWorkSet;
-            }
-        }
+        public IEnumerable<string> FailedWorkList => _failedWorkSet;
 
         internal int _runningWorkerCount = 0;
-        public int RunningWorkerCount
-        {
-            get
-            {
-                return _runningWorkerCount;
-            }
-        }
+        public int RunningWorkerCount => _runningWorkerCount;
 
         internal int _aliveWorkerCount = 0;
-        public int AliveWorkerCount
-        {
-            get
-            {
-                return _aliveWorkerCount;
-            }
-        }
+        public int AliveWorkerCount => _aliveWorkerCount;
 
         internal int _longRunningWorkerCount = 0;
-        public int LongRunningWorkerCount
-        {
-            get
-            {
-                return _longRunningWorkerCount;
-            }
-        }
+        public int LongRunningWorkerCount => _longRunningWorkerCount;
 
         /// <summary>
         /// The total time spent in the queue (ms).
         /// Will be reset when the thread pool starts again.
         /// </summary>
-        public long TotalQueueTime
-        {
-            get
-            {
-                return _queueTime;
-            }
-        }
+        public long TotalQueueTime => _queueTime;
 
         /// <summary>
         /// The total time taken for execution (ms).
         /// Will be reset when the thread pool starts again.
         /// </summary>
-        public long TotalExecuteTime
-        {
-            get
-            {
-                return _executeTime;
-            }
-        }
+        public long TotalExecuteTime => _executeTime;
 
         /// <summary>
         /// The average time spent in the queue (ms).
@@ -233,25 +176,13 @@ namespace PowerThreadPool
         /// The average elapsed time from start queue to finish (ms).
         /// Will be reset when the thread pool starts again.
         /// </summary>
-        public long AverageElapsedTime
-        {
-            get
-            {
-                return AverageQueueTime + AverageExecuteTime;
-            }
-        }
+        public long AverageElapsedTime => AverageQueueTime + AverageExecuteTime;
 
         /// <summary>
         /// The total elapsed time from start queue to finish (ms).
         /// Will be reset when the thread pool starts again.
         /// </summary>
-        public long TotalElapsedTime
-        {
-            get
-            {
-                return TotalQueueTime + TotalExecuteTime;
-            }
-        }
+        public long TotalElapsedTime => TotalQueueTime + TotalExecuteTime;
 
         public PowerPool()
         {
@@ -317,7 +248,7 @@ namespace PowerThreadPool
                 minThreads = _powerPoolOption.DestroyThreadOption.MinThreads;
             }
 
-            while (_aliveWorkerCount < minThreads)
+            while (AliveWorkerCount < minThreads)
             {
                 Worker worker = new Worker(this);
                 if (_aliveWorkerDic.TryAdd(worker.ID, worker))
@@ -365,11 +296,11 @@ namespace PowerThreadPool
                 }
             }
 
-            if (_aliveWorkerCount < _powerPoolOption.MaxThreads + _longRunningWorkerCount)
+            if (AliveWorkerCount < _powerPoolOption.MaxThreads + LongRunningWorkerCount)
             {
                 if (_createWorkerLock.TrySet(WorkerCreationFlags.Locked, WorkerCreationFlags.Unlocked))
                 {
-                    if (_aliveWorkerCount < _powerPoolOption.MaxThreads + _longRunningWorkerCount)
+                    if (AliveWorkerCount < _powerPoolOption.MaxThreads + LongRunningWorkerCount)
                     {
                         worker = new Worker(this);
 
@@ -474,15 +405,15 @@ namespace PowerThreadPool
                 return;
             }
 
-            if (!_enablePoolIdleCheck)
+            if (!EnablePoolIdleCheck)
             {
                 return;
             }
 
             InitWorkerQueue();
 
-            if (_runningWorkerCount == 0 &&
-                _waitingWorkCount == 0 &&
+            if (RunningWorkerCount == 0 &&
+                WaitingWorkCount == 0 &&
                 _poolRunning.TrySet(PoolRunningFlags.IdleChecked, PoolRunningFlags.Running)
                 )
             {
@@ -622,7 +553,7 @@ namespace PowerThreadPool
                     _disposing = true;
                     Stop();
                     Stop(true);
-                    while (_aliveWorkerCount > 0 || _idleWorkerCount > 0)
+                    while (AliveWorkerCount > 0 || IdleWorkerCount > 0)
                     {
                         foreach (Worker worker in _aliveWorkerList)
                         {

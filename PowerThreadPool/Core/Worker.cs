@@ -51,13 +51,7 @@ namespace PowerThreadPool
 
         private int _waitingWorkCount = 0;
 
-        internal int WaitingWorkCount
-        {
-            get
-            {
-                return _waitingWorkCount;
-            }
-        }
+        internal int WaitingWorkCount => _waitingWorkCount;
 
         internal Worker(PowerPool powerPool)
         {
@@ -333,7 +327,7 @@ namespace PowerThreadPool
                 WorkBase work = null;
                 string waitingWorkID = _waitingWorkIDPriorityCollection.Get();
 
-                if (waitingWorkID == null && _powerPool._aliveWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
+                if (waitingWorkID == null && _powerPool.AliveWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
                 {
                     StealWorksFromOtherWorker(ref waitingWorkID, ref work);
                 }
