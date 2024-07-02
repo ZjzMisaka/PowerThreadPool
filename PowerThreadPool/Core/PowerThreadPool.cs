@@ -234,18 +234,18 @@ namespace PowerThreadPool
         /// </summary>
         private void InitWorkerQueue()
         {
-            if (_powerPoolOption.DestroyThreadOption != null)
+            if (PowerPoolOption.DestroyThreadOption != null)
             {
-                if (_powerPoolOption.DestroyThreadOption.MinThreads > _powerPoolOption.MaxThreads)
+                if (PowerPoolOption.DestroyThreadOption.MinThreads > PowerPoolOption.MaxThreads)
                 {
                     throw new ArgumentException("The minimum number of threads cannot be greater than the maximum number of threads.");
                 }
             }
 
-            int minThreads = _powerPoolOption.MaxThreads;
-            if (_powerPoolOption.DestroyThreadOption != null)
+            int minThreads = PowerPoolOption.MaxThreads;
+            if (PowerPoolOption.DestroyThreadOption != null)
             {
-                minThreads = _powerPoolOption.DestroyThreadOption.MinThreads;
+                minThreads = PowerPoolOption.DestroyThreadOption.MinThreads;
             }
 
             while (AliveWorkerCount < minThreads)
@@ -296,11 +296,11 @@ namespace PowerThreadPool
                 }
             }
 
-            if (AliveWorkerCount < _powerPoolOption.MaxThreads + LongRunningWorkerCount)
+            if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount)
             {
                 if (_createWorkerLock.TrySet(WorkerCreationFlags.Locked, WorkerCreationFlags.Unlocked))
                 {
-                    if (AliveWorkerCount < _powerPoolOption.MaxThreads + LongRunningWorkerCount)
+                    if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount)
                     {
                         worker = new Worker(this);
 
@@ -378,9 +378,9 @@ namespace PowerThreadPool
 
                 _waitAllSignal.Reset();
 
-                if (_powerPoolOption.TimeoutOption != null)
+                if (PowerPoolOption.TimeoutOption != null)
                 {
-                    _poolTimer = new System.Timers.Timer(_powerPoolOption.TimeoutOption.Duration);
+                    _poolTimer = new System.Timers.Timer(PowerPoolOption.TimeoutOption.Duration);
                     _poolTimer.AutoReset = false;
                     _poolTimer.Elapsed += (s, e) =>
                     {
@@ -388,7 +388,7 @@ namespace PowerThreadPool
                         {
                             SafeInvoke(PoolTimedOut, new EventArgs(), ErrorFrom.PoolTimedOut, null);
                         }
-                        Stop(_powerPoolOption.TimeoutOption.ForceStop);
+                        Stop(PowerPoolOption.TimeoutOption.ForceStop);
                     };
                     _poolTimer.Start();
                 }
@@ -446,7 +446,7 @@ namespace PowerThreadPool
                 _poolTimer.Enabled = false;
             }
 
-            _suspended = _powerPoolOption.StartSuspended;
+            _suspended = PowerPoolOption.StartSuspended;
 
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = new CancellationTokenSource();

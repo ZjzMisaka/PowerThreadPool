@@ -496,7 +496,7 @@ namespace PowerThreadPool
                 return null;
             }
 
-            if (_powerPoolOption == null)
+            if (PowerPoolOption == null)
             {
                 PowerPoolOption = new PowerPoolOption();
             }
@@ -514,9 +514,9 @@ namespace PowerThreadPool
                 workID = Guid.NewGuid().ToString();
             }
 
-            if (workOption.TimeoutOption == null && _powerPoolOption.DefaultWorkTimeoutOption != null)
+            if (workOption.TimeoutOption == null && PowerPoolOption.DefaultWorkTimeoutOption != null)
             {
-                workOption.TimeoutOption = _powerPoolOption.DefaultWorkTimeoutOption;
+                workOption.TimeoutOption = PowerPoolOption.DefaultWorkTimeoutOption;
             }
 
             Work<TResult> work = new Work<TResult>(this, workID, function, param, workOption);
@@ -528,7 +528,7 @@ namespace PowerThreadPool
                 _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
             }
 
-            if (_powerPoolOption.StartSuspended)
+            if (PowerPoolOption.StartSuspended)
             {
                 _suspendedWork[workID] = work;
                 _suspendedWorkQueue.Enqueue(workID);
