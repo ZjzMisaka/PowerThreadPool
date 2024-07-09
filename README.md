@@ -8,7 +8,7 @@
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/ZjzMisaka/PowerThreadPool/test.yml?style=for-the-badge)
 ![Codecov](https://img.shields.io/codecov/c/github/ZjzMisaka/PowerThreadPool?style=for-the-badge)
 
-An comprehensive and efficient lock-free thread pool with granular work control, flexible concurrency, and robust error handling, alongside an easy-to-use API for diverse work submissions.  
+A comprehensive and efficient lock-free thread pool with granular work control, flexible concurrency, and robust error handling, alongside an easy-to-use API for diverse work submissions.  
 
 ## Documentation
 Read the [Wiki](https://github.com/ZjzMisaka/PowerThreadPool/wiki) here.  
@@ -26,19 +26,19 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
     - [Wait](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#wait)
     - [Fetch](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#fetch)
     - [Cancel](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#cancel)
-- [Work Dependency](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Dependency)
 - [Thread Pool Sizing](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing)
     - [Idle Thread Scheduled Destruction](https://github.com/ZjzMisaka/PowerThreadPool/wiki/DestroyThreadOption)
     - [Thread Starvation Countermeasures (Long-running Work Support)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing#thread-starvation)
-- [Work Group](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Group)
-- [Work Priority | Thread Priority](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Priority)
-- [Work Timeout | Cumulative Work Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Timeout)
 - [Work Callback | Default Callback](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
-- [Events](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Events)
+- [Work Priority | Thread Priority](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Priority)
 - [Error Handling](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Error-Handling)
     - [Retry](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Retry)
-- [Queue Type (FIFO | LIFO)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Queue-Type)
+- [Work Timeout | Cumulative Work Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Timeout)
+- [Work Dependency](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Dependency)
+- [Work Group](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Group)
+- [Events](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Events)
 - [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Runtime-Status)
+- [Queue Type (FIFO | LIFO)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Queue-Type)
 - [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
 - [Lock-Free](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
 
