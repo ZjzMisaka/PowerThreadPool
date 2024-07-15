@@ -340,8 +340,14 @@ namespace PowerThreadPool
                             {
                                 worker.GettedLock.TrySet(WorkerGettedFlags.Unlocked, WorkerGettedFlags.Locked);
                             }
-                            min = waitingWorkCountTemp;
+                            
                             worker = aliveWorker;
+                            if (waitingWorkCountTemp == 0)
+                            {
+                                break;
+                            }
+
+                            min = waitingWorkCountTemp;
                         }
                     }
                 }
