@@ -95,7 +95,7 @@ namespace PowerThreadPool.Works
 
         internal override object Execute()
         {
-            Interlocked.Increment(ref _executeCount);
+            ++_executeCount;
             return _function(_param);
         }
 
