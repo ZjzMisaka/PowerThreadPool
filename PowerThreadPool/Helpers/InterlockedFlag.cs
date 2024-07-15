@@ -37,11 +37,14 @@ namespace PowerThreadPool.Helpers
 
         public bool TrySet(T value, T comparand, out T origValue)
         {
-            var origInnerValue = Interlocked.CompareExchange(ref _innerValue, Convert.ToInt64(value), Convert.ToInt64(comparand));
+            long valueAsLong = Convert.ToInt64(value);
+            long comparandAsLong = Convert.ToInt64(comparand);
+
+            long origInnerValue = Interlocked.CompareExchange(ref _innerValue, valueAsLong, comparandAsLong);
 
             origValue = InnerValueToT(origInnerValue);
 
-            return origInnerValue == Convert.ToInt64(comparand);
+            return origInnerValue == comparandAsLong;
         }
 
         public static bool operator ==(InterlockedFlag<T> flag1, InterlockedFlag<T> flag2)
