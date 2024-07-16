@@ -536,7 +536,7 @@ namespace PowerThreadPool
         /// <exception cref="InvalidOperationException"></exception>
         public void SetGroupRelation(string parentGroup, string childGroup)
         {
-            if (_groupRelationDic[childGroup] != null && _groupRelationDic[childGroup].Contains(parentGroup))
+            if (_groupRelationDic.ContainsKey(childGroup) && _groupRelationDic[childGroup].Contains(parentGroup))
             {
                 throw new InvalidOperationException("Circular dependency detected.");
             }
@@ -569,6 +569,14 @@ namespace PowerThreadPool
             {
                 childGroupSet.Clear();
             }
+        }
+
+        /// <summary>
+        /// Reset group relation
+        /// </summary>
+        public void ResetGroupRelation()
+        {
+            _groupRelationDic.Clear();
         }
 
         /// <summary>
