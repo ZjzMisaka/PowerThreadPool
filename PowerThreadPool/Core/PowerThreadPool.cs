@@ -536,7 +536,9 @@ namespace PowerThreadPool
         /// <exception cref="InvalidOperationException"></exception>
         public void SetGroupRelation(string parentGroup, string childGroup)
         {
-            if (_groupRelationDic.ContainsKey(childGroup) && _groupRelationDic[childGroup].Contains(parentGroup))
+            List<string> groupList = new List<string>();
+            GetChildGroupList(childGroup, groupList);
+            if (groupList.Contains(parentGroup))
             {
                 throw new InvalidOperationException($"Cannot create a cyclic group relation: '{parentGroup}' is already a subgroup of '{childGroup}'.");
             }
