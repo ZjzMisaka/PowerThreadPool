@@ -30,6 +30,7 @@ namespace PowerThreadPool
 
         internal ConcurrentDictionary<string, WorkBase> _settedWorkDic = new ConcurrentDictionary<string, WorkBase>();
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
+        internal ConcurrentDictionary<string, ConcurrentSet<string>> _groupRelationDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<Guid, Worker> _aliveWorkerDic = new ConcurrentDictionary<Guid, Worker>();
         internal IEnumerable<Worker> _aliveWorkerList = new List<Worker>();
 
@@ -490,14 +491,96 @@ namespace PowerThreadPool
         /// Get all members of a group
         /// </summary>
         /// <param name="groupName"></param>
-        /// <returns>Work id list</returns>
+        /// <returns>Work id collection</returns>
         public IEnumerable<string> GetGroupMemberList(string groupName)
         {
-            if (_workGroupDic.TryGetValue(groupName, out ConcurrentSet<string> groupMemberList))
+            List<string> groupList = new List<string>() { groupName };
+            List<string> childGroupList = GetChildGroupList(groupName);
+            if (childGroupList != null)
             {
-                return groupMemberList;
+                groupList.AddRange(childGroupList);
             }
-            return new ConcurrentSet<string>();
+
+            ConcurrentSet<string> memberSet = new ConcurrentSet<string>();
+            foreach (string group in groupList)
+            {
+                if (_workGroupDic.TryGetValue(group, out ConcurrentSet<string> groupMemberList))
+                {
+                    foreach (string member in groupMemberList)
+                    {
+                        memberSet.Add(member);
+                    }
+                }
+            }
+
+            return memberSet;
+        }
+
+        /// <summary>
+        /// Get child group list
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <returns></returns>
+        private List<string> GetChildGroupList(string groupName)
+        {
+            List<string> childGroupList = null;
+            if (_groupRelationDic.TryGetValue(groupName, out ConcurrentSet<string> childGroupSet))
+            {
+                childGroupList = new List<string>();
+                foreach (string childGroupName in childGroupSet)
+                {
+                    childGroupList.Add(childGroupName);
+                    List<string> recursiveGroupList = GetChildGroupList(childGroupName);
+                    if (recursiveGroupList != null)
+                    {
+                        childGroupList.AddRange(recursiveGroupList);
+                    }
+                }
+            }
+            return childGroupList;
+        }
+
+        /// <summary>
+        /// Set group relation
+        /// </summary>
+        /// <param name="parentGroup">parent group</param>
+        /// <param name="childGroup">child group</param>
+        /// <exception cref="InvalidOperationException"></exception>
+        public void SetGroupRelation(string parentGroup, string childGroup)
+        {
+            if (_groupRelationDic[childGroup] != null && _groupRelationDic[childGroup].Contains(parentGroup))
+            {
+                throw new InvalidOperationException("Circular dependency detected.");
+            }
+            _groupRelationDic.AddOrUpdate(parentGroup, new ConcurrentSet<string>() { childGroup }, (key, oldValue) => { oldValue.Add(childGroup); return oldValue; });
+        }
+
+        /// <summary>
+        /// Remove group relation
+        /// </summary>
+        /// <param name="parentGroup">parent group</param>
+        /// <param name="childGroup">child group</param>
+        /// <returns>is succeed</returns>
+        public bool RemoveGroupRelation(string parentGroup, string childGroup)
+        {
+            bool res = false;
+            if (_groupRelationDic.TryGetValue(parentGroup, out ConcurrentSet<string> childGroupSet))
+            {
+                res = childGroupSet.Remove(childGroup);
+            }
+            return res;
+        }
+
+        /// <summary>
+        /// Remove group relation
+        /// </summary>
+        /// <param name="parentGroup">parent group</param>
+        public void RemoveGroupRelation(string parentGroup)
+        {
+            if (_groupRelationDic.TryGetValue(parentGroup, out ConcurrentSet<string> childGroupSet))
+            {
+                childGroupSet.Clear();
+            }
         }
 
         /// <summary>
