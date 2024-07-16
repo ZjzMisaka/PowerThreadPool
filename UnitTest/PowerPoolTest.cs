@@ -538,14 +538,14 @@ namespace UnitTest
             };
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(700);
+                Thread.Sleep(1000);
                 logList.Add("Work0 Priority0 END");
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(800);
+                Thread.Sleep(1100);
                 logList.Add("Work1 Priority0 END");
             }, new WorkOption()
             {
@@ -556,21 +556,21 @@ namespace UnitTest
             }
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(700);
+                Thread.Sleep(1000);
                 logList.Add("Work2 Priority0 END");
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(800);
+                Thread.Sleep(1100);
                 logList.Add("Work3 Priority0 END");
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(700);
+                Thread.Sleep(1000);
                 logList.Add("Work4 Priority1 END");
             }, new WorkOption()
             {
@@ -578,7 +578,7 @@ namespace UnitTest
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(800);
+                Thread.Sleep(1100);
                 logList.Add("Work5 Priority1 END");
             }, new WorkOption()
             {
