@@ -495,11 +495,7 @@ namespace PowerThreadPool
         public IEnumerable<string> GetGroupMemberList(string groupName)
         {
             List<string> groupList = new List<string>() { groupName };
-            List<string> childGroupList = GetChildGroupList(groupName);
-            if (childGroupList != null)
-            {
-                groupList.AddRange(childGroupList);
-            }
+            GetChildGroupList(groupName, groupList);
 
             ConcurrentSet<string> memberSet = new ConcurrentSet<string>();
             foreach (string group in groupList)
@@ -520,24 +516,16 @@ namespace PowerThreadPool
         /// Get child group list
         /// </summary>
         /// <param name="groupName"></param>
-        /// <returns></returns>
-        private List<string> GetChildGroupList(string groupName)
+        private void GetChildGroupList(string groupName, List<string> groupList)
         {
-            List<string> childGroupList = null;
             if (_groupRelationDic.TryGetValue(groupName, out ConcurrentSet<string> childGroupSet))
             {
-                childGroupList = new List<string>();
                 foreach (string childGroupName in childGroupSet)
                 {
-                    childGroupList.Add(childGroupName);
-                    List<string> recursiveGroupList = GetChildGroupList(childGroupName);
-                    if (recursiveGroupList != null)
-                    {
-                        childGroupList.AddRange(recursiveGroupList);
-                    }
+                    groupList.Add(childGroupName);
+                    GetChildGroupList(childGroupName, groupList);
                 }
             }
-            return childGroupList;
         }
 
         /// <summary>
