@@ -538,7 +538,7 @@ namespace PowerThreadPool
         {
             if (_groupRelationDic.ContainsKey(childGroup) && _groupRelationDic[childGroup].Contains(parentGroup))
             {
-                throw new InvalidOperationException("Circular dependency detected.");
+                throw new InvalidOperationException($"Cannot create a cyclic group relation: '{parentGroup}' is already a subgroup of '{childGroup}'.");
             }
             _groupRelationDic.AddOrUpdate(parentGroup, new ConcurrentSet<string>() { childGroup }, (key, oldValue) => { oldValue.Add(childGroup); return oldValue; });
         }
