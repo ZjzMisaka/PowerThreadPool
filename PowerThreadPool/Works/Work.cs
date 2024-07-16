@@ -103,7 +103,7 @@ namespace PowerThreadPool.Works
         {
             bool res = false;
 
-            using (new WorkerLocker(this))
+            using (new WorkGuard(this))
             {
                 if (forceStop)
                 {
@@ -178,9 +178,9 @@ namespace PowerThreadPool.Works
             return res;
         }
 
-        internal override bool Cancel(bool lockWorker)
+        internal override bool Cancel(bool needFreeze)
         {
-            using (new WorkerLocker(this, false, lockWorker))
+            using (new WorkGuard(this, false, needFreeze))
             {
                 return Worker.Cancel(ID);
             }

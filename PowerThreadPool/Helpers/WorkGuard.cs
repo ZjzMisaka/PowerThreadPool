@@ -5,33 +5,33 @@ using PowerThreadPool.Works;
 
 namespace PowerThreadPool.Helpers
 {
-    internal class WorkerLocker : IDisposable
+    internal class WorkGuard : IDisposable
     {
         private readonly WorkBase _work;
         private Worker _worker = null;
         private readonly bool _isHoldWork;
         private bool _disposed;
 
-        public WorkerLocker(WorkBase work,
+        public WorkGuard(WorkBase work,
                             bool isHoldWork = true,
-                            bool isLock = true)
+                            bool needFreeze = true)
         {
             _work = work;
             _isHoldWork = isHoldWork;
 
-            if (isLock)
-                Lock();
+            if (needFreeze)
+                Freeze();
         }
 
-        private void Lock()
+        private void Freeze()
         {
             do
             {
-                Unlock();
+                UnFreeze();
 
                 SpinWait.SpinUntil(() => (_worker = _work.Worker) != null);
 
-                SpinWait.SpinUntil(() => _worker.StealingLock.TrySet(WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked));
+                SpinWait.SpinUntil(() => _worker.StealingFlag.TrySet(WorkerStealingFlags.Reject, WorkerStealingFlags.Allow));
 
                 if (_isHoldWork)
                 {
@@ -41,11 +41,11 @@ namespace PowerThreadPool.Helpers
             while (_work.Worker == null || (_work.Worker != null && _work.Worker.ID != _worker.ID));
         }
 
-        private void Unlock()
+        private void UnFreeze()
         {
             if (_worker != null)
             {
-                _worker.StealingLock.InterlockedValue = WorkerStealingFlags.Unlocked;
+                _worker.StealingFlag.InterlockedValue = WorkerStealingFlags.Allow;
 
                 if (_isHoldWork)
                 {
@@ -60,7 +60,7 @@ namespace PowerThreadPool.Helpers
             {
                 if (disposing)
                 {
-                    Unlock();
+                    UnFreeze();
                 }
 
                 _disposed = true;

@@ -10,13 +10,13 @@ namespace UnitTest
 {
     public class InterlockedFlagTest
     {
-        InterlockedFlag<WorkerGettedFlags> gettedLock0 = WorkerGettedFlags.Unlocked;
-        InterlockedFlag<WorkerGettedFlags> gettedLock1 = WorkerGettedFlags.Unlocked;
+        InterlockedFlag<WorkerGettedFlags> gettedLock0 = WorkerGettedFlags.Free;
+        InterlockedFlag<WorkerGettedFlags> gettedLock1 = WorkerGettedFlags.Free;
 
         private void InitFlags()
         {
-            gettedLock0 = WorkerGettedFlags.Unlocked;
-            gettedLock1 = WorkerGettedFlags.Unlocked;
+            gettedLock0 = WorkerGettedFlags.Free;
+            gettedLock1 = WorkerGettedFlags.Free;
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace UnitTest
             InitFlags();
 
             string dd = gettedLock0.DebuggerDisplay;
-            Assert.Equal("WorkerGettedFlags.Unlocked", dd);
+            Assert.Equal("WorkerGettedFlags.Free", dd);
         }
 
         [Fact]
@@ -61,11 +61,11 @@ namespace UnitTest
             InitFlags();
 
             bool res;
-            res = gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Unlocked);
+            res = gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free);
             Assert.Equal(WorkerGettedFlags.Disabled, gettedLock0.Get());
             Assert.True(res);
 
-            res = gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Unlocked);
+            res = gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free);
             Assert.Equal(WorkerGettedFlags.Disabled, gettedLock0.Get());
             Assert.False(res);
         }
@@ -77,12 +77,12 @@ namespace UnitTest
 
             WorkerGettedFlags orig;
             bool res;
-            res = gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Unlocked, out orig);
+            res = gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free, out orig);
             Assert.Equal(WorkerGettedFlags.Disabled, gettedLock0.Get());
-            Assert.Equal(WorkerGettedFlags.Unlocked, orig);
+            Assert.Equal(WorkerGettedFlags.Free, orig);
             Assert.True(res);
 
-            res = gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Unlocked, out orig);
+            res = gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free, out orig);
             Assert.Equal(WorkerGettedFlags.Disabled, orig);
             Assert.False(res);
         }
@@ -119,17 +119,17 @@ namespace UnitTest
             InitFlags();
 
             bool res;
-            res = gettedLock0 == WorkerGettedFlags.Unlocked;
+            res = gettedLock0 == WorkerGettedFlags.Free;
             Assert.True(res);
-            res = gettedLock0 != WorkerGettedFlags.Unlocked;
+            res = gettedLock0 != WorkerGettedFlags.Free;
             Assert.False(res);
             gettedLock0 = WorkerGettedFlags.ToBeDisabled;
-            res = gettedLock0 == WorkerGettedFlags.Unlocked;
+            res = gettedLock0 == WorkerGettedFlags.Free;
             Assert.False(res);
-            res = gettedLock0 == WorkerGettedFlags.Unlocked;
+            res = gettedLock0 == WorkerGettedFlags.Free;
             Assert.False(res);
             gettedLock0 = null;
-            res = gettedLock0 == WorkerGettedFlags.Unlocked;
+            res = gettedLock0 == WorkerGettedFlags.Free;
             Assert.False(res);
         }
 
@@ -165,12 +165,12 @@ namespace UnitTest
             InitFlags();
 
             bool res;
-            res = gettedLock0.Equals(WorkerGettedFlags.Unlocked);
+            res = gettedLock0.Equals(WorkerGettedFlags.Free);
             Assert.True(res);
             gettedLock0 = WorkerGettedFlags.ToBeDisabled;
-            res = gettedLock0.Equals(WorkerGettedFlags.Unlocked);
+            res = gettedLock0.Equals(WorkerGettedFlags.Free);
             Assert.False(res);
-            res = gettedLock0.Equals(WorkerGettedFlags.Unlocked);
+            res = gettedLock0.Equals(WorkerGettedFlags.Free);
             Assert.False(res);
         }
 

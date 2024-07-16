@@ -2,7 +2,7 @@
 {
     internal enum WorkerStealingFlags
     {
-        Unlocked = 0,
-        Locked = 1,
+        Allow = 0,
+        Reject = 1,
     }
 }
