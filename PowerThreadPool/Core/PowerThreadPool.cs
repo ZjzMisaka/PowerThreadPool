@@ -341,7 +341,7 @@ namespace PowerThreadPool
                             {
                                 worker.GettedLock.TrySet(WorkerGettedFlags.Unlocked, WorkerGettedFlags.Locked);
                             }
-                            
+
                             worker = aliveWorker;
                             if (waitingWorkCountTemp == 0)
                             {
@@ -549,26 +549,22 @@ namespace PowerThreadPool
         /// <param name="parentGroup">parent group</param>
         /// <param name="childGroup">child group</param>
         /// <returns>is succeed</returns>
-        public bool RemoveGroupRelation(string parentGroup, string childGroup)
+        public bool RemoveGroupRelation(string parentGroup, string childGroup = null)
         {
             bool res = false;
             if (_groupRelationDic.TryGetValue(parentGroup, out ConcurrentSet<string> childGroupSet))
             {
-                res = childGroupSet.Remove(childGroup);
+                if (childGroup != null)
+                {
+                    res = childGroupSet.Remove(childGroup);
+                }
+                else
+                {
+                    childGroupSet.Clear();
+                    res = true;
+                }
             }
             return res;
-        }
-
-        /// <summary>
-        /// Remove group relation
-        /// </summary>
-        /// <param name="parentGroup">parent group</param>
-        public void RemoveGroupRelation(string parentGroup)
-        {
-            if (_groupRelationDic.TryGetValue(parentGroup, out ConcurrentSet<string> childGroupSet))
-            {
-                childGroupSet.Clear();
-            }
         }
 
         /// <summary>
