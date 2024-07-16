@@ -46,7 +46,7 @@ namespace PowerThreadPool
 
         private bool _suspended;
 
-        private InterlockedFlag<WorkerCreationFlags> _createWorkerLock = WorkerCreationFlags.Unlocked;
+        private InterlockedFlag<WorkerCreationFlags> _createWorkerFlag = WorkerCreationFlags.Allow;
 
         private PowerPoolOption _powerPoolOption;
         public PowerPoolOption PowerPoolOption
@@ -287,7 +287,7 @@ namespace PowerThreadPool
             {
                 if (_idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    SpinWait.SpinUntil(() => worker.GettedLock.TrySet(WorkerGettedFlags.Locked, WorkerGettedFlags.Unlocked));
+                    SpinWait.SpinUntil(() => worker.GettedFlag.TrySet(WorkerGettedFlags.Getted, WorkerGettedFlags.Free));
                     Interlocked.Decrement(ref _idleWorkerCount);
                     if (longRunning)
                     {
@@ -299,13 +299,13 @@ namespace PowerThreadPool
 
             if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount)
             {
-                if (_createWorkerLock.TrySet(WorkerCreationFlags.Locked, WorkerCreationFlags.Unlocked))
+                if (_createWorkerFlag.TrySet(WorkerCreationFlags.Reject, WorkerCreationFlags.Allow))
                 {
                     if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount)
                     {
                         worker = new Worker(this);
 
-                        worker.GettedLock.InterlockedValue = WorkerGettedFlags.Locked;
+                        worker.GettedFlag.InterlockedValue = WorkerGettedFlags.Getted;
 
                         if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                         {
@@ -318,7 +318,7 @@ namespace PowerThreadPool
                         }
                     }
 
-                    _createWorkerLock.InterlockedValue = WorkerCreationFlags.Unlocked;
+                    _createWorkerFlag.InterlockedValue = WorkerCreationFlags.Allow;
                 }
             }
 
@@ -335,11 +335,11 @@ namespace PowerThreadPool
                     int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
                     if (waitingWorkCountTemp < min)
                     {
-                        if (aliveWorker.GettedLock.TrySet(WorkerGettedFlags.Locked, WorkerGettedFlags.Unlocked))
+                        if (aliveWorker.GettedFlag.TrySet(WorkerGettedFlags.Getted, WorkerGettedFlags.Free))
                         {
                             if (worker != null)
                             {
-                                worker.GettedLock.TrySet(WorkerGettedFlags.Unlocked, WorkerGettedFlags.Locked);
+                                worker.GettedFlag.TrySet(WorkerGettedFlags.Free, WorkerGettedFlags.Getted);
                             }
 
                             worker = aliveWorker;

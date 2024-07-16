@@ -25,7 +25,7 @@ namespace PowerThreadPool
 
         internal InterlockedFlag<WorkerStates> WorkerState { get; set; } = WorkerStates.Idle;
 
-        internal InterlockedFlag<WorkerGettedFlags> GettedLock { get; set; } = WorkerGettedFlags.Unlocked;
+        internal InterlockedFlag<WorkerGettedFlags> GettedFlag { get; set; } = WorkerGettedFlags.Free;
 
         internal InterlockedFlag<WorkHeldFlags> WorkHeld { get; set; } = WorkHeldFlags.NotHeld;
 
@@ -43,7 +43,7 @@ namespace PowerThreadPool
 
         private bool _killFlag = false;
 
-        internal InterlockedFlag<WorkerStealingFlags> StealingLock { get; set; } = WorkerStealingFlags.Unlocked;
+        internal InterlockedFlag<WorkerStealingFlags> StealingFlag { get; set; } = WorkerStealingFlags.Allow;
 
         private PowerPool _powerPool;
 
@@ -127,7 +127,7 @@ namespace PowerThreadPool
                 }
                 catch (ThreadInterruptedException ex)
                 {
-                    GettedLock.InterlockedValue = WorkerGettedFlags.Disabled;
+                    GettedFlag.InterlockedValue = WorkerGettedFlags.Disabled;
 
                     WorkerStates origWorkState = WorkerState.InterlockedValue;
                     WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
@@ -282,7 +282,7 @@ namespace PowerThreadPool
 
             if (!resetted)
             {
-                GettedLock.InterlockedValue = WorkerGettedFlags.Unlocked;
+                GettedFlag.InterlockedValue = WorkerGettedFlags.Free;
             }
 
             if (originalWorkerState == WorkerStates.Idle)
@@ -381,13 +381,13 @@ namespace PowerThreadPool
                 int waitingWorkCountTemp = runningWorker.WaitingWorkCount;
                 if (waitingWorkCountTemp >= 2 && waitingWorkCountTemp > max)
                 {
-                    if (!runningWorker.StealingLock.TrySet(WorkerStealingFlags.Locked, WorkerStealingFlags.Unlocked))
+                    if (!runningWorker.StealingFlag.TrySet(WorkerStealingFlags.Reject, WorkerStealingFlags.Allow))
                     {
                         continue;
                     }
                     if (worker != null)
                     {
-                        worker.StealingLock.InterlockedValue = WorkerStealingFlags.Unlocked;
+                        worker.StealingFlag.InterlockedValue = WorkerStealingFlags.Allow;
                     }
                     max = waitingWorkCountTemp;
                     worker = runningWorker;
@@ -401,7 +401,7 @@ namespace PowerThreadPool
                 {
                     stolenWorkList = worker.Steal(count);
                 }
-                worker.StealingLock.InterlockedValue = WorkerStealingFlags.Unlocked;
+                worker.StealingFlag.InterlockedValue = WorkerStealingFlags.Allow;
                 if (stolenWorkList != null)
                 {
                     foreach (WorkBase stolenWork in stolenWorkList)
@@ -423,7 +423,7 @@ namespace PowerThreadPool
 
         private bool TurnToIdle(ref string waitingWorkID, ref WorkBase work)
         {
-            SpinWait.SpinUntil(() => GettedLock.TrySet(WorkerGettedFlags.ToBeDisabled, WorkerGettedFlags.Unlocked));
+            SpinWait.SpinUntil(() => GettedFlag.TrySet(WorkerGettedFlags.ToBeDisabled, WorkerGettedFlags.Free));
 
             waitingWorkID = _waitingWorkIDPriorityCollection.Get();
             if (waitingWorkID != null)
@@ -433,7 +433,7 @@ namespace PowerThreadPool
                     Interlocked.Decrement(ref _waitingWorkCount);
                 }
 
-                GettedLock.TrySet(WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
+                GettedFlag.TrySet(WorkerGettedFlags.Free, WorkerGettedFlags.ToBeDisabled);
 
                 return false;
             }
@@ -452,7 +452,7 @@ namespace PowerThreadPool
 
                 WorkerState.InterlockedValue = WorkerStates.Idle;
 
-                GettedLock.TrySet(WorkerGettedFlags.Unlocked, WorkerGettedFlags.ToBeDisabled);
+                GettedFlag.TrySet(WorkerGettedFlags.Free, WorkerGettedFlags.ToBeDisabled);
 
                 if (_powerPool._idleWorkerDic.TryAdd(ID, this))
                 {
@@ -502,8 +502,8 @@ namespace PowerThreadPool
             {
                 SpinWait.SpinUntil(() =>
                 {
-                    GettedLock.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Unlocked, out WorkerGettedFlags origValue);
-                    return origValue == WorkerGettedFlags.Unlocked || origValue == WorkerGettedFlags.Disabled;
+                    GettedFlag.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free, out WorkerGettedFlags origValue);
+                    return origValue == WorkerGettedFlags.Free || origValue == WorkerGettedFlags.Disabled;
                 });
 
                 if (WorkerState.TrySet(WorkerStates.ToBeDisposed, WorkerStates.Idle))
@@ -512,7 +512,7 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    GettedLock.TrySet(WorkerGettedFlags.Unlocked, WorkerGettedFlags.Disabled);
+                    GettedFlag.TrySet(WorkerGettedFlags.Free, WorkerGettedFlags.Disabled);
                 }
             }
 
