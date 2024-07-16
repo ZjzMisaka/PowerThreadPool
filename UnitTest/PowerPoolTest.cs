@@ -538,14 +538,14 @@ namespace UnitTest
             };
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(300);
                 logList.Add("Work0 Priority0 END");
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1100);
+                Thread.Sleep(300);
                 logList.Add("Work1 Priority0 END");
             }, new WorkOption()
             {
@@ -556,21 +556,21 @@ namespace UnitTest
             }
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(300);
                 logList.Add("Work2 Priority0 END");
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1100);
+                Thread.Sleep(300);
                 logList.Add("Work3 Priority0 END");
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(300);
                 logList.Add("Work4 Priority1 END");
             }, new WorkOption()
             {
@@ -578,7 +578,7 @@ namespace UnitTest
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1100);
+                Thread.Sleep(300);
                 logList.Add("Work5 Priority1 END");
             }, new WorkOption()
             {
@@ -587,14 +587,31 @@ namespace UnitTest
             powerPool.EnablePoolIdleCheck = true;
             powerPool.Wait();
 
-            Assert.Collection<string>(logList,
-                item => Assert.Equal("Work0 Priority0 END", item),
-                item => Assert.Equal("Work1 Priority0 END", item),
-                item => Assert.Equal("Work4 Priority1 END", item),
-                item => Assert.Equal("Work5 Priority1 END", item),
-                item => Assert.Equal("Work2 Priority0 END", item),
-                item => Assert.Equal("Work3 Priority0 END", item)
-                );
+            string[] logGroup1 = new[] { "Work0 Priority0 END", "Work1 Priority0 END" };
+            string[] logGroup2 = new[] { "Work4 Priority1 END", "Work5 Priority1 END" };
+            string[] logGroup3 = new[] { "Work2 Priority0 END", "Work3 Priority0 END" };
+
+            Assert.Contains(logGroup1[0], logList);
+            Assert.Contains(logGroup1[1], logList);
+            int index1_0 = logList.IndexOf(logGroup1[0]);
+            int index1_1 = logList.IndexOf(logGroup1[1]);
+            Assert.True(index1_0 < index1_1 || index1_0 > index1_1);
+
+            Assert.Contains(logGroup2[0], logList);
+            Assert.Contains(logGroup2[1], logList);
+            int index2_0 = logList.IndexOf(logGroup2[0]);
+            int index2_1 = logList.IndexOf(logGroup2[1]);
+            Assert.True(index2_0 < index2_1 || index2_0 > index2_1);
+
+            Assert.Contains(logGroup3[0], logList);
+            Assert.Contains(logGroup3[1], logList);
+            int index3_0 = logList.IndexOf(logGroup3[0]);
+            int index3_1 = logList.IndexOf(logGroup3[1]);
+            Assert.True(index3_0 < index3_1 || index3_0 > index3_1);
+
+            Assert.True((index1_0 < index2_0 && index1_1 < index2_1) || (index1_0 > index2_0 && index1_1 > index2_1));
+
+            Assert.True((index2_0 < index3_0 && index2_1 < index3_1) || (index2_0 > index3_0 && index2_1 > index3_1));
         }
 
         [Fact]

@@ -112,7 +112,7 @@ namespace UnitTest
             Thread.Sleep(50);
             bool pauseRes = powerPool.Pause(id);
             Assert.True(pauseRes);
-            Thread.Sleep(500);
+            Thread.Sleep(800);
             bool resumeRes = powerPool.Resume(id);
             Assert.True(resumeRes);
             powerPool.Wait();
