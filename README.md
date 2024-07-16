@@ -36,6 +36,8 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
 - [Work Timeout | Cumulative Work Timeout](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Timeout)
 - [Work Dependency](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Dependency)
 - [Work Group](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Group)
+    - [Group Control](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Group#group-control)
+    - [Group Relation](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Group-Relation)
 - [Events](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Events)
 - [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Runtime-Status)
 - [Queue Type (FIFO | LIFO)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Queue-Type)

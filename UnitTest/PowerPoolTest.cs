@@ -538,14 +538,14 @@ namespace UnitTest
             };
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(700);
+                Thread.Sleep(1000);
                 logList.Add("Work0 Priority0 END");
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(800);
+                Thread.Sleep(1100);
                 logList.Add("Work1 Priority0 END");
             }, new WorkOption()
             {
@@ -556,21 +556,21 @@ namespace UnitTest
             }
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(700);
+                Thread.Sleep(1000);
                 logList.Add("Work2 Priority0 END");
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(800);
+                Thread.Sleep(1100);
                 logList.Add("Work3 Priority0 END");
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(700);
+                Thread.Sleep(1000);
                 logList.Add("Work4 Priority1 END");
             }, new WorkOption()
             {
@@ -578,7 +578,7 @@ namespace UnitTest
             });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(800);
+                Thread.Sleep(1100);
                 logList.Add("Work5 Priority1 END");
             }, new WorkOption()
             {
@@ -2226,6 +2226,497 @@ namespace UnitTest
             res1 = powerPool.Fetch<string>(id1);
             Assert.Null(res0.Result);
             Assert.Equal("1", res1.Result);
+        }
+
+        [Fact]
+        public void TestWorkGroupRelation()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+
+            powerPool.SetGroupRelation("A", "B");
+
+            powerPool.GetGroup("A").Stop();
+            powerPool.GetGroup("A").Wait();
+            Thread.Sleep(10);
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
+        public void TestWorkGroupRelationStopChild()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+
+            powerPool.SetGroupRelation("A", "B");
+
+            powerPool.GetGroup("B").Stop();
+            powerPool.GetGroup("B").Wait();
+            Thread.Sleep(10);
+            Assert.Equal(2, powerPool.RunningWorkerCount);
+
+            powerPool.GetGroup("A").Stop();
+            powerPool.GetGroup("A").Wait();
+            Thread.Sleep(10);
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
+        public void TestWorkGroupRelationRemoveGroupRelation()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+
+            powerPool.SetGroupRelation("A", "B");
+            bool res = powerPool.RemoveGroupRelation("A", "B");
+            Assert.True(res);
+
+            powerPool.GetGroup("A").Stop();
+            powerPool.GetGroup("A").Wait();
+            Thread.Sleep(10);
+            Assert.Equal(2, powerPool.RunningWorkerCount);
+
+            powerPool.Stop();
+        }
+
+        [Fact]
+        public void TestWorkGroupRelationRemoveWholeGroupRelation()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+
+            powerPool.SetGroupRelation("A", "B");
+            powerPool.RemoveGroupRelation("A");
+
+            powerPool.GetGroup("A").Stop();
+            powerPool.GetGroup("A").Wait();
+            Thread.Sleep(10);
+            Assert.Equal(2, powerPool.RunningWorkerCount);
+
+            powerPool.Stop();
+        }
+
+        [Fact]
+        public void TestWorkGroupRelationRemoveChildGroupRelation()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+
+            powerPool.SetGroupRelation("A", "B");
+            bool res = powerPool.RemoveGroupRelation("B", "A");
+            Assert.False(res);
+
+            powerPool.GetGroup("A").Stop();
+            powerPool.GetGroup("A").Wait();
+            Thread.Sleep(10);
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
+        public void TestWorkGroupRelationRemoveWholeChildGroupRelation()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+
+            powerPool.SetGroupRelation("A", "B");
+            powerPool.RemoveGroupRelation("B");
+
+            powerPool.GetGroup("A").Stop();
+            powerPool.GetGroup("A").Wait();
+            Thread.Sleep(10);
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
+        public void TestWorkGroupRelationResetGroupRelation()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+
+            powerPool.SetGroupRelation("A", "B");
+            powerPool.ResetGroupRelation();
+
+            powerPool.GetGroup("A").Stop();
+            powerPool.GetGroup("A").Wait();
+            Thread.Sleep(10);
+            Assert.Equal(2, powerPool.RunningWorkerCount);
+
+            powerPool.Stop();
+        }
+
+        [Fact]
+        public void TestWorkGroupRelationCyclicGroupRelation()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "A"
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(1);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "B"
+            });
+
+            InvalidOperationException e = null;
+
+            powerPool.SetGroupRelation("A", "B");
+            try
+            {
+                powerPool.SetGroupRelation("B", "A");
+            }
+            catch (InvalidOperationException ex)
+            {
+                e = ex;
+            }
+
+            Assert.Equal($"Cannot create a cyclic group relation: 'B' is already a subgroup of 'A'.", e.Message);
+
+            powerPool.Stop();
         }
     }
 }
