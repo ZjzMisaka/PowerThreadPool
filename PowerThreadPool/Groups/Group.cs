@@ -14,6 +14,9 @@ namespace PowerThreadPool.Groups
             _groupName = groupName;
         }
 
+        /// <summary>
+        /// Group name
+        /// </summary>
         public string Name => _groupName;
 
         /// <summary>
