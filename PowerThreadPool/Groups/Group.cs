@@ -14,12 +14,14 @@ namespace PowerThreadPool.Groups
             _groupName = groupName;
         }
 
+        public string Name => _groupName;
+
         /// <summary>
         /// Wait until all the work belonging to the group is done.
         /// </summary>
         public void Wait()
         {
-            _powerPool.Wait(_powerPool.GetGroupMemberList(_groupName));
+            _powerPool.Wait(_powerPool.GetGroupMemberList(Name));
         }
 
         /// <summary>
@@ -51,7 +53,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of work result</returns>
         public List<ExecuteResult<TResult>> Fetch<TResult>(bool removeAfterFetch = false)
         {
-            return _powerPool.Fetch<TResult>(_powerPool.GetGroupMemberList(_groupName), removeAfterFetch);
+            return _powerPool.Fetch<TResult>(_powerPool.GetGroupMemberList(Name), removeAfterFetch);
         }
 
         /// <summary>
@@ -61,7 +63,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of work result</returns>
         public List<ExecuteResult<object>> Fetch(bool removeAfterFetch = false)
         {
-            return _powerPool.Fetch<object>(_powerPool.GetGroupMemberList(_groupName), removeAfterFetch);
+            return _powerPool.Fetch<object>(_powerPool.GetGroupMemberList(Name), removeAfterFetch);
         }
 
         /// <summary>
@@ -117,7 +119,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return false if no thread running</returns>
         public List<string> Stop(bool forceStop = false)
         {
-            return _powerPool.Stop(_powerPool.GetGroupMemberList(_groupName), forceStop);
+            return _powerPool.Stop(_powerPool.GetGroupMemberList(Name), forceStop);
         }
 
         /// <summary>
@@ -126,7 +128,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
         public List<string> Pause()
         {
-            return _powerPool.Pause(_powerPool.GetGroupMemberList(_groupName));
+            return _powerPool.Pause(_powerPool.GetGroupMemberList(Name));
         }
 
         /// <summary>
@@ -135,7 +137,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
         public List<string> Resume()
         {
-            return _powerPool.Resume(_powerPool.GetGroupMemberList(_groupName));
+            return _powerPool.Resume(_powerPool.GetGroupMemberList(Name));
         }
 
         /// <summary>
@@ -144,7 +146,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
         public List<string> Cancel()
         {
-            return _powerPool.Cancel(_powerPool.GetGroupMemberList(_groupName));
+            return _powerPool.Cancel(_powerPool.GetGroupMemberList(Name));
         }
     }
 }
