@@ -614,6 +614,70 @@ namespace PowerThreadPool
             _failedWorkSet.Clear();
         }
 
+        public Group For(int start, int end, Action<int> body, int step = 1)
+        {
+            return For<object>(start, end, null, (_, index) => { body(index); }, step);
+        }
+
+        public Group For<TSource>(int start, int end, IList<TSource> source, Action<TSource> body, int step = 1)
+        {
+            return For(start, end, source, (item, _) => { body(item); }, step);
+        }
+
+        public Group For<TSource>(int start, int end, IList<TSource> source, Action<TSource, int> body, int step = 1)
+        {
+            if (start > end && step == 1)
+            {
+                step = -1;
+            }
+
+            if (step == 0)
+            {
+                throw new ArgumentException("Step cannot be zero.", nameof(step));
+            }
+            if (start > end && step > 0)
+            {
+                step = -1;
+            }
+            if ((start > end && step > 0) || (start < end && step < 0))
+            {
+                throw new ArgumentException("Invalid start, end, and step combination. The loop will never terminate.", nameof(step));
+            }
+
+            string groupID = Guid.NewGuid().ToString();
+            WorkOption workOption = new WorkOption()
+            {
+                Group = groupID,
+            };
+            for (int i = start; start <= end ? i < end : i > end; i += step)
+            {
+                int localI = i;
+                QueueWorkItem(() => { body(source != null ? source[localI] : default, localI); }, workOption);
+            }
+            return GetGroup(groupID);
+        }
+
+        public Group ForEach<TSource>(IEnumerable<TSource> source, Action<TSource> body)
+        {
+            return ForEach(source, (item, _) => body(item));
+        }
+
+        public Group ForEach<TSource>(IEnumerable<TSource> source, Action<TSource, int> body)
+        {
+            string groupID = Guid.NewGuid().ToString();
+            WorkOption workOption = new WorkOption()
+            {
+                Group = groupID,
+            };
+            int i = 0;
+            foreach (TSource item in source)
+            {
+                int localI = i++;
+                QueueWorkItem(() => { body(item, localI); }, workOption);
+            }
+            return GetGroup(groupID);
+        }
+
         /// <summary>
         /// Will try stop, force stop and kill all of the workers. 
         /// </summary>
