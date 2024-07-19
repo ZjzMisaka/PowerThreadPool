@@ -17,6 +17,12 @@ namespace PowerThreadPool.Works
             set => _executeCount = value;
         }
         internal Status Status { get; set; }
+        internal volatile bool _done;
+        internal bool Done
+        {
+            get => _done;
+            set => _done = value;
+        }
         internal AutoResetEvent WaitSignal { get; set; }
         internal AutoResetEvent FetchSignal { get; set; }
         internal bool ShouldStop { get; set; }

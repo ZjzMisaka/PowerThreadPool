@@ -110,6 +110,12 @@ namespace PowerThreadPool
                         {
                             powerPool.WorkCallbackEnd(Work, executeResult.Status);
 
+                            Work.Done = true;
+
+                            if (Work.FetchSignal != null)
+                            {
+                                Work.FetchSignal.Set();
+                            }
                             if (Work.WaitSignal != null)
                             {
                                 Work.WaitSignal.Set();
@@ -173,6 +179,12 @@ namespace PowerThreadPool
                         hasWaitingWork = true;
                     }
 
+                    Work.Done = true;
+
+                    if (Work.FetchSignal != null)
+                    {
+                        Work.FetchSignal.Set();
+                    }
                     if (Work.WaitSignal != null)
                     {
                         Work.WaitSignal.Set();

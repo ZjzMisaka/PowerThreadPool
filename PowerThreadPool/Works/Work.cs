@@ -134,6 +134,12 @@ namespace PowerThreadPool.Works
             {
                 WaitSignal = new AutoResetEvent(false);
             }
+
+            if (Done)
+            {
+                return true;
+            }
+
             WaitSignal.WaitOne();
             return true;
         }
@@ -145,7 +151,7 @@ namespace PowerThreadPool.Works
                 FetchSignal = new AutoResetEvent(false);
             }
 
-            if (ExecuteResult != null)
+            if (Done)
             {
                 return ExecuteResult;
             }
@@ -207,10 +213,6 @@ namespace PowerThreadPool.Works
             if (_workOption.ShouldStoreResult)
             {
                 powerPool._resultDic[ID] = ExecuteResult;
-            }
-            if (FetchSignal != null)
-            {
-                FetchSignal.Set();
             }
             return executeResult;
         }
