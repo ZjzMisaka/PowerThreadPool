@@ -60,10 +60,6 @@ namespace PowerThreadPool
             {
                 throw new ArgumentException("Step cannot be zero.", nameof(step));
             }
-            if (start > end && step > 0)
-            {
-                step = -1;
-            }
             if ((start > end && step > 0) || (start < end && step < 0))
             {
                 throw new ArgumentException("Invalid start, end, and step combination. The loop will never terminate.", nameof(step));
