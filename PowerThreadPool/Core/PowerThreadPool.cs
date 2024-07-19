@@ -6,7 +6,6 @@ using System.Threading;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
-using PowerThreadPool.Groups;
 using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
@@ -478,106 +477,6 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Get group object
-        /// </summary>
-        /// <param name="groupName"></param>
-        /// <returns>Group object</returns>
-        public Group GetGroup(string groupName)
-        {
-            return new Group(this, groupName);
-        }
-
-        /// <summary>
-        /// Get all members of a group
-        /// </summary>
-        /// <param name="groupName"></param>
-        /// <returns>Work id collection</returns>
-        public IEnumerable<string> GetGroupMemberList(string groupName)
-        {
-            List<string> groupList = new List<string>() { groupName };
-            GetChildGroupList(groupName, groupList);
-
-            ConcurrentSet<string> memberSet = new ConcurrentSet<string>();
-            foreach (string group in groupList)
-            {
-                if (_workGroupDic.TryGetValue(group, out ConcurrentSet<string> groupMemberList))
-                {
-                    foreach (string member in groupMemberList)
-                    {
-                        memberSet.Add(member);
-                    }
-                }
-            }
-
-            return memberSet;
-        }
-
-        /// <summary>
-        /// Get child group list
-        /// </summary>
-        /// <param name="groupName"></param>
-        private void GetChildGroupList(string groupName, List<string> groupList)
-        {
-            if (_groupRelationDic.TryGetValue(groupName, out ConcurrentSet<string> childGroupSet))
-            {
-                foreach (string childGroupName in childGroupSet)
-                {
-                    groupList.Add(childGroupName);
-                    GetChildGroupList(childGroupName, groupList);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Set group relation
-        /// </summary>
-        /// <param name="parentGroup">parent group</param>
-        /// <param name="childGroup">child group</param>
-        /// <exception cref="InvalidOperationException"></exception>
-        public void SetGroupRelation(string parentGroup, string childGroup)
-        {
-            List<string> groupList = new List<string>();
-            GetChildGroupList(childGroup, groupList);
-            if (groupList.Contains(parentGroup))
-            {
-                throw new InvalidOperationException($"Cannot create a cyclic group relation: '{parentGroup}' is already a subgroup of '{childGroup}'.");
-            }
-            _groupRelationDic.AddOrUpdate(parentGroup, new ConcurrentSet<string>() { childGroup }, (key, oldValue) => { oldValue.Add(childGroup); return oldValue; });
-        }
-
-        /// <summary>
-        /// Remove group relation
-        /// </summary>
-        /// <param name="parentGroup">parent group</param>
-        /// <param name="childGroup">child group</param>
-        /// <returns>is succeed</returns>
-        public bool RemoveGroupRelation(string parentGroup, string childGroup = null)
-        {
-            bool res = false;
-            if (_groupRelationDic.TryGetValue(parentGroup, out ConcurrentSet<string> childGroupSet))
-            {
-                if (childGroup != null)
-                {
-                    res = childGroupSet.Remove(childGroup);
-                }
-                else
-                {
-                    childGroupSet.Clear();
-                    res = true;
-                }
-            }
-            return res;
-        }
-
-        /// <summary>
-        /// Reset group relation
-        /// </summary>
-        public void ResetGroupRelation()
-        {
-            _groupRelationDic.Clear();
-        }
-
-        /// <summary>
         /// Clear result storage
         /// </summary>
         public void ClearResultStorage()
@@ -612,70 +511,6 @@ namespace PowerThreadPool
         public void ClearFailedWorkRecord()
         {
             _failedWorkSet.Clear();
-        }
-
-        public Group For(int start, int end, Action<int> body, int step = 1)
-        {
-            return For<object>(start, end, null, (_, index) => { body(index); }, step);
-        }
-
-        public Group For<TSource>(int start, int end, IList<TSource> source, Action<TSource> body, int step = 1)
-        {
-            return For(start, end, source, (item, _) => { body(item); }, step);
-        }
-
-        public Group For<TSource>(int start, int end, IList<TSource> source, Action<TSource, int> body, int step = 1)
-        {
-            if (start > end && step == 1)
-            {
-                step = -1;
-            }
-
-            if (step == 0)
-            {
-                throw new ArgumentException("Step cannot be zero.", nameof(step));
-            }
-            if (start > end && step > 0)
-            {
-                step = -1;
-            }
-            if ((start > end && step > 0) || (start < end && step < 0))
-            {
-                throw new ArgumentException("Invalid start, end, and step combination. The loop will never terminate.", nameof(step));
-            }
-
-            string groupID = Guid.NewGuid().ToString();
-            WorkOption workOption = new WorkOption()
-            {
-                Group = groupID,
-            };
-            for (int i = start; start <= end ? i < end : i > end; i += step)
-            {
-                int localI = i;
-                QueueWorkItem(() => { body(source != null ? source[localI] : default, localI); }, workOption);
-            }
-            return GetGroup(groupID);
-        }
-
-        public Group ForEach<TSource>(IEnumerable<TSource> source, Action<TSource> body)
-        {
-            return ForEach(source, (item, _) => body(item));
-        }
-
-        public Group ForEach<TSource>(IEnumerable<TSource> source, Action<TSource, int> body)
-        {
-            string groupID = Guid.NewGuid().ToString();
-            WorkOption workOption = new WorkOption()
-            {
-                Group = groupID,
-            };
-            int i = 0;
-            foreach (TSource item in source)
-            {
-                int localI = i++;
-                QueueWorkItem(() => { body(item, localI); }, workOption);
-            }
-            return GetGroup(groupID);
         }
 
         /// <summary>
