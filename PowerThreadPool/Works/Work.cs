@@ -135,12 +135,11 @@ namespace PowerThreadPool.Works
                 WaitSignal = new AutoResetEvent(false);
             }
 
-            if (Done)
+            if (!Done)
             {
-                return true;
+                WaitSignal.WaitOne();
             }
 
-            WaitSignal.WaitOne();
             return true;
         }
 
@@ -151,12 +150,11 @@ namespace PowerThreadPool.Works
                 FetchSignal = new AutoResetEvent(false);
             }
 
-            if (Done)
+            if (!Done)
             {
-                return ExecuteResult;
+                FetchSignal.WaitOne();
             }
-
-            FetchSignal.WaitOne();
+            
             return ExecuteResult;
         }
 
