@@ -4,6 +4,8 @@ using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using PowerThreadPool.EventArguments;
 using System.Threading;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace UnitTest
 {
@@ -2734,6 +2736,206 @@ namespace UnitTest
             Assert.Equal($"Cannot create a cyclic group relation: 'B' is already a subgroup of 'A'.", e.Message);
 
             powerPool.Stop();
+        }
+
+        [Fact]
+        public void TestParallelFor()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+
+            powerPool.For(1, 10, (i) => result.Add(i)).Wait();
+
+            Assert.Equal (9, result.Count);
+        }
+
+        [Fact]
+        public void TestParallelForWithSource()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            List<int> source = new List<int>();
+            source.Add(1);
+            source.Add(2);
+            source.Add(3);
+
+            powerPool.For<int>(0, 3, source, (item) => result.Add(item)).Wait();
+
+            Assert.Equal(3, result.Count);
+        }
+
+        [Fact]
+        public void TestParallelForWithSourceAndIndex()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            List<int> source = new List<int>();
+            source.Add(1);
+            source.Add(2);
+            source.Add(3);
+
+            powerPool.For<int>(0, 3, source, (item, index) => result.Add(index)).Wait();
+
+            Assert.Contains(0, result);
+            Assert.Contains(1, result);
+            Assert.Contains(2, result);
+        }
+
+        [Fact]
+        public void TestParallelForWithSourceAndIndexReverse()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 1 });
+
+            ConcurrentDictionary<int, int> result = new ConcurrentDictionary<int, int>();
+            List<int> source = new List<int>();
+            source.Add(1);
+            source.Add(2);
+            source.Add(3);
+
+            int i = 0;
+
+            powerPool.For<int>(2, -1, source, (item, index) => result[i++] = item).Wait();
+
+            Assert.Equal(3, result[0]);
+            Assert.Equal(2, result[1]);
+            Assert.Equal(1, result[2]);
+        }
+
+        [Fact]
+        public void TestParallelForGroupName()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+
+            string name = powerPool.For(1, 10, (i) => result.Add(i), 1, "Group1").Name;
+
+            Assert.Equal("Group1", name);
+        }
+
+        [Fact]
+        public void TestParallelForError1()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            List<int> source = new List<int>();
+            source.Add(1);
+            source.Add(2);
+            source.Add(3);
+
+            ArgumentException ex = null;
+            try
+            {
+                powerPool.For<int>(0, 3, source, (item, index) => result.Add(index), 0).Wait();
+            }
+            catch (ArgumentException e)
+            {
+                ex = e;
+            }
+            Assert.Equal("Step cannot be zero. (Parameter 'step')", ex.Message);
+            Assert.Equal("step", ex.ParamName);
+        }
+
+        [Fact]
+        public void TestParallelForError2()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            List<int> source = new List<int>();
+            source.Add(1);
+            source.Add(2);
+            source.Add(3);
+
+            ArgumentException ex = null;
+            try
+            {
+                powerPool.For<int>(0, 3, source, (item, index) => result.Add(index), -10).Wait();
+            }
+            catch (ArgumentException e)
+            {
+                ex = e;
+            }
+            Assert.Equal("Invalid start, end, and step combination. The loop will never terminate. (Parameter 'step')", ex.Message);
+            Assert.Equal("step", ex.ParamName);
+        }
+
+        [Fact]
+        public void TestParallelForError3()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            List<int> source = new List<int>();
+            source.Add(1);
+            source.Add(2);
+            source.Add(3);
+
+            ArgumentException ex = null;
+            try
+            {
+                powerPool.For<int>(3, 0, source, (item, index) => result.Add(index), 10).Wait();
+            }
+            catch (ArgumentException e)
+            {
+                ex = e;
+            }
+            Assert.Equal("Invalid start, end, and step combination. The loop will never terminate. (Parameter 'step')", ex.Message);
+            Assert.Equal("step", ex.ParamName);
+        }
+
+        [Fact]
+        public void TestParallelForEach()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            List<int> list = new List<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.Add(1);
+            list.Add(2);
+            list.Add(3);
+
+            powerPool.ForEach(list, (i) => result.Add(i)).Wait();
+
+            Assert.Equal(3, result.Count);
+        }
+
+        [Fact]
+        public void TestParallelForEachWithIndex()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            List<int> list = new List<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.Add(1);
+            list.Add(2);
+            list.Add(3);
+
+            powerPool.ForEach(list, (i, index) => result.Add(index)).Wait();
+
+            Assert.Contains(0, result);
+            Assert.Contains(1, result);
+            Assert.Contains(2, result);
+        }
+
+        [Fact]
+        public void TestParallelForEachGroupID()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            List<int> list = new List<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.Add(1);
+            list.Add(2);
+            list.Add(3);
+
+            string groupName = powerPool.ForEach(list, (i) => result.Add(i), "Group1").Name;
+
+            Assert.Equal("Group1", groupName);
         }
     }
 }
