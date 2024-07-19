@@ -1671,6 +1671,27 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestFetchByIDInterrupted()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(100);
+                }
+            });
+
+            Task<ExecuteResult<object>> res = powerPool.FetchAsync(id);
+
+            Thread.Sleep(1000);
+
+            powerPool.Stop(true);
+
+            Assert.NotNull((await res).Exception);
+        }
+
+        [Fact]
         public void TestFetchByIDAlreadyDone()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = false });
