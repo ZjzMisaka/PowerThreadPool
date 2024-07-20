@@ -541,14 +541,20 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(300);
-                logList.Add("Work0 Priority0 END");
+                lock(powerPool)
+                {
+                    logList.Add("Work0 Priority0 END");
+                }
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(300);
-                logList.Add("Work1 Priority0 END");
+                lock (powerPool)
+                {
+                    logList.Add("Work1 Priority0 END");
+                }
             }, new WorkOption()
             {
             });
@@ -559,21 +565,30 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(300);
-                logList.Add("Work2 Priority0 END");
+                lock (powerPool)
+                {
+                    logList.Add("Work2 Priority0 END");
+                }
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(300);
-                logList.Add("Work3 Priority0 END");
+                lock (powerPool)
+                {
+                    logList.Add("Work3 Priority0 END");
+                }
             }, new WorkOption()
             {
             });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(300);
-                logList.Add("Work4 Priority1 END");
+                lock (powerPool)
+                {
+                    logList.Add("Work4 Priority1 END");
+                }
             }, new WorkOption()
             {
                 WorkPriority = 1
@@ -581,7 +596,10 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(300);
-                logList.Add("Work5 Priority1 END");
+                lock (powerPool)
+                {
+                    logList.Add("Work5 Priority1 END");
+                }
             }, new WorkOption()
             {
                 WorkPriority = 1
