@@ -145,16 +145,8 @@ namespace PowerThreadPool.Works
 
         internal override ExecuteResultBase Fetch()
         {
-            if (FetchSignal == null)
-            {
-                FetchSignal = new AutoResetEvent(false);
-            }
+            Wait();
 
-            if (!Done)
-            {
-                FetchSignal.WaitOne();
-            }
-            
             return ExecuteResult;
         }
 

@@ -24,7 +24,6 @@ namespace PowerThreadPool.Works
             set => _done = value;
         }
         internal AutoResetEvent WaitSignal { get; set; }
-        internal AutoResetEvent FetchSignal { get; set; }
         internal bool ShouldStop { get; set; }
         internal ManualResetEvent PauseSignal { get; set; }
         internal bool IsPausing { get; set; }

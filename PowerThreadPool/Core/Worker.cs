@@ -112,10 +112,6 @@ namespace PowerThreadPool
 
                             Work.Done = true;
 
-                            if (Work.FetchSignal != null)
-                            {
-                                Work.FetchSignal.Set();
-                            }
                             if (Work.WaitSignal != null)
                             {
                                 Work.WaitSignal.Set();
@@ -181,10 +177,6 @@ namespace PowerThreadPool
 
                     Work.Done = true;
 
-                    if (Work.FetchSignal != null)
-                    {
-                        Work.FetchSignal.Set();
-                    }
                     if (Work.WaitSignal != null)
                     {
                         Work.WaitSignal.Set();
