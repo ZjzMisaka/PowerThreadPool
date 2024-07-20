@@ -16,17 +16,22 @@ namespace PowerThreadPool.Works
             get => _executeCount;
             set => _executeCount = value;
         }
-        internal Status Status { get; set; }
-        internal volatile bool _done;
-        internal bool Done
+        internal volatile bool _isDone;
+        internal bool IsDone
         {
-            get => _done;
-            set => _done = value;
+            get => _isDone;
+            set => _isDone = value;
         }
+        internal volatile bool _isPausing;
+        internal bool IsPausing
+        {
+            get => _isPausing;
+            set => _isPausing = value;
+        }
+        internal Status Status { get; set; }
         internal AutoResetEvent WaitSignal { get; set; }
         internal bool ShouldStop { get; set; }
         internal ManualResetEvent PauseSignal { get; set; }
-        internal bool IsPausing { get; set; }
         internal DateTime QueueDateTime { get; set; }
         internal abstract object Execute();
         internal abstract bool Stop(bool forceStop);

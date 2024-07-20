@@ -135,7 +135,7 @@ namespace PowerThreadPool.Works
                 WaitSignal = new AutoResetEvent(false);
             }
 
-            if (!Done)
+            if (!IsDone)
             {
                 WaitSignal.WaitOne();
             }
@@ -225,26 +225,12 @@ namespace PowerThreadPool.Works
 
         internal override bool ShouldImmediateRetry(ExecuteResultBase executeResult)
         {
-            if (ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry;
         }
 
         internal override bool ShouldRequeue(ExecuteResultBase executeResult)
         {
-            if (ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.Requeue)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.Requeue;
         }
     }
 }

@@ -24,10 +24,9 @@ namespace PowerThreadPool
         internal Guid ID { get; set; }
 
         internal InterlockedFlag<WorkerStates> WorkerState { get; set; } = WorkerStates.Idle;
-
         internal InterlockedFlag<WorkerGettedFlags> GettedFlag { get; set; } = WorkerGettedFlags.Free;
-
         internal InterlockedFlag<WorkHeldFlags> WorkHeld { get; set; } = WorkHeldFlags.NotHeld;
+        internal InterlockedFlag<WorkerStealingFlags> StealingFlag { get; set; } = WorkerStealingFlags.Allow;
 
         private IConcurrentPriorityCollection<string> _waitingWorkIDPriorityCollection;
         private ConcurrentDictionary<string, WorkBase> _waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
@@ -42,8 +41,6 @@ namespace PowerThreadPool
         internal WorkBase Work { get; set; }
 
         private bool _killFlag = false;
-
-        internal InterlockedFlag<WorkerStealingFlags> StealingFlag { get; set; } = WorkerStealingFlags.Allow;
 
         private PowerPool _powerPool;
 
@@ -110,7 +107,7 @@ namespace PowerThreadPool
                         {
                             powerPool.WorkCallbackEnd(Work, executeResult.Status);
 
-                            Work.Done = true;
+                            Work.IsDone = true;
 
                             if (Work.WaitSignal != null)
                             {
@@ -175,7 +172,7 @@ namespace PowerThreadPool
                         hasWaitingWork = true;
                     }
 
-                    Work.Done = true;
+                    Work.IsDone = true;
 
                     if (Work.WaitSignal != null)
                     {
