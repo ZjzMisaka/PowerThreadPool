@@ -80,40 +80,7 @@ namespace PowerThreadPool
                             return;
                         }
 
-                        powerPool.OnWorkStarted(Work.ID);
-
-                        ExecuteResultBase executeResult = null;
-                        do
-                        {
-                            executeResult = ExecuteWork();
-
-                            if (executeResult.Status == Status.Stopped)
-                            {
-                                powerPool.InvokeWorkStoppedEvent(executeResult);
-                            }
-                            else
-                            {
-                                powerPool.InvokeWorkEndedEvent(executeResult);
-                            }
-                            Work.InvokeCallback(powerPool, executeResult, powerPool.PowerPoolOption);
-                        } while (Work.ShouldImmediateRetry(executeResult));
-
-                        if (Work.ShouldRequeue(executeResult))
-                        {
-                            Interlocked.Increment(ref powerPool._waitingWorkCount);
-                            powerPool.SetWork(Work);
-                        }
-                        else
-                        {
-                            powerPool.WorkCallbackEnd(Work, executeResult.Status);
-
-                            Work.IsDone = true;
-
-                            if (Work.WaitSignal != null)
-                            {
-                                Work.WaitSignal.Set();
-                            }
-                        }
+                        ExecuteWork(powerPool);
 
                         if (Work.LongRunning)
                         {
@@ -126,68 +93,111 @@ namespace PowerThreadPool
                 }
                 catch (ThreadInterruptedException ex)
                 {
-                    GettedFlag.InterlockedValue = WorkerGettedFlags.Disabled;
-
-                    WorkerStates origWorkState = WorkerState.InterlockedValue;
-                    WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
-
-                    if (Work.LongRunning)
-                    {
-                        Interlocked.Decrement(ref powerPool._longRunningWorkerCount);
-                        LongRunning = false;
-                    }
-
-                    if (origWorkState == WorkerStates.Running)
-                    {
-                        Interlocked.Decrement(ref powerPool._runningWorkerCount);
-                    }
-
-                    if (powerPool._aliveWorkerDic.TryRemove(ID, out _))
-                    {
-                        Interlocked.Decrement(ref powerPool._aliveWorkerCount);
-                        powerPool._aliveWorkerList = powerPool._aliveWorkerDic.Values;
-                    }
-                    if (powerPool._idleWorkerDic.TryRemove(ID, out _))
-                    {
-                        Interlocked.Decrement(ref powerPool._idleWorkerCount);
-                    }
-
-                    ExecuteResultBase executeResult = Work.SetExecuteResult(powerPool, null, ex, Status.ForceStopped);
-                    executeResult.ID = Work.ID;
-                    powerPool.InvokeWorkStoppedEvent(executeResult);
-
-                    if (!ex.Data.Contains("ThrowedWhenExecuting"))
-                    {
-                        ex.Data.Add("ThrowedWhenExecuting", false);
-                    }
-                    Work.InvokeCallback(powerPool, executeResult, powerPool.PowerPoolOption);
-
-                    powerPool.WorkCallbackEnd(Work, Status.Failed);
-
-                    bool hasWaitingWork = false;
-                    IEnumerable<WorkBase> waitingWorkList = _waitingWorkDic.Values;
-                    foreach (WorkBase work in waitingWorkList)
-                    {
-                        powerPool.SetWork(work);
-                        hasWaitingWork = true;
-                    }
-
-                    Work.IsDone = true;
-
-                    if (Work.WaitSignal != null)
-                    {
-                        Work.WaitSignal.Set();
-                    }
-
-                    if (!hasWaitingWork)
-                    {
-                        powerPool.CheckPoolIdle();
-                    }
-
-                    _workerLoopEnded = true;
+                    ThreadInterrupted(powerPool, ex);
                 }
             });
             _thread.Start();
+        }
+
+        private void ExecuteWork(PowerPool powerPool)
+        {
+            powerPool.OnWorkStarted(Work.ID);
+
+            ExecuteResultBase executeResult;
+            do
+            {
+                executeResult = ExecuteMain();
+
+                if (executeResult.Status == Status.Stopped)
+                {
+                    powerPool.InvokeWorkStoppedEvent(executeResult);
+                }
+                else
+                {
+                    powerPool.InvokeWorkEndedEvent(executeResult);
+                }
+                Work.InvokeCallback(powerPool, executeResult, powerPool.PowerPoolOption);
+            } while (Work.ShouldImmediateRetry(executeResult));
+
+            if (Work.ShouldRequeue(executeResult))
+            {
+                Interlocked.Increment(ref powerPool._waitingWorkCount);
+                powerPool.SetWork(Work);
+            }
+            else
+            {
+                powerPool.WorkCallbackEnd(Work, executeResult.Status);
+
+                Work.IsDone = true;
+
+                if (Work.WaitSignal != null)
+                {
+                    Work.WaitSignal.Set();
+                }
+            }
+        }
+
+        private void ThreadInterrupted(PowerPool powerPool, ThreadInterruptedException ex)
+        {
+            GettedFlag.InterlockedValue = WorkerGettedFlags.Disabled;
+
+            WorkerStates origWorkState = WorkerState.InterlockedValue;
+            WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
+
+            if (Work.LongRunning)
+            {
+                Interlocked.Decrement(ref powerPool._longRunningWorkerCount);
+                LongRunning = false;
+            }
+
+            if (origWorkState == WorkerStates.Running)
+            {
+                Interlocked.Decrement(ref powerPool._runningWorkerCount);
+            }
+
+            if (powerPool._aliveWorkerDic.TryRemove(ID, out _))
+            {
+                Interlocked.Decrement(ref powerPool._aliveWorkerCount);
+                powerPool._aliveWorkerList = powerPool._aliveWorkerDic.Values;
+            }
+            if (powerPool._idleWorkerDic.TryRemove(ID, out _))
+            {
+                Interlocked.Decrement(ref powerPool._idleWorkerCount);
+            }
+
+            ExecuteResultBase executeResult = Work.SetExecuteResult(powerPool, null, ex, Status.ForceStopped);
+            executeResult.ID = Work.ID;
+            powerPool.InvokeWorkStoppedEvent(executeResult);
+
+            if (!ex.Data.Contains("ThrowedWhenExecuting"))
+            {
+                ex.Data.Add("ThrowedWhenExecuting", false);
+            }
+            Work.InvokeCallback(powerPool, executeResult, powerPool.PowerPoolOption);
+
+            powerPool.WorkCallbackEnd(Work, Status.Failed);
+
+            bool hasWaitingWork = false;
+            IEnumerable<WorkBase> waitingWorkList = _waitingWorkDic.Values;
+            foreach (WorkBase work in waitingWorkList)
+            {
+                powerPool.SetWork(work);
+                hasWaitingWork = true;
+            }
+
+            Work.IsDone = true;
+
+            if (Work.WaitSignal != null)
+            {
+                Work.WaitSignal.Set();
+            }
+
+            if (!hasWaitingWork)
+            {
+                powerPool.CheckPoolIdle();
+            }
+
+            _workerLoopEnded = true;
         }
 
         private void InitKillTimer(PowerPool powerPool)
@@ -200,7 +210,7 @@ namespace PowerThreadPool
             }
         }
 
-        private ExecuteResultBase ExecuteWork()
+        private ExecuteResultBase ExecuteMain()
         {
             ExecuteResultBase executeResult;
             DateTime runDateTime = DateTime.UtcNow;
