@@ -10,7 +10,7 @@ namespace PowerThreadPool.Works
     {
         internal string ID { get; set; }
         internal Worker Worker { get; set; }
-        internal int _executeCount;
+        internal volatile int _executeCount;
         internal int ExecuteCount
         {
             get => _executeCount;
