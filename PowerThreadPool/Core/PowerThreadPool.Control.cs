@@ -18,6 +18,7 @@ namespace PowerThreadPool
         {
             _pauseSignal.WaitOne();
 
+            _aliveWorkerListRefresher.Run();
             foreach (Worker worker in _aliveWorkerList)
             {
                 if (worker.WorkerState == WorkerStates.Running && worker._thread == Thread.CurrentThread && worker.IsPausing())
@@ -71,6 +72,7 @@ namespace PowerThreadPool
                 return true;
             }
 
+            _aliveWorkerListRefresher.Run();
             foreach (Worker worker in _aliveWorkerList)
             {
                 if (worker.WorkerState == WorkerStates.Running && worker._thread == Thread.CurrentThread && worker.IsCancellationRequested())
@@ -94,6 +96,7 @@ namespace PowerThreadPool
                 return false;
             }
 
+            _aliveWorkerListRefresher.Run();
             foreach (Worker worker in _aliveWorkerList)
             {
                 if (worker.WorkerState == WorkerStates.Running && worker._thread == Thread.CurrentThread && worker.IsCancellationRequested())
@@ -458,6 +461,7 @@ namespace PowerThreadPool
             {
                 _settedWorkDic.Clear();
                 _workGroupDic.Clear();
+                _aliveWorkerListRefresher.Run();
                 IEnumerable<Worker> workersToStop = _aliveWorkerList;
                 foreach (Worker worker in workersToStop)
                 {
@@ -467,6 +471,7 @@ namespace PowerThreadPool
             else
             {
                 _cancellationTokenSource.Cancel();
+                _aliveWorkerListRefresher.Run();
                 IEnumerable<Worker> workersToStop = _aliveWorkerList;
                 foreach (Worker worker in workersToStop)
                 {
@@ -586,6 +591,7 @@ namespace PowerThreadPool
             _pauseSignal.Set();
             if (resumeWorkPausedByID)
             {
+                _aliveWorkerListRefresher.Run();
                 foreach (Worker worker in _aliveWorkerList)
                 {
                     if (worker.WorkerState == WorkerStates.Running)
@@ -640,6 +646,7 @@ namespace PowerThreadPool
         /// </summary>
         public void Cancel()
         {
+            _aliveWorkerListRefresher.Run();
             foreach (Worker worker in _aliveWorkerList)
             {
                 worker.Cancel();
