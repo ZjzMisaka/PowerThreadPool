@@ -31,6 +31,7 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _groupRelationDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<Guid, Worker> _aliveWorkerDic = new ConcurrentDictionary<Guid, Worker>();
+        internal VersionBasedExecutor _aliveWorkerListRefresher;
         internal IEnumerable<Worker> _aliveWorkerList = new List<Worker>();
 
         internal ConcurrentQueue<string> _suspendedWorkQueue = new ConcurrentQueue<string>();
@@ -96,6 +97,7 @@ namespace PowerThreadPool
             get
             {
                 List<string> list = _settedWorkDic.Keys.ToList();
+                _aliveWorkerListRefresher.Run();
                 foreach (Worker worker in _aliveWorkerList)
                 {
                     if (worker.WorkerState == WorkerStates.Running)
@@ -186,10 +188,13 @@ namespace PowerThreadPool
 
         public PowerPool()
         {
-
+            _aliveWorkerListRefresher = new VersionBasedExecutor(() =>
+            {
+                _aliveWorkerList = _aliveWorkerDic.Values;
+            });
         }
 
-        public PowerPool(PowerPoolOption powerPoolOption)
+        public PowerPool(PowerPoolOption powerPoolOption) : this()
         {
             PowerPoolOption = powerPoolOption;
         }
@@ -254,7 +259,7 @@ namespace PowerThreadPool
                 if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                 {
                     Interlocked.Increment(ref _aliveWorkerCount);
-                    _aliveWorkerList = _aliveWorkerDic.Values;
+                    _aliveWorkerListRefresher.UpdateVersion();
                 }
                 _idleWorkerDic[worker.ID] = worker;
                 Interlocked.Increment(ref _idleWorkerCount);
@@ -309,7 +314,7 @@ namespace PowerThreadPool
                         if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                         {
                             Interlocked.Increment(ref _aliveWorkerCount);
-                            _aliveWorkerList = _aliveWorkerDic.Values;
+                            _aliveWorkerListRefresher.UpdateVersion();
                         }
                         if (longRunning)
                         {
@@ -324,6 +329,7 @@ namespace PowerThreadPool
             if (worker == null && !longRunning)
             {
                 int min = int.MaxValue;
+                _aliveWorkerListRefresher.Run();
                 foreach (Worker aliveWorker in _aliveWorkerList)
                 {
                     if (aliveWorker.LongRunning)
@@ -537,6 +543,7 @@ namespace PowerThreadPool
                     Stop(true);
                     while (AliveWorkerCount > 0 || IdleWorkerCount > 0)
                     {
+                        _aliveWorkerListRefresher.Run();
                         foreach (Worker worker in _aliveWorkerList)
                         {
                             if (!worker._disposed)
