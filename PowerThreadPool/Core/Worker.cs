@@ -158,7 +158,7 @@ namespace PowerThreadPool
             if (powerPool._aliveWorkerDic.TryRemove(ID, out _))
             {
                 Interlocked.Decrement(ref powerPool._aliveWorkerCount);
-                powerPool._aliveWorkerListRefresher.UpdateVersion();
+                powerPool._aliveWorkerListRefresher.Update();
             }
             if (powerPool._idleWorkerDic.TryRemove(ID, out _))
             {
@@ -540,7 +540,7 @@ namespace PowerThreadPool
             if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
             {
                 Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
-                _powerPool._aliveWorkerListRefresher.UpdateVersion();
+                _powerPool._aliveWorkerListRefresher.Update();
             }
             Kill();
         }

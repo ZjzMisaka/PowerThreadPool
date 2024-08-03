@@ -31,7 +31,7 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _groupRelationDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<Guid, Worker> _aliveWorkerDic = new ConcurrentDictionary<Guid, Worker>();
-        internal VersionBasedExecutor _aliveWorkerListRefresher;
+        internal ConditionalExecutor _aliveWorkerListRefresher;
         internal IEnumerable<Worker> _aliveWorkerList = new List<Worker>();
 
         internal ConcurrentQueue<string> _suspendedWorkQueue = new ConcurrentQueue<string>();
@@ -188,7 +188,7 @@ namespace PowerThreadPool
 
         public PowerPool()
         {
-            _aliveWorkerListRefresher = new VersionBasedExecutor(() =>
+            _aliveWorkerListRefresher = new ConditionalExecutor(() =>
             {
                 _aliveWorkerList = _aliveWorkerDic.Values;
             });
@@ -259,7 +259,7 @@ namespace PowerThreadPool
                 if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                 {
                     Interlocked.Increment(ref _aliveWorkerCount);
-                    _aliveWorkerListRefresher.UpdateVersion();
+                    _aliveWorkerListRefresher.Update();
                 }
                 _idleWorkerDic[worker.ID] = worker;
                 Interlocked.Increment(ref _idleWorkerCount);
@@ -314,7 +314,7 @@ namespace PowerThreadPool
                         if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                         {
                             Interlocked.Increment(ref _aliveWorkerCount);
-                            _aliveWorkerListRefresher.UpdateVersion();
+                            _aliveWorkerListRefresher.Update();
                         }
                         if (longRunning)
                         {
