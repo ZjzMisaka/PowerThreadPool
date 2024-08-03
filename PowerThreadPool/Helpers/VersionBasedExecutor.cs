@@ -5,7 +5,7 @@ namespace PowerThreadPool.Helpers
 {
     internal class VersionBasedExecutor
     {
-        private Action _actionVersionChanged;
+        private readonly Action _actionVersionChanged;
 
         private long _updatedVersion = long.MinValue;
         private long _executeVersion = long.MinValue;
