@@ -158,7 +158,7 @@ namespace PowerThreadPool
             if (powerPool._aliveWorkerDic.TryRemove(ID, out _))
             {
                 Interlocked.Decrement(ref powerPool._aliveWorkerCount);
-                powerPool._aliveWorkerListRefresher.Update();
+                powerPool._aliveWorkerList = powerPool._aliveWorkerDic.Values;
             }
             if (powerPool._idleWorkerDic.TryRemove(ID, out _))
             {
@@ -382,7 +382,6 @@ namespace PowerThreadPool
         {
             Worker worker = null;
             int max = 0;
-            _powerPool._aliveWorkerListRefresher.Run();
             foreach (Worker runningWorker in _powerPool._aliveWorkerList)
             {
                 if (runningWorker.WorkerState != WorkerStates.Running || runningWorker.ID == ID)
@@ -540,7 +539,7 @@ namespace PowerThreadPool
             if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
             {
                 Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
-                _powerPool._aliveWorkerListRefresher.Update();
+                _powerPool._aliveWorkerList = _powerPool._aliveWorkerDic.Values;
             }
             Kill();
         }
