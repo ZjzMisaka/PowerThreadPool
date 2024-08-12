@@ -96,7 +96,8 @@ namespace PowerThreadPool
             get
             {
                 List<string> list = _settedWorkDic.Keys.ToList();
-                foreach (Worker worker in _aliveWorkerList)
+                IEnumerable<Worker> workers = _aliveWorkerList;
+                foreach (Worker worker in workers)
                 {
                     if (worker.WorkerState == WorkerStates.Running)
                     {
@@ -324,7 +325,8 @@ namespace PowerThreadPool
             if (worker == null && !longRunning)
             {
                 int min = int.MaxValue;
-                foreach (Worker aliveWorker in _aliveWorkerList)
+                IEnumerable<Worker> workers = _aliveWorkerList;
+                foreach (Worker aliveWorker in workers)
                 {
                     if (aliveWorker.LongRunning)
                     {
@@ -537,7 +539,8 @@ namespace PowerThreadPool
                     Stop(true);
                     while (AliveWorkerCount > 0 || IdleWorkerCount > 0)
                     {
-                        foreach (Worker worker in _aliveWorkerList)
+                        IEnumerable<Worker> workers = _aliveWorkerList;
+                        foreach (Worker worker in workers)
                         {
                             if (!worker._disposed)
                             {

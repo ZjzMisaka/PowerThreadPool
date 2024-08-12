@@ -382,7 +382,8 @@ namespace PowerThreadPool
         {
             Worker worker = null;
             int max = 0;
-            foreach (Worker runningWorker in _powerPool._aliveWorkerList)
+            IEnumerable<Worker> workers = _powerPool._aliveWorkerList;
+            foreach (Worker runningWorker in workers)
             {
                 if (runningWorker.WorkerState != WorkerStates.Running || runningWorker.ID == ID)
                 {
