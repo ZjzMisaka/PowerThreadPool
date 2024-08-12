@@ -21,7 +21,7 @@ namespace PowerThreadPool
 
         internal Thread _thread;
 
-        internal Guid ID { get; set; }
+        internal int ID { get; set; }
 
         internal InterlockedFlag<WorkerStates> WorkerState { get; set; } = WorkerStates.Idle;
         internal InterlockedFlag<WorkerGettedFlags> GettedFlag { get; set; } = WorkerGettedFlags.Free;
@@ -55,7 +55,6 @@ namespace PowerThreadPool
             InitKillTimer(powerPool);
 
             _powerPool = powerPool;
-            ID = Guid.NewGuid();
 
             if (powerPool.PowerPoolOption.QueueType == QueueType.FIFO)
             {
@@ -96,6 +95,7 @@ namespace PowerThreadPool
                     ThreadInterrupted(powerPool, ex);
                 }
             });
+            ID = _thread.ManagedThreadId;
             _thread.Start();
         }
 
