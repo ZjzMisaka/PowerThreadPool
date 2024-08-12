@@ -18,14 +18,11 @@ namespace PowerThreadPool
         {
             _pauseSignal.WaitOne();
 
-            foreach (Worker worker in _aliveWorkerList)
+            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.WorkerState == WorkerStates.Running && worker.IsPausing())
             {
-                if (worker.WorkerState == WorkerStates.Running && worker._thread == Thread.CurrentThread && worker.IsPausing())
-                {
-                    worker.PauseTimer();
-                    worker.WaitForResume();
-                    worker.ResumeTimer();
-                }
+                worker.PauseTimer();
+                worker.WaitForResume();
+                worker.ResumeTimer();
             }
         }
 
@@ -71,12 +68,9 @@ namespace PowerThreadPool
                 return true;
             }
 
-            foreach (Worker worker in _aliveWorkerList)
+            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.WorkerState == WorkerStates.Running && worker.IsCancellationRequested())
             {
-                if (worker.WorkerState == WorkerStates.Running && worker._thread == Thread.CurrentThread && worker.IsCancellationRequested())
-                {
-                    return true;
-                }
+                return true;
             }
 
             return false;
@@ -94,13 +88,10 @@ namespace PowerThreadPool
                 return false;
             }
 
-            foreach (Worker worker in _aliveWorkerList)
+            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.WorkerState == WorkerStates.Running && worker.IsCancellationRequested())
             {
-                if (worker.WorkerState == WorkerStates.Running && worker._thread == Thread.CurrentThread && worker.IsCancellationRequested())
-                {
-                    work = worker.Work;
-                    return true;
-                }
+                work = worker.Work;
+                return true;
             }
 
             return true;
