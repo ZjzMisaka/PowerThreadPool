@@ -363,7 +363,7 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckPoolStart()
         {
-            if (_poolRunning.TrySet(PoolRunningFlags.Running, PoolRunningFlags.NotRunning))
+            if (RunningWorkerCount == 0 && _poolRunning.TrySet(PoolRunningFlags.Running, PoolRunningFlags.NotRunning))
             {
                 if (PoolStarted != null)
                 {
