@@ -16,4 +16,12 @@
     <ProjectReference Include="..\PowerThreadPool\PowerThreadPool.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EditorConfigFiles Remove="F:\_programming\c#\PowerThreadPool\Benchmark\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="F:\_programming\c#\PowerThreadPool\Benchmark\.editorconfig" />
+  </ItemGroup>
+
 </Project>

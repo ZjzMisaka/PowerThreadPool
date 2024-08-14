@@ -18,7 +18,7 @@ namespace Benchmark
         {
             _smartThreadPool = new SmartThreadPool();
             _smartThreadPool.MaxThreads = 8;
-            _powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption() { MaxThreads = 8 });
+            _powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption { MaxThreads = 8 });
             ThreadPool.SetMaxThreads(8, 8);
         }
 
@@ -88,7 +88,7 @@ namespace Benchmark
                     Thread.Yield();
                     _smartThreadPool.WaitForIdle();
                 }
-                
+
                 int count = _smartThreadPoolRunCount;
                 if (count != 1000)
                 {
