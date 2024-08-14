@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers;
-using PowerThreadPool.Constants;
 
 namespace UnitTest
 {
     public class InterlockedFlagTest
     {
-        InterlockedFlag<WorkerGettedFlags> gettedLock0 = WorkerGettedFlags.Free;
-        InterlockedFlag<WorkerGettedFlags> gettedLock1 = WorkerGettedFlags.Free;
+        InterlockedFlag<WorkerGettedFlags> _gettedLock0 = WorkerGettedFlags.Free;
+        InterlockedFlag<WorkerGettedFlags> _gettedLock1 = WorkerGettedFlags.Free;
 
         private void InitFlags()
         {
-            gettedLock0 = WorkerGettedFlags.Free;
-            gettedLock1 = WorkerGettedFlags.Free;
+            _gettedLock0 = WorkerGettedFlags.Free;
+            _gettedLock1 = WorkerGettedFlags.Free;
         }
 
         [Fact]
@@ -24,8 +19,8 @@ namespace UnitTest
         {
             InitFlags();
 
-            gettedLock0.InterlockedValue = WorkerGettedFlags.Disabled;
-            Assert.Equal(WorkerGettedFlags.Disabled, gettedLock0.InterlockedValue);
+            _gettedLock0.InterlockedValue = WorkerGettedFlags.Disabled;
+            Assert.Equal(WorkerGettedFlags.Disabled, _gettedLock0.InterlockedValue);
         }
 
         [Fact]
@@ -33,8 +28,8 @@ namespace UnitTest
         {
             InitFlags();
 
-            gettedLock0.InterlockedValue = WorkerGettedFlags.Disabled;
-            Assert.Equal(WorkerGettedFlags.Disabled, gettedLock0.Value);
+            _gettedLock0.InterlockedValue = WorkerGettedFlags.Disabled;
+            Assert.Equal(WorkerGettedFlags.Disabled, _gettedLock0.Value);
         }
 
         [Fact]
@@ -42,7 +37,7 @@ namespace UnitTest
         {
             InitFlags();
 
-            string dd = gettedLock0.DebuggerDisplay;
+            string dd = _gettedLock0.DebuggerDisplay;
             Assert.Equal("WorkerGettedFlags.Free", dd);
         }
 
@@ -51,8 +46,8 @@ namespace UnitTest
         {
             InitFlags();
 
-            gettedLock0.InterlockedValue = WorkerGettedFlags.Disabled;
-            Assert.Equal(WorkerGettedFlags.Disabled, gettedLock0.Get());
+            _gettedLock0.InterlockedValue = WorkerGettedFlags.Disabled;
+            Assert.Equal(WorkerGettedFlags.Disabled, _gettedLock0.Get());
         }
 
         [Fact]
@@ -61,12 +56,12 @@ namespace UnitTest
             InitFlags();
 
             bool res;
-            res = gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free);
-            Assert.Equal(WorkerGettedFlags.Disabled, gettedLock0.Get());
+            res = _gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free);
+            Assert.Equal(WorkerGettedFlags.Disabled, _gettedLock0.Get());
             Assert.True(res);
 
-            res = gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free);
-            Assert.Equal(WorkerGettedFlags.Disabled, gettedLock0.Get());
+            res = _gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free);
+            Assert.Equal(WorkerGettedFlags.Disabled, _gettedLock0.Get());
             Assert.False(res);
         }
 
@@ -77,12 +72,12 @@ namespace UnitTest
 
             WorkerGettedFlags orig;
             bool res;
-            res = gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free, out orig);
-            Assert.Equal(WorkerGettedFlags.Disabled, gettedLock0.Get());
+            res = _gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free, out orig);
+            Assert.Equal(WorkerGettedFlags.Disabled, _gettedLock0.Get());
             Assert.Equal(WorkerGettedFlags.Free, orig);
             Assert.True(res);
 
-            res = gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free, out orig);
+            res = _gettedLock0.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free, out orig);
             Assert.Equal(WorkerGettedFlags.Disabled, orig);
             Assert.False(res);
         }
@@ -93,23 +88,23 @@ namespace UnitTest
             InitFlags();
 
             bool res;
-            res = gettedLock0 == gettedLock1;
+            res = _gettedLock0 == _gettedLock1;
             Assert.True(res);
-            res = gettedLock0 != gettedLock1;
+            res = _gettedLock0 != _gettedLock1;
             Assert.False(res);
-            gettedLock0 = WorkerGettedFlags.ToBeDisabled;
-            res = gettedLock0 == gettedLock1;
+            _gettedLock0 = WorkerGettedFlags.ToBeDisabled;
+            res = _gettedLock0 == _gettedLock1;
             Assert.False(res);
-            res = gettedLock0 == gettedLock1;
+            res = _gettedLock0 == _gettedLock1;
             Assert.False(res);
-            gettedLock0 = null;
-            res = gettedLock0 == gettedLock1;
+            _gettedLock0 = null;
+            res = _gettedLock0 == _gettedLock1;
             Assert.False(res);
-            gettedLock1 = null;
-            res = gettedLock0 == gettedLock1;
+            _gettedLock1 = null;
+            res = _gettedLock0 == _gettedLock1;
             Assert.True(res);
-            gettedLock0 = WorkerGettedFlags.ToBeDisabled;
-            res = gettedLock0 == gettedLock1;
+            _gettedLock0 = WorkerGettedFlags.ToBeDisabled;
+            res = _gettedLock0 == _gettedLock1;
             Assert.False(res);
         }
 
@@ -119,17 +114,17 @@ namespace UnitTest
             InitFlags();
 
             bool res;
-            res = gettedLock0 == WorkerGettedFlags.Free;
+            res = _gettedLock0 == WorkerGettedFlags.Free;
             Assert.True(res);
-            res = gettedLock0 != WorkerGettedFlags.Free;
+            res = _gettedLock0 != WorkerGettedFlags.Free;
             Assert.False(res);
-            gettedLock0 = WorkerGettedFlags.ToBeDisabled;
-            res = gettedLock0 == WorkerGettedFlags.Free;
+            _gettedLock0 = WorkerGettedFlags.ToBeDisabled;
+            res = _gettedLock0 == WorkerGettedFlags.Free;
             Assert.False(res);
-            res = gettedLock0 == WorkerGettedFlags.Free;
+            res = _gettedLock0 == WorkerGettedFlags.Free;
             Assert.False(res);
-            gettedLock0 = null;
-            res = gettedLock0 == WorkerGettedFlags.Free;
+            _gettedLock0 = null;
+            res = _gettedLock0 == WorkerGettedFlags.Free;
             Assert.False(res);
         }
 
@@ -138,9 +133,9 @@ namespace UnitTest
         {
             InitFlags();
 
-            gettedLock0 = WorkerGettedFlags.ToBeDisabled;
-            WorkerGettedFlags f = gettedLock0;
-            Assert.Equal(WorkerGettedFlags.ToBeDisabled, gettedLock0.Value);
+            _gettedLock0 = WorkerGettedFlags.ToBeDisabled;
+            WorkerGettedFlags f = _gettedLock0;
+            Assert.Equal(WorkerGettedFlags.ToBeDisabled, _gettedLock0.Value);
             Assert.Equal(WorkerGettedFlags.ToBeDisabled, f);
         }
 
@@ -150,12 +145,12 @@ namespace UnitTest
             InitFlags();
 
             bool res;
-            res = gettedLock0.Equals(gettedLock1);
+            res = _gettedLock0.Equals(_gettedLock1);
             Assert.True(res);
-            gettedLock0 = WorkerGettedFlags.ToBeDisabled;
-            res = gettedLock0.Equals(gettedLock1);
+            _gettedLock0 = WorkerGettedFlags.ToBeDisabled;
+            res = _gettedLock0.Equals(_gettedLock1);
             Assert.False(res);
-            res = gettedLock0.Equals(gettedLock1);
+            res = _gettedLock0.Equals(_gettedLock1);
             Assert.False(res);
         }
 
@@ -165,12 +160,12 @@ namespace UnitTest
             InitFlags();
 
             bool res;
-            res = gettedLock0.Equals(WorkerGettedFlags.Free);
+            res = _gettedLock0.Equals(WorkerGettedFlags.Free);
             Assert.True(res);
-            gettedLock0 = WorkerGettedFlags.ToBeDisabled;
-            res = gettedLock0.Equals(WorkerGettedFlags.Free);
+            _gettedLock0 = WorkerGettedFlags.ToBeDisabled;
+            res = _gettedLock0.Equals(WorkerGettedFlags.Free);
             Assert.False(res);
-            res = gettedLock0.Equals(WorkerGettedFlags.Free);
+            res = _gettedLock0.Equals(WorkerGettedFlags.Free);
             Assert.False(res);
         }
 
@@ -180,9 +175,9 @@ namespace UnitTest
             InitFlags();
 
             bool res;
-            res = gettedLock0.Equals(null);
+            res = _gettedLock0.Equals(null);
             Assert.False(res);
-            res = gettedLock0.Equals(new PowerThreadPool.PowerPool());
+            res = _gettedLock0.Equals(new PowerThreadPool.PowerPool());
             Assert.False(res);
         }
 
@@ -191,11 +186,11 @@ namespace UnitTest
         {
             InitFlags();
 
-            int hash0 = gettedLock0.GetHashCode();
-            int hash1 = gettedLock0.GetHashCode();
-            int hash2 = gettedLock1.GetHashCode();
-            gettedLock1 = WorkerGettedFlags.ToBeDisabled;
-            int hash3 = gettedLock1.GetHashCode();
+            int hash0 = _gettedLock0.GetHashCode();
+            int hash1 = _gettedLock0.GetHashCode();
+            int hash2 = _gettedLock1.GetHashCode();
+            _gettedLock1 = WorkerGettedFlags.ToBeDisabled;
+            int hash3 = _gettedLock1.GetHashCode();
             Assert.Equal(hash0, hash1);
             Assert.Equal(hash1, hash2);
             Assert.NotEqual(hash2, hash3);

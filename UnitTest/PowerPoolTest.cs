@@ -1,11 +1,9 @@
+using System.Collections.Concurrent;
 using PowerThreadPool;
 using PowerThreadPool.Collections;
+using PowerThreadPool.EventArguments;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
-using PowerThreadPool.EventArguments;
-using System.Threading;
-using System.Collections.Concurrent;
-using System.Diagnostics;
 
 namespace UnitTest
 {
@@ -541,7 +539,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(300);
-                lock(powerPool)
+                lock (powerPool)
                 {
                     logList.Add("Work0 Priority0 END");
                 }
@@ -2765,7 +2763,7 @@ namespace UnitTest
 
             powerPool.For(1, 10, (i) => result.Add(i)).Wait();
 
-            Assert.Equal (9, result.Count);
+            Assert.Equal(9, result.Count);
         }
 
         [Fact]
