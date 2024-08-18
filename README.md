@@ -93,4 +93,7 @@ string QueueWorkItem<TResult>(Func<TResult> function, *);
 string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, *);
 ```
 - Asterisk (*) denotes an optional parameter, either a WorkOption or a delegate (`Action<ExecuteResult<object>>` or `Action<ExecuteResult<TResult>>`), depending on whether the first parameter is an Action or a Func. 
-- In places where you see ellipses (...), you can provide up to five generic type parameters. 
+- In places where you see ellipses (...), you can provide up to five generic type parameters.
+
+## More
+[Testing And Performance Analysis](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Testing-And-Performance-Analysis) | [Feature Comparison](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Feature-Comparison)
