@@ -20,7 +20,7 @@ namespace PowerThreadPool.Groups
         public string Name => _groupName;
 
         /// <summary>
-        /// Add work to group
+        /// Add work to group.
         /// </summary>
         /// <param name="workID"></param>
         /// <returns>
@@ -33,7 +33,7 @@ namespace PowerThreadPool.Groups
         }
 
         /// <summary>
-        /// Remove work from group
+        /// Remove work from group.
         /// </summary>
         /// <param name="workID"></param>
         /// <returns>Returns false if work does not exist, or if the work does not belong to the group.</returns>
