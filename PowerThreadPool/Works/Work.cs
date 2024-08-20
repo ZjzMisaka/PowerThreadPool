@@ -23,7 +23,11 @@ namespace PowerThreadPool.Works
             set => _executeResult = value;
         }
 
-        internal override string Group => _workOption.Group;
+        internal override string Group
+        {
+            get => _workOption.Group;
+            set => _workOption.Group = value;
+        }
         internal override ThreadPriority ThreadPriority => _workOption.ThreadPriority;
         internal override bool IsBackground => _workOption.IsBackground;
         internal override int WorkPriority => _workOption.WorkPriority;

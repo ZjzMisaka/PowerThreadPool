@@ -20,6 +20,29 @@ namespace PowerThreadPool.Groups
         public string Name => _groupName;
 
         /// <summary>
+        /// Add work to group.
+        /// </summary>
+        /// <param name="workID"></param>
+        /// <returns>
+        /// Returns false if the work does not exist.
+        /// Modifies WorkOption.Group.
+        /// </returns>
+        public bool Add(string workID)
+        {
+            return _powerPool.AddWorkToGroup(Name, workID);
+        }
+
+        /// <summary>
+        /// Remove work from group.
+        /// </summary>
+        /// <param name="workID"></param>
+        /// <returns>Returns false if work does not exist, or if the work does not belong to the group.</returns>
+        public bool Remove(string workID)
+        {
+            return _powerPool.RemoveWorkFromGroup(Name, workID);
+        }
+
+        /// <summary>
         /// Wait until all the work belonging to the group is done.
         /// </summary>
         public void Wait()

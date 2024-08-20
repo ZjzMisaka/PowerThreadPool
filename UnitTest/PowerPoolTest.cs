@@ -2755,6 +2755,249 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestAddWorkToGroup()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+
+            bool res = powerPool.AddWorkToGroup("AAA", id);
+            Assert.True(res);
+
+            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+
+            powerPool.GetGroup("AAA").Stop();
+
+            Thread.Sleep(100);
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
+        public void TestAddWorkToGroupWorkNotExist()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+
+            bool res = powerPool.AddWorkToGroup("AAA", "AAA");
+            Assert.False(res);
+
+            Assert.DoesNotContain(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+
+            powerPool.GetGroup("AAA").Stop();
+
+            Thread.Sleep(100);
+
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+
+            powerPool.Stop();
+        }
+
+        [Fact]
+        public void TestRemoveWorkFromGroup()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "AAA"
+            });
+
+            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+
+            bool res = powerPool.RemoveWorkFromGroup("AAA", id);
+            Assert.True(res);
+
+            Assert.DoesNotContain(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+
+            powerPool.GetGroup("AAA").Stop();
+
+            Thread.Sleep(100);
+
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+
+            powerPool.Stop();
+        }
+
+        [Fact]
+        public void TestRemoveWorkFromGroupWorkNotExist()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "AAA"
+            });
+
+            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+
+            bool res = powerPool.RemoveWorkFromGroup("AAA", "AAA");
+            Assert.False(res);
+
+            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+
+            powerPool.GetGroup("AAA").Stop();
+
+            Thread.Sleep(100);
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
+        public void TestRemoveWorkFromGroupGroupNotExist()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "AAA"
+            });
+
+            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+
+            bool res = powerPool.RemoveWorkFromGroup("BBB", id);
+            Assert.False(res);
+
+            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+
+            powerPool.GetGroup("AAA").Stop();
+
+            Thread.Sleep(100);
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
+        public void TestRemoveWorkFromGroupWorkNotBelong()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "AAA"
+            });
+
+            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+
+            bool res = powerPool.RemoveWorkFromGroup("AAA", id);
+            Assert.True(res);
+            res = powerPool.RemoveWorkFromGroup("AAA", id);
+            Assert.False(res);
+
+            Assert.DoesNotContain(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+
+            powerPool.GetGroup("AAA").Stop();
+
+            Thread.Sleep(100);
+
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+
+            powerPool.Stop();
+        }
+
+        [Fact]
+        public void TestAddWorkToGroupByGroupObject()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+
+            bool res = powerPool.GetGroup("AAA").Add(id);
+            Assert.True(res);
+
+            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+
+            powerPool.GetGroup("AAA").Stop();
+
+            Thread.Sleep(100);
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
+        public void TestRemoveWorkFromGroupByGroupObject()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "AAA"
+            });
+
+            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+
+            bool res = powerPool.GetGroup("AAA").Remove(id);
+            Assert.True(res);
+
+            Assert.DoesNotContain(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+
+            powerPool.GetGroup("AAA").Stop();
+
+            Thread.Sleep(100);
+
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+
+            powerPool.Stop();
+        }
+
+        [Fact]
         public void TestParallelFor()
         {
             PowerPool powerPool = new PowerPool();
