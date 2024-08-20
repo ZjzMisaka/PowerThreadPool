@@ -28,7 +28,7 @@ namespace PowerThreadPool.Works
             get => _workOption.Group;
             set => _workOption.Group = value;
         }
-    internal override ThreadPriority ThreadPriority => _workOption.ThreadPriority;
+        internal override ThreadPriority ThreadPriority => _workOption.ThreadPriority;
         internal override bool IsBackground => _workOption.IsBackground;
         internal override int WorkPriority => _workOption.WorkPriority;
         internal override TimeoutOption WorkTimeoutOption => _workOption.TimeoutOption;
