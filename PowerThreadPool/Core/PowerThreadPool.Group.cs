@@ -13,7 +13,10 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="groupName"></param>
         /// <param name="workID"></param>
-        /// <returns>Return false if the work does not exist.</returns>
+        /// <returns>
+        /// Returns false if the work does not exist.
+        /// Modifies WorkOption.Group.
+        /// </returns>
         public bool AddWorkToGroup(string groupName, string workID)
         {
             if (_settedWorkDic.TryGetValue(workID, out WorkBase work))
@@ -31,7 +34,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="groupName"></param>
         /// <param name="workID"></param>
-        /// <returns>Return false if either the work or the group does not exist, or if the work does not belong to the group.</returns>
+        /// <returns>Returns false if either the work or the group does not exist, or if the work does not belong to the group.</returns>
         public bool RemoveWorkFromGroup(string groupName, string workID)
         {
             if (_settedWorkDic.TryGetValue(workID, out WorkBase work))
