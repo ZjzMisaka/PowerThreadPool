@@ -2,11 +2,50 @@
 using System.Collections.Generic;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Groups;
+using PowerThreadPool.Works;
 
 namespace PowerThreadPool
 {
     public partial class PowerPool
     {
+        /// <summary>
+        /// Add work to group
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <param name="workID"></param>
+        /// <returns>Return false if the work does not exist.</returns>
+        public bool AddWorkToGroup(string groupName, string workID)
+        {
+            if (_settedWorkDic.TryGetValue(workID, out WorkBase work))
+            {
+                work.Group = groupName;
+                _workGroupDic.AddOrUpdate(groupName, new ConcurrentSet<string>() { workID }, (key, oldValue) => { oldValue.Add(workID); return oldValue; });
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Remove work from group
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <param name="workID"></param>
+        /// <returns>Return false if either the work or the group does not exist, or if the work does not belong to the group.</returns>
+        public bool RemoveWorkFromGroup(string groupName, string workID)
+        {
+            if (_settedWorkDic.TryGetValue(workID, out WorkBase work))
+            {
+                if (_workGroupDic.TryGetValue(groupName, out ConcurrentSet<string> workIDSet))
+                {
+                    work.Group = null;
+                    return workIDSet.Remove(workID);
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Get group object
         /// </summary>
