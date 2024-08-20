@@ -57,7 +57,7 @@ namespace PowerThreadPool
             if (_settedWorkDic.TryGetValue(workID, out WorkBase work))
             {
                 work.Group = groupName;
-                _workGroupDic.AddOrUpdate(groupName, new ConcurrentSet<string>() { workID }, (key, oldValue) => { oldValue.Add(workID); return oldValue; });
+                _workGroupDic.AddOrUpdate(groupName, new ConcurrentSet<string> { workID }, (key, oldValue) => { oldValue.Add(workID); return oldValue; });
                 return true;
             }
 
