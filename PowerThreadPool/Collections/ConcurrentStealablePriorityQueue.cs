@@ -4,30 +4,30 @@ using System.Linq;
 
 namespace PowerThreadPool.Collections
 {
-    internal class ConcurrentPriorityStack<T> : IConcurrentPriorityCollection<T>
+    internal class ConcurrentStealablePriorityQueue<T> : IStealablePriorityCollection<T>
     {
-        private readonly ConcurrentDictionary<int, ConcurrentStack<T>> _queueDic;
+        private readonly ConcurrentDictionary<int, ConcurrentQueue<T>> _queueDic;
         private readonly ConcurrentSet<int> _prioritySet;
         private List<int> _reversed;
         private volatile bool _updated;
 
-        internal ConcurrentPriorityStack()
+        internal ConcurrentStealablePriorityQueue()
         {
-            _queueDic = new ConcurrentDictionary<int, ConcurrentStack<T>>();
+            _queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
             _prioritySet = new ConcurrentSet<int>();
             _updated = false;
         }
 
         public void Set(T item, int priority)
         {
-            ConcurrentStack<T> queue = _queueDic.GetOrAdd(priority, _ =>
+            ConcurrentQueue<T> queue = _queueDic.GetOrAdd(priority, _ =>
             {
                 _prioritySet.Add(priority);
                 _updated = true;
-                return new ConcurrentStack<T>();
+                return new ConcurrentQueue<T>();
             });
 
-            queue.Push(item);
+            queue.Enqueue(item);
         }
 
         public T Get()
@@ -43,9 +43,9 @@ namespace PowerThreadPool.Collections
             for (int i = 0; i < _reversed.Count; ++i)
             {
                 int priority = _reversed[i];
-                if (_queueDic.TryGetValue(priority, out ConcurrentStack<T> queue))
+                if (_queueDic.TryGetValue(priority, out ConcurrentQueue<T> queue))
                 {
-                    if (queue.TryPop(out item))
+                    if (queue.TryDequeue(out item))
                     {
                         break;
                     }
@@ -54,5 +54,7 @@ namespace PowerThreadPool.Collections
 
             return item;
         }
+
+        public T Steal() => Get();
     }
 }
