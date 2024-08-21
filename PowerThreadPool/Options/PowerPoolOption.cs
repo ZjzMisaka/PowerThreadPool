@@ -1,4 +1,5 @@
 ﻿using System;
+using PowerThreadPool.Collections;
 using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Options
@@ -54,5 +55,10 @@ namespace PowerThreadPool.Options
         /// Determines whether to clear the records of failed work when the pool starts.
         /// </summary>
         public bool ClearFailedWorkRecordWhenPoolStart { get; set; } = true;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public Func<IStealablePriorityCollection<string>> CustomQueueCollectionFactory { get; set; }
     }
 }

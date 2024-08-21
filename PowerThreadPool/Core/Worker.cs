@@ -28,7 +28,7 @@ namespace PowerThreadPool
         internal InterlockedFlag<WorkHeldFlags> WorkHeld { get; set; } = WorkHeldFlags.NotHeld;
         internal InterlockedFlag<WorkerStealingFlags> StealingFlag { get; set; } = WorkerStealingFlags.Allow;
 
-        private IConcurrentPriorityCollection<string> _waitingWorkIDPriorityCollection;
+        private IStealablePriorityCollection<string> _waitingWorkIDPriorityCollection;
         private ConcurrentDictionary<string, WorkBase> _waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
 
         private System.Timers.Timer _timeoutTimer;
@@ -56,13 +56,17 @@ namespace PowerThreadPool
 
             _powerPool = powerPool;
 
-            if (powerPool.PowerPoolOption.QueueType == QueueType.FIFO)
+            if (powerPool.PowerPoolOption.CustomQueueCollectionFactory != null)
             {
-                _waitingWorkIDPriorityCollection = new ConcurrentPriorityQueue<string>();
+                _waitingWorkIDPriorityCollection = powerPool.PowerPoolOption.CustomQueueCollectionFactory();
+            }
+            else if (powerPool.PowerPoolOption.QueueType == QueueType.FIFO)
+            {
+                _waitingWorkIDPriorityCollection = new ConcurrentStealablePriorityQueue<string>();
             }
             else
             {
-                _waitingWorkIDPriorityCollection = new ConcurrentPriorityStack<string>();
+                _waitingWorkIDPriorityCollection = new ConcurrentStealablePriorityStack<string>();
             }
 
             _thread = new Thread(() =>
@@ -313,7 +317,7 @@ namespace PowerThreadPool
                 isContinue = false;
 
                 string stolenWorkID;
-                stolenWorkID = _waitingWorkIDPriorityCollection.Get();
+                stolenWorkID = _waitingWorkIDPriorityCollection.Steal();
 
                 if (stolenWorkID != null)
                 {
