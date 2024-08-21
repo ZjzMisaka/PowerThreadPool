@@ -1510,6 +1510,108 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestCustomQueueLIFO()
+        {
+            List<string> logList = new List<string>();
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                CustomQueueCollectionFactory = () => new ConcurrentStealablePriorityStack<string>(),
+            };
+
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                logList.Add("1");
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                logList.Add("2");
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                logList.Add("3");
+            });
+            string id4 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                logList.Add("4");
+            });
+
+            powerPool.Wait();
+
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("1", item),
+                item => Assert.Equal("4", item),
+                item => Assert.Equal("3", item),
+                item => Assert.Equal("2", item)
+                );
+        }
+
+        [Fact]
+        public void TestCustomQueueFIFO()
+        {
+            List<string> logList = new List<string>();
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                CustomQueueCollectionFactory = () => new ConcurrentStealablePriorityQueue<string>(),
+            };
+
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                logList.Add("1");
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                logList.Add("2");
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                logList.Add("3");
+            });
+            string id4 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            }, (res) =>
+            {
+                logList.Add("4");
+            });
+
+            powerPool.Wait();
+
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("1", item),
+                item => Assert.Equal("2", item),
+                item => Assert.Equal("3", item),
+                item => Assert.Equal("4", item)
+                );
+        }
+
+        [Fact]
         public void TestImmediateRetry()
         {
             PowerPool powerPool = new PowerPool();
