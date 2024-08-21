@@ -56,9 +56,9 @@ namespace PowerThreadPool
 
             _powerPool = powerPool;
 
-            if (powerPool.PowerPoolOption.CustomQueueCollectionFactory != null)
+            if (powerPool.PowerPoolOption.CustomQueueFactory != null)
             {
-                _waitingWorkIDPriorityCollection = powerPool.PowerPoolOption.CustomQueueCollectionFactory();
+                _waitingWorkIDPriorityCollection = powerPool.PowerPoolOption.CustomQueueFactory();
             }
             else if (powerPool.PowerPoolOption.QueueType == QueueType.FIFO)
             {

@@ -57,8 +57,9 @@ namespace PowerThreadPool.Options
         public bool ClearFailedWorkRecordWhenPoolStart { get; set; } = true;
 
         /// <summary>
-        /// 
+        /// A factory function that creates instances of 
+        /// <see cref="IStealablePriorityCollection{T}"/> of type <see cref="string"/>.
         /// </summary>
-        public Func<IStealablePriorityCollection<string>> CustomQueueCollectionFactory { get; set; }
+        public Func<IStealablePriorityCollection<string>> CustomQueueFactory { get; set; }
     }
 }

@@ -1518,7 +1518,7 @@ namespace UnitTest
             powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 1,
-                CustomQueueCollectionFactory = () => new ConcurrentStealablePriorityStack<string>(),
+                CustomQueueFactory = () => new ConcurrentStealablePriorityStack<string>(),
             };
 
             string id1 = powerPool.QueueWorkItem(() =>
@@ -1569,7 +1569,7 @@ namespace UnitTest
             powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 1,
-                CustomQueueCollectionFactory = () => new ConcurrentStealablePriorityQueue<string>(),
+                CustomQueueFactory = () => new ConcurrentStealablePriorityQueue<string>(),
             };
 
             string id1 = powerPool.QueueWorkItem(() =>
