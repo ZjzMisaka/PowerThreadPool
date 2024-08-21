@@ -43,7 +43,7 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
     - [Group Relation](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Group-Relation)
 - [Events](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Events)
 - [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Runtime-Status)
-- [Queue Type (FIFO | LIFO)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Queue-Type)
+- [Queue Type (FIFO | LIFO | Custom)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Queue-Type)
 - [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
 - [Lock-Free](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
 
