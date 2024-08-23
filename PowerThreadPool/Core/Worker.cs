@@ -238,7 +238,7 @@ namespace PowerThreadPool
             catch (Exception ex)
             {
                 executeResult = Work.SetExecuteResult(_powerPool, null, ex, Status.Failed);
-                _powerPool.OnWorkErrorOccurred(ex, EventArguments.ErrorFrom.WorkLogic, executeResult);
+                _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
             }
             SpinWait.SpinUntil(() => WorkHeld == WorkHeldFlags.NotHeld);
             Work.Worker = null;
@@ -266,7 +266,8 @@ namespace PowerThreadPool
 
         internal void Resume()
         {
-            foreach (WorkBase workToResume in _waitingWorkDic.Values)
+            IEnumerable<WorkBase> waitingWorkList = _waitingWorkDic.Values;
+            foreach (WorkBase workToResume in waitingWorkList)
             {
                 if (workToResume.IsPausing)
                 {
