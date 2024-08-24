@@ -18,7 +18,10 @@ namespace PowerThreadPool
         {
             _pauseSignal.WaitOne();
 
-            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.IsPausing())
+            // Directly retrieve the worker from the dictionary since the key is guaranteed to exist
+            // If not, just let Work execute failed
+            Worker worker = _aliveWorkerDic[Thread.CurrentThread.ManagedThreadId];
+            if (worker.IsPausing())
             {
                 worker.PauseTimer();
                 worker.WaitForResume();
@@ -68,7 +71,10 @@ namespace PowerThreadPool
                 return true;
             }
 
-            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.IsCancellationRequested())
+            // Directly retrieve the worker from the dictionary since the key is guaranteed to exist
+            // If not, just let Work execute failed
+            Worker worker = _aliveWorkerDic[Thread.CurrentThread.ManagedThreadId];
+            if (worker.IsCancellationRequested())
             {
                 return true;
             }
