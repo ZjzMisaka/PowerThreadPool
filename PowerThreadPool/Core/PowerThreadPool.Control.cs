@@ -18,7 +18,7 @@ namespace PowerThreadPool
         {
             _pauseSignal.WaitOne();
 
-            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.WorkerState == WorkerStates.Running && worker.IsPausing())
+            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.IsPausing())
             {
                 worker.PauseTimer();
                 worker.WaitForResume();
@@ -68,7 +68,7 @@ namespace PowerThreadPool
                 return true;
             }
 
-            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.WorkerState == WorkerStates.Running && worker.IsCancellationRequested())
+            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.IsCancellationRequested())
             {
                 return true;
             }
