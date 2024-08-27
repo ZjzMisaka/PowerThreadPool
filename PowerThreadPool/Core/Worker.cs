@@ -517,23 +517,37 @@ namespace PowerThreadPool
         {
             if (_powerPool.IdleWorkerCount > _powerPool.PowerPoolOption.DestroyThreadOption.MinThreads)
             {
+                // ① There is a possibility that a worker may still obtain and execute work between the 
+                // time the _killTimer triggers OnKillTimerElapsed and when GettedFlag is set to Disabled. 
                 SpinWait.SpinUntil(() =>
                 {
                     GettedFlag.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free, out WorkerGettedFlags origValue);
+                    // If situation ① occurs and _killTimer.Stop() has not yet been executed, the current state 
+                    // of GettedFlag will be Disabled, although this is an extremely rare case.
+                    // Therefore, SpinUntil will exit either when GettedFlag is successfully set from Free to Disabled, 
+                    // or if the current state of GettedFlag is already Disabled.
                     return origValue == WorkerGettedFlags.Free || origValue == WorkerGettedFlags.Disabled;
                 });
 
                 if (WorkerState.TrySet(WorkerStates.ToBeDisposed, WorkerStates.Idle))
                 {
                     RemoveSelf();
+                    // Although reaching this point means that WorkerState has been set from Idle to ToBeDisposed, 
+                    // indicating that no work is currently running, there is still a possibility that situation ① has occurred, 
+                    // and the work may have finished executing before WorkerState.TrySet was called.
+                    // New work could potentially trigger additional _killTimer timing, which is also an extremely rare case.
+                    // Therefore, an extra Stop() is called here.
+                    _killTimer.Stop();
+                    return;
                 }
-                else
-                {
-                    GettedFlag.TrySet(WorkerGettedFlags.Free, WorkerGettedFlags.Disabled);
-                }
-            }
 
-            _killTimer.Stop();
+                // Reaching this point means that WorkerState was not set from Idle to ToBeDisposed, 
+                // indicating that situation ① has occurred and that work is currently running. 
+                // Therefore, reset the GettedFlag. This is also an extremely rare case, 
+                // and it's almost impossible to reproduce this situation with code coverage testing, 
+                // so code coverage testing for this line is ignored.
+                GettedFlag.TrySet(WorkerGettedFlags.Free, WorkerGettedFlags.Disabled);
+            }
         }
 
         private void RemoveSelf()
