@@ -107,9 +107,9 @@ namespace PowerThreadPool.Works
         {
             bool res = false;
 
-            using (new WorkGuard(this))
+            if (forceStop)
             {
-                if (forceStop)
+                using (new WorkGuard(this))
                 {
                     if (Worker.WorkID == ID)
                     {
@@ -121,12 +121,12 @@ namespace PowerThreadPool.Works
                         res = Cancel(false);
                     }
                 }
-                else
-                {
-                    ShouldStop = true;
-                    Cancel(false);
-                    res = true;
-                }
+            }
+            else
+            {
+                ShouldStop = true;
+                Cancel(true);
+                res = true;
             }
 
             return res;
