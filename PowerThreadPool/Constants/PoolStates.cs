@@ -1,6 +1,6 @@
 ﻿namespace PowerThreadPool.Constants
 {
-    internal enum PoolRunningFlags
+    internal enum PoolStates
     {
         NotRunning = 0,
         IdleChecked = 1,

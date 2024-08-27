@@ -24,9 +24,9 @@ namespace PowerThreadPool
         internal int ID { get; set; }
 
         internal InterlockedFlag<WorkerStates> WorkerState { get; set; } = WorkerStates.Idle;
-        internal InterlockedFlag<WorkerGettedFlags> GettedFlag { get; set; } = WorkerGettedFlags.Free;
-        internal InterlockedFlag<WorkHeldFlags> WorkHeld { get; set; } = WorkHeldFlags.NotHeld;
-        internal InterlockedFlag<WorkerStealingFlags> StealingFlag { get; set; } = WorkerStealingFlags.Allow;
+        internal InterlockedFlag<CanGetWork> CanGetWork { get; set; } = Constants.CanGetWork.Allowed;
+        internal InterlockedFlag<WorkHeldStates> WorkHeldState { get; set; } = WorkHeldStates.NotHeld;
+        internal InterlockedFlag<WorkStealability> WorkStealability { get; set; } = Constants.WorkStealability.Allowed;
 
         private IStealablePriorityCollection<string> _waitingWorkIDPriorityCollection;
         private ConcurrentDictionary<string, WorkBase> _waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
@@ -143,7 +143,7 @@ namespace PowerThreadPool
 
         private void ThreadInterrupted(PowerPool powerPool, ThreadInterruptedException ex)
         {
-            GettedFlag.InterlockedValue = WorkerGettedFlags.Disabled;
+            CanGetWork.InterlockedValue = Constants.CanGetWork.Disabled;
 
             WorkerStates origWorkState = WorkerState.InterlockedValue;
             WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
@@ -240,7 +240,7 @@ namespace PowerThreadPool
                 executeResult = Work.SetExecuteResult(_powerPool, null, ex, Status.Failed);
                 _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
             }
-            SpinWait.SpinUntil(() => WorkHeld == WorkHeldFlags.NotHeld);
+            SpinWait.SpinUntil(() => WorkHeldState == WorkHeldStates.NotHeld);
             Work.Worker = null;
             executeResult.ID = Work.ID;
 
@@ -298,7 +298,7 @@ namespace PowerThreadPool
 
             if (!resetted)
             {
-                GettedFlag.InterlockedValue = WorkerGettedFlags.Free;
+                CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
             }
 
             if (originalWorkerState == WorkerStates.Idle)
@@ -398,13 +398,13 @@ namespace PowerThreadPool
                 int waitingWorkCountTemp = runningWorker.WaitingWorkCount;
                 if (waitingWorkCountTemp >= 2 && waitingWorkCountTemp > max)
                 {
-                    if (!runningWorker.StealingFlag.TrySet(WorkerStealingFlags.Reject, WorkerStealingFlags.Allow))
+                    if (!runningWorker.WorkStealability.TrySet(Constants.WorkStealability.NotAllowed, Constants.WorkStealability.Allowed))
                     {
                         continue;
                     }
                     if (worker != null)
                     {
-                        worker.StealingFlag.InterlockedValue = WorkerStealingFlags.Allow;
+                        worker.WorkStealability.InterlockedValue = Constants.WorkStealability.Allowed;
                     }
                     max = waitingWorkCountTemp;
                     worker = runningWorker;
@@ -418,7 +418,7 @@ namespace PowerThreadPool
                 {
                     stolenWorkList = worker.Steal(count);
                 }
-                worker.StealingFlag.InterlockedValue = WorkerStealingFlags.Allow;
+                worker.WorkStealability.InterlockedValue = Constants.WorkStealability.Allowed;
                 if (stolenWorkList != null)
                 {
                     foreach (WorkBase stolenWork in stolenWorkList)
@@ -440,7 +440,7 @@ namespace PowerThreadPool
 
         private bool TurnToIdle(ref string waitingWorkID, ref WorkBase work)
         {
-            SpinWait.SpinUntil(() => GettedFlag.TrySet(WorkerGettedFlags.ToBeDisabled, WorkerGettedFlags.Free));
+            SpinWait.SpinUntil(() => CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed));
 
             waitingWorkID = _waitingWorkIDPriorityCollection.Get();
             if (waitingWorkID != null)
@@ -450,7 +450,7 @@ namespace PowerThreadPool
                     Interlocked.Decrement(ref _waitingWorkCount);
                 }
 
-                GettedFlag.TrySet(WorkerGettedFlags.Free, WorkerGettedFlags.ToBeDisabled);
+                CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
                 return false;
             }
@@ -469,7 +469,7 @@ namespace PowerThreadPool
 
                 WorkerState.InterlockedValue = WorkerStates.Idle;
 
-                GettedFlag.TrySet(WorkerGettedFlags.Free, WorkerGettedFlags.ToBeDisabled);
+                CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
                 if (_powerPool._idleWorkerDic.TryAdd(ID, this))
                 {
@@ -518,15 +518,15 @@ namespace PowerThreadPool
             if (_powerPool.IdleWorkerCount > _powerPool.PowerPoolOption.DestroyThreadOption.MinThreads)
             {
                 // ① There is a possibility that a worker may still obtain and execute work between the 
-                // time the _killTimer triggers OnKillTimerElapsed and when GettedFlag is set to Disabled. 
+                // time the _killTimer triggers OnKillTimerElapsed and when CanGetWork is set to Disabled. 
                 SpinWait.SpinUntil(() =>
                 {
-                    GettedFlag.TrySet(WorkerGettedFlags.Disabled, WorkerGettedFlags.Free, out WorkerGettedFlags origValue);
+                    CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.Allowed, out CanGetWork origValue);
                     // If situation ① occurs and _killTimer.Stop() has not yet been executed, the current state 
-                    // of GettedFlag will be Disabled, although this is an extremely rare case.
-                    // Therefore, SpinUntil will exit either when GettedFlag is successfully set from Free to Disabled, 
-                    // or if the current state of GettedFlag is already Disabled.
-                    return origValue == WorkerGettedFlags.Free || origValue == WorkerGettedFlags.Disabled;
+                    // of CanGetWork will be Disabled, although this is an extremely rare case.
+                    // Therefore, SpinUntil will exit either when CanGetWork is successfully set from Allowed to Disabled, 
+                    // or if the current state of CanGetWork is already Disabled.
+                    return origValue == Constants.CanGetWork.Allowed || origValue == Constants.CanGetWork.Disabled;
                 });
 
                 if (WorkerState.TrySet(WorkerStates.ToBeDisposed, WorkerStates.Idle))
@@ -543,10 +543,10 @@ namespace PowerThreadPool
 
                 // Reaching this point means that WorkerState was not set from Idle to ToBeDisposed, 
                 // indicating that situation ① has occurred and that work is currently running. 
-                // Therefore, reset the GettedFlag. This is also an extremely rare case, 
+                // Therefore, reset the CanGetWork. This is also an extremely rare case, 
                 // and it's almost impossible to reproduce this situation with code coverage testing, 
                 // so code coverage testing for this line is ignored.
-                GettedFlag.TrySet(WorkerGettedFlags.Free, WorkerGettedFlags.Disabled);
+                CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.Disabled);
             }
         }
 
