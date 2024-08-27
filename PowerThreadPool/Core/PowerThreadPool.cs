@@ -45,7 +45,7 @@ namespace PowerThreadPool
 
         private bool _suspended;
 
-        private InterlockedFlag<WorkerCreationFlags> _createWorkerFlag = WorkerCreationFlags.Allow;
+        private InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
 
         private PowerPoolOption _powerPoolOption;
         public PowerPoolOption PowerPoolOption
@@ -61,9 +61,9 @@ namespace PowerThreadPool
 
         private System.Timers.Timer _poolTimer;
 
-        private InterlockedFlag<PoolRunningFlags> _poolRunning = PoolRunningFlags.NotRunning;
+        private InterlockedFlag<PoolStates> _poolState = PoolStates.NotRunning;
 
-        public bool PoolRunning => _poolRunning == PoolRunningFlags.Running;
+        public bool PoolRunning => _poolState == PoolStates.Running;
 
         private bool _poolStopping = false;
         public bool PoolStopping { get => _poolStopping; }
@@ -287,7 +287,7 @@ namespace PowerThreadPool
             {
                 if (_idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    SpinWait.SpinUntil(() => worker.GettedFlag.TrySet(WorkerGettedFlags.Getted, WorkerGettedFlags.Free));
+                    SpinWait.SpinUntil(() => worker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed));
                     Interlocked.Decrement(ref _idleWorkerCount);
                     if (longRunning)
                     {
@@ -299,13 +299,13 @@ namespace PowerThreadPool
 
             if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount)
             {
-                if (_createWorkerFlag.TrySet(WorkerCreationFlags.Reject, WorkerCreationFlags.Allow))
+                if (_canCreateNewWorker.TrySet(CanCreateNewWorker.NotAllowed, CanCreateNewWorker.Allowed))
                 {
                     if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount)
                     {
                         worker = new Worker(this);
 
-                        worker.GettedFlag.InterlockedValue = WorkerGettedFlags.Getted;
+                        worker.CanGetWork.InterlockedValue = CanGetWork.NotAllowed;
 
                         if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                         {
@@ -318,7 +318,7 @@ namespace PowerThreadPool
                         }
                     }
 
-                    _createWorkerFlag.InterlockedValue = WorkerCreationFlags.Allow;
+                    _canCreateNewWorker.InterlockedValue = CanCreateNewWorker.Allowed;
                 }
             }
 
@@ -336,11 +336,11 @@ namespace PowerThreadPool
                     int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
                     if (waitingWorkCountTemp < min)
                     {
-                        if (aliveWorker.GettedFlag.TrySet(WorkerGettedFlags.Getted, WorkerGettedFlags.Free))
+                        if (aliveWorker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
                         {
                             if (worker != null)
                             {
-                                worker.GettedFlag.TrySet(WorkerGettedFlags.Free, WorkerGettedFlags.Getted);
+                                worker.CanGetWork.TrySet(CanGetWork.Allowed, CanGetWork.NotAllowed);
                             }
 
                             worker = aliveWorker;
@@ -363,7 +363,7 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckPoolStart()
         {
-            if (RunningWorkerCount == 0 && _poolRunning.TrySet(PoolRunningFlags.Running, PoolRunningFlags.NotRunning))
+            if (RunningWorkerCount == 0 && _poolState.TrySet(PoolStates.Running, PoolStates.NotRunning))
             {
                 if (PoolStarted != null)
                 {
@@ -422,7 +422,7 @@ namespace PowerThreadPool
 
             if (RunningWorkerCount == 0 &&
                 WaitingWorkCount == 0 &&
-                _poolRunning.TrySet(PoolRunningFlags.IdleChecked, PoolRunningFlags.Running)
+                _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
                 )
             {
                 if (PoolIdled != null)
@@ -459,7 +459,7 @@ namespace PowerThreadPool
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = new CancellationTokenSource();
 
-            _poolRunning.InterlockedValue = PoolRunningFlags.NotRunning;
+            _poolState.InterlockedValue = PoolStates.NotRunning;
             if (_poolStopping)
             {
                 _poolStopping = false;

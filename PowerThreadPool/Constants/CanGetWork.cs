@@ -1,9 +1,9 @@
 ﻿namespace PowerThreadPool.Constants
 {
-    internal enum WorkerGettedFlags
+    internal enum CanGetWork
     {
-        Free = 0,
-        Getted = 1,
+        Allowed = 0,
+        NotAllowed = 1,
         ToBeDisabled = 2,
         Disabled = -1,
     }

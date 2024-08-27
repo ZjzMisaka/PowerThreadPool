@@ -1,6 +1,6 @@
 ﻿namespace PowerThreadPool.Constants
 {
-    internal enum WorkHeldFlags
+    internal enum WorkHeldStates
     {
         NotHeld = 0,
         Held = 1

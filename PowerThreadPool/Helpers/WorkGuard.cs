@@ -32,12 +32,12 @@ namespace PowerThreadPool.Helpers
                 SpinWait.SpinUntil(() => (_worker = _work.Worker) != null);
 
                 // Prevent the target work from being stolen by other workers using the work-stealing algorithm when it is stopped or canceled
-                SpinWait.SpinUntil(() => _worker.StealingFlag.TrySet(WorkerStealingFlags.Reject, WorkerStealingFlags.Allow));
+                SpinWait.SpinUntil(() => _worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed));
 
                 // Temporarily prevent the executing work from allowing the worker to switch to the next work when the current work is completed
                 if (_isHoldWork)
                 {
-                    SpinWait.SpinUntil(() => _worker.WorkHeld.TrySet(WorkHeldFlags.Held, WorkHeldFlags.NotHeld));
+                    SpinWait.SpinUntil(() => _worker.WorkHeldState.TrySet(WorkHeldStates.Held, WorkHeldStates.NotHeld));
                 }
             }
             while (_work.Worker?.ID != _worker.ID);
@@ -49,11 +49,11 @@ namespace PowerThreadPool.Helpers
         {
             if (_worker != null)
             {
-                _worker.StealingFlag.InterlockedValue = WorkerStealingFlags.Allow;
+                _worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
 
                 if (_isHoldWork)
                 {
-                    _worker.WorkHeld.InterlockedValue = WorkHeldFlags.NotHeld;
+                    _worker.WorkHeldState.InterlockedValue = WorkHeldStates.NotHeld;
                 }
             }
         }

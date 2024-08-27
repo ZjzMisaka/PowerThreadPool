@@ -108,7 +108,7 @@ namespace PowerThreadPool
         /// </summary>
         public void Wait()
         {
-            if (_poolRunning == PoolRunningFlags.NotRunning)
+            if (_poolState == PoolStates.NotRunning)
             {
                 return;
             }
@@ -444,7 +444,7 @@ namespace PowerThreadPool
         /// <returns>Return false if no thread running</returns>
         public bool Stop(bool forceStop = false)
         {
-            if (_poolRunning == PoolRunningFlags.NotRunning)
+            if (_poolState == PoolStates.NotRunning)
             {
                 return false;
             }
