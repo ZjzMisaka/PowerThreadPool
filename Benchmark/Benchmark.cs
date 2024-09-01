@@ -5,6 +5,7 @@ using static BenchmarkDotNet.Engines.Engine;
 
 namespace Benchmark
 {
+    [MemoryDiagnoser]
     public class Benchmark
     {
         private SmartThreadPool _smartThreadPool;
