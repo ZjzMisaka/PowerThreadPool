@@ -11,7 +11,7 @@
 
         /// <summary>
         /// Retrieves and removes the highest priority item from the collection.
-        /// The method is typically called by the owner thread to fetch the next task.
+        /// The method is typically called by the owner thread to fetch the next work.
         /// </summary>
         /// <returns>The highest priority item in the collection.</returns>
         T Get();

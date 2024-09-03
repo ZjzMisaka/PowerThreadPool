@@ -630,7 +630,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Cancel all tasks that have not started running
+        /// Cancel all works that have not started running
         /// </summary>
         public void Cancel()
         {

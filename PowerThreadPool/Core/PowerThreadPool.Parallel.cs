@@ -14,7 +14,7 @@ namespace PowerThreadPool
         /// <param name="end">The end index of the loop.</param>
         /// <param name="body">The action to execute for each loop iteration.</param>
         /// <param name="step">The step value for each loop iteration. Default is 1.</param>
-        /// <param name="groupName">The optional name for the group of tasks. Default is null.</param>
+        /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a  group object.</returns>
         public Group For(int start, int end, Action<int> body, int step = 1, string groupName = null)
         {
