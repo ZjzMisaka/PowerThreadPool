@@ -46,6 +46,7 @@ namespace PowerThreadPool
         private bool _suspended;
 
         private DateTime _startDateTime;
+        private DateTime _endDateTime;
 
         private InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
 
@@ -194,13 +195,17 @@ namespace PowerThreadPool
         {
             get
             {
-                if (_poolState != PoolStates.Running)
+                if (_poolState == PoolStates.Running)
                 {
-                    return TimeSpan.MinValue;
+                    return DateTime.UtcNow - _startDateTime;
+                }
+                else if (_endDateTime != DateTime.MinValue)
+                {
+                    return _endDateTime - _startDateTime;
                 }
                 else
                 {
-                    return DateTime.UtcNow - _startDateTime;
+                    return TimeSpan.Zero;
                 }
             }
         }
@@ -447,6 +452,7 @@ namespace PowerThreadPool
                 _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
                 )
             {
+                _endDateTime = DateTime.UtcNow;
                 if (PoolIdled != null)
                 {
                     try
