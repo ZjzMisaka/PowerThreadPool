@@ -45,6 +45,8 @@ namespace PowerThreadPool
 
         private bool _suspended;
 
+        private DateTime _startDateTime;
+
         private InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
 
         private PowerPoolOption _powerPoolOption;
@@ -375,6 +377,8 @@ namespace PowerThreadPool
                 _queueTime = 0;
                 _executeTime = 0;
 
+                _startDateTime = DateTime.UtcNow;
+
                 if (PowerPoolOption.ClearResultStorageWhenPoolStart)
                 {
                     _resultDic.Clear();
@@ -429,7 +433,12 @@ namespace PowerThreadPool
                 {
                     try
                     {
-                        SafeInvoke(PoolIdled, new EventArgs(), ErrorFrom.PoolIdled, null);
+                        PoolIdledEventArgs poolIdledEventArgs = new PoolIdledEventArgs
+                        {
+                            StartDateTime = _startDateTime,
+                            EndDateTime = DateTime.UtcNow,
+                        };
+                        SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorFrom.PoolIdled, null);
                     }
                     finally
                     {

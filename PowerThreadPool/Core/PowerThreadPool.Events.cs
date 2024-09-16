@@ -10,7 +10,7 @@ namespace PowerThreadPool
     public partial class PowerPool
     {
         public event EventHandler<EventArgs> PoolStarted;
-        public event EventHandler<EventArgs> PoolIdled;
+        public event EventHandler<PoolIdledEventArgs> PoolIdled;
         public event EventHandler<WorkStartedEventArgs> WorkStarted;
         public event EventHandler<WorkEndedEventArgs> WorkEnded;
         public event EventHandler<EventArgs> PoolTimedOut;
