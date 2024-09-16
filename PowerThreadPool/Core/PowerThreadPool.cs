@@ -62,7 +62,8 @@ namespace PowerThreadPool
             }
         }
 
-        private System.Timers.Timer _poolTimer;
+        private System.Timers.Timer _runningTimer;
+        private System.Timers.Timer _timeoutTimer;
 
         private InterlockedFlag<PoolStates> _poolState = PoolStates.NotRunning;
 
@@ -421,11 +422,27 @@ namespace PowerThreadPool
 
                 _waitAllSignal.Reset();
 
+                if (PowerPoolOption.RunningTimerOption != null)
+                {
+                    if (_runningTimer == null || _runningTimer.Interval != PowerPoolOption.RunningTimerOption.Interval)
+                    {
+                        _runningTimer = new System.Timers.Timer(PowerPoolOption.RunningTimerOption.Interval);
+                        _runningTimer.Elapsed += (s, e) =>
+                        {
+                            PowerPoolOption.RunningTimerOption.Elapsed(e);
+                        };
+                    }
+
+                    _runningTimer.AutoReset = true;
+                    _runningTimer.Enabled = true;
+                    _runningTimer.Start();
+                }
+
                 if (PowerPoolOption.TimeoutOption != null)
                 {
-                    _poolTimer = new System.Timers.Timer(PowerPoolOption.TimeoutOption.Duration);
-                    _poolTimer.AutoReset = false;
-                    _poolTimer.Elapsed += (s, e) =>
+                    _timeoutTimer = new System.Timers.Timer(PowerPoolOption.TimeoutOption.Duration);
+                    _timeoutTimer.AutoReset = false;
+                    _timeoutTimer.Elapsed += (s, e) =>
                     {
                         if (PoolTimedOut != null)
                         {
@@ -433,7 +450,7 @@ namespace PowerThreadPool
                         }
                         Stop(PowerPoolOption.TimeoutOption.ForceStop);
                     };
-                    _poolTimer.Start();
+                    _timeoutTimer.Start();
                 }
             }
         }
@@ -489,10 +506,16 @@ namespace PowerThreadPool
         /// </summary>
         private void IdleSetting()
         {
-            if (_poolTimer != null)
+            if (_runningTimer != null)
             {
-                _poolTimer.Stop();
-                _poolTimer.Enabled = false;
+                _runningTimer.Stop();
+                _runningTimer.Enabled = false;
+            }
+
+            if (_timeoutTimer != null)
+            {
+                _timeoutTimer.Stop();
+                _timeoutTimer.Enabled = false;
             }
 
             _suspended = PowerPoolOption.StartSuspended;
