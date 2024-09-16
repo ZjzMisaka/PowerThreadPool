@@ -11,6 +11,7 @@ namespace PowerThreadPool
     {
         public event EventHandler<EventArgs> PoolStarted;
         public event EventHandler<PoolIdledEventArgs> PoolIdled;
+        public event EventHandler<RunningWorkerCountChangedEventArgs> RunningWorkerCountChanged;
         public event EventHandler<WorkStartedEventArgs> WorkStarted;
         public event EventHandler<WorkEndedEventArgs> WorkEnded;
         public event EventHandler<EventArgs> PoolTimedOut;
@@ -74,6 +75,33 @@ namespace PowerThreadPool
                     EndDateTime = executeResult.EndDateTime,
                 };
                 SafeInvoke(WorkStopped, e, ErrorFrom.WorkStopped, executeResult);
+            }
+        }
+
+        /// <summary>
+        /// Invoke running worker count changed event
+        /// </summary>
+        /// <param name="executeResult"></param>
+        internal void InvokeRunningWorkerCountChangedEvent(bool isIncrement)
+        {
+            if (RunningWorkerCountChanged != null)
+            {
+                int runningWorkerCountTemp = _runningWorkerCount;
+                int prevRunningWorkerCount;
+                if (isIncrement)
+                {
+                    prevRunningWorkerCount = runningWorkerCountTemp - 1;
+                }
+                else
+                {
+                    prevRunningWorkerCount = runningWorkerCountTemp + 1;
+                }
+                RunningWorkerCountChangedEventArgs runningWorkerCountChangedEventArgs = new RunningWorkerCountChangedEventArgs
+                {
+                    NowCount = runningWorkerCountTemp,
+                    PreviousCount = prevRunningWorkerCount,
+                };
+                SafeInvoke(RunningWorkerCountChanged, runningWorkerCountChangedEventArgs, ErrorFrom.RunningWorkerCountChanged, null);
             }
         }
 

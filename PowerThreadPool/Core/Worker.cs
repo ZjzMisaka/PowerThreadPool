@@ -157,6 +157,7 @@ namespace PowerThreadPool
             if (origWorkState == WorkerStates.Running)
             {
                 Interlocked.Decrement(ref powerPool._runningWorkerCount);
+                powerPool.InvokeRunningWorkerCountChangedEvent(false);
             }
 
             if (powerPool._aliveWorkerDic.TryRemove(ID, out _))
@@ -304,6 +305,7 @@ namespace PowerThreadPool
             if (originalWorkerState == WorkerStates.Idle)
             {
                 Interlocked.Increment(ref _powerPool._runningWorkerCount);
+                _powerPool.InvokeRunningWorkerCountChangedEvent(true);
                 AssignWork();
             }
         }
@@ -466,6 +468,7 @@ namespace PowerThreadPool
                 }
 
                 Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                _powerPool.InvokeRunningWorkerCountChangedEvent(false);
 
                 WorkerState.InterlockedValue = WorkerStates.Idle;
 
