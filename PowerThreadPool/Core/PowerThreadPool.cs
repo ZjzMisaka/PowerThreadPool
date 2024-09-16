@@ -45,6 +45,9 @@ namespace PowerThreadPool
 
         private bool _suspended;
 
+        private DateTime _startDateTime;
+        private DateTime _endDateTime;
+
         private InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
 
         private PowerPoolOption _powerPoolOption;
@@ -184,6 +187,28 @@ namespace PowerThreadPool
         /// Will be reset when the thread pool starts again.
         /// </summary>
         public long TotalElapsedTime => TotalQueueTime + TotalExecuteTime;
+
+        /// <summary>
+        /// Pool runtime duration.
+        /// </summary>
+        public TimeSpan PoolRuntimeDuration
+        {
+            get
+            {
+                if (_poolState == PoolStates.Running)
+                {
+                    return DateTime.UtcNow - _startDateTime;
+                }
+                else if (_endDateTime != DateTime.MinValue)
+                {
+                    return _endDateTime - _startDateTime;
+                }
+                else
+                {
+                    return TimeSpan.Zero;
+                }
+            }
+        }
 
         public PowerPool()
         {
@@ -375,6 +400,8 @@ namespace PowerThreadPool
                 _queueTime = 0;
                 _executeTime = 0;
 
+                _startDateTime = DateTime.UtcNow;
+
                 if (PowerPoolOption.ClearResultStorageWhenPoolStart)
                 {
                     _resultDic.Clear();
@@ -425,11 +452,17 @@ namespace PowerThreadPool
                 _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
                 )
             {
+                _endDateTime = DateTime.UtcNow;
                 if (PoolIdled != null)
                 {
                     try
                     {
-                        SafeInvoke(PoolIdled, new EventArgs(), ErrorFrom.PoolIdled, null);
+                        PoolIdledEventArgs poolIdledEventArgs = new PoolIdledEventArgs
+                        {
+                            StartDateTime = _startDateTime,
+                            EndDateTime = DateTime.UtcNow,
+                        };
+                        SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorFrom.PoolIdled, null);
                     }
                     finally
                     {

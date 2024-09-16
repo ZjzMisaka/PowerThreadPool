@@ -9,6 +9,7 @@ namespace PowerThreadPool.EventArguments
         DefaultCallback,
         PoolStarted,
         PoolIdled,
+        RunningWorkerCountChanged,
         WorkStarted,
         WorkEnded,
         PoolTimedOut,
