@@ -29,6 +29,6 @@ namespace PowerThreadPool.EventArguments
         /// <summary>
         /// Runtime duration of the thread pool.
         /// </summary>
-        public TimeSpan PoolRuntimeDuration => EndDateTime - StartDateTime;
+        public TimeSpan RuntimeDuration => EndDateTime - StartDateTime;
     }
 }
