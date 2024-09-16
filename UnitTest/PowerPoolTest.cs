@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Diagnostics.Metrics;
 using PowerThreadPool;
 using PowerThreadPool.Collections;
 using PowerThreadPool.EventArguments;
@@ -1858,6 +1859,71 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestPoolIdledEventArgs()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            DateTime startDateTime = DateTime.MinValue;
+            DateTime endDateTime = DateTime.MinValue;
+            TimeSpan runtimeDuration = TimeSpan.MinValue;
+            powerPool.PoolIdled += (s, e) =>
+            {
+                startDateTime = e.StartDateTime;
+                endDateTime = e.EndDateTime;
+                runtimeDuration = e.RuntimeDuration;
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(50);
+                return;
+            });
+
+            powerPool.Wait();
+
+            Assert.NotEqual(startDateTime, DateTime.MinValue);
+            Assert.NotEqual(endDateTime, DateTime.MinValue);
+            Assert.NotEqual(runtimeDuration, TimeSpan.MinValue);
+            Assert.Equal(runtimeDuration, endDateTime - startDateTime);
+        }
+
+        [Fact]
+        public void TestRunningWorkerCountChanged()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            int count0 = -1;
+            int count1 = -1;
+            int count2 = -1;
+            int count3 = -1;
+            powerPool.RunningWorkerCountChanged += (s, e) =>
+            {
+                if (e.PreviousCount < e.NowCount)
+                {
+                    count0 = e.PreviousCount;
+                    count1 = e.NowCount;
+                }
+                else
+                {
+                    count2 = e.PreviousCount;
+                    count3 = e.NowCount;
+                }
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                return;
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(0, count0);
+            Assert.Equal(1, count1);
+            Assert.Equal(1, count2);
+            Assert.Equal(0, count3);
+        }
+
+        [Fact]
         public void TestErrorWhenCallback()
         {
             PowerPool powerPool = new PowerPool();
@@ -2202,7 +2268,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
             });
-            powerPool.QueueWorkItem(() =>
+            string id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             });
@@ -2220,6 +2286,10 @@ namespace UnitTest
             });
 
             powerPool.Start();
+
+            powerPool.Wait(id);
+            Assert.True(powerPool.PoolRuntimeDuration.TotalMilliseconds > 0);
+
             powerPool.Wait();
 
             Assert.True(powerPool.TotalQueueTime > 0);
@@ -2228,6 +2298,7 @@ namespace UnitTest
             Assert.Equal(powerPool.AverageExecuteTime, powerPool.TotalExecuteTime / 5);
             Assert.Equal(powerPool.AverageElapsedTime, powerPool.AverageQueueTime + powerPool.AverageExecuteTime);
             Assert.Equal(powerPool.TotalElapsedTime, powerPool.TotalQueueTime + powerPool.TotalExecuteTime);
+            Assert.True(powerPool.PoolRuntimeDuration.TotalMilliseconds > 0);
         }
 
         [Fact]
@@ -2241,6 +2312,7 @@ namespace UnitTest
             Assert.Equal(0, powerPool.AverageExecuteTime);
             Assert.Equal(0, powerPool.AverageElapsedTime);
             Assert.Equal(0, powerPool.TotalElapsedTime);
+            Assert.Equal(TimeSpan.Zero, powerPool.PoolRuntimeDuration);
         }
 
         [Fact]
