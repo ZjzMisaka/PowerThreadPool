@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.Metrics;
+using System.Timers;
 using PowerThreadPool;
 using PowerThreadPool.Collections;
 using PowerThreadPool.EventArguments;
@@ -3369,6 +3370,98 @@ namespace UnitTest
             string groupName = powerPool.ForEach(list, (i) => result.Add(i), "Group1").Name;
 
             Assert.Equal("Group1", groupName);
+        }
+
+        [Fact]
+        public void TestRunningTimer()
+        {
+            DateTime d0 = DateTime.MinValue;
+            DateTime d1 = DateTime.MinValue;
+            DateTime d2 = DateTime.MinValue;
+            DateTime d3 = DateTime.MinValue;
+            DateTime d4 = DateTime.MinValue;
+            DateTime d5 = DateTime.MinValue;
+            DateTime d6 = DateTime.MinValue;
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+                RunningTimerOption = new RunningTimerOption
+                {
+                    Elapsed = (e) =>
+                    {
+                        if (d0 == DateTime.MinValue)
+                        {
+                            d0 = e.SignalTime;
+                        }
+                        else if (d1 == DateTime.MinValue)
+                        {
+                            d1 = e.SignalTime;
+                        }
+                        else if (d2 == DateTime.MinValue)
+                        {
+                            d2 = e.SignalTime;
+                        }
+                        else if (d3 == DateTime.MinValue)
+                        {
+                            d3 = e.SignalTime;
+                        }
+                        else if (d4 == DateTime.MinValue)
+                        {
+                            d4 = e.SignalTime;
+                        }
+                        else if (d5 == DateTime.MinValue)
+                        {
+                            d5 = e.SignalTime;
+                        }
+                        else if (d6 == DateTime.MinValue)
+                        {
+                            d6 = e.SignalTime;
+                        }
+                    },
+                    Interval = 500,
+                }
+            });
+
+            Assert.Equal(DateTime.MinValue, d0);
+            Assert.Equal(DateTime.MinValue, d1);
+            Assert.Equal(DateTime.MinValue, d2);
+            Assert.Equal(DateTime.MinValue, d3);
+            Assert.Equal(DateTime.MinValue, d4);
+            Assert.Equal(DateTime.MinValue, d5);
+            Assert.Equal(DateTime.MinValue, d6);
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1100);
+            });
+
+            powerPool.Wait();
+
+            Assert.NotEqual(DateTime.MinValue, d0);
+            Assert.NotEqual(DateTime.MinValue, d1);
+            Assert.Equal(DateTime.MinValue, d2);
+            Assert.Equal(DateTime.MinValue, d3);
+            Assert.Equal(DateTime.MinValue, d4);
+            Assert.Equal(DateTime.MinValue, d5);
+            Assert.Equal(DateTime.MinValue, d6);
+
+            powerPool.PowerPoolOption.RunningTimerOption.Interval = 200;
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1100);
+            });
+
+            powerPool.Wait();
+
+            Assert.NotEqual(DateTime.MinValue, d0);
+            Assert.NotEqual(DateTime.MinValue, d1);
+            Assert.NotEqual(DateTime.MinValue, d2);
+            Assert.NotEqual(DateTime.MinValue, d3);
+            Assert.NotEqual(DateTime.MinValue, d4);
+            Assert.NotEqual(DateTime.MinValue, d5);
+            Assert.NotEqual(DateTime.MinValue, d6);
         }
     }
 }

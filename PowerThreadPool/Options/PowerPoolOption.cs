@@ -32,6 +32,11 @@ namespace PowerThreadPool.Options
         public TimeoutOption DefaultWorkTimeoutOption { get; set; } = null;
 
         /// <summary>
+        /// After setting, it will be triggered regularly when the pool is in the running state. 
+        /// </summary>
+        public RunningTimerOption RunningTimerOption { get; set; } = null;
+
+        /// <summary>
         /// The default callback function that is called when a work finishes execution.
         /// </summary>
         public Action<ExecuteResult<object>> DefaultCallback { get; set; } = null;
