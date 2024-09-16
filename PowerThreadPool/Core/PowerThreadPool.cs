@@ -196,20 +196,25 @@ namespace PowerThreadPool
         {
             get
             {
+                TimeSpan poolRuntimeDuration = TimeSpan.MinValue;
                 if (_poolState == PoolStates.Running)
                 {
-                    return DateTime.UtcNow - _startDateTime;
+                    poolRuntimeDuration = DateTime.UtcNow - _startDateTime;
                 }
                 else if (_endDateTime != DateTime.MinValue)
                 {
-                    TimeSpan duration = _endDateTime - _startDateTime;
-                    if (duration.Ticks > 0)
-                    {
-                        return duration;
-                    }
+                    poolRuntimeDuration = _endDateTime - _startDateTime;
+
                 }
 
-                return TimeSpan.Zero;
+                if (poolRuntimeDuration.Ticks > 0)
+                {
+                    return poolRuntimeDuration;
+                }
+                else
+                {
+                    return TimeSpan.Zero;
+                }
             }
         }
 
