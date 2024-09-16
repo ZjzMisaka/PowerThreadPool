@@ -190,6 +190,7 @@ namespace PowerThreadPool
 
         /// <summary>
         /// Pool runtime duration.
+        /// Will be reset when the thread pool starts again.
         /// </summary>
         public TimeSpan PoolRuntimeDuration
         {
@@ -201,12 +202,14 @@ namespace PowerThreadPool
                 }
                 else if (_endDateTime != DateTime.MinValue)
                 {
-                    return _endDateTime - _startDateTime;
+                    TimeSpan duration = _endDateTime - _startDateTime;
+                    if (duration.Ticks > 0)
+                    {
+                        return duration;
+                    }
                 }
-                else
-                {
-                    return TimeSpan.Zero;
-                }
+
+                return TimeSpan.Zero;
             }
         }
 
