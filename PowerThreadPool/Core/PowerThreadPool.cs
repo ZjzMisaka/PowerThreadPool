@@ -437,6 +437,12 @@ namespace PowerThreadPool
                     _runningTimer.Enabled = true;
                     _runningTimer.Start();
                 }
+                else if (_runningTimer != null)
+                {
+                    _runningTimer.Enabled = false;
+                    _runningTimer.Stop();
+                    _runningTimer = null;
+                }
 
                 if (PowerPoolOption.TimeoutOption != null)
                 {

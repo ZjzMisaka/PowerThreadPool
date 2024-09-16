@@ -3462,6 +3462,15 @@ namespace UnitTest
             Assert.NotEqual(DateTime.MinValue, d4);
             Assert.NotEqual(DateTime.MinValue, d5);
             Assert.NotEqual(DateTime.MinValue, d6);
+
+            powerPool.PowerPoolOption.RunningTimerOption = null;
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            });
+
+            powerPool.Wait();
         }
     }
 }
