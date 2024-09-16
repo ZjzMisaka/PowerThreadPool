@@ -187,6 +187,24 @@ namespace PowerThreadPool
         /// </summary>
         public long TotalElapsedTime => TotalQueueTime + TotalExecuteTime;
 
+        /// <summary>
+        /// Pool runtime duration.
+        /// </summary>
+        public TimeSpan PoolRuntimeDuration
+        {
+            get
+            {
+                if (_poolState != PoolStates.Running)
+                {
+                    return TimeSpan.MinValue;
+                }
+                else
+                {
+                    return DateTime.UtcNow - _startDateTime;
+                }
+            }
+        }
+
         public PowerPool()
         {
 
