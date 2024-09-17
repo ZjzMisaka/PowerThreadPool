@@ -2289,7 +2289,7 @@ namespace UnitTest
             powerPool.Start();
 
             powerPool.Wait(id);
-            Assert.True(powerPool.PoolRuntimeDuration.TotalMilliseconds > 0);
+            Assert.True(powerPool.RuntimeDuration.TotalMilliseconds > 0);
 
             powerPool.Wait();
 
@@ -2299,7 +2299,7 @@ namespace UnitTest
             Assert.Equal(powerPool.AverageExecuteTime, powerPool.TotalExecuteTime / 5);
             Assert.Equal(powerPool.AverageElapsedTime, powerPool.AverageQueueTime + powerPool.AverageExecuteTime);
             Assert.Equal(powerPool.TotalElapsedTime, powerPool.TotalQueueTime + powerPool.TotalExecuteTime);
-            Assert.True(powerPool.PoolRuntimeDuration.TotalMilliseconds > 0);
+            Assert.True(powerPool.RuntimeDuration.TotalMilliseconds > 0);
         }
 
         [Fact]
@@ -2313,7 +2313,7 @@ namespace UnitTest
             Assert.Equal(0, powerPool.AverageExecuteTime);
             Assert.Equal(0, powerPool.AverageElapsedTime);
             Assert.Equal(0, powerPool.TotalElapsedTime);
-            Assert.Equal(TimeSpan.Zero, powerPool.PoolRuntimeDuration);
+            Assert.Equal(TimeSpan.Zero, powerPool.RuntimeDuration);
         }
 
         [Fact]
@@ -3383,6 +3383,14 @@ namespace UnitTest
             DateTime d5 = DateTime.MinValue;
             DateTime d6 = DateTime.MinValue;
 
+            TimeSpan t0 = TimeSpan.MinValue;
+            TimeSpan t1 = TimeSpan.MinValue;
+            TimeSpan t2 = TimeSpan.MinValue;
+            TimeSpan t3 = TimeSpan.MinValue;
+            TimeSpan t4 = TimeSpan.MinValue;
+            TimeSpan t5 = TimeSpan.MinValue;
+            TimeSpan t6 = TimeSpan.MinValue;
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption
             {
                 MaxThreads = 1,
@@ -3418,6 +3426,35 @@ namespace UnitTest
                         {
                             d6 = e.SignalTime;
                         }
+
+                        if (t0 == TimeSpan.MinValue)
+                        {
+                            t0 = e.RuntimeDuration;
+                        }
+                        else if (t1 == TimeSpan.MinValue)
+                        {
+                            t1 = e.RuntimeDuration;
+                        }
+                        else if (t2 == TimeSpan.MinValue)
+                        {
+                            t2 = e.RuntimeDuration;
+                        }
+                        else if (t3 == TimeSpan.MinValue)
+                        {
+                            t3 = e.RuntimeDuration;
+                        }
+                        else if (t4 == TimeSpan.MinValue)
+                        {
+                            t4 = e.RuntimeDuration;
+                        }
+                        else if (t5 == TimeSpan.MinValue)
+                        {
+                            t5 = e.RuntimeDuration;
+                        }
+                        else if (t6 == TimeSpan.MinValue)
+                        {
+                            t6 = e.RuntimeDuration;
+                        }
                     },
                     Interval = 500,
                 }
@@ -3430,6 +3467,14 @@ namespace UnitTest
             Assert.Equal(DateTime.MinValue, d4);
             Assert.Equal(DateTime.MinValue, d5);
             Assert.Equal(DateTime.MinValue, d6);
+
+            Assert.Equal(TimeSpan.MinValue, t0);
+            Assert.Equal(TimeSpan.MinValue, t1);
+            Assert.Equal(TimeSpan.MinValue, t2);
+            Assert.Equal(TimeSpan.MinValue, t3);
+            Assert.Equal(TimeSpan.MinValue, t4);
+            Assert.Equal(TimeSpan.MinValue, t5);
+            Assert.Equal(TimeSpan.MinValue, t6);
 
             powerPool.QueueWorkItem(() =>
             {
@@ -3445,6 +3490,37 @@ namespace UnitTest
             Assert.Equal(DateTime.MinValue, d4);
             Assert.Equal(DateTime.MinValue, d5);
             Assert.Equal(DateTime.MinValue, d6);
+
+            Assert.NotEqual(TimeSpan.MinValue, t0);
+            Assert.NotEqual(TimeSpan.MinValue, t1);
+            Assert.Equal(TimeSpan.MinValue, t2);
+            Assert.Equal(TimeSpan.MinValue, t3);
+            Assert.Equal(TimeSpan.MinValue, t4);
+            Assert.Equal(TimeSpan.MinValue, t5);
+            Assert.Equal(TimeSpan.MinValue, t6);
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1100);
+            });
+
+            powerPool.Wait();
+
+            Assert.NotEqual(DateTime.MinValue, d0);
+            Assert.NotEqual(DateTime.MinValue, d1);
+            Assert.NotEqual(DateTime.MinValue, d2);
+            Assert.NotEqual(DateTime.MinValue, d3);
+            Assert.Equal(DateTime.MinValue, d4);
+            Assert.Equal(DateTime.MinValue, d5);
+            Assert.Equal(DateTime.MinValue, d6);
+
+            Assert.NotEqual(TimeSpan.MinValue, t0);
+            Assert.NotEqual(TimeSpan.MinValue, t1);
+            Assert.NotEqual(TimeSpan.MinValue, t2);
+            Assert.NotEqual(TimeSpan.MinValue, t3);
+            Assert.Equal(TimeSpan.MinValue, t4);
+            Assert.Equal(TimeSpan.MinValue, t5);
+            Assert.Equal(TimeSpan.MinValue, t6);
 
             powerPool.PowerPoolOption.RunningTimerOption.Interval = 200;
 
@@ -3463,11 +3539,19 @@ namespace UnitTest
             Assert.NotEqual(DateTime.MinValue, d5);
             Assert.NotEqual(DateTime.MinValue, d6);
 
+            Assert.NotEqual(TimeSpan.MinValue, t0);
+            Assert.NotEqual(TimeSpan.MinValue, t1);
+            Assert.NotEqual(TimeSpan.MinValue, t2);
+            Assert.NotEqual(TimeSpan.MinValue, t3);
+            Assert.NotEqual(TimeSpan.MinValue, t4);
+            Assert.NotEqual(TimeSpan.MinValue, t5);
+            Assert.NotEqual(TimeSpan.MinValue, t6);
+
             powerPool.PowerPoolOption.RunningTimerOption = null;
 
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(500);
+                Thread.Sleep(100);
             });
 
             powerPool.Wait();

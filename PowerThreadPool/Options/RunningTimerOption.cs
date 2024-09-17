@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Timers;
+using PowerThreadPool.EventArguments;
 
 namespace PowerThreadPool.Options
 {
@@ -13,6 +13,6 @@ namespace PowerThreadPool.Options
         /// <summary>
         /// Occurs when the interval elapses, but only if the thread pool is in the Running state.
         /// </summary>
-        public Action<ElapsedEventArgs> Elapsed { get; set; }
+        public Action<RunningTimerElapsedEventArgs> Elapsed { get; set; }
     }
 }
