@@ -4,7 +4,7 @@ namespace PowerThreadPool.EventArguments
 {
     public class RunningTimerElapsedEventArgs
     {
-        public RunningTimerElapsedEventArgs( ) { }
+        public RunningTimerElapsedEventArgs() { }
 
         /// <summary>
         /// The date/time when the System.Timers.Timer.Elapsed event was raised.
