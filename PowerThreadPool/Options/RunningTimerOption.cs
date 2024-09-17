@@ -8,7 +8,7 @@ namespace PowerThreadPool.Options
         /// <summary>
         /// The time, in milliseconds, between events.
         /// </summary>
-        public double Interval { get; set; }
+        public double Interval { get; set; } = 1000;
 
         /// <summary>
         /// Occurs when the interval elapses, but only if the thread pool is in the Running state.
