@@ -193,24 +193,24 @@ namespace PowerThreadPool
         /// Pool runtime duration.
         /// Will be reset when the thread pool starts again.
         /// </summary>
-        public TimeSpan PoolRuntimeDuration
+        public TimeSpan RuntimeDuration
         {
             get
             {
-                TimeSpan poolRuntimeDuration = TimeSpan.MinValue;
+                TimeSpan runtimeDuration = TimeSpan.MinValue;
                 if (_poolState == PoolStates.Running)
                 {
-                    poolRuntimeDuration = DateTime.UtcNow - _startDateTime;
+                    runtimeDuration = DateTime.UtcNow - _startDateTime;
                 }
                 else if (_endDateTime != DateTime.MinValue)
                 {
-                    poolRuntimeDuration = _endDateTime - _startDateTime;
+                    runtimeDuration = _endDateTime - _startDateTime;
 
                 }
 
-                if (poolRuntimeDuration.Ticks > 0)
+                if (runtimeDuration.Ticks > 0)
                 {
-                    return poolRuntimeDuration;
+                    return runtimeDuration;
                 }
                 else
                 {
@@ -429,7 +429,12 @@ namespace PowerThreadPool
                         _runningTimer = new System.Timers.Timer(PowerPoolOption.RunningTimerOption.Interval);
                         _runningTimer.Elapsed += (s, e) =>
                         {
-                            PowerPoolOption.RunningTimerOption.Elapsed(e);
+                            RunningTimerElapsedEventArgs runningTimerElapsedEventArgs = new RunningTimerElapsedEventArgs
+                            {
+                                RuntimeDuration = RuntimeDuration,
+                                SignalTime = e.SignalTime,
+                            };
+                            PowerPoolOption.RunningTimerOption.Elapsed(runningTimerElapsedEventArgs);
                         };
                     }
 
