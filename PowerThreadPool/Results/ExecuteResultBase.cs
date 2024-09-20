@@ -18,7 +18,7 @@ namespace PowerThreadPool.Results
         public Status Status { get; internal set; }
 
         /// <summary>
-        /// If failed, Exception will be setted here.
+        /// If failed, the exception will be stored here.
         /// </summary>
         public Exception Exception { get; internal set; }
 

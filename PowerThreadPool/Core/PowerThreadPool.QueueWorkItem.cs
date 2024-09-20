@@ -503,7 +503,7 @@ namespace PowerThreadPool
 
             if (workOption.CustomWorkID != null)
             {
-                if (_suspendedWork.ContainsKey(workOption.CustomWorkID) || _settedWorkDic.ContainsKey(workOption.CustomWorkID))
+                if (_suspendedWork.ContainsKey(workOption.CustomWorkID) || _aliveWorkDic.ContainsKey(workOption.CustomWorkID))
                 {
                     throw new InvalidOperationException($"The work ID '{workOption.CustomWorkID}' already exists.");
                 }
