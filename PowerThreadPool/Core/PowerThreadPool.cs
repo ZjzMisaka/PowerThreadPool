@@ -27,7 +27,7 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<int, Worker> _idleWorkerDic = new ConcurrentDictionary<int, Worker>();
         internal ConcurrentQueue<int> _idleWorkerQueue = new ConcurrentQueue<int>();
 
-        internal ConcurrentDictionary<string, WorkBase> _settedWorkDic = new ConcurrentDictionary<string, WorkBase>();
+        internal ConcurrentDictionary<string, WorkBase> _aliveWorkDic = new ConcurrentDictionary<string, WorkBase>();
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _groupRelationDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<int, Worker> _aliveWorkerDic = new ConcurrentDictionary<int, Worker>();
@@ -99,7 +99,7 @@ namespace PowerThreadPool
         {
             get
             {
-                List<string> list = _settedWorkDic.Keys.ToList();
+                List<string> list = _aliveWorkDic.Keys.ToList();
                 IEnumerable<Worker> workers = _aliveWorkerList;
                 foreach (Worker worker in workers)
                 {
@@ -544,13 +544,13 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Add worker into settedWorkDic
+        /// Add worker into _aliveWorkDic
         /// </summary>
         /// <param name="workId"></param>
         /// <param name="worker"></param>
         internal void SetWorkOwner(WorkBase work)
         {
-            _settedWorkDic[work.ID] = work;
+            _aliveWorkDic[work.ID] = work;
         }
 
         /// <summary>

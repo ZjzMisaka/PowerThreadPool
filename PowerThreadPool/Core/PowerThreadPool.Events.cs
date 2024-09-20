@@ -143,7 +143,7 @@ namespace PowerThreadPool
                 CallbackEnd.Invoke(work.ID);
             }
 
-            _settedWorkDic.TryRemove(work.ID, out _);
+            _aliveWorkDic.TryRemove(work.ID, out _);
             if (work.Group != null)
             {
                 if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<string> idSet))

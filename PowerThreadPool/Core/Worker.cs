@@ -283,7 +283,7 @@ namespace PowerThreadPool
             }
         }
 
-        internal void SetWork(WorkBase work, bool resetted)
+        internal void SetWork(WorkBase work, bool reset)
         {
             _waitingWorkDic[work.ID] = work;
             _powerPool.SetWorkOwner(work);
@@ -297,7 +297,7 @@ namespace PowerThreadPool
                 _killTimer.Stop();
             }
 
-            if (!resetted)
+            if (!reset)
             {
                 CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
             }

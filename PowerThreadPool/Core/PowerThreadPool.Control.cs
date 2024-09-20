@@ -41,13 +41,13 @@ namespace PowerThreadPool
 
             if (!res)
             {
-                _settedWorkDic.Clear();
+                _aliveWorkDic.Clear();
                 _workGroupDic.Clear();
                 throw new WorkStopException();
             }
             else if (work != null)
             {
-                _settedWorkDic.TryRemove(work.ID, out _);
+                _aliveWorkDic.TryRemove(work.ID, out _);
                 if (work.Group != null)
                 {
                     if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<string> idSet))
@@ -128,7 +128,7 @@ namespace PowerThreadPool
             }
 
             WorkBase work;
-            if (_suspendedWork.TryGetValue(id, out work) || _settedWorkDic.TryGetValue(id, out work))
+            if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work))
             {
                 return work.Wait();
             }
@@ -261,7 +261,7 @@ namespace PowerThreadPool
 
             WorkBase work;
             ExecuteResultBase executeResultBase = null;
-            if (_suspendedWork.TryGetValue(id, out work) || _settedWorkDic.TryGetValue(id, out work) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
+            if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
             {
                 if (executeResultBase != null)
                 {
@@ -305,7 +305,7 @@ namespace PowerThreadPool
             {
                 WorkBase workBase;
                 ExecuteResultBase executeResultBase = null;
-                if (_suspendedWork.TryGetValue(id, out workBase) || _settedWorkDic.TryGetValue(id, out workBase) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
+                if (_suspendedWork.TryGetValue(id, out workBase) || _aliveWorkDic.TryGetValue(id, out workBase) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
                 {
                     if (executeResultBase != null)
                     {
@@ -453,7 +453,7 @@ namespace PowerThreadPool
 
             if (forceStop)
             {
-                _settedWorkDic.Clear();
+                _aliveWorkDic.Clear();
                 _workGroupDic.Clear();
                 IEnumerable<Worker> workers = _aliveWorkerList;
                 foreach (Worker worker in workers)
@@ -484,7 +484,7 @@ namespace PowerThreadPool
             }
 
             bool res = false;
-            if (_settedWorkDic.TryGetValue(id, out WorkBase work))
+            if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
                 res = work.Stop(forceStop);
             }
@@ -536,7 +536,7 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            if (_settedWorkDic.TryGetValue(id, out WorkBase work))
+            if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
                 return work.Pause();
             }
@@ -602,7 +602,7 @@ namespace PowerThreadPool
             {
                 res = false;
             }
-            else if (_settedWorkDic.TryGetValue(id, out WorkBase work))
+            else if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
                 res = work.Resume();
             }
@@ -657,7 +657,7 @@ namespace PowerThreadPool
             {
                 return true;
             }
-            else if (_settedWorkDic.TryGetValue(id, out WorkBase work))
+            else if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
                 return work.Cancel(true);
             }

@@ -75,7 +75,7 @@ namespace PowerThreadPool.Works
 
                 foreach (string dependedId in _workOption.Dependents)
                 {
-                    if (!powerPool._settedWorkDic.ContainsKey(dependedId) && !powerPool._suspendedWork.ContainsKey(dependedId))
+                    if (!powerPool._aliveWorkDic.ContainsKey(dependedId) && !powerPool._suspendedWork.ContainsKey(dependedId))
                     {
                         if (powerPool._failedWorkSet.Contains(dependedId))
                         {
