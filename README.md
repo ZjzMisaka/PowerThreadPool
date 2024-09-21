@@ -33,6 +33,7 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
 - [Parallel Execution](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Parallel-Execution)
     - [For](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Parallel-Execution#For)
     - [ForEach](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Parallel-Execution#ForEach)
+    - [Where](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Parallel-Execution#Where)
 - [Work Priority | Thread Priority](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Priority)
 - [Error Handling](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Error-Handling)
     - [Retry](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Retry)
