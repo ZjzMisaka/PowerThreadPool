@@ -159,7 +159,7 @@ namespace PowerThreadPool
             };
             ConcurrentBag<string> bag = new ConcurrentBag<string>();
             Group group = GetGroup(groupID);
-            
+
             QueueWorkItem(() =>
             {
                 bool continueLoop = false;
