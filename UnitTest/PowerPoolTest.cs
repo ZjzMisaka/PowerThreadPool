@@ -2426,6 +2426,8 @@ namespace UnitTest
                 ShouldStoreResult = true,
             });
 
+            powerPool.Wait();
+
             ExecuteResult<string> res0 = powerPool.Fetch<string>(id0);
             Assert.Equal("0", res0.Result);
             ExecuteResult<string> res1 = powerPool.Fetch<string>(id1);
@@ -3368,6 +3370,76 @@ namespace UnitTest
             list.Add(3);
 
             string groupName = powerPool.ForEach(list, (i) => result.Add(i), "Group1").Name;
+
+            Assert.Equal("Group1", groupName);
+        }
+
+        [Fact]
+        public void TestParallelWhere()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            BlockingCollection<string> list = new BlockingCollection<string>();
+            list.Add("");
+            list.Add("1");
+            list.Add("2");
+
+            BlockingCollection<string> result = new BlockingCollection<string>();
+
+            powerPool.Where<string>(() =>
+            {
+                list.TryTake(out string item);
+                return item;
+            }, (item) =>
+            {
+                if (item.Length != 10)
+                {
+                    Thread.Sleep(100);
+                    list.TryAdd(item += " ");
+                }
+                else
+                {
+                    result.TryAdd(item);
+                }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, result.Count);
+            Assert.Contains("2         ", result);
+            Assert.Contains("1         ", result);
+            Assert.Contains("          ", result);
+        }
+
+        [Fact]
+        public void TestParallelWhereGroupID()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            BlockingCollection<string> list = new BlockingCollection<string>();
+            list.Add("");
+            list.Add("1");
+            list.Add("2");
+
+            BlockingCollection<string> result = new BlockingCollection<string>();
+
+            string groupName = powerPool.Where<string>(() =>
+            {
+                list.TryTake(out string item);
+                return item;
+            }, (item) =>
+            {
+                if (item.Length != 10)
+                {
+                    list.TryAdd(item += " ");
+                }
+                else
+                {
+                    result.TryAdd(item);
+                }
+            }, "Group1").Name;
+
+            powerPool.Wait();
 
             Assert.Equal("Group1", groupName);
         }

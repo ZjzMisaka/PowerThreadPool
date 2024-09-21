@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using PowerThreadPool.Groups;
 using PowerThreadPool.Options;
@@ -130,6 +131,68 @@ namespace PowerThreadPool
                 QueueWorkItem(() => { body(item, localI); }, workOption);
             }
             return GetGroup(groupID);
+        }
+
+        /// <summary>
+        /// Executes the provided action repeatedly while the specified condition evaluates to a non-default value of the specified type.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the value returned by the condition function.</typeparam>
+        /// <param name="condition">A function that returns a value of type TSource. The action continues to execute as long as this returns a non-default value.</param>
+        /// <param name="body">The action to execute repeatedly while the condition returns a non-default value. The action receives the current value returned by the condition function.</param>
+        /// <param name="groupName">The optional name for the group. Default is null.</param>
+        /// <returns>Returns a group object.</returns>
+        public Group Where<TSource>(Func<TSource> condition, Action<TSource> body, string groupName = null) where TSource : class
+        {
+            string groupID = null;
+            if (string.IsNullOrEmpty(groupName))
+            {
+                groupID = Guid.NewGuid().ToString();
+            }
+            else
+            {
+                groupID = groupName;
+            }
+
+            WorkOption workOption = new WorkOption()
+            {
+                Group = groupID,
+            };
+            ConcurrentBag<string> bag = new ConcurrentBag<string>();
+            Group group = GetGroup(groupID);
+            
+            QueueWorkItem(() =>
+            {
+                bool continueLoop = false;
+                do
+                {
+                    while (true)
+                    {
+                        TSource itemLoop = condition();
+                        if (itemLoop == null)
+                        {
+                            break;
+                        }
+                        string idLoop = QueueWorkItem(() => { body(itemLoop); }, workOption);
+                        bag.Add(idLoop);
+                    }
+                    Wait(bag);
+
+                    TSource item = condition();
+                    if (item != null)
+                    {
+                        string id = QueueWorkItem(() => { body(item); }, workOption);
+                        bag.Add(id);
+                        continueLoop = true;
+                    }
+                    else
+                    {
+                        continueLoop = false;
+                    }
+                } while (continueLoop);
+
+            }, workOption);
+
+            return group;
         }
     }
 }
