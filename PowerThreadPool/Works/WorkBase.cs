@@ -52,6 +52,7 @@ namespace PowerThreadPool.Works
         internal abstract TimeoutOption WorkTimeoutOption { get; }
         internal abstract RetryOption RetryOption { get; }
         internal abstract bool LongRunning { get; }
+        internal abstract bool ShouldStoreResult { get; }
         internal abstract ConcurrentSet<string> Dependents { get; }
     }
 }

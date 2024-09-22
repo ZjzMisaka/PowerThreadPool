@@ -34,6 +34,7 @@ namespace PowerThreadPool.Works
         internal override TimeoutOption WorkTimeoutOption => _workOption.TimeoutOption;
         internal override RetryOption RetryOption => _workOption.RetryOption;
         internal override bool LongRunning => _workOption.LongRunning;
+        internal override bool ShouldStoreResult => _workOption.ShouldStoreResult;
         internal override ConcurrentSet<string> Dependents => _workOption.Dependents;
 
         internal Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
