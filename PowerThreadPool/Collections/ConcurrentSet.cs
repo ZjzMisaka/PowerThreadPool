@@ -44,6 +44,16 @@ namespace PowerThreadPool.Collections
         public int Count => _dictionary.Count;
 
         /// <summary>
+        /// Checks whether the collection contains the specified value.
+        /// </summary>
+        /// <param name="value">The value to locate in the collection.</param>
+        /// <returns>True if the value is found in the collection; otherwise, false.</returns>
+        public bool Contains(T value)
+        {
+            return _dictionary.ContainsKey(value);
+        }
+
+        /// <summary>
         /// Clear all items.
         /// </summary>
         public void Clear()

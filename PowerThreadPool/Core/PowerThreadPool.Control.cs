@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerThreadPool.Collections;
@@ -315,15 +316,19 @@ namespace PowerThreadPool
                     if (executeResultBase != null)
                     {
                         resultList.Add(executeResultBase.ToTypedResult<TResult>());
-
-                        if (removeAfterFetch && _aliveWorkDic.TryRemove(id, out WorkBase work))
-                        {
-                            RemoveWorkFromGroup(work.Group, work);
-                        }
                     }
                     else
                     {
                         workList.Add(workBase);
+
+                        if (removeAfterFetch)
+                        {
+                            _resultDic.TryRemove(id, out _);
+                            if (_aliveWorkDic.TryRemove(id, out WorkBase work))
+                            {
+                                RemoveWorkFromGroup(work.Group, work);
+                            }
+                        }
                     }
                 }
                 else
@@ -446,6 +451,50 @@ namespace PowerThreadPool
             });
         }
 #endif
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <param name="predicate">a function to test each source element for a condition; the second parameter of the function represents the index of the source element</param>
+        /// <param name="removeAfterFetch">remove the result from storage</param>
+        /// <returns>Return a list of work result</returns>
+        public List<ExecuteResult<TResult>> Fetch<TResult>(Func<ExecuteResult<TResult>, bool> predicate, bool removeAfterFetch = false)
+        {
+            List<string> idList = new List<string>();
+
+            foreach (KeyValuePair<string, ExecuteResultBase> pair in _resultDic)
+            {
+                if (predicate(pair.Value.ToTypedResult<TResult>()))
+                {
+                    idList.Add(pair.Value.ID);
+                }
+            }
+
+            return Fetch<TResult>(idList, removeAfterFetch);
+        }
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <param name="predicate">a function to test each source element for a condition; the second parameter of the function represents the index of the source element</param>
+        /// <param name="predicateID">a function to test each source element for a condition; the second parameter of the function represents the index of the source element</param>
+        /// <param name="removeAfterFetch">remove the result from storage</param>
+        /// <returns>Return a list of work result</returns>
+        internal List<ExecuteResult<TResult>> Fetch<TResult>(Func<ExecuteResult<TResult>, bool> predicate, Func<ExecuteResult<TResult>, bool> predicateID, bool removeAfterFetch = false)
+        {
+            List<string> idList = new List<string>();
+
+            foreach (KeyValuePair<string, ExecuteResultBase> pair in _resultDic)
+            {
+                ExecuteResult<TResult> typedResult = pair.Value.ToTypedResult<TResult>();
+                if (predicate(typedResult) && predicateID(typedResult))
+                {
+                    idList.Add(pair.Value.ID);
+                }
+            }
+
+            return Fetch<TResult>(idList, removeAfterFetch);
+        }
 
         /// <summary>
         /// Stop all works
