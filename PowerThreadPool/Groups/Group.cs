@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using PowerThreadPool.Collections;
 using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Groups
@@ -137,6 +139,19 @@ namespace PowerThreadPool.Groups
             });
         }
 #endif
+
+        /// <summary>
+        /// Fetch the work result.
+        /// </summary>
+        /// <param name="predicate">a function to test each source element for a condition; the second parameter of the function represents the index of the source element</param>
+        /// <param name="removeAfterFetch">remove the result from storage</param>
+        /// <returns>Return a list of work result</returns>
+        public List<ExecuteResult<TResult>> Fetch<TResult>(Func<ExecuteResult<TResult>, bool> predicate, bool removeAfterFetch = false)
+        {
+            ConcurrentSet<string> idList = (ConcurrentSet<string>)_powerPool.GetGroupMemberList(Name);
+            Func<ExecuteResult<TResult>, bool> predicateID = e => idList.Contains(e.ID);
+            return _powerPool.Fetch(predicate, predicateID, removeAfterFetch);
+        }
 
         /// <summary>
         /// Stop all the work belonging to the group.

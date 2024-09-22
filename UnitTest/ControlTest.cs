@@ -2085,6 +2085,58 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestFetchByPredicate()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                return 1;
+            }, new WorkOption()
+            {
+                ShouldStoreResult = true
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                return 2;
+            }, new WorkOption()
+            {
+                ShouldStoreResult = true
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                return 3;
+            }, new WorkOption()
+            {
+                ShouldStoreResult = true
+            });
+            string id4 = powerPool.QueueWorkItem(() =>
+            {
+                return 4;
+            }, new WorkOption()
+            {
+                ShouldStoreResult = true
+            });
+
+            powerPool.Wait();
+
+            List<ExecuteResult<int>> resList = powerPool.Fetch<int>(x => x.Result >= 3);
+
+            Assert.True(resList.Count == 2);
+            Assert.True(resList[0].ID == id3 || resList[0].ID == id4);
+            Assert.True(resList[1].ID == id3 || resList[1].ID == id4);
+
+            resList = powerPool.Fetch<int>(x => x.Result >= 3, true);
+
+            Assert.True(resList.Count == 2);
+            Assert.True(resList[0].ID == id3 || resList[0].ID == id4);
+            Assert.True(resList[1].ID == id3 || resList[1].ID == id4);
+
+            resList = powerPool.Fetch<int>(x => x.Result >= 3, true);
+
+            Assert.True(resList.Count == 0);
+        }
+
+        [Fact]
         public void TestFetchObjByGroupObject()
         {
             PowerPool powerPool = new PowerPool();
@@ -2226,6 +2278,60 @@ namespace UnitTest
                     Assert.Equal("1", (string)res.Result);
                 }
             }
+        }
+
+        [Fact]
+        public void TestFetchByPredicateByGroupObject()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                return 1;
+            }, new WorkOption()
+            {
+                ShouldStoreResult = true,
+                Group = "A",
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                return 2;
+            }, new WorkOption()
+            {
+                ShouldStoreResult = true,
+                Group = "B",
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                return 3;
+            }, new WorkOption()
+            {
+                ShouldStoreResult = true,
+                Group = "A",
+            });
+            string id4 = powerPool.QueueWorkItem(() =>
+            {
+                return 4;
+            }, new WorkOption()
+            {
+                ShouldStoreResult = true,
+                Group = "B",
+            });
+
+            powerPool.Wait();
+
+            List<ExecuteResult<int>> resList = powerPool.GetGroup("B").Fetch<int>(x => x.Result >= 3);
+
+            Assert.True(resList.Count == 1);
+            Assert.True(resList[0].ID == id4);
+
+            resList = powerPool.GetGroup("B").Fetch<int>(x => x.Result >= 3, true);
+
+            Assert.True(resList.Count == 1);
+            Assert.True(resList[0].ID == id4);
+
+            resList = powerPool.GetGroup("B").Fetch<int>(x => x.Result >= 3, true);
+
+            Assert.True(resList.Count == 0);
         }
 
         [Fact]
