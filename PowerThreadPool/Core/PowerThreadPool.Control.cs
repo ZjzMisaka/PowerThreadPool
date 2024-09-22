@@ -316,12 +316,9 @@ namespace PowerThreadPool
                     {
                         resultList.Add(executeResultBase.ToTypedResult<TResult>());
 
-                        if (removeAfterFetch)
+                        if (removeAfterFetch && _aliveWorkDic.TryRemove(id, out WorkBase work))
                         {
-                            if (_aliveWorkDic.TryRemove(id, out WorkBase work))
-                            {
-                                RemoveWorkFromGroup(work.Group, id);
-                            }
+                            RemoveWorkFromGroup(work.Group, work);
                         }
                     }
                     else

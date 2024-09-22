@@ -74,11 +74,24 @@ namespace PowerThreadPool
         {
             if (_aliveWorkDic.TryGetValue(workID, out WorkBase work))
             {
-                if (_workGroupDic.TryGetValue(groupName, out ConcurrentSet<string> workIDSet))
-                {
-                    work.Group = null;
-                    return workIDSet.Remove(workID);
-                }
+                return RemoveWorkFromGroup(groupName, work);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Remove work from group.
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <param name="work"></param>
+        /// <returns>Returns false if either the work or the group does not exist, or if the work does not belong to the group.</returns>
+        private bool RemoveWorkFromGroup(string groupName, WorkBase work)
+        {
+            if (_workGroupDic.TryGetValue(groupName, out ConcurrentSet<string> workIDSet))
+            {
+                work.Group = null;
+                return workIDSet.Remove(work.ID);
             }
 
             return false;
