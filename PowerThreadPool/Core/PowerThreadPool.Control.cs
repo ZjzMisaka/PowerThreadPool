@@ -455,29 +455,19 @@ namespace PowerThreadPool
         /// <summary>
         /// Fetch the work result.
         /// </summary>
-        /// <param name="predicate">a function to test each source element for a condition; the second parameter of the function represents the index of the source element</param>
+        /// <param name="predicate">a function to test each source element for a condition</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
         public List<ExecuteResult<TResult>> Fetch<TResult>(Func<ExecuteResult<TResult>, bool> predicate, bool removeAfterFetch = false)
         {
-            List<string> idList = new List<string>();
-
-            foreach (KeyValuePair<string, ExecuteResultBase> pair in _resultDic)
-            {
-                if (predicate(pair.Value.ToTypedResult<TResult>()))
-                {
-                    idList.Add(pair.Value.ID);
-                }
-            }
-
-            return Fetch<TResult>(idList, removeAfterFetch);
+            return Fetch<TResult>(predicate, _ => true, removeAfterFetch);
         }
 
         /// <summary>
         /// Fetch the work result.
         /// </summary>
-        /// <param name="predicate">a function to test each source element for a condition; the second parameter of the function represents the index of the source element</param>
-        /// <param name="predicateID">a function to test each source element for a condition; the second parameter of the function represents the index of the source element</param>
+        /// <param name="predicate">a function to test each source element for a condition</param>
+        /// <param name="predicateID">a function to test each source element for a condition</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
         internal List<ExecuteResult<TResult>> Fetch<TResult>(Func<ExecuteResult<TResult>, bool> predicate, Func<ExecuteResult<TResult>, bool> predicateID, bool removeAfterFetch = false)
