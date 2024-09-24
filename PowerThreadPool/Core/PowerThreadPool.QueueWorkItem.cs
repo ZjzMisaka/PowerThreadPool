@@ -521,6 +521,11 @@ namespace PowerThreadPool
 
             Work<TResult> work = new Work<TResult>(this, workID, function, param, workOption);
 
+            if (work.DependencyFailed)
+            {
+                return workID;
+            }
+
             Interlocked.Increment(ref _waitingWorkCount);
 
             if (work.Group != null)

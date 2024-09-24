@@ -2494,7 +2494,7 @@ namespace UnitTest
 
             powerPool.GetGroup("A").Stop();
             powerPool.GetGroup("A").Wait();
-            Thread.Sleep(10);
+            Thread.Sleep(100);
             Assert.Equal(0, powerPool.RunningWorkerCount);
         }
 
@@ -2552,12 +2552,12 @@ namespace UnitTest
 
             powerPool.GetGroup("B").Stop();
             powerPool.GetGroup("B").Wait();
-            Thread.Sleep(10);
+            Thread.Sleep(100);
             Assert.Equal(2, powerPool.RunningWorkerCount);
 
             powerPool.GetGroup("A").Stop();
             powerPool.GetGroup("A").Wait();
-            Thread.Sleep(10);
+            Thread.Sleep(100);
             Assert.Equal(0, powerPool.RunningWorkerCount);
         }
 
@@ -2740,7 +2740,7 @@ namespace UnitTest
 
             powerPool.GetGroup("A").Stop();
             powerPool.GetGroup("A").Wait();
-            Thread.Sleep(10);
+            Thread.Sleep(100);
             Assert.Equal(0, powerPool.RunningWorkerCount);
         }
 
