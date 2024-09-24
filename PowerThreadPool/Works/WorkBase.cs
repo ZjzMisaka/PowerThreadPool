@@ -31,6 +31,7 @@ namespace PowerThreadPool.Works
         internal Status Status { get; set; }
         internal AutoResetEvent WaitSignal { get; set; }
         internal bool ShouldStop { get; set; }
+        internal bool DependencyFailed { get; set; }
         internal ManualResetEvent PauseSignal { get; set; }
         internal DateTime QueueDateTime { get; set; }
         internal abstract object Execute();

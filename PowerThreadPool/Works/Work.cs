@@ -53,6 +53,7 @@ namespace PowerThreadPool.Works
                     if (powerPool._failedWorkSet.Contains(dependedId))
                     {
                         powerPool.CallbackEnd -= _callbackEndHandler;
+                        DependencyFailed = true;
                         Interlocked.Decrement(ref powerPool._waitingWorkCount);
                         powerPool.CheckPoolIdle();
                         return;
@@ -80,7 +81,7 @@ namespace PowerThreadPool.Works
                         if (powerPool._failedWorkSet.Contains(dependedId))
                         {
                             powerPool.CallbackEnd -= _callbackEndHandler;
-                            Interlocked.Decrement(ref powerPool._waitingWorkCount);
+                            DependencyFailed = true;
                             powerPool.CheckPoolIdle();
                             return;
                         }
