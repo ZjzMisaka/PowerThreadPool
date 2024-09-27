@@ -1303,6 +1303,76 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestLongWorkWithNormalWork()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 10000 }
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        return;
+                    }
+                }
+            }, new WorkOption()
+            {
+                LongRunning = true,
+            });
+
+            Thread.Sleep(100);
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption()
+            {
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption()
+            {
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption()
+            {
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption()
+            {
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption()
+            {
+            });
+
+            Thread.Sleep(10);
+
+            powerPool.Stop();
+
+            Thread.Sleep(500);
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.Equal(2, powerPool.AliveWorkerCount);
+            Assert.Equal(2, powerPool.IdleWorkerCount);
+            Assert.Equal(0, powerPool.LongRunningWorkerCount);
+        }
+
+        [Fact]
         public void TestLongWorkForceStop()
         {
             PowerPool powerPool = new PowerPool();
