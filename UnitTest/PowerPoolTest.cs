@@ -656,7 +656,6 @@ namespace UnitTest
                     }
                     Thread.Sleep(1);
                 }
-
             }, new WorkOption()
             {
                 ThreadPriority = ThreadPriority.Lowest
@@ -856,7 +855,6 @@ namespace UnitTest
                     }
                     Thread.Sleep(1);
                 }
-
             }, new WorkOption()
             {
             });
@@ -889,7 +887,6 @@ namespace UnitTest
                     }
                     Thread.Sleep(1);
                 }
-
             }, new WorkOption()
             {
             });
@@ -922,7 +919,6 @@ namespace UnitTest
                     }
                     Thread.Sleep(1);
                 }
-
             }, new WorkOption()
             {
             });
@@ -1767,7 +1763,7 @@ namespace UnitTest
                         }
                     }
                 }
-            }); ;
+            });
 
             powerPool.Wait();
 
@@ -1799,7 +1795,7 @@ namespace UnitTest
             }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
-            }); ;
+            });
 
             powerPool.Wait();
 

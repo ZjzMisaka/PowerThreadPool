@@ -1,7 +1,7 @@
 ﻿namespace PowerThreadPool.Options
 {
-    public enum RetryBehavior { ImmediateRetry, Requeue };
-    public enum RetryPolicy { Limited, Unlimited };
+    public enum RetryBehavior { ImmediateRetry, Requeue }
+    public enum RetryPolicy { Limited, Unlimited }
     public class RetryOption
     {
         /// <summary>

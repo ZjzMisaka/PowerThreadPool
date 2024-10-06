@@ -205,7 +205,6 @@ namespace PowerThreadPool
                 else if (_endDateTime != DateTime.MinValue)
                 {
                     runtimeDuration = _endDateTime - _startDateTime;
-
                 }
 
                 if (runtimeDuration.Ticks > 0)
@@ -221,7 +220,6 @@ namespace PowerThreadPool
 
         public PowerPool()
         {
-
         }
 
         public PowerPool(PowerPoolOption powerPoolOption)

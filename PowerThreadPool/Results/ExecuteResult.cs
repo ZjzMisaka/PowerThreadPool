@@ -12,7 +12,6 @@ namespace PowerThreadPool.Results
 
         internal ExecuteResult()
         {
-
         }
 
         internal override void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime, RetryOption retryOption, int executeCount)
