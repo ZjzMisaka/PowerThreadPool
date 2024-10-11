@@ -11,6 +11,10 @@ namespace PowerThreadPool.Options
         {
         }
 
+        private static readonly WorkOption<TResult> s_defaultInstance = new WorkOption<TResult>();
+
+        internal static WorkOption<TResult> DefaultInstance => s_defaultInstance;
+
         /// <summary>
         /// The custom work ID. If set to null, the thread pool will use a Guid as the work ID.
         /// </summary>
@@ -70,6 +74,10 @@ namespace PowerThreadPool.Options
 
     public class WorkOption : WorkOption<object>
     {
+        private static readonly WorkOption s_defaultInstance = new WorkOption();
+
+        internal static new WorkOption DefaultInstance => s_defaultInstance;
+
         public WorkOption()
         {
         }
