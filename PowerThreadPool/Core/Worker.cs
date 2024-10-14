@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Timers;
@@ -11,6 +10,11 @@ using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;
+#if NET45_OR_GREATER
+using ConcurrentCollection = NonBlocking;
+#else
+using ConcurrentCollection = System.Collections.Concurrent;
+#endif
 
 namespace PowerThreadPool
 {
@@ -28,7 +32,7 @@ namespace PowerThreadPool
         internal InterlockedFlag<WorkStealability> WorkStealability { get; set; } = Constants.WorkStealability.Allowed;
 
         private IStealablePriorityCollection<string> _waitingWorkIDPriorityCollection;
-        private ConcurrentDictionary<string, WorkBase> _waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+        private ConcurrentCollection.ConcurrentDictionary<string, WorkBase> _waitingWorkDic = new ConcurrentCollection.ConcurrentDictionary<string, WorkBase>();
 
         private System.Timers.Timer _timeoutTimer;
         private System.Timers.Timer _killTimer;

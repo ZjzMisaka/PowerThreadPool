@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerThreadPool", "PowerThr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest", "UnitTest\UnitTest.csproj", "{A71B326B-A525-4381-9278-09E298055B4D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark", "Benchmark\Benchmark.csproj", "{470FB9E9-F963-41B8-9ECB-360906ABE0CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Benchmark", "Benchmark\Benchmark.csproj", "{470FB9E9-F963-41B8-9ECB-360906ABE0CC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NonBlocking", "NonBlocking\src\NonBlocking\NonBlocking.csproj", "{D2E4AEB4-819E-4E19-BA5F-3B701F7E7BEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{470FB9E9-F963-41B8-9ECB-360906ABE0CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{470FB9E9-F963-41B8-9ECB-360906ABE0CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{470FB9E9-F963-41B8-9ECB-360906ABE0CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2E4AEB4-819E-4E19-BA5F-3B701F7E7BEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2E4AEB4-819E-4E19-BA5F-3B701F7E7BEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2E4AEB4-819E-4E19-BA5F-3B701F7E7BEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2E4AEB4-819E-4E19-BA5F-3B701F7E7BEC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

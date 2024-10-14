@@ -1,19 +1,24 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+#if NET45_OR_GREATER
+using ConcurrentCollection = NonBlocking;
+#else
+using ConcurrentCollection = System.Collections.Concurrent;
+#endif
 
 namespace PowerThreadPool.Collections
 {
     internal class ConcurrentStealablePriorityStack<T> : IStealablePriorityCollection<T>
     {
-        private readonly ConcurrentDictionary<int, ConcurrentStack<T>> _queueDic;
+        private readonly ConcurrentCollection.ConcurrentDictionary<int, ConcurrentStack<T>> _queueDic;
         private readonly ConcurrentSet<int> _prioritySet;
         private List<int> _reversed;
         private volatile bool _updated;
 
         internal ConcurrentStealablePriorityStack()
         {
-            _queueDic = new ConcurrentDictionary<int, ConcurrentStack<T>>();
+            _queueDic = new ConcurrentCollection.ConcurrentDictionary<int, ConcurrentStack<T>>();
             _prioritySet = new ConcurrentSet<int>();
             _updated = false;
         }

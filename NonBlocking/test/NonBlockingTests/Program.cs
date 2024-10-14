@@ -1,0 +1,1010 @@
+﻿// Copyright (c) Vladimir Sadov. All rights reserved.
+//
+// This file is distributed under the MIT License. See LICENSE.md for details.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace NonBlockingTests
+{
+    public class Program
+    {
+        private static ReadOnlySpan<int> ConcurrentIterations =>
+            new int[] { 10, 100, 1000, 10000, 100000, 1000000 };
+
+        private static readonly bool s_isStrong =
+            RuntimeInformation.ProcessArchitecture == Architecture.X64 ||
+            RuntimeInformation.ProcessArchitecture == Architecture.X86;
+
+        static void Main(string[] args)
+        {
+            for (; ; )
+            {
+                CDTests();
+
+                System.Console.WriteLine("AddSetRemove");
+                AddSetRemove();
+                System.Console.WriteLine("AddSetRemoveConcurrent");
+                AddSetRemoveConcurrent();
+                System.Console.WriteLine("AddSetRemoveConcurrentInt");
+                AddSetRemoveConcurrentInt();
+
+                System.Console.WriteLine("AddSetRemoveConcurrentIntInt");
+                AddSetRemoveConcurrentIntInt();
+                System.Console.WriteLine("AddSetRemoveConcurrentUIntInt");
+                AddSetRemoveConcurrentUIntInt();
+                System.Console.WriteLine("AddSetRemoveConcurrentLongInt");
+                AddSetRemoveConcurrentLongInt();
+                System.Console.WriteLine("AddSetRemoveConcurrentULongInt");
+                AddSetRemoveConcurrentULongInt();
+                System.Console.WriteLine("AddSetRemoveConcurrentIntPtrInt");
+                AddSetRemoveConcurrentIntPtrInt();
+
+                System.Console.WriteLine("AddSetRemoveConcurrentStruct");
+                AddSetRemoveConcurrentStruct();
+
+                System.Console.WriteLine("AddSetRemoveConcurrentNullIntolerant");
+                AddSetRemoveConcurrentNullIntolerant();
+
+                System.Console.WriteLine("NullValueRef");
+                NullValueRef();
+                System.Console.WriteLine("NullValueNub");
+                NullValueNub();
+
+                System.Console.WriteLine("Continuity001");
+                Continuity001();
+                System.Console.WriteLine("Continuity002");
+                Continuity002();
+
+                System.Console.WriteLine("ContinuityOfRemove001");
+                ContinuityOfRemove001();
+                System.Console.WriteLine("ContinuityOfRemove002");
+                ContinuityOfRemove002();
+
+                System.Console.WriteLine("Relativity001");
+                Relativity001();
+                System.Console.WriteLine("Relativity002");
+                Relativity002();
+
+                System.Console.WriteLine("Relativity003");
+                Relativity003();
+                System.Console.WriteLine("Relativity004");
+                Relativity004();
+
+                System.Console.WriteLine("Finality001");
+                Finality001();
+
+                System.Console.WriteLine("Finality002");
+                Finality002();
+
+                System.Console.WriteLine("Uniqueness001");
+                Uniqueness001();
+
+                System.Console.WriteLine("BadHashAdd");
+                BadHashAdd();
+
+                System.Console.WriteLine("============================= PASS");
+                System.Console.WriteLine();
+            }
+        }
+
+        private static void CDTests()
+        {
+            var tests = from mi in typeof(DictionaryImplTests).GetMethods()
+                        where mi.CustomAttributes.Any(a => a.AttributeType.Name.Contains("Fact"))
+                        select mi;
+
+            foreach (var test in tests)
+            {
+                System.Console.WriteLine(test.Name);
+                test.Invoke(null, Array.Empty<object>());
+            }
+        }
+
+        private static void TimeIt(Action a)
+        {
+            a();
+
+            for (int i = 0; i < 10; i++)
+            {
+                Stopwatch sw = Stopwatch.StartNew();
+                a();
+                sw.Stop();
+
+                System.Console.WriteLine(sw.ElapsedMilliseconds);
+            }
+        }
+
+        [Fact()]
+        private static void NullValueRef()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<int, string>();
+
+            string s;
+            Assert.False(dict.TryGetValue(0, out s));
+
+            dict.TryAdd(0, null);
+            Assert.True(dict.TryGetValue(0, out s));
+            Assert.Null(s);
+            Assert.True(dict.TryRemove(0, out var _));
+            Assert.False(dict.TryGetValue(0, out s));
+
+            dict.TryAdd(0, null);
+            Assert.True(dict.TryRemove(0, out s));
+            Assert.Null(s);
+            Assert.False(dict.TryRemove(0, out s));
+
+            Assert.Null(dict.GetOrAdd(0, (string)null));
+            Assert.Null(dict.GetOrAdd(0, (string)null));
+            Assert.True(dict.TryRemove(0, out s));
+
+            Assert.Null(dict.GetOrAdd(0, _ => null));
+            Assert.Null(dict.GetOrAdd(0, _ => null));
+            Assert.True(dict.TryRemove(0, out s));
+
+            Assert.Equal(dict, new KeyValuePair<int, string>[] { });
+            Assert.Null(dict.GetOrAdd(0, (string)null));
+            Assert.Equal(dict, new KeyValuePair<int, string>[] { new KeyValuePair<int, string>(0, null) });
+        }
+
+        [Fact()]
+        private static void NullValueNub()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<int, int?>();
+
+            int? s;
+            if (dict.TryGetValue(0, out s))
+            {
+                throw new Exception();
+            }
+
+            dict.TryAdd(0, null);
+            if (!dict.TryGetValue(0, out s) || s != null)
+            {
+                throw new Exception();
+            }
+
+            if (!dict.TryRemove(0, out var _))
+            {
+                throw new Exception();
+            }
+
+            if (dict.TryGetValue(0, out s))
+            {
+                throw new Exception();
+            }
+        }
+
+        [Fact()]
+        private static void AddSetRemove()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<object, string>();
+
+            for (int i = 0; i < 10; i++)
+            {
+                dict.TryAdd(i, i.ToString());
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (dict[i] != i.ToString()) throw new Exception();
+            }
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (!dict.TryRemove(i, out var _)) throw new Exception();
+            }
+
+
+            for (int i = 0; i < 100; i++)
+            {
+                dict.TryAdd(i, i.ToString());
+            }
+
+            for (int i = 0; i < 100; i++)
+            {
+                if (dict[i] != i.ToString()) throw new Exception();
+            }
+
+            for (int i = 0; i < 100; i++)
+            {
+                if (!dict.TryRemove(i, out var _)) throw new Exception();
+            }
+
+
+            for (int i = 0; i < 1000; i++)
+            {
+                dict.TryAdd(i, i.ToString());
+            }
+
+            for (int i = 0; i < 1000; i++)
+            {
+                if (dict[i] != i.ToString()) throw new Exception();
+            }
+
+            for (int i = 0; i < 1000; i++)
+            {
+                if (!dict.TryRemove(i, out var _)) throw new Exception();
+            }
+
+        }
+
+        [Fact()]
+        private static void AddSetRemoveConcurrent()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<object, string>();
+
+            foreach (var iterations in ConcurrentIterations)
+            {
+                Parallel.For(0, iterations, (i) => dict.TryAdd(i, i.ToString()));
+                Parallel.For(0, iterations, (i) => dict[i] = i.ToString());
+                Parallel.For(0, iterations, (i) => { if (dict[i] != i.ToString()) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (!dict.TryRemove(i, out var _)) throw new Exception(); });
+            }
+        }
+
+        class NullIntolerantComparer : IEqualityComparer<object>
+        {
+            bool IEqualityComparer<object>.Equals(object x, object y)
+            {
+                if (x == null) throw new Exception("unexpected null");
+                if (y == null) throw new Exception("unexpected null");
+
+                return x == y;
+            }
+
+            int IEqualityComparer<object>.GetHashCode(object obj)
+            {
+                return obj.GetHashCode();
+            }
+        }
+
+        [Fact()]
+        private static void AddSetRemoveConcurrentNullIntolerant()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<object, int>(new NullIntolerantComparer());
+
+            var keys = new object[ConcurrentIterations[^1]];
+            for (int i = 0; i < keys.Length; i++) keys[i] = i;
+
+            foreach (var iterations in ConcurrentIterations)
+            {
+                Parallel.For(0, iterations, (i) => dict.TryAdd(keys[i], i));
+                Parallel.For(0, iterations, (i) => dict[keys[i]] = i);
+                Parallel.For(0, iterations, (i) => { if (dict[keys[i]] != i) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (!dict.TryRemove(keys[i], out var _)) throw new Exception(); });
+            }
+        }
+
+        [Fact()]
+        private static void AddSetRemoveConcurrentInt()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<int, string>();
+
+            foreach (var iterations in ConcurrentIterations)
+            {
+                Parallel.For(0, iterations, (i) => dict.TryAdd(i, i.ToString()));
+                Parallel.For(0, iterations, (i) => dict[i] = i.ToString());
+                Parallel.For(0, iterations, (i) => { if (dict[i] != i.ToString()) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (!dict.TryRemove(i, out var _)) throw new Exception(); });
+            }
+        }
+
+        [Fact()]
+        private static void AddSetRemoveConcurrentIntInt()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<int, int>();
+
+            foreach (var iterations in ConcurrentIterations)
+            {
+                Parallel.For(0, iterations, (i) => dict.TryAdd(i, i));
+                Parallel.For(0, iterations, (i) => dict[i] = i);
+                Parallel.For(0, iterations, (i) => { if (dict[i] != i) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (!dict.TryRemove(i, out var _)) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (dict.TryRemove(i, out var _)) throw new Exception(); });
+            }
+        }
+
+        [Fact()]
+        private static void AddSetRemoveConcurrentUIntInt()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<uint, int>();
+
+            foreach (var iterations in ConcurrentIterations)
+            {
+                Parallel.For(0, iterations, (i) => dict.TryAdd((uint)i, i));
+                Parallel.For(0, iterations, (i) => dict[(uint)i] = i);
+                Parallel.For(0, iterations, (i) => { if (dict[(uint)i] != i) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (!dict.TryRemove((uint)i, out var _)) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (dict.TryRemove((uint)i, out var _)) throw new Exception(); });
+            }
+        }
+
+        [Fact()]
+        private static void AddSetRemoveConcurrentLongInt()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<long, long>();
+
+            foreach (var iterations in ConcurrentIterations)
+            {
+                Parallel.For(0, iterations, (i) => dict.TryAdd((long)i, i));
+                Parallel.For(0, iterations, (i) => dict[(long)i] = i);
+                Parallel.For(0, iterations, (i) => { if (dict[(long)i] != i) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (!dict.TryRemove((long)i, out var _)) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (dict.TryRemove((long)i, out var _)) throw new Exception(); });
+            }
+
+            Parallel.For((long)int.MaxValue + 1L, (long)int.MaxValue + 100000, (i) => dict[(long)i] = i);
+            Parallel.For((long)int.MaxValue + 1L, (long)int.MaxValue + 100000, (i) => { if (dict[(long)i] != i) throw new Exception(); });
+            Parallel.For((long)int.MaxValue + 1L, (long)int.MaxValue + 100000, (i) => { if (!dict.TryRemove((long)i, out var _)) throw new Exception(); });
+        }
+
+        [Fact()]
+        private static void AddSetRemoveConcurrentULongInt()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<ulong, long>();
+
+            foreach (var iterations in ConcurrentIterations)
+            {
+                Parallel.For(0, iterations, (i) => dict.TryAdd((ulong)i, i));
+                Parallel.For(0, iterations, (i) => dict[(ulong)i] = i);
+                Parallel.For(0, iterations, (i) => { if (dict[(ulong)i] != i) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (!dict.TryRemove((ulong)i, out var _)) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (dict.TryRemove((ulong)i, out var _)) throw new Exception(); });
+            }
+
+            Parallel.For((long)int.MaxValue + 1L, (long)int.MaxValue + 100000, (i) => dict[(ulong)i] = i);
+            Parallel.For((long)int.MaxValue + 1L, (long)int.MaxValue + 100000, (i) => { if (dict[(ulong)i] != i) throw new Exception(); });
+            Parallel.For((long)int.MaxValue + 1L, (long)int.MaxValue + 100000, (i) => { if (!dict.TryRemove((ulong)i, out var _)) throw new Exception(); });
+        }
+
+        [Fact()]
+        private static void AddSetRemoveConcurrentIntPtrInt()
+        {
+            if (IntPtr.Size == 8)
+            {
+                var dict = new NonBlocking.ConcurrentDictionary<nint, long>();
+
+                foreach (var iterations in ConcurrentIterations)
+                {
+                    Parallel.For(0, iterations, (i) => dict.TryAdd((nint)i, i));
+                    Parallel.For(0, iterations, (i) => dict[(nint)i] = i);
+                    Parallel.For(0, iterations, (i) => { if (dict[(nint)i] != i) throw new Exception(); });
+                    Parallel.For(0, iterations, (i) => { if (!dict.TryRemove((nint)i, out var _)) throw new Exception(); });
+                    Parallel.For(0, iterations, (i) => { if (dict.TryRemove((nint)i, out var _)) throw new Exception(); });
+                }
+
+                Parallel.For((long)int.MaxValue + 1L, (long)int.MaxValue + 100000, (i) => dict[(nint)i] = i);
+                Parallel.For((long)int.MaxValue + 1L, (long)int.MaxValue + 100000, (i) => { if (dict[(nint)i] != i) throw new Exception(); });
+                Parallel.For((long)int.MaxValue + 1L, (long)int.MaxValue + 100000, (i) => { if (!dict.TryRemove((nint)i, out var _)) throw new Exception(); });
+            }
+        }
+
+        readonly record struct S1(int I, int J)
+        {
+            public static implicit operator S1(int i) => new(i, -i);
+        }
+
+        [Fact()]
+        private static void AddSetRemoveConcurrentStruct()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<S1, string>();
+
+            foreach (var iterations in ConcurrentIterations)
+            {
+                Parallel.For(0, iterations, (i) => dict.TryAdd(i, i.ToString()));
+                Parallel.For(0, iterations, (i) => dict[i] = i.ToString());
+                Parallel.For(0, iterations, (i) => { if (dict[i] != i.ToString()) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (!dict.TryRemove(i, out var _)) throw new Exception(); });
+                Parallel.For(0, iterations, (i) => { if (dict.TryRemove(i, out var _)) throw new Exception(); });
+            }
+        }
+
+        [Fact()]
+        private static void Continuity001()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<int, int>();
+
+            Parallel.ForEach(Enumerable.Range(0, 10000),
+                (i) =>
+                {
+                    dict[i] = 0;
+                    if (i % 2 == 0)
+                    {
+                        // increment slot
+                        for (int j = 0; j < 10000; j++)
+                        {
+                            dict[i] += 1;
+                        }
+
+                        if (dict[i] != 10000) throw new Exception();
+                    }
+                    else
+                    {
+                        //add more slots
+                        dict[i] = i;
+                    }
+                });
+
+            Parallel.ForEach(Enumerable.Range(0, 10000),
+                    (i) =>
+                    {
+                        if (i % 2 == 0)
+                        {
+                            // increment slot
+                            for (int j = 0; j < 10000; j++)
+                            {
+                                dict[i] += 1;
+                            }
+                        }
+                        else
+                        {
+                            //add more slots
+                            dict[i * 10000] = i;
+                        }
+                    });
+
+            Parallel.ForEach(Enumerable.Range(0, 1000),
+                (i) =>
+                {
+                    if (i % 2 == 0 && dict[i] != 20000) throw new Exception();
+                });
+
+        }
+
+        [Fact()]
+        private static void Continuity002()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<object, int>();
+
+            Parallel.ForEach(Enumerable.Range(0, 10000),
+                (i) =>
+                {
+                    dict[i] = 0;
+                    if (i % 2 == 0)
+                    {
+                        // increment slot
+                        for (int j = 0; j < 10000; j++)
+                        {
+                            dict[i] += 1;
+                        }
+
+                        if (dict[i] != 10000) throw new Exception();
+                    }
+                    else
+                    {
+                        //add more slots
+                        dict[i] = i;
+                    }
+                });
+
+            Parallel.ForEach(Enumerable.Range(0, 10000),
+                    (i) =>
+                    {
+                        if (i % 2 == 0)
+                        {
+                            // increment slot
+                            for (int j = 0; j < 10000; j++)
+                            {
+                                dict[i] += 1;
+                            }
+                        }
+                        else
+                        {
+                            //add more slots
+                            dict[i * 10000] = i;
+                        }
+                    });
+
+            Parallel.ForEach(Enumerable.Range(0, 1000),
+                (i) =>
+                {
+                    if (i % 2 == 0 && dict[i] != 20000) throw new Exception();
+                });
+
+        }
+
+        [Fact()]
+        private static void ContinuityOfRemove001()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<int, int>();
+
+            Parallel.ForEach(Enumerable.Range(0, 10000),
+                (i) =>
+                {
+                    int val;
+                    int d;
+
+                    if (i % 2 == 0)
+                    {
+                        // flip/flop slot
+                        for (int j = 0; j < 9999; j++)
+                        {
+                            if (dict.TryGetValue(i, out val))
+                            {
+                                Assert.True(dict.TryRemove(i, out d));
+                                Assert.Equal(d, i);
+                            }
+                            else
+                            {
+                                Assert.True(dict.TryAdd(i, i));
+                            }
+                        }
+
+                        if (!dict.TryGetValue(i, out val))
+                            throw new Exception();
+                    }
+                    else
+                    {
+                        //add more slots
+                        dict[i] = i;
+                    }
+                });
+
+            Parallel.ForEach(Enumerable.Range(0, 10000),
+                    (i) =>
+                    {
+                        int val;
+                        int d;
+                        if (i % 2 == 0)
+                        {
+                            // flip/flop slot
+                            for (int j = 0; j < 9999; j++)
+                            {
+                                if (dict.TryGetValue(i, out val))
+                                {
+                                    Assert.True(dict.TryRemove(i, out d));
+                                    Assert.Equal(d, i);
+                                }
+                                else
+                                {
+                                    Assert.True(dict.TryAdd(i, i));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            //add more slots
+                            dict[i * 10000] = i;
+                        }
+                    });
+
+            Parallel.ForEach(Enumerable.Range(0, 1000),
+                    (i) =>
+                    {
+                        int val;
+                        if (i % 2 == 0 && dict.TryGetValue(i, out val)) throw new Exception();
+                    });
+        }
+
+        [Fact()]
+        private static void ContinuityOfRemove002()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<object, int>();
+
+            Parallel.ForEach(Enumerable.Range(0, 10000),
+                (i) =>
+                {
+                    int val;
+                    int d;
+                    if (i % 2 == 0)
+                    {
+                        // flip/flop slot
+                        for (int j = 0; j < 9999; j++)
+                        {
+                            if (dict.TryGetValue(i, out val))
+                            {
+                                Assert.True(dict.TryRemove(i, out d));
+                                Assert.Equal(d, i);
+                            }
+                            else
+                            {
+                                Assert.True(dict.TryAdd(i, i));
+                            }
+                        }
+
+                        if (!dict.TryGetValue(i, out val))
+                            throw new Exception();
+                    }
+                    else
+                    {
+                        //add more slots
+                        dict[i] = i;
+                    }
+                });
+
+            Parallel.ForEach(Enumerable.Range(0, 10000),
+                    (i) =>
+                    {
+                        int val;
+                        int d;
+                        if (i % 2 == 0)
+                        {
+                            // flip/flop slot
+                            for (int j = 0; j < 9999; j++)
+                            {
+                                if (dict.TryGetValue(i, out val))
+                                {
+                                    Assert.True(dict.TryRemove(i, out d));
+                                    Assert.Equal(d, i);
+                                }
+                                else
+                                {
+                                    Assert.True(dict.TryAdd(i, i));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            //add more slots
+                            dict[i * 10000] = i;
+                        }
+                    });
+
+            Parallel.ForEach(Enumerable.Range(0, 1000),
+                    (i) =>
+                    {
+                        int val;
+                        if (i % 2 == 0 && dict.TryGetValue(i, out val)) throw new Exception();
+                    });
+        }
+
+        [Fact()]
+        private static void Finality001()
+        {
+            var dict1 = new NonBlocking.ConcurrentDictionary<int, int>();
+            var updatedBeforeRemove = new NonBlocking.ConcurrentDictionary<int, bool>();
+            var removedValue = new NonBlocking.ConcurrentDictionary<int, int>();
+
+            Parallel.ForEach(Enumerable.Range(0, 10000),
+                new ParallelOptions(),
+                    (i) =>
+                    {
+                        dict1[i] = 42;
+                    });
+
+            Parallel.ForEach(Enumerable.Range(0, 20000),
+                    (i) =>
+                    {
+                        if (i < 10000)
+                        {
+                            dict1[i] = 43;
+                            updatedBeforeRemove[i] = true;
+                        }
+                        else
+                        {
+                            i %= 10000;
+                            int removed;
+                            dict1.TryRemove(i, out removed);
+                            removedValue[i] = removed;
+                        }
+                    });
+
+            for (int i = 0; i < 10000; i++)
+            {
+                if (updatedBeforeRemove[i] && !dict1.ContainsKey(i))
+                {
+                    Assert.Equal(43, removedValue[i]);
+                }
+            }
+        }
+
+        [Fact()]
+        private static void Finality002()
+        {
+            var dict1 = new NonBlocking.ConcurrentDictionary<int, int>();
+            var updatedBeforeRemove = new NonBlocking.ConcurrentDictionary<int, bool>();
+            var removedValue = new NonBlocking.ConcurrentDictionary<int, int>();
+
+            Parallel.ForEach(Enumerable.Range(0, 10000),
+                new ParallelOptions(),
+                    (i) =>
+                    {
+                        dict1[i] = 42;
+                    });
+
+            Parallel.ForEach(Enumerable.Range(0, 20000),
+                    (i) =>
+                    {
+                        if (i < 10000)
+                        {
+                            updatedBeforeRemove[i] = dict1.TryUpdate(i, 43, 42);
+                        }
+                        else
+                        {
+                            i %= 10000;
+                            int removed;
+                            dict1.TryRemove(i, out removed);
+                            removedValue[i] = removed;
+                        }
+                    });
+
+            for (int i = 0; i < 10000; i++)
+            {
+                if (updatedBeforeRemove[i] && !dict1.ContainsKey(i))
+                {
+                    Assert.Equal(43, removedValue[i]);
+                }
+            }
+        }
+
+
+        [Fact()]
+        private static void Uniqueness001()
+        {
+            var dict1 = new NonBlocking.ConcurrentDictionary<int, int>();
+            var updated1 = new NonBlocking.ConcurrentDictionary<int, bool>();
+            var updated2 = new NonBlocking.ConcurrentDictionary<int, bool>();
+
+            Parallel.ForEach(Enumerable.Range(0, 10000),
+                    (i) =>
+                    {
+                        dict1[i] = 42;
+                    });
+
+
+            Parallel.ForEach(Enumerable.Range(0, 40000),
+                    (i) =>
+                    {
+                        switch (i % 8)
+                        {
+                            case 0:
+                                i /= 8;
+                                updated1[i] = dict1.TryUpdate(i, 43, 42);
+                                break;
+                            case 1:
+                                i /= 8;
+                                updated2[i] = dict1.TryUpdate(i, 43, 42);
+                                break;
+                            case 2:
+                            case 3:
+                            case 4:
+                            case 5:
+                            case 6:
+                            case 7:
+                                i /= 8;
+                                // TODO: VS any way to force new entry without writing?
+                                break;
+                        }
+                    });
+
+            for (int i = 0; i < 5000; i++)
+            {
+                Assert.False(updated1[i] & updated2[i]);
+            }
+        }
+
+        [Fact()]
+        private static void Relativity001()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<int, int>();
+
+            Parallel.ForEach(Enumerable.Range(0, 10001),
+                (i) =>
+                {
+                    if (i % 2 == 0)
+                    {
+                        // maintain "dict[i] < dict[i+1]"
+                        for (int j = 0; j < 10000; j++)
+                        {
+                            dict[i + 1] = j + 1;
+                            dict[i] = j;
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 0; j < 10000; j++)
+                        {
+                            int first;
+                            int second;
+                            if (dict.TryGetValue(i - 1, out first))
+                            {
+                                if (dict.TryGetValue(i, out second))
+                                {
+                                    if (first >= second)
+                                    {
+                                        // Order of reads of atomic values is not guaranteed on weak architectures.
+                                        // This is the same as with System.Concurrent -
+                                        //    fetching boxed atomic values is an ordinary read.
+                                        if (s_isStrong)
+                                        {
+                                            throw new Exception("value relation is incorrect");
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception("value must exist");
+                                }
+                            }
+                        }
+                    }
+
+                    // just add an item
+                    dict[10000 + i] = 0;
+                });
+        }
+
+        [Fact()]
+        private static void Relativity002()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<object, int>();
+
+            Parallel.ForEach(Enumerable.Range(0, 10001),
+                (i) =>
+                {
+                    if (i % 2 == 0)
+                    {
+                        // maintain "dict[i] < dict[i+1]"
+                        for (int j = 0; j < 10000; j++)
+                        {
+                            dict[i + 1] = j + 1;
+                            dict[i] = j;
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 0; j < 10000; j++)
+                        {
+                            int first;
+                            int second;
+                            if (dict.TryGetValue(i - 1, out first))
+                            {
+                                if (dict.TryGetValue(i, out second))
+                                {
+                                    if (first >= second)
+                                    {
+                                        // Order of reads of atomic values is not guaranteed on weak architectures.
+                                        // This is the same as with System.Concurrent -
+                                        //    fetching boxed atomic values is an ordinary read.
+                                        if (s_isStrong)
+                                        {
+                                            throw new Exception("value relation is incorrect");
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception("value must exist");
+                                }
+                            }
+                        }
+                    }
+
+                    // just add an item
+                    dict[10000 + i] = 0;
+                });
+        }
+
+        [Fact()]
+        private static void Relativity003()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<S1, int>();
+
+            Parallel.ForEach(Enumerable.Range(0, 10001),
+                (i) =>
+                {
+                    if (i % 2 == 0)
+                    {
+                        // maintain "dict[i] < dict[i+1]"
+                        for (int j = 0; j < 10000; j++)
+                        {
+                            dict[i + 1] = j + 1;
+                            dict[i] = j;
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 0; j < 10000; j++)
+                        {
+                            int first;
+                            int second;
+                            if (dict.TryGetValue(i - 1, out first))
+                            {
+                                if (dict.TryGetValue(i, out second))
+                                {
+                                    if (first >= second)
+                                    {
+                                        // Order of reads of atomic values is not guaranteed on weak architectures.
+                                        // This is the same as with System.Concurrent -
+                                        //    fetching boxed atomic values is an ordinary read.
+                                        if (s_isStrong)
+                                        {
+                                            throw new Exception("value relation is incorrect");
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception("value must exist");
+                                }
+                            }
+                        }
+                    }
+
+                    // just add an item
+                    dict[10000 + i] = 0;
+                });
+        }
+
+        [Fact()]
+        private static void Relativity004()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<string, int>(new NullIntolerantComparer());
+
+            var keys = new string[30000];
+            for (int i = 0; i < keys.Length; i++) keys[i] = i.ToString();
+
+            Parallel.ForEach(Enumerable.Range(0, 10001),
+                (i) =>
+                {
+                    if (i % 2 == 0)
+                    {
+                        // maintain "dict[i] < dict[i+1]"
+                        for (int j = 0; j < 10000; j++)
+                        {
+                            dict[keys[i + 1]] = j + 1;
+                            dict[keys[i]] = j;
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 0; j < 10000; j++)
+                        {
+                            int first;
+                            int second;
+                            if (dict.TryGetValue(keys[i - 1], out first))
+                            {
+                                if (dict.TryGetValue(keys[i], out second))
+                                {
+                                    if (first >= second)
+                                    {
+                                        // Order of reads of atomic values is not guaranteed on weak architectures.
+                                        // This is the same as with System.Concurrent -
+                                        //    fetching boxed atomic values is an ordinary read.
+                                        if (s_isStrong)
+                                        {
+                                            throw new Exception("value relation is incorrect");
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    throw new Exception("value must exist");
+                                }
+                            }
+                        }
+                    }
+
+                    // just add an item
+                    dict[keys[10000 + i]] = 0;
+                });
+        }
+
+        class BadHash
+        {
+            public override int GetHashCode()
+            {
+                return 1;
+            }
+        }
+
+        [Fact()]
+        private static void BadHashAdd()
+        {
+            var dict = new NonBlocking.ConcurrentDictionary<BadHash, int>();
+
+            for (int i = 0; i < 10000; i++)
+            {
+                var o = new BadHash();
+                dict.TryAdd(o, i);
+                Assert.Equal(i, dict[o]);
+            }
+        }
+    }
+}

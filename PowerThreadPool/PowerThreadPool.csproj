@@ -26,4 +26,8 @@
     <InternalsVisibleTo Include="UnitTest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\NonBlocking\src\NonBlocking\NonBlocking.csproj" Condition="'$(TargetFrameworkVersion)' != 'v4.0'" />
+  </ItemGroup>
+
 </Project>

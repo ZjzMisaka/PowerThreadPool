@@ -1,23 +1,27 @@
 ﻿using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
+#if NET45_OR_GREATER
+using ConcurrentCollection = NonBlocking;
+#else
+using ConcurrentCollection = System.Collections.Concurrent;
+#endif
 
 namespace PowerThreadPool.Collections
 {
     public class ConcurrentSet<T> : IEnumerable<T>
     {
-        private readonly ConcurrentDictionary<T, byte> _dictionary;
+        private readonly ConcurrentCollection.ConcurrentDictionary<T, byte> _dictionary;
 
         private static readonly byte s_dummyValue = default;
 
         public ConcurrentSet()
         {
-            _dictionary = new ConcurrentDictionary<T, byte>();
+            _dictionary = new ConcurrentCollection.ConcurrentDictionary<T, byte>();
         }
 
         public ConcurrentSet(IEnumerable<T> items)
         {
-            _dictionary = new ConcurrentDictionary<T, byte>();
+            _dictionary = new ConcurrentCollection.ConcurrentDictionary<T, byte>();
             foreach (T item in items)
             {
                 _dictionary.TryAdd(item, s_dummyValue);

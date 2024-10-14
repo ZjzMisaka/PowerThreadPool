@@ -10,6 +10,11 @@ using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;
+#if NET45_OR_GREATER
+using ConcurrentCollection = NonBlocking;
+#else
+using ConcurrentCollection = System.Collections.Concurrent;
+#endif
 
 namespace PowerThreadPool
 {
@@ -24,19 +29,19 @@ namespace PowerThreadPool
 
         internal ConcurrentSet<string> _failedWorkSet = new ConcurrentSet<string>();
 
-        internal ConcurrentDictionary<int, Worker> _idleWorkerDic = new ConcurrentDictionary<int, Worker>();
+        internal ConcurrentCollection.ConcurrentDictionary<int, Worker> _idleWorkerDic = new ConcurrentCollection.ConcurrentDictionary<int, Worker>();
         internal ConcurrentQueue<int> _idleWorkerQueue = new ConcurrentQueue<int>();
 
-        internal ConcurrentDictionary<string, WorkBase> _aliveWorkDic = new ConcurrentDictionary<string, WorkBase>();
-        internal ConcurrentDictionary<string, ConcurrentSet<string>> _workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
-        internal ConcurrentDictionary<string, ConcurrentSet<string>> _groupRelationDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
-        internal ConcurrentDictionary<int, Worker> _aliveWorkerDic = new ConcurrentDictionary<int, Worker>();
+        internal ConcurrentCollection.ConcurrentDictionary<string, WorkBase> _aliveWorkDic = new ConcurrentCollection.ConcurrentDictionary<string, WorkBase>();
+        internal ConcurrentCollection.ConcurrentDictionary<string, ConcurrentSet<string>> _workGroupDic = new ConcurrentCollection.ConcurrentDictionary<string, ConcurrentSet<string>>();
+        internal ConcurrentCollection.ConcurrentDictionary<string, ConcurrentSet<string>> _groupRelationDic = new ConcurrentCollection.ConcurrentDictionary<string, ConcurrentSet<string>>();
+        internal ConcurrentCollection.ConcurrentDictionary<int, Worker> _aliveWorkerDic = new ConcurrentCollection.ConcurrentDictionary<int, Worker>();
         internal IEnumerable<Worker> _aliveWorkerList = new List<Worker>();
 
         internal ConcurrentQueue<string> _suspendedWorkQueue = new ConcurrentQueue<string>();
-        internal ConcurrentDictionary<string, WorkBase> _suspendedWork = new ConcurrentDictionary<string, WorkBase>();
+        internal ConcurrentCollection.ConcurrentDictionary<string, WorkBase> _suspendedWork = new ConcurrentCollection.ConcurrentDictionary<string, WorkBase>();
 
-        internal ConcurrentDictionary<string, ExecuteResultBase> _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
+        internal ConcurrentCollection.ConcurrentDictionary<string, ExecuteResultBase> _resultDic = new ConcurrentCollection.ConcurrentDictionary<string, ExecuteResultBase>();
 
         internal long _startCount = 0;
         internal long _endCount = 0;
