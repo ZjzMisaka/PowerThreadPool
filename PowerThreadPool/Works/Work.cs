@@ -237,5 +237,13 @@ namespace PowerThreadPool.Works
         {
             return ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.Requeue;
         }
+
+        internal override void RenewWorkOptionIfDefault()
+        {
+            if (_workOption.IsDefault)
+            {
+                _workOption = new WorkOption<TResult>();
+            }
+        }
     }
 }
