@@ -314,6 +314,34 @@ namespace PowerThreadPool
         /// <returns>worker</returns>
         private Worker GetWorker(bool longRunning)
         {
+            Worker worker = TryDequeueIdleWorker(longRunning);
+            if (worker != null)
+            {
+                return worker;
+            }
+
+            worker = TryCreateNewWorker(longRunning);
+
+            if (worker != null)
+            {
+                return worker;
+            }
+
+            if (!longRunning)
+            {
+                worker = TrySelectExistingWorker();
+            }
+
+            return worker;
+        }
+
+        /// <summary>
+        /// Dequeue a worker from the idle worker queue.
+        /// </summary>
+        /// <param name="longRunning"></param>
+        /// <returns>worker</returns>
+        private Worker TryDequeueIdleWorker(bool longRunning)
+        {
             Worker worker = null;
             while (_idleWorkerQueue.TryDequeue(out int firstWorkerID))
             {
@@ -321,13 +349,27 @@ namespace PowerThreadPool
                 {
                     SpinWait.SpinUntil(() => worker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed));
                     Interlocked.Decrement(ref _idleWorkerCount);
+
                     if (longRunning)
                     {
                         Interlocked.Increment(ref _longRunningWorkerCount);
                     }
+
                     return worker;
                 }
             }
+            return null;
+        }
+
+        /// <summary>
+        /// Create a new worker if the current number of alive workers is less than
+        /// the maximum allowed threads plus the number of long-running workers.
+        /// </summary>
+        /// <param name="longRunning"></param>
+        /// <returns>worker</returns>
+        private Worker TryCreateNewWorker(bool longRunning)
+        {
+            Worker worker = null;
 
             if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount)
             {
@@ -336,7 +378,6 @@ namespace PowerThreadPool
                     if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount)
                     {
                         worker = new Worker(this);
-
                         worker.CanGetWork.InterlockedValue = CanGetWork.NotAllowed;
 
                         if (_aliveWorkerDic.TryAdd(worker.ID, worker))
@@ -344,6 +385,7 @@ namespace PowerThreadPool
                             Interlocked.Increment(ref _aliveWorkerCount);
                             _aliveWorkerList = _aliveWorkerDic.Values;
                         }
+
                         if (longRunning)
                         {
                             Interlocked.Increment(ref _longRunningWorkerCount);
@@ -354,40 +396,51 @@ namespace PowerThreadPool
                 }
             }
 
-            if (worker == null && !longRunning)
+            return worker;
+        }
+
+        /// <summary>
+        /// Select an existing worker from the list of alive workers.
+        /// It avoids selecting long-running workers and tries to pick the worker
+        /// with the least amount of pending work.
+        /// </summary>
+        /// <returns>worker</returns>
+        private Worker TrySelectExistingWorker()
+        {
+            Worker selectedWorker = null;
+            int minWaitingWorkCount = int.MaxValue;
+            IEnumerable<Worker> workers = _aliveWorkerList;
+
+            foreach (Worker aliveWorker in workers)
             {
-                int min = int.MaxValue;
-                IEnumerable<Worker> workers = _aliveWorkerList;
-                foreach (Worker aliveWorker in workers)
+                if (aliveWorker.LongRunning)
                 {
-                    if (aliveWorker.LongRunning)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
-                    if (waitingWorkCountTemp < min)
+                int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
+                if (waitingWorkCountTemp < minWaitingWorkCount)
+                {
+                    if (aliveWorker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
                     {
-                        if (aliveWorker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
+                        if (selectedWorker != null)
                         {
-                            if (worker != null)
-                            {
-                                worker.CanGetWork.TrySet(CanGetWork.Allowed, CanGetWork.NotAllowed);
-                            }
-
-                            worker = aliveWorker;
-                            if (waitingWorkCountTemp == 0)
-                            {
-                                break;
-                            }
-
-                            min = waitingWorkCountTemp;
+                            selectedWorker.CanGetWork.TrySet(CanGetWork.Allowed, CanGetWork.NotAllowed);
                         }
+
+                        selectedWorker = aliveWorker;
+
+                        if (waitingWorkCountTemp == 0)
+                        {
+                            break;
+                        }
+
+                        minWaitingWorkCount = waitingWorkCountTemp;
                     }
                 }
             }
 
-            return worker;
+            return selectedWorker;
         }
 
         /// <summary>
