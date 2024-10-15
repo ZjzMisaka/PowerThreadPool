@@ -148,11 +148,11 @@ namespace PowerThreadPool.Works
             return true;
         }
 
-        internal override ExecuteResultBase Fetch()
+        internal override ExecuteResult<T> Fetch<T>()
         {
             Wait();
 
-            return ExecuteResult;
+            return ExecuteResult.ToTypedResult<T>();
         }
 
         internal override bool Pause()
@@ -195,7 +195,7 @@ namespace PowerThreadPool.Works
             }
             else if (powerPoolOption.DefaultCallback != null)
             {
-                powerPool.SafeCallback(powerPoolOption.DefaultCallback, EventArguments.ErrorFrom.DefaultCallback, executeResult.ToObjResult());
+                powerPool.SafeCallback(powerPoolOption.DefaultCallback, EventArguments.ErrorFrom.DefaultCallback, executeResult);
             }
         }
 

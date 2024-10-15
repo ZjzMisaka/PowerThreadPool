@@ -37,7 +37,7 @@ namespace PowerThreadPool.Works
         internal abstract object Execute();
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Wait();
-        internal abstract ExecuteResultBase Fetch();
+        internal abstract ExecuteResult<T> Fetch<T>();
         internal abstract bool Pause();
         internal abstract bool Resume();
         internal abstract bool Cancel(bool needFreeze);

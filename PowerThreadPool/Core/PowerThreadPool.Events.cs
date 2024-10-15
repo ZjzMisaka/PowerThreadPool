@@ -240,7 +240,7 @@ namespace PowerThreadPool
         {
             try
             {
-                callback((ExecuteResult<TResult>)executeResult);
+                callback(executeResult.ToTypedResult<TResult>());
             }
             catch (ThreadInterruptedException)
             {

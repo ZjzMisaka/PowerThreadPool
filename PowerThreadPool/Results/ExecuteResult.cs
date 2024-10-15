@@ -41,26 +41,20 @@ namespace PowerThreadPool.Results
             return Result;
         }
 
-        internal override ExecuteResult<object> ToObjResult()
-        {
-            return new ExecuteResult<object>()
-            {
-                Exception = Exception,
-                Result = Result,
-                ID = ID,
-                QueueDateTime = QueueDateTime
-            };
-        }
-
         internal override ExecuteResult<TRes> ToTypedResult<TRes>()
         {
-            return new ExecuteResult<TRes>()
+            ExecuteResult<TRes> result = this as ExecuteResult<TRes>;
+            if (result == null)
             {
-                Exception = Exception,
-                Result = (TRes)(object)Result,
-                ID = ID,
-                QueueDateTime = QueueDateTime
-            };
+                result = new ExecuteResult<TRes>()
+                {
+                    Exception = Exception,
+                    Result = (TRes)(object)Result,
+                    ID = ID,
+                    QueueDateTime = QueueDateTime
+                };
+            }
+            return result;
         }
     }
 }

@@ -1,6 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics.Metrics;
-using System.Timers;
 using PowerThreadPool;
 using PowerThreadPool.Collections;
 using PowerThreadPool.EventArguments;
