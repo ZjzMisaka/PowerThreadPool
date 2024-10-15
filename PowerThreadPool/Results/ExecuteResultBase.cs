@@ -59,7 +59,6 @@ namespace PowerThreadPool.Results
 
         internal abstract void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime, RetryOption retryOption, int executeCount);
         internal abstract object GetResult();
-        internal abstract ExecuteResult<object> ToObjResult();
         internal abstract ExecuteResult<TResult> ToTypedResult<TResult>();
     }
 }

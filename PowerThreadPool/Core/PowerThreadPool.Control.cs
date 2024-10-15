@@ -275,7 +275,7 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    return work.Fetch().ToTypedResult<TResult>();
+                    return work.Fetch<TResult>();
                 }
             }
             else
@@ -339,7 +339,7 @@ namespace PowerThreadPool
 
             foreach (WorkBase work in workList)
             {
-                resultList.Add(work.Fetch().ToTypedResult<TResult>());
+                resultList.Add(work.Fetch<TResult>());
             }
 
             return resultList;
