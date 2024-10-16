@@ -112,14 +112,17 @@ namespace PowerThreadPool.Works
             {
                 using (new WorkGuard(this))
                 {
-                    if (Worker.WorkID == ID)
+                    if (Worker != null)
                     {
-                        Worker.ForceStop(false);
-                        res = true;
-                    }
-                    else
-                    {
-                        res = Cancel(false);
+                        if (Worker.WorkID == ID)
+                        {
+                            Worker.ForceStop(false);
+                            res = true;
+                        }
+                        else
+                        {
+                            res = Cancel(false);
+                        }
                     }
                 }
             }
@@ -183,7 +186,12 @@ namespace PowerThreadPool.Works
         {
             using (new WorkGuard(this, false, needFreeze))
             {
-                return Worker.Cancel(ID);
+                bool res = false;
+                if (Worker != null)
+                {
+                    res = Worker.Cancel(ID);
+                }
+                return res;
             }
         }
 
