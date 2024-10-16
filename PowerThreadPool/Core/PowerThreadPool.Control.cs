@@ -35,19 +35,31 @@ namespace PowerThreadPool
         /// To exit the logic, the function will throw a PowerThreadPool.Exceptions.WorkStopException. Do not catch it. 
         /// If you do not want to exit the logic in this way (for example, if you have some unmanaged resources that need to be released before exiting), it is recommended to use CheckIfRequestedStop. 
         /// </summary>
-        public void StopIfRequested()
+        /// <param name="beforeStop">
+        /// An optional function that is executed before the stop process.
+        /// Return false to prevent stopping.
+        /// </param>
+        public void StopIfRequested(Func<bool> beforeStop = null)
         {
             WorkBase work = null;
             bool res = CheckIfRequestedStopAndGetWork(ref work);
 
             if (!res)
             {
+                if (beforeStop != null && !beforeStop())
+                {
+                    return;
+                }
                 _aliveWorkDic.Clear();
                 _workGroupDic.Clear();
                 throw new WorkStopException();
             }
             else if (work != null)
             {
+                if (beforeStop != null && !beforeStop())
+                {
+                    return;
+                }
                 // If the result needs to be stored, there is a possibility of fetching the result through Group.
                 // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
                 if (work.Group == null || !work.ShouldStoreResult)
