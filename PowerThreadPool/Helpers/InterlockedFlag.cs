@@ -4,6 +4,11 @@ using System.Threading;
 
 namespace PowerThreadPool.Helpers
 {
+    /// <summary>
+    /// Provide support for lock-free algorithms.
+    /// Use enumeration as the status flag of the lock-free algorithm and implement thread-safe state switching through atomic operations.
+    /// </summary>
+    /// <typeparam name="T">Enumeration used to represent status</typeparam>
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     internal class InterlockedFlag<T> where T : Enum
     {

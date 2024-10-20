@@ -5,6 +5,9 @@ using PowerThreadPool.Works;
 
 namespace PowerThreadPool.Helpers
 {
+    /// <summary>
+    /// Used to ensure that the wrong Work will not be controlled when operating the Worker.
+    /// </summary>
     internal class WorkGuard : IDisposable
     {
         private readonly WorkBase _work;
@@ -12,9 +15,15 @@ namespace PowerThreadPool.Helpers
         private readonly bool _isHoldWork;
         private bool _disposed;
 
+        /// <summary>
+        /// Used to ensure that the wrong Work will not be controlled when operating the Worker.
+        /// </summary>
+        /// <param name="work"></param>
+        /// <param name="isHoldWork">Ensure that the executing Work is not switched</param>
+        /// <param name="needFreeze">Ensure that the target Work is not stolen</param>
         public WorkGuard(WorkBase work,
-                            bool isHoldWork = true,
-                            bool needFreeze = true)
+                            bool isHoldWork,
+                            bool needFreeze)
         {
             _work = work;
             _isHoldWork = isHoldWork;
