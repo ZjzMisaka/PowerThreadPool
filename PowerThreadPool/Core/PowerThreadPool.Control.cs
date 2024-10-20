@@ -42,9 +42,13 @@ namespace PowerThreadPool
         public void StopIfRequested(Func<bool> beforeStop = null)
         {
             WorkBase work = null;
-            bool res = CheckIfRequestedStopAndGetWork(ref work);
 
-            if (!res)
+            if (!CheckIfRequestedStopAndGetWork(ref work))
+            {
+                return;
+            }
+
+            if (work == null)
             {
                 if (beforeStop != null && !beforeStop())
                 {
@@ -54,7 +58,7 @@ namespace PowerThreadPool
                 _workGroupDic.Clear();
                 throw new WorkStopException();
             }
-            else if (work != null)
+            else
             {
                 if (beforeStop != null && !beforeStop())
                 {
@@ -104,12 +108,15 @@ namespace PowerThreadPool
         /// Call this function inside the work logic where you want to check if requested stop (if user call Stop(...))
         /// </summary>
         /// <param name="work">The work executing now in current thread</param>
-        /// <returns>Return false if stop all</returns>
+        /// <returns>
+        /// Return true if stop.
+        /// If work is null, it means stop all, otherwise it means stopping based on work id.
+        /// </returns>
         private bool CheckIfRequestedStopAndGetWork(ref WorkBase work)
         {
             if (_cancellationTokenSource.Token.IsCancellationRequested)
             {
-                return false;
+                return true;
             }
 
             if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.WorkerState == WorkerStates.Running && worker.IsCancellationRequested())
@@ -118,7 +125,7 @@ namespace PowerThreadPool
                 return true;
             }
 
-            return true;
+            return false;
         }
 
         /// <summary>
