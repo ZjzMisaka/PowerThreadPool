@@ -187,7 +187,7 @@ namespace PowerThreadPool
         /// Blocks the calling thread until all of the works terminates.
         /// </summary>
         /// <returns>A Task</returns>
-#if NET45_OR_GREATER
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task WaitAsync()
         {
             await Task.Run(() =>
@@ -210,7 +210,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="id">work id</param>
         /// <returns>Return false if the work isn't running</returns>
-#if NET45_OR_GREATER
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<bool> WaitAsync(string id)
         {
             return await Task.Run(() =>
@@ -233,7 +233,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="idList">work id list</param>
         /// <returns>Return a list of ID for work that doesn't running</returns>
-#if NET45_OR_GREATER
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<string>> WaitAsync(IEnumerable<string> idList)
         {
             return await Task.Run(() =>
@@ -415,7 +415,7 @@ namespace PowerThreadPool
         /// <param name="id">work id</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Work result</returns>
-#if NET45_OR_GREATER
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<ExecuteResult<TResult>> FetchAsync<TResult>(string id, bool removeAfterFetch = false)
         {
             return await Task.Run(() =>
@@ -439,7 +439,7 @@ namespace PowerThreadPool
         /// <param name="id">work id</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Work result</returns>
-#if NET45_OR_GREATER
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<ExecuteResult<object>> FetchAsync(string id, bool removeAfterFetch = false)
         {
             return await Task.Run(() =>
@@ -463,7 +463,7 @@ namespace PowerThreadPool
         /// <param name="idList">work id list</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
-#if NET45_OR_GREATER
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(IEnumerable<string> idList, bool removeAfterFetch = false)
         {
             return await Task.Run(() =>
@@ -487,7 +487,7 @@ namespace PowerThreadPool
         /// <param name="idList">work id list</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
-#if NET45_OR_GREATER
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<object>>> FetchAsync(IEnumerable<string> idList, bool removeAfterFetch = false)
         {
             return await Task.Run(() =>

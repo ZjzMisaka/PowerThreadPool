@@ -56,7 +56,7 @@ namespace PowerThreadPool.Groups
         /// Wait until all the work belonging to the group is done.
         /// </summary>
         /// <returns></returns>
-#if NET45_OR_GREATER
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task WaitAsync()
         {
             await Task.Run(() =>
@@ -112,7 +112,7 @@ namespace PowerThreadPool.Groups
         /// </summary>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
-#if NET45_OR_GREATER
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false)
         {
             return await Task.Run(() =>
@@ -135,7 +135,7 @@ namespace PowerThreadPool.Groups
         /// </summary>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
-#if NET45_OR_GREATER
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false)
         {
             return await Task.Run(() =>
