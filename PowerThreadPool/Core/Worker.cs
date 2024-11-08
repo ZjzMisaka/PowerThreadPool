@@ -596,13 +596,13 @@ namespace PowerThreadPool
 
         internal bool Cancel(string id)
         {
-            if (_waitingWorkDic.TryRemove(id, out _))
+            if (_waitingWorkDic.TryRemove(id, out WorkBase work))
             {
-                ExecuteResultBase executeResult = Work.SetExecuteResult(_powerPool, null, null, Status.Canceled);
+                ExecuteResultBase executeResult = work.SetExecuteResult(_powerPool, null, null, Status.Canceled);
                 executeResult.ID = id;
 
                 _powerPool.InvokeWorkCanceledEvent(executeResult);
-                Work.InvokeCallback(_powerPool, executeResult, _powerPool.PowerPoolOption);
+                work.InvokeCallback(_powerPool, executeResult, _powerPool.PowerPoolOption);
 
                 Interlocked.Decrement(ref _waitingWorkCount);
                 Interlocked.Decrement(ref _powerPool._waitingWorkCount);
