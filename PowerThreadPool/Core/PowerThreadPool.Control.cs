@@ -89,14 +89,12 @@ namespace PowerThreadPool
         /// <param name="beforeStop">
         /// An optional function that is executed before the stop process.
         /// </param>
-        public void StopIfRequested(Action beforeStop)
-        {
+        public void StopIfRequested(Action beforeStop) =>
             StopIfRequested(() =>
             {
                 beforeStop();
                 return true;
             });
-        }
 
         /// <summary>
         /// Call this function inside the work logic where you want to check if requested stop (if user call Stop(...))
