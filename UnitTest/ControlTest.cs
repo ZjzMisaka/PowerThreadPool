@@ -1043,6 +1043,40 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestStopByIDDoActionBeforeStop()
+        {
+            PowerPool powerPool = new PowerPool();
+            List<long> logList = new List<long>();
+
+            object lockObj = new object();
+
+            string id = null;
+            string resID = null;
+            powerPool.WorkStarted += (s, e) =>
+            {
+                powerPool.Stop(e.ID);
+            };
+
+            id = powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                while (GetNowSs() - start <= 1000)
+                {
+                    powerPool.StopIfRequested(() => { });
+                    Thread.Sleep(1);
+                }
+            }, (res) =>
+            {
+                resID = res.Status == Status.Stopped ? "Stopped" + res.ID : "Ended" + res.ID;
+            });
+
+            await powerPool.WaitAsync(id);
+            await powerPool.WaitAsync();
+
+            Assert.Equal("Stopped" + id, resID);
+        }
+
+        [Fact]
         public async void TestStopByIDDoBeforeStop()
         {
             PowerPool powerPool = new PowerPool();
