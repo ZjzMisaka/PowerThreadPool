@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace PowerThreadPool.Helpers
@@ -12,7 +13,7 @@ namespace PowerThreadPool.Helpers
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
     internal class InterlockedFlag<T> where T : Enum
     {
-        private long _innerValue;
+        private int _innerValue;
 
         public T InterlockedValue
         {
@@ -31,25 +32,35 @@ namespace PowerThreadPool.Helpers
             Set(initialValue);
         }
 
+#if NET5_0_OR_GREATER
         private void Set(T value)
-            => Interlocked.Exchange(ref _innerValue, Convert.ToInt64(value));
+            => Interlocked.Exchange(ref _innerValue, Unsafe.As<T, int>(ref value));
+#else
+        private void Set(T value)
+            => Interlocked.Exchange(ref _innerValue, (int)(object)value);
+# endif
 
         public T Get()
-            => InnerValueToT(Interlocked.Read(ref _innerValue));
+            => InnerValueToT(_innerValue);
 
         public bool TrySet(T value, T comparand)
             => TrySet(value, comparand, out _);
 
         public bool TrySet(T value, T comparand, out T origValue)
         {
-            long valueAsLong = Convert.ToInt64(value);
-            long comparandAsLong = Convert.ToInt64(comparand);
+#if NET5_0_OR_GREATER
+            int valueAsInt = Unsafe.As<T, int>(ref value);
+            int comparandAsInt = Unsafe.As<T, int>(ref comparand);
+#else
+            int valueAsInt = (int)(object)value;
+            int comparandAsInt = (int)(object)comparand;
+#endif
 
-            long origInnerValue = Interlocked.CompareExchange(ref _innerValue, valueAsLong, comparandAsLong);
+            int origInnerValue = Interlocked.CompareExchange(ref _innerValue, valueAsInt, comparandAsInt);
 
             origValue = InnerValueToT(origInnerValue);
 
-            return origInnerValue == comparandAsLong;
+            return origInnerValue == comparandAsInt;
         }
 
         public static bool operator ==(InterlockedFlag<T> flag1, InterlockedFlag<T> flag2)
@@ -63,7 +74,7 @@ namespace PowerThreadPool.Helpers
                 return ReferenceEquals(flag1, null);
             }
 
-            return Interlocked.Read(ref flag1._innerValue) == Interlocked.Read(ref flag2._innerValue);
+            return flag1._innerValue == flag2._innerValue;
         }
 
         public static bool operator !=(InterlockedFlag<T> flag1, InterlockedFlag<T> flag2)
@@ -76,7 +87,11 @@ namespace PowerThreadPool.Helpers
                 return ReferenceEquals(flag2, null);
             }
 
-            return Interlocked.Read(ref flag1._innerValue) == Convert.ToInt64(flag2);
+#if NET5_0_OR_GREATER
+            return flag1._innerValue == Unsafe.As<T, int>(ref flag2);
+#else
+            return flag1._innerValue == (int)(object)flag2;
+#endif
         }
 
         public static bool operator !=(InterlockedFlag<T> flag1, T flag2)
@@ -107,7 +122,7 @@ namespace PowerThreadPool.Helpers
 
         public override int GetHashCode() => _innerValue.GetHashCode();
 
-        private static T InnerValueToT(long innerValue)
+        private static T InnerValueToT(int innerValue)
             => (T)Enum.ToObject(typeof(T), innerValue);
     }
 }
