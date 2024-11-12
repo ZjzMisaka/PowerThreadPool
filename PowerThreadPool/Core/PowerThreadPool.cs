@@ -23,6 +23,7 @@ namespace PowerThreadPool
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         internal ConcurrentSet<string> _failedWorkSet = new ConcurrentSet<string>();
+        internal ConcurrentSet<string> _canceledWorkSet = new ConcurrentSet<string>();
 
         internal ConcurrentDictionary<int, Worker> _idleWorkerDic = new ConcurrentDictionary<int, Worker>();
         internal ConcurrentQueue<int> _idleWorkerQueue = new ConcurrentQueue<int>();
@@ -469,6 +470,7 @@ namespace PowerThreadPool
                 if (PowerPoolOption.ClearFailedWorkRecordWhenPoolStart)
                 {
                     _failedWorkSet.Clear();
+                    _canceledWorkSet.Clear();
                 }
 
                 _waitAllSignal.Reset();
@@ -639,6 +641,7 @@ namespace PowerThreadPool
         public void ClearFailedWorkRecord()
         {
             _failedWorkSet.Clear();
+            _canceledWorkSet.Clear();
         }
 
         /// <summary>

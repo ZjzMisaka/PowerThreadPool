@@ -603,6 +603,7 @@ namespace PowerThreadPool
 
                 _powerPool.InvokeWorkCanceledEvent(executeResult);
                 work.InvokeCallback(_powerPool, executeResult, _powerPool.PowerPoolOption);
+                _powerPool.WorkCallbackEnd(Work, Status.Canceled);
 
                 Interlocked.Decrement(ref _waitingWorkCount);
                 Interlocked.Decrement(ref _powerPool._waitingWorkCount);

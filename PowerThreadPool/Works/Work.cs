@@ -50,7 +50,7 @@ namespace PowerThreadPool.Works
             {
                 foreach (string dependedId in _workOption.Dependents)
                 {
-                    if (powerPool._failedWorkSet.Contains(dependedId))
+                    if (PrecedingWorkNotSuccessfullyCompleted(powerPool, dependedId))
                     {
                         powerPool.CallbackEnd -= _callbackEndHandler;
                         DependencyFailed = true;
@@ -78,7 +78,7 @@ namespace PowerThreadPool.Works
                 {
                     if (!powerPool._aliveWorkDic.ContainsKey(dependedId) && !powerPool._suspendedWork.ContainsKey(dependedId))
                     {
-                        if (powerPool._failedWorkSet.Contains(dependedId))
+                        if (PrecedingWorkNotSuccessfullyCompleted(powerPool, dependedId))
                         {
                             powerPool.CallbackEnd -= _callbackEndHandler;
                             DependencyFailed = true;
@@ -96,6 +96,11 @@ namespace PowerThreadPool.Works
                     }
                 }
             }
+        }
+
+        private bool PrecedingWorkNotSuccessfullyCompleted(PowerPool powerPool, string dependedId)
+        {
+            return powerPool._failedWorkSet.Contains(dependedId) || powerPool._canceledWorkSet.Contains(dependedId);
         }
 
         internal override object Execute()
