@@ -137,6 +137,10 @@ namespace PowerThreadPool
             {
                 _failedWorkSet.Add(work.ID);
             }
+            else if (status == Status.Canceled)
+            {
+                _canceledWorkSet.Add(work.ID);
+            }
 
             if (CallbackEnd != null)
             {
