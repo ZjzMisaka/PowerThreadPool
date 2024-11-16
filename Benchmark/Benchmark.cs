@@ -1,7 +1,6 @@
 ﻿using Amib.Threading;
 using BenchmarkDotNet.Attributes;
 using PowerThreadPool;
-using static BenchmarkDotNet.Engines.Engine;
 
 namespace Benchmark
 {
