@@ -233,10 +233,7 @@ namespace PowerThreadPool
         /// </summary>
         public void Start()
         {
-            if (_disposing || _disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
+            CheckDisposed();
 
             if (!_suspended)
             {
@@ -642,6 +639,18 @@ namespace PowerThreadPool
         {
             _failedWorkSet.Clear();
             _canceledWorkSet.Clear();
+        }
+
+        private void CheckDisposed()
+        {
+#if NET8_0_OR_GREATER
+            ObjectDisposedException.ThrowIf(_disposing || _disposed, this);
+#else
+            if (_disposing || _disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+#endif
         }
 
         /// <summary>

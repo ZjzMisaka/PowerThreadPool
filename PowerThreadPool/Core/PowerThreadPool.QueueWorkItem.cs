@@ -484,10 +484,7 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption<TResult> workOption)
         {
-            if (_disposing || _disposed)
-            {
-                throw new ObjectDisposedException(GetType().FullName);
-            }
+            CheckDisposed();
 
             string workID;
 
