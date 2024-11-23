@@ -22,10 +22,10 @@ namespace PowerThreadPool
 
         internal int ID { get; set; }
 
-        internal InterlockedFlag<WorkerStates> WorkerState { get; set; } = WorkerStates.Idle;
-        internal InterlockedFlag<CanGetWork> CanGetWork { get; set; } = Constants.CanGetWork.Allowed;
-        internal InterlockedFlag<WorkHeldStates> WorkHeldState { get; set; } = WorkHeldStates.NotHeld;
-        internal InterlockedFlag<WorkStealability> WorkStealability { get; set; } = Constants.WorkStealability.Allowed;
+        internal InterlockedFlag<WorkerStates> WorkerState { get; } = WorkerStates.Idle;
+        internal InterlockedFlag<CanGetWork> CanGetWork { get; } = Constants.CanGetWork.Allowed;
+        internal InterlockedFlag<WorkHeldStates> WorkHeldState { get; } = WorkHeldStates.NotHeld;
+        internal InterlockedFlag<WorkStealability> WorkStealability { get; } = Constants.WorkStealability.Allowed;
 
         private IStealablePriorityCollection<string> _waitingWorkIDPriorityCollection;
         private ConcurrentDictionary<string, WorkBase> _waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
