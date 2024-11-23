@@ -18,8 +18,8 @@ namespace PowerThreadPool
         private bool _disposed = false;
         private bool _disposing = false;
 
-        private ManualResetEvent _waitAllSignal = new ManualResetEvent(false);
-        private ManualResetEvent _pauseSignal = new ManualResetEvent(true);
+        private readonly ManualResetEvent _waitAllSignal = new ManualResetEvent(false);
+        private readonly ManualResetEvent _pauseSignal = new ManualResetEvent(true);
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         internal ConcurrentSet<string> _failedWorkSet = new ConcurrentSet<string>();
@@ -49,7 +49,7 @@ namespace PowerThreadPool
         private DateTime _startDateTime;
         private DateTime _endDateTime;
 
-        private InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
+        private readonly InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
 
         private PowerPoolOption _powerPoolOption;
         public PowerPoolOption PowerPoolOption
@@ -66,7 +66,7 @@ namespace PowerThreadPool
         private System.Timers.Timer _runningTimer;
         private System.Timers.Timer _timeoutTimer;
 
-        private InterlockedFlag<PoolStates> _poolState = PoolStates.NotRunning;
+        private readonly InterlockedFlag<PoolStates> _poolState = PoolStates.NotRunning;
 
         public bool PoolRunning => _poolState == PoolStates.Running;
 
