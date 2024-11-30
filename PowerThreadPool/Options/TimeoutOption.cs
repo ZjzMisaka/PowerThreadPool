@@ -2,10 +2,6 @@
 {
     public class TimeoutOption
     {
-        public TimeoutOption()
-        {
-        }
-
         /// <summary>
         /// The maximum amount of time (ms).
         /// </summary>
