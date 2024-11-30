@@ -457,7 +457,7 @@ namespace PowerThreadPool
                 _runSignal.Reset();
 
                 PowerPoolOption powerPoolOption = _powerPool.PowerPoolOption;
-                if (powerPoolOption.DestroyThreadOption != null && _powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
+                if (_killTimer != null && powerPoolOption.DestroyThreadOption != null && _powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
                 {
                     _killTimer.Interval = _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime;
                     _killTimer.Start();
