@@ -4,13 +4,13 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Options
 {
-    public enum QueueType { FIFO, LIFO }
+    public enum QueueType
+    {
+        FIFO,
+        LIFO
+    }
     public class PowerPoolOption
     {
-        public PowerPoolOption()
-        {
-        }
-
         /// <summary>
         /// The maximum number of threads that the thread pool can support.
         /// </summary>
