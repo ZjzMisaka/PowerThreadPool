@@ -123,6 +123,10 @@ namespace PowerThreadPool.Helpers
         public override int GetHashCode() => _innerValue.GetHashCode();
 
         private static T InnerValueToT(int innerValue)
-            => (T)Enum.ToObject(typeof(T), innerValue);
+#if NET5_0_OR_GREATER
+            => Unsafe.As<int, T>(ref innerValue);
+#else
+            => (T)(object)innerValue;
+#endif
     }
 }
