@@ -3624,7 +3624,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestSetDestroyThreadOptionWhenRunning()
+        public void TestSetMaxThreadsWhenRunning()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1 });
 
@@ -3636,7 +3636,7 @@ namespace UnitTest
             powerPool.WorkCanceled += (s, e) => { Interlocked.Increment(ref cancelCount1); };
             powerPool.PowerPoolOption.DefaultCallback = (e) => { Interlocked.Increment(ref doneCount2); };
 
-            powerPool.QueueWorkItem(() =>
+            string id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3693,12 +3693,154 @@ namespace UnitTest
             Assert.Equal(1, powerPool.RunningWorkerCount);
             Assert.Equal(0, powerPool.IdleWorkerCount);
 
+            powerPool.PowerPoolOption.MaxThreads = 2;
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+
+            Assert.Equal(2, powerPool.AliveWorkerCount);
+            Assert.Equal(2, powerPool.RunningWorkerCount);
+            Assert.Equal(0, powerPool.IdleWorkerCount);
+
+            powerPool.PowerPoolOption.MaxThreads = 1;
+
+            powerPool.Stop(id1);
+            Thread.Sleep(1000);
+
+            Assert.Equal(1, powerPool.AliveWorkerCount);
+            Assert.Equal(1, powerPool.RunningWorkerCount);
+            Assert.Equal(0, powerPool.IdleWorkerCount);
+
             powerPool.Stop();
 
             Thread.Sleep(500);
-            Assert.Equal(2, stopCount1);
-            Assert.Equal(1, cancelCount1);
-            Assert.Equal(3, doneCount2);
+            Assert.Equal(3, stopCount1);
+            Assert.Equal(5, cancelCount1);
+            Assert.Equal(8, doneCount2);
+        }
+
+        [Fact]
+        public void TestSetDestroyThreadOptionWhenRunning()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 2, DestroyThreadOption = new DestroyThreadOption { KeepAliveTime = 1000, MinThreads = 0 } });
+
+            int stopCount1 = 0;
+            int cancelCount1 = 0;
+            int doneCount2 = 0;
+
+            powerPool.WorkStopped += (s, e) => { Interlocked.Increment(ref stopCount1); };
+            powerPool.WorkCanceled += (s, e) => { Interlocked.Increment(ref cancelCount1); };
+            powerPool.PowerPoolOption.DefaultCallback = (e) => { Interlocked.Increment(ref doneCount2); };
+
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+
+            Assert.Equal(2, powerPool.AliveWorkerCount);
+            Assert.Equal(2, powerPool.RunningWorkerCount);
+            Assert.Equal(0, powerPool.IdleWorkerCount);
+
+            powerPool.Stop(id1);
+            Thread.Sleep(100);
+            powerPool.Stop(id2);
+
+            Thread.Sleep(500);
+
+            Assert.Equal(2, powerPool.AliveWorkerCount);
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.Equal(2, powerPool.IdleWorkerCount);
+
+            Thread.Sleep(2000);
+
+            Assert.Equal(0, powerPool.AliveWorkerCount);
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.Equal(0, powerPool.IdleWorkerCount);
+
+            id1 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+
+            id2 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+
+            Assert.Equal(2, powerPool.AliveWorkerCount);
+            Assert.Equal(2, powerPool.RunningWorkerCount);
+            Assert.Equal(0, powerPool.IdleWorkerCount);
+
+            powerPool.PowerPoolOption.DestroyThreadOption = null;
+
+            powerPool.Stop(id1);
+            Thread.Sleep(100);
+            powerPool.Stop(id2);
+
+            Thread.Sleep(2000);
+
+            Assert.Equal(2, powerPool.AliveWorkerCount);
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.Equal(2, powerPool.IdleWorkerCount);
         }
     }
 }
