@@ -53,8 +53,6 @@ namespace PowerThreadPool
         {
             _powerPool = powerPool;
 
-            InitKillTimer();
-
             if (_powerPool.PowerPoolOption.CustomQueueFactory != null)
             {
                 _waitingWorkIDPriorityCollection = _powerPool.PowerPoolOption.CustomQueueFactory();
@@ -74,6 +72,8 @@ namespace PowerThreadPool
                 {
                     while (true)
                     {
+                        SetKillTimer();
+
                         _runSignal.WaitOne();
 
                         if (_killFlag)
@@ -201,13 +201,50 @@ namespace PowerThreadPool
             }
         }
 
-        private void InitKillTimer()
+        private void WorkerCountOutOfRange()
         {
-            if (_powerPool.PowerPoolOption.DestroyThreadOption != null)
+            CanGetWork.InterlockedValue = Constants.CanGetWork.Disabled;
+
+            WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
+
+            if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
+            {
+                Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
+                _powerPool._aliveWorkerList = _powerPool._aliveWorkerDic.Values;
+            }
+            if (_powerPool._idleWorkerDic.TryRemove(ID, out _))
+            {
+                Interlocked.Decrement(ref _powerPool._idleWorkerCount);
+            }
+
+            bool hasWaitingWork = false;
+            IEnumerable<WorkBase> waitingWorkList = _waitingWorkDic.Values;
+            foreach (WorkBase work in waitingWorkList)
+            {
+                _powerPool.SetWork(work);
+                hasWaitingWork = true;
+            }
+
+            Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+            _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
+            if (!hasWaitingWork)
+            {
+                _powerPool.CheckPoolIdle();
+            }
+        }
+
+        private void SetKillTimer()
+        {
+            if (_killTimer == null && _powerPool.PowerPoolOption.DestroyThreadOption != null)
             {
                 _killTimer = new System.Timers.Timer(_powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime);
                 _killTimer.AutoReset = false;
                 _killTimer.Elapsed += OnKillTimerElapsed;
+            }
+            else if (_killTimer != null && _powerPool.PowerPoolOption.DestroyThreadOption == null)
+            {
+                _killTimer = null;
             }
         }
 
@@ -440,45 +477,55 @@ namespace PowerThreadPool
         {
             SpinWait.SpinUntil(() => CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed));
 
-            waitingWorkID = _waitingWorkIDPriorityCollection.Get();
-            if (waitingWorkID != null)
+            PowerPoolOption powerPoolOption = _powerPool.PowerPoolOption;
+            if (_powerPool.AliveWorkerCount - _powerPool.LongRunningWorkerCount > powerPoolOption.MaxThreads)
             {
-                if (_waitingWorkDic.TryRemove(waitingWorkID, out work))
-                {
-                    Interlocked.Decrement(ref _waitingWorkCount);
-                }
+                WorkerCountOutOfRange();
 
-                CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
-
-                return false;
+                Kill();
+                return true;
             }
             else
             {
-                _runSignal.Reset();
-
-                PowerPoolOption powerPoolOption = _powerPool.PowerPoolOption;
-                if (_killTimer != null && powerPoolOption.DestroyThreadOption != null && _powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
+                waitingWorkID = _waitingWorkIDPriorityCollection.Get();
+                if (waitingWorkID != null)
                 {
-                    _killTimer.Interval = _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime;
-                    _killTimer.Start();
+                    if (_waitingWorkDic.TryRemove(waitingWorkID, out work))
+                    {
+                        Interlocked.Decrement(ref _waitingWorkCount);
+                    }
+
+                    CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
+
+                    return false;
                 }
-
-                Interlocked.Decrement(ref _powerPool._runningWorkerCount);
-                _powerPool.InvokeRunningWorkerCountChangedEvent(false);
-
-                WorkerState.InterlockedValue = WorkerStates.Idle;
-
-                CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
-
-                if (_powerPool._idleWorkerDic.TryAdd(ID, this))
+                else
                 {
-                    Interlocked.Increment(ref _powerPool._idleWorkerCount);
-                    _powerPool._idleWorkerQueue.Enqueue(ID);
+                    _runSignal.Reset();
+
+                    if (_killTimer != null && powerPoolOption.DestroyThreadOption != null && _powerPool.IdleWorkerCount > powerPoolOption.DestroyThreadOption.MinThreads)
+                    {
+                        _killTimer.Interval = _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime;
+                        _killTimer.Start();
+                    }
+
+                    Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                    _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
+                    WorkerState.InterlockedValue = WorkerStates.Idle;
+
+                    CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
+
+                    if (_powerPool._idleWorkerDic.TryAdd(ID, this))
+                    {
+                        Interlocked.Increment(ref _powerPool._idleWorkerCount);
+                        _powerPool._idleWorkerQueue.Enqueue(ID);
+                    }
+
+                    _powerPool.CheckPoolIdle();
+
+                    return true;
                 }
-
-                _powerPool.CheckPoolIdle();
-
-                return true;
             }
         }
 
