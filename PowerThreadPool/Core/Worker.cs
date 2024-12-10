@@ -241,7 +241,7 @@ namespace PowerThreadPool
 
         private void SetKillTimer()
         {
-            if (_killTimer == null && _powerPool.PowerPoolOption.DestroyThreadOption != null)
+            if (_killTimer == null && _powerPool.PowerPoolOption.DestroyThreadOption != null && _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime != 0)
             {
                 _killTimer = new System.Timers.Timer(_powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime);
                 _killTimer.AutoReset = false;
@@ -508,32 +508,33 @@ namespace PowerThreadPool
 
                 PowerPoolOption powerPoolOption = _powerPool.PowerPoolOption;
 
-                if (_killTimer != null && powerPoolOption.DestroyThreadOption != null && _powerPool.IdleWorkerCount >= powerPoolOption.DestroyThreadOption.MinThreads)
+                Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
+                if (powerPoolOption.DestroyThreadOption != null && _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime == 0 && _powerPool.IdleWorkerCount >= powerPoolOption.DestroyThreadOption.MinThreads)
                 {
-                    if (_powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime == 0)
-                    {
-                        TryDisposeSelf();
-                    }
-                    else
+                    CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.ToBeDisabled);
+                    TryDisposeSelf(false);
+                }
+                else
+                {
+                    if (_killTimer != null && powerPoolOption.DestroyThreadOption != null && _powerPool.IdleWorkerCount >= powerPoolOption.DestroyThreadOption.MinThreads)
                     {
                         _killTimer.Interval = _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime;
                         _killTimer.Start();
                     }
+
+                    WorkerState.InterlockedValue = WorkerStates.Idle;
+
+                    CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
+
+                    if (_powerPool._idleWorkerDic.TryAdd(ID, this))
+                    {
+                        Interlocked.Increment(ref _powerPool._idleWorkerCount);
+                        _powerPool._idleWorkerQueue.Enqueue(ID);
+                    }
                 }
-
-                Interlocked.Decrement(ref _powerPool._runningWorkerCount);
-                _powerPool.InvokeRunningWorkerCountChangedEvent(false);
-
-                WorkerState.InterlockedValue = WorkerStates.Idle;
-
-                CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
-
-                if (_powerPool._idleWorkerDic.TryAdd(ID, this))
-                {
-                    Interlocked.Increment(ref _powerPool._idleWorkerCount);
-                    _powerPool._idleWorkerQueue.Enqueue(ID);
-                }
-
+                
                 _powerPool.CheckPoolIdle();
 
                 return true;
@@ -574,12 +575,12 @@ namespace PowerThreadPool
 
         private void OnKillTimerElapsed(object s, ElapsedEventArgs e)
         {
-            TryDisposeSelf();
+            TryDisposeSelf(true);
         }
 
-        private void TryDisposeSelf()
+        private void TryDisposeSelf(bool isIdle)
         {
-            if (_powerPool.IdleWorkerCount > _powerPool.PowerPoolOption.DestroyThreadOption.MinThreads)
+            if (isIdle ? _powerPool.IdleWorkerCount > _powerPool.PowerPoolOption.DestroyThreadOption.MinThreads : _powerPool.IdleWorkerCount >= _powerPool.PowerPoolOption.DestroyThreadOption.MinThreads)
             {
                 // ① There is a possibility that a worker may still obtain and execute work between the 
                 // time the _killTimer triggers OnKillTimerElapsed and when CanGetWork is set to Disabled. 
@@ -593,15 +594,13 @@ namespace PowerThreadPool
                     return origValue == Constants.CanGetWork.Allowed || origValue == Constants.CanGetWork.Disabled;
                 });
 
-                if (WorkerState.TrySet(WorkerStates.ToBeDisposed, WorkerStates.Idle))
+                if (!isIdle || WorkerState.TrySet(WorkerStates.ToBeDisposed, WorkerStates.Idle))
                 {
                     Dispose();
                     // Although reaching this point means that WorkerState has been set from Idle to ToBeDisposed, 
                     // indicating that no work is currently running, there is still a possibility that situation ① has occurred, 
                     // and the work may have finished executing before WorkerState.TrySet was called.
-                    // New work could potentially trigger additional _killTimer timing, which is also an extremely rare case.
-                    // Therefore, an extra Stop() is called here.
-                    _killTimer.Stop();
+                    // It is also an extremely rare case, but since this case is harmless, just ignore it.
                     return;
                 }
 
@@ -724,17 +723,18 @@ namespace PowerThreadPool
                     }
                     
                     _runSignal.Dispose();
-                    _timeoutTimer?.Dispose();
-                    _killTimer?.Dispose();
+                    if (_timeoutTimer != null)
+                    {
+                        _timeoutTimer.Dispose();
+                    }
+                    if (_killTimer != null)
+                    {
+                        _killTimer.Dispose();
+                    }
                 }
 
                 _disposed = true;
             }
-        }
-
-        ~Worker()
-        {
-            Dispose(false, false);
         }
     }
 }

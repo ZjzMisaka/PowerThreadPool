@@ -505,7 +505,10 @@ namespace PowerThreadPool
 
                 if (PowerPoolOption.TimeoutOption != null)
                 {
-                    _timeoutTimer?.Dispose();
+                    if (_timeoutTimer != null)
+                    {
+                        _timeoutTimer.Dispose();
+                    }
                     _timeoutTimer = new System.Timers.Timer(PowerPoolOption.TimeoutOption.Duration);
                     _timeoutTimer.AutoReset = false;
                     _timeoutTimer.Elapsed += (s, e) =>
@@ -698,8 +701,14 @@ namespace PowerThreadPool
                     _cancellationTokenSource.Dispose();
                     _pauseSignal.Dispose();
                     _waitAllSignal.Dispose();
-                    _runningTimer?.Dispose();
-                    _timeoutTimer?.Dispose();
+                    if (_runningTimer != null)
+                    {
+                        _runningTimer.Dispose();
+                    }
+                    if (_timeoutTimer != null)
+                    {
+                        _timeoutTimer.Dispose();
+                    }
                 }
 
                 _disposed = true;

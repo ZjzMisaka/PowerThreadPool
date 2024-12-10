@@ -197,6 +197,89 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestThreadPoolTimeoutStartTwice()
+        {
+            List<string> logList = new List<string>();
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 8,
+                DefaultCallback = (res) =>
+                {
+                    // Assert.IsType<ThreadInterruptedException>(res.Exception);
+                },
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
+                TimeoutOption = new TimeoutOption() { Duration = 1000, ForceStop = true },
+                DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 30000, ForceStop = true },
+            };
+            bool timeOut = false;
+            powerPool.WorkTimedOut += (s, e) =>
+            {
+                logList.Add("WorkTimeout");
+            };
+            powerPool.PoolTimedOut += (s, e) =>
+            {
+                timeOut = true;
+                logList.Add("PoolTimeout");
+            };
+
+            string id;
+            for (int j = 0; j < 50; ++j)
+            {
+                id = powerPool.QueueWorkItem(() =>
+                {
+                    for (int i = 0; i < 5; ++i)
+                    {
+                        Thread.Sleep(100);
+                    }
+                });
+                Thread.Sleep(250);
+                if (timeOut)
+                {
+                    break;
+                }
+            }
+
+            powerPool.Wait();
+
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("PoolTimeout", item)
+                );
+
+            powerPool.WorkTimedOut += (s, e) =>
+            {
+                logList.Add("WorkTimeout");
+            };
+            powerPool.PoolTimedOut += (s, e) =>
+            {
+                timeOut = true;
+                logList.Add("PoolTimeout");
+            };
+
+            for (int j = 0; j < 50; ++j)
+            {
+                powerPool.QueueWorkItem(() =>
+                {
+                    for (int i = 0; i < 5; ++i)
+                    {
+                        Thread.Sleep(100);
+                    }
+                });
+                Thread.Sleep(250);
+                if (timeOut)
+                {
+                    break;
+                }
+            }
+
+            powerPool.Wait();
+
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("PoolTimeout", item)
+                );
+        }
+
+        [Fact]
         public void TestWorkTimeout()
         {
             List<string> logList = new List<string>();
@@ -1075,6 +1158,57 @@ namespace UnitTest
         public void TestDispose()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2, DestroyThreadOption = new DestroyThreadOption() { MinThreads = 2, KeepAliveTime = 1000000 } });
+            object res0 = null;
+            object res1 = null;
+            object res2 = null;
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                res0 = res.Exception;
+            });
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                res1 = res.Exception;
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                res2 = res.Exception;
+            });
+
+            powerPool.Dispose();
+
+            Assert.Equal(0, powerPool.AliveWorkerCount);
+            Assert.Equal(0, powerPool.IdleWorkerCount);
+        }
+
+        [Fact]
+        public void TestDisposeHasTimers()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption()
+            {
+                MaxThreads = 2,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 2, KeepAliveTime = 1000000 },
+                TimeoutOption = new TimeoutOption() { Duration = 1000, ForceStop = true },
+                DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 30000, ForceStop = true },
+                RunningTimerOption = new RunningTimerOption()
+            });
             object res0 = null;
             object res1 = null;
             object res2 = null;
@@ -3841,6 +3975,38 @@ namespace UnitTest
             Assert.Equal(2, powerPool.AliveWorkerCount);
             Assert.Equal(0, powerPool.RunningWorkerCount);
             Assert.Equal(2, powerPool.IdleWorkerCount);
+        }
+
+        [Fact]
+        public void TestKeepAliveTimeIsZero()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 2, DestroyThreadOption = new DestroyThreadOption { KeepAliveTime = 0, MinThreads = 0 } });
+
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            });
+
+            powerPool.Stop();
+
+            Thread.Sleep(100);
+
+            Assert.Equal(0, powerPool.AliveWorkerCount);
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.Equal(0, powerPool.IdleWorkerCount);
         }
     }
 }
