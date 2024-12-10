@@ -240,6 +240,7 @@ namespace PowerThreadPool
             }
             else if (_killTimer != null && _powerPool.PowerPoolOption.DestroyThreadOption == null)
             {
+                _killTimer.Dispose();
                 _killTimer = null;
             }
         }
@@ -538,6 +539,8 @@ namespace PowerThreadPool
                 };
                 timer.Start();
 
+                _timeoutTimer?.Dispose();
+
                 _timeoutTimer = timer;
             }
 
@@ -687,6 +690,8 @@ namespace PowerThreadPool
 
                     _thread.Join();
                     _runSignal.Dispose();
+                    _timeoutTimer?.Dispose();
+                    _killTimer?.Dispose();
                 }
 
                 _disposed = true;
