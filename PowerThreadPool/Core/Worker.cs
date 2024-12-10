@@ -90,6 +90,11 @@ namespace PowerThreadPool
                         }
 
                         AssignWork();
+                        // May be disposed at WorkerCountOutOfRange().
+                        if (_disposed)
+                        {
+                            return;
+                        }
                     }
                 }
                 catch (ThreadInterruptedException ex)
@@ -200,7 +205,7 @@ namespace PowerThreadPool
                 _powerPool.CheckPoolIdle();
             }
 
-            DisposeWithoutJoin();
+            Dispose();
         }
 
         private void WorkerCountOutOfRange()
@@ -383,7 +388,6 @@ namespace PowerThreadPool
                 {
                     WorkerCountOutOfRange();
 
-                    Kill();
                     return;
                 }
 
@@ -686,13 +690,16 @@ namespace PowerThreadPool
         /// <summary>
         /// Dispose the instance. 
         /// </summary>
-        public void Dispose()
+        public void DisposeWithJoin()
         {
-            Dispose(true);
+            Dispose(true, true);
             GC.SuppressFinalize(this);
         }
 
-        private void DisposeWithoutJoin()
+        /// <summary>
+        /// Dispose the instance. 
+        /// </summary>
+        public void Dispose()
         {
             Dispose(true, false);
             GC.SuppressFinalize(this);
@@ -702,7 +709,8 @@ namespace PowerThreadPool
         /// Dispose the instance
         /// </summary>
         /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing, bool join = true)
+        /// <param name="join"></param>
+        protected virtual void Dispose(bool disposing, bool join)
         {
             if (!_disposed)
             {
@@ -726,7 +734,7 @@ namespace PowerThreadPool
 
         ~Worker()
         {
-            Dispose(false);
+            Dispose(false, false);
         }
     }
 }

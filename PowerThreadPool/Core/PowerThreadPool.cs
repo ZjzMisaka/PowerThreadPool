@@ -689,7 +689,7 @@ namespace PowerThreadPool
                             {
                                 worker.ForceStop(true);
                                 worker.Kill();
-                                worker.Dispose();
+                                worker.DisposeWithJoin();
                             }
                         }
                         Thread.Yield();
