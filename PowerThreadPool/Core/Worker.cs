@@ -199,6 +199,8 @@ namespace PowerThreadPool
             {
                 _powerPool.CheckPoolIdle();
             }
+
+            DisposeWithoutJoin();
         }
 
         private void WorkerCountOutOfRange()
@@ -228,6 +230,8 @@ namespace PowerThreadPool
             {
                 _powerPool.CheckPoolIdle();
             }
+
+            Dispose();
         }
 
         private void SetKillTimer()
@@ -502,8 +506,15 @@ namespace PowerThreadPool
 
                 if (_killTimer != null && powerPoolOption.DestroyThreadOption != null && _powerPool.IdleWorkerCount >= powerPoolOption.DestroyThreadOption.MinThreads)
                 {
-                    _killTimer.Interval = _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime;
-                    _killTimer.Start();
+                    if (_powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime == 0)
+                    {
+                        TryDisposeSelf();
+                    }
+                    else
+                    {
+                        _killTimer.Interval = _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime;
+                        _killTimer.Start();
+                    }
                 }
 
                 Interlocked.Decrement(ref _powerPool._runningWorkerCount);
@@ -559,6 +570,11 @@ namespace PowerThreadPool
 
         private void OnKillTimerElapsed(object s, ElapsedEventArgs e)
         {
+            TryDisposeSelf();
+        }
+
+        private void TryDisposeSelf()
+        {
             if (_powerPool.IdleWorkerCount > _powerPool.PowerPoolOption.DestroyThreadOption.MinThreads)
             {
                 // ① There is a possibility that a worker may still obtain and execute work between the 
@@ -575,7 +591,7 @@ namespace PowerThreadPool
 
                 if (WorkerState.TrySet(WorkerStates.ToBeDisposed, WorkerStates.Idle))
                 {
-                    RemoveSelf();
+                    Dispose();
                     // Although reaching this point means that WorkerState has been set from Idle to ToBeDisposed, 
                     // indicating that no work is currently running, there is still a possibility that situation ① has occurred, 
                     // and the work may have finished executing before WorkerState.TrySet was called.
@@ -676,11 +692,17 @@ namespace PowerThreadPool
             GC.SuppressFinalize(this);
         }
 
+        private void DisposeWithoutJoin()
+        {
+            Dispose(true, false);
+            GC.SuppressFinalize(this);
+        }
+
         /// <summary>
         /// Dispose the instance
         /// </summary>
         /// <param name="disposing"></param>
-        protected virtual void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing, bool join = true)
         {
             if (!_disposed)
             {
@@ -688,7 +710,11 @@ namespace PowerThreadPool
                 {
                     RemoveSelf();
 
-                    _thread.Join();
+                    if (join)
+                    {
+                        _thread.Join();
+                    }
+                    
                     _runSignal.Dispose();
                     _timeoutTimer?.Dispose();
                     _killTimer?.Dispose();
