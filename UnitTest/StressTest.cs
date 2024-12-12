@@ -1,17 +1,28 @@
 ﻿using System.Diagnostics;
+using System.Reflection;
 using PowerThreadPool;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
+using Xunit.Abstractions;
 
 namespace UnitTest
 {
     public class StressTest
     {
+        private readonly ITestOutputHelper _output;
+
+        public StressTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         PowerPool _powerPool;
 
         [Fact]
         public async Task StressTest1()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             _powerPool = new PowerPool(new PowerPoolOption() { DestroyThreadOption = new DestroyThreadOption() });
 
             int totalTasks = 1000000;
@@ -58,6 +69,8 @@ namespace UnitTest
         [Fact]
         public async Task StressTest2()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             Random random = new Random();
             bool run = false;
             int doneCount = 0;
@@ -195,6 +208,8 @@ namespace UnitTest
         [Fact]
         public async Task StressTest3()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             _powerPool = new PowerPool(new PowerPoolOption() { DestroyThreadOption = new DestroyThreadOption() });
 
             int totalTasks = 100;
@@ -227,6 +242,8 @@ namespace UnitTest
         [Fact]
         public async Task StressTest4()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             Random random = new Random();
             bool run = false;
             int doneCount = 0;

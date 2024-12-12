@@ -38,7 +38,7 @@ jobs:
         with:
           dotnet-version: 9.0.x
       - name: Run Tests and Generate TRX Report
-        run: dotnet test UnitTest/UnitTest.csproj --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
+        run: dotnet test UnitTest/UnitTest.csproj --logger "console;verbosity=detailed;trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
       - name: Publish Unit Test Results
         uses: dorny/test-reporter@v1
         with:

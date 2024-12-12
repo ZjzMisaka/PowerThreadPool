@@ -534,7 +534,7 @@ namespace PowerThreadPool
                         _powerPool._idleWorkerQueue.Enqueue(ID);
                     }
                 }
-                
+
                 _powerPool.CheckPoolIdle();
 
                 return true;
@@ -721,7 +721,7 @@ namespace PowerThreadPool
                     {
                         _thread.Join();
                     }
-                    
+
                     _runSignal.Dispose();
                     if (_timeoutTimer != null)
                     {

@@ -1,11 +1,21 @@
-﻿using PowerThreadPool;
+﻿using System.Reflection;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
+using PowerThreadPool;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
+using Xunit.Abstractions;
 
 namespace UnitTest
 {
     public class ControlTest
     {
+        private readonly ITestOutputHelper _output;
+
+        public ControlTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         private long GetNowSs()
         {
             return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
@@ -14,6 +24,8 @@ namespace UnitTest
         [Fact]
         public void TestPauseAll()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
             object lockObj = new object();
@@ -72,6 +84,8 @@ namespace UnitTest
         [Fact]
         public void TestPauseByID()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<string> logList = new List<string>();
             powerPool.QueueWorkItem(() =>
@@ -127,6 +141,8 @@ namespace UnitTest
         [Fact]
         public void TestPauseByIDList()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<string> logList = new List<string>();
             powerPool.QueueWorkItem(() =>
@@ -182,6 +198,8 @@ namespace UnitTest
         [Fact]
         public void TestPauseByGroup()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<string> logList = new List<string>();
             powerPool.QueueWorkItem(() =>
@@ -248,6 +266,8 @@ namespace UnitTest
         [Fact]
         public void TestPauseByGroupObject()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<string> logList = new List<string>();
             powerPool.QueueWorkItem(() =>
@@ -314,6 +334,8 @@ namespace UnitTest
         [Fact]
         public void TestPauseByIDAndResumeAll()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<string> logList = new List<string>();
             powerPool.QueueWorkItem(() =>
@@ -368,6 +390,8 @@ namespace UnitTest
         [Fact]
         public void TestPauseByIDAndResumeAllWhenItStealWaiting()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 1 });
             List<string> logList = new List<string>();
             powerPool.QueueWorkItem(() =>
@@ -422,6 +446,8 @@ namespace UnitTest
         [Fact]
         public void TestForceStop()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             object res0 = null;
             object res1 = null;
@@ -472,6 +498,8 @@ namespace UnitTest
         [Fact]
         public void TestForceStopBeforeRunning()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
 
             int doneCount = 0;
@@ -533,6 +561,8 @@ namespace UnitTest
         [Fact]
         public void TestStopBeforeRunning()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
             int doneCount = 0;
             powerPool.QueueWorkItem(() =>
@@ -585,6 +615,8 @@ namespace UnitTest
         [Fact]
         public void TestForceStopAfterExecuteEnd()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             string resId = null;
             PowerPool powerPool = new PowerPool();
             string id = null;
@@ -622,6 +654,8 @@ namespace UnitTest
         [Fact]
         public void TestForceStopWhenCallback()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool() { PowerPoolOption = new PowerPoolOption() { MaxThreads = 1 } };
             bool forceStopped = false;
             powerPool.WorkStopped += (s, e) =>
@@ -652,6 +686,8 @@ namespace UnitTest
         [Fact]
         public void TestForceStopWhenInvoke()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool() { PowerPoolOption = new PowerPoolOption() { MaxThreads = 1 } };
             bool forceStopped = false;
             powerPool.WorkStopped += (s, e) =>
@@ -679,6 +715,8 @@ namespace UnitTest
         [Fact]
         public void TestStopAll()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<string> logList = new List<string>();
             powerPool.QueueWorkItem(() =>
@@ -726,6 +764,8 @@ namespace UnitTest
         [Fact]
         public async void TestStopByIDMultiWorks()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 8 });
             string id = null;
             string resID = null;
@@ -843,6 +883,8 @@ namespace UnitTest
         [Fact]
         public async void TestStopByID()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
 
@@ -877,6 +919,8 @@ namespace UnitTest
         [Fact]
         public void TestStopByIDAfterWorkStart()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool() { PowerPoolOption = new PowerPoolOption() { StartSuspended = true } };
             powerPool.WorkStarted += (s, e) =>
             {
@@ -896,6 +940,8 @@ namespace UnitTest
         [Fact]
         public async void TestStopByIDList()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
 
@@ -930,6 +976,8 @@ namespace UnitTest
         [Fact]
         public async void TestStopByGroup()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
 
@@ -969,6 +1017,8 @@ namespace UnitTest
         [Fact]
         public async void TestStopByGroupObject()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
 
@@ -1008,6 +1058,8 @@ namespace UnitTest
         [Fact]
         public async void TestStopByIDUseCheckIfRequestedStop()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
 
@@ -1045,6 +1097,8 @@ namespace UnitTest
         [Fact]
         public async void TestStopByIDDoActionBeforeStop()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
 
@@ -1079,6 +1133,8 @@ namespace UnitTest
         [Fact]
         public async void TestStopByIDDoBeforeStop()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
 
@@ -1113,6 +1169,8 @@ namespace UnitTest
         [Fact]
         public void TestStopAllDoBeforeStop()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
 
@@ -1147,6 +1205,8 @@ namespace UnitTest
         [Fact]
         public async void TestStopByIDDoBeforeStopReturnFalse()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
 
@@ -1181,6 +1241,8 @@ namespace UnitTest
         [Fact]
         public void TestStopAllDoBeforeStopReturnFalse()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             List<long> logList = new List<long>();
 
@@ -1215,6 +1277,8 @@ namespace UnitTest
         [Fact]
         public void TestCancelByID()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
             List<long> logList = new List<long>();
             string cid = "";
@@ -1306,6 +1370,8 @@ namespace UnitTest
         [Fact]
         public void TestCancelByIDSuspended()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
 
             bool canceled = true;
@@ -1326,6 +1392,8 @@ namespace UnitTest
         [Fact]
         public void TestCancelByIDList()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
             List<long> logList = new List<long>();
             powerPool.QueueWorkItem(() =>
@@ -1388,6 +1456,8 @@ namespace UnitTest
         [Fact]
         public void TestCancelByGroup()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
             List<long> logList = new List<long>();
             powerPool.QueueWorkItem(() =>
@@ -1461,6 +1531,8 @@ namespace UnitTest
         [Fact]
         public void TestCancelByGroupObject()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
             List<long> logList = new List<long>();
             powerPool.QueueWorkItem(() =>
@@ -1534,6 +1606,8 @@ namespace UnitTest
         [Fact]
         public void TestCancelAll()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 1 });
             List<long> logList = new List<long>();
             powerPool.QueueWorkItem(() =>
@@ -1596,6 +1670,8 @@ namespace UnitTest
         [Fact]
         public async void TestIDEmpty()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(() =>
             {
@@ -1618,6 +1694,8 @@ namespace UnitTest
         [Fact]
         public void TestStopAfterIdle()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(() =>
             {
@@ -1630,6 +1708,8 @@ namespace UnitTest
         [Fact]
         public void TestWaitByAll()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(() =>
             {
@@ -1648,6 +1728,8 @@ namespace UnitTest
         [Fact]
         public void TestWaitByID()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             long start = GetNowSs();
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
@@ -1663,6 +1745,8 @@ namespace UnitTest
         [Fact]
         public void TestWaitByIDNotRunningYet()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             long start = GetNowSs();
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 1 });
 
@@ -1684,6 +1768,8 @@ namespace UnitTest
         [Fact]
         public void TestWaitByIDList()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             long start = GetNowSs();
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
@@ -1699,6 +1785,8 @@ namespace UnitTest
         [Fact]
         public void TestWaitByGroup()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             long start = GetNowSs();
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
@@ -1717,6 +1805,8 @@ namespace UnitTest
         [Fact]
         public void TestWaitByGroupObject()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             long start = GetNowSs();
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
@@ -1735,6 +1825,8 @@ namespace UnitTest
         [Fact]
         public async Task TestWaitAsyncByGroupObject()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             long start = GetNowSs();
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
@@ -1753,6 +1845,8 @@ namespace UnitTest
         [Fact]
         public async Task TestWaitByIDInterruptEnd()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             long start = GetNowSs();
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
@@ -1773,6 +1867,8 @@ namespace UnitTest
         [Fact]
         public async Task TestWaitByIDSuspended()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             long start = GetNowSs();
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
             string id = powerPool.QueueWorkItem(() =>
@@ -1798,6 +1894,8 @@ namespace UnitTest
         [Fact]
         public async void TestWaitByIDAsync()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             long start = GetNowSs();
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
@@ -1813,6 +1911,8 @@ namespace UnitTest
         [Fact]
         public async void TestWaitByIDListAsync()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             long start = GetNowSs();
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
@@ -1828,6 +1928,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchByID()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
             {
@@ -1843,6 +1945,8 @@ namespace UnitTest
         [Fact]
         public async void TestFetchByIDInterrupted()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
             {
@@ -1864,6 +1968,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchByIDAlreadyDone()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = false });
             string id = powerPool.QueueWorkItem(() =>
             {
@@ -1884,6 +1990,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchByIDClearResultStorageWhenPoolStart()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = true });
             string id = powerPool.QueueWorkItem(() =>
             {
@@ -1911,6 +2019,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchByIDRemoveAfterFetch()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = true });
             string id = powerPool.QueueWorkItem(() =>
             {
@@ -1936,6 +2046,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchObjByID()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
             {
@@ -1951,6 +2063,8 @@ namespace UnitTest
         [Fact]
         public async void TestFetchObjByIDAsync()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
             {
@@ -1966,6 +2080,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchByIDNotExist()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
 
             ExecuteResult<object> res = powerPool.Fetch("id");
@@ -1976,6 +2092,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchByIDEmpty()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
 
             ExecuteResult<object> res = powerPool.Fetch("");
@@ -1986,6 +2104,8 @@ namespace UnitTest
         [Fact]
         public async void TestFetchByIDSuspending()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
 
             string id = powerPool.QueueWorkItem(() =>
@@ -2006,6 +2126,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchByIDListRemoveAfterFetch()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = true });
             string id0 = powerPool.QueueWorkItem(() =>
             {
@@ -2042,6 +2164,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchObjByIDList()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id0 = powerPool.QueueWorkItem(() =>
             {
@@ -2076,6 +2200,8 @@ namespace UnitTest
         [Fact]
         public async void TestFetchObjByIDListAsync()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id0 = powerPool.QueueWorkItem(() =>
             {
@@ -2110,6 +2236,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchByIDList()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id0 = powerPool.QueueWorkItem(() =>
             {
@@ -2144,6 +2272,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchByIDListAlreadyDone()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = false });
             string id0 = powerPool.QueueWorkItem(() =>
             {
@@ -2185,6 +2315,8 @@ namespace UnitTest
         [Fact]
         public async void TestFetchByIDListAsync()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id0 = powerPool.QueueWorkItem(() =>
             {
@@ -2219,6 +2351,8 @@ namespace UnitTest
         [Fact]
         public async void TestFetchByIDListAsyncSuspended()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
             string id0 = powerPool.QueueWorkItem(() =>
             {
@@ -2257,6 +2391,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchByPredicate()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id1 = powerPool.QueueWorkItem(() =>
             {
@@ -2309,6 +2445,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchObjByGroupObject()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id0 = powerPool.QueueWorkItem(() =>
             {
@@ -2345,6 +2483,8 @@ namespace UnitTest
         [Fact]
         public async void TestFetchObjByGroupObjectAsync()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id0 = powerPool.QueueWorkItem(() =>
             {
@@ -2381,6 +2521,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchByGroupObject()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id0 = powerPool.QueueWorkItem(() =>
             {
@@ -2417,6 +2559,8 @@ namespace UnitTest
         [Fact]
         public async void TestFetchByGroupObjectAsync()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id0 = powerPool.QueueWorkItem(() =>
             {
@@ -2453,6 +2597,8 @@ namespace UnitTest
         [Fact]
         public void TestFetchByPredicateByGroupObject()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id1 = powerPool.QueueWorkItem(() =>
             {
@@ -2507,6 +2653,8 @@ namespace UnitTest
         [Fact]
         public void TestPauseWorkTimer()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 2000, ForceStop = true } });
             List<long> logList = new List<long>();
             object lockObj = new object();
@@ -2532,6 +2680,8 @@ namespace UnitTest
         [Fact]
         public void TestPauseThreadTimer()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { TimeoutOption = new TimeoutOption() { Duration = 2000, ForceStop = true } });
             List<long> logList = new List<long>();
             object lockObj = new object();
@@ -2557,6 +2707,8 @@ namespace UnitTest
         [Fact]
         public void TestResumeByIDDirectlyWithoutPause()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItem(() =>
             {
@@ -2578,6 +2730,8 @@ namespace UnitTest
         [Fact]
         public void TestResumeAllDirectlyWithoutPause()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(() =>
             {
@@ -2596,6 +2750,8 @@ namespace UnitTest
         [Fact]
         public void TestStartSuspended()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
             powerPool.QueueWorkItem(() =>
             {
@@ -2647,6 +2803,8 @@ namespace UnitTest
         [Fact]
         public void TestStartWhenNotSuspended()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = false });
             powerPool.QueueWorkItem(() =>
             {
@@ -2675,6 +2833,8 @@ namespace UnitTest
         [Fact]
         public void TestStartSuspendedWithDependents()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
             string id = powerPool.QueueWorkItem(() =>
             {
@@ -2716,6 +2876,8 @@ namespace UnitTest
         [Fact]
         public void TestWorkGroup()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(() =>
             {

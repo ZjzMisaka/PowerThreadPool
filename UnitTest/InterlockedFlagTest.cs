@@ -1,10 +1,19 @@
-﻿using PowerThreadPool.Constants;
+﻿using System.Reflection;
+using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers;
+using Xunit.Abstractions;
 
 namespace UnitTest
 {
     public class InterlockedFlagTest
     {
+        private readonly ITestOutputHelper _output;
+
+        public InterlockedFlagTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         InterlockedFlag<CanGetWork> _canGetWork0 = CanGetWork.Allowed;
         InterlockedFlag<CanGetWork> _canGetWork1 = CanGetWork.Allowed;
 
@@ -17,6 +26,8 @@ namespace UnitTest
         [Fact]
         public void TestGetSet()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             _canGetWork0.InterlockedValue = CanGetWork.Disabled;
@@ -26,6 +37,8 @@ namespace UnitTest
         [Fact]
         public void TestValue()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             _canGetWork0.InterlockedValue = CanGetWork.Disabled;
@@ -35,6 +48,8 @@ namespace UnitTest
         [Fact]
         public void TestDebuggerDisplay()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             string dd = _canGetWork0.DebuggerDisplay;
@@ -44,6 +59,8 @@ namespace UnitTest
         [Fact]
         public void TestGet()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             _canGetWork0.InterlockedValue = CanGetWork.Disabled;
@@ -53,6 +70,8 @@ namespace UnitTest
         [Fact]
         public void TestTrySet()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             bool res;
@@ -68,6 +87,8 @@ namespace UnitTest
         [Fact]
         public void TestTrySetWithOrigValueParam()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             CanGetWork orig;
@@ -85,6 +106,8 @@ namespace UnitTest
         [Fact]
         public void TestOperator1()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             bool res;
@@ -111,6 +134,8 @@ namespace UnitTest
         [Fact]
         public void TestOperator2()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             bool res;
@@ -131,6 +156,8 @@ namespace UnitTest
         [Fact]
         public void Testimplicit()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             _canGetWork0 = CanGetWork.ToBeDisabled;
@@ -142,6 +169,8 @@ namespace UnitTest
         [Fact]
         public void TestEquals1()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             bool res;
@@ -157,6 +186,8 @@ namespace UnitTest
         [Fact]
         public void TestEquals2()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             bool res;
@@ -172,6 +203,8 @@ namespace UnitTest
         [Fact]
         public void TestEquals3()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             bool res;
@@ -184,6 +217,8 @@ namespace UnitTest
         [Fact]
         public void TestGetHashCode()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             InitFlags();
 
             int hash0 = _canGetWork0.GetHashCode();
