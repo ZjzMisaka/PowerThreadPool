@@ -210,33 +210,38 @@ namespace PowerThreadPool
 
         private void WorkerCountOutOfRange()
         {
-            CanGetWork.InterlockedValue = Constants.CanGetWork.Disabled;
-
-            WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
-
-            if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
+            if (_powerPool._canDeleteRedundantWorker.TrySet(CanDeleteRedundantWorker.NotAllowed, CanDeleteRedundantWorker.Allowed))
             {
-                Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
-                _powerPool._aliveWorkerList = _powerPool._aliveWorkerDic.Values;
+                CanGetWork.InterlockedValue = Constants.CanGetWork.Disabled;
+
+                WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
+
+                if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
+                {
+                    Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
+                    _powerPool._aliveWorkerList = _powerPool._aliveWorkerDic.Values;
+                }
+
+                bool hasWaitingWork = false;
+                IEnumerable<WorkBase> waitingWorkList = _waitingWorkDic.Values;
+                foreach (WorkBase work in waitingWorkList)
+                {
+                    _powerPool.SetWork(work);
+                    hasWaitingWork = true;
+                }
+
+                Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
+                if (!hasWaitingWork)
+                {
+                    _powerPool.CheckPoolIdle();
+                }
+
+                Dispose();
+
+                _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
             }
-
-            bool hasWaitingWork = false;
-            IEnumerable<WorkBase> waitingWorkList = _waitingWorkDic.Values;
-            foreach (WorkBase work in waitingWorkList)
-            {
-                _powerPool.SetWork(work);
-                hasWaitingWork = true;
-            }
-
-            Interlocked.Decrement(ref _powerPool._runningWorkerCount);
-            _powerPool.InvokeRunningWorkerCountChangedEvent(false);
-
-            if (!hasWaitingWork)
-            {
-                _powerPool.CheckPoolIdle();
-            }
-
-            Dispose();
         }
 
         private void SetKillTimer()
