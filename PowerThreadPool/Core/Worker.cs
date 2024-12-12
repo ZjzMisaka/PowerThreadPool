@@ -691,7 +691,7 @@ namespace PowerThreadPool
         /// </summary>
         public void DisposeWithJoin()
         {
-            Dispose(true, true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
@@ -700,7 +700,7 @@ namespace PowerThreadPool
         /// </summary>
         public void Dispose()
         {
-            Dispose(true, false);
+            Dispose(false);
             GC.SuppressFinalize(this);
         }
 
@@ -709,28 +709,25 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="disposing"></param>
         /// <param name="join"></param>
-        protected virtual void Dispose(bool disposing, bool join)
+        protected virtual void Dispose(bool join)
         {
             if (!_disposed)
             {
-                if (disposing)
+                RemoveSelf();
+
+                if (join)
                 {
-                    RemoveSelf();
+                    _thread.Join();
+                }
 
-                    if (join)
-                    {
-                        _thread.Join();
-                    }
-
-                    _runSignal.Dispose();
-                    if (_timeoutTimer != null)
-                    {
-                        _timeoutTimer.Dispose();
-                    }
-                    if (_killTimer != null)
-                    {
-                        _killTimer.Dispose();
-                    }
+                _runSignal.Dispose();
+                if (_timeoutTimer != null)
+                {
+                    _timeoutTimer.Dispose();
+                }
+                if (_killTimer != null)
+                {
+                    _killTimer.Dispose();
                 }
 
                 _disposed = true;
