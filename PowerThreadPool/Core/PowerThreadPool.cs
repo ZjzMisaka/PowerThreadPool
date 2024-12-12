@@ -53,6 +53,7 @@ namespace PowerThreadPool
         private DateTime _endDateTime;
 
         private readonly InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
+        internal readonly InterlockedFlag<CanDeleteRedundantWorker> _canDeleteRedundantWorker = CanDeleteRedundantWorker.Allowed;
 
         private PowerPoolOption _powerPoolOption;
         public PowerPoolOption PowerPoolOption
