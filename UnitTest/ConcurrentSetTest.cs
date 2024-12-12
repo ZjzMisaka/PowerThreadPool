@@ -1,13 +1,24 @@
 ﻿using System.Collections;
+using System.Reflection;
 using PowerThreadPool.Collections;
+using Xunit.Abstractions;
 
 namespace UnitTest
 {
     public class ConcurrentSetTest
     {
+        private readonly ITestOutputHelper _output;
+
+        public ConcurrentSetTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [Fact]
         public void TestDefaultConstructor()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             ConcurrentSet<int> set = new ConcurrentSet<int>();
             Assert.Equal(0, set.Count);
         }
@@ -15,6 +26,8 @@ namespace UnitTest
         [Fact]
         public void TestAddAndCountMethods()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             ConcurrentSet<int> set = new ConcurrentSet<int>();
             set.Add(1);
             set.Add(2);
@@ -26,6 +39,8 @@ namespace UnitTest
         [Fact]
         public void TestTryRemoveMethod()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             ConcurrentSet<int> set = new ConcurrentSet<int>();
             set.Add(1);
             set.Add(2);
@@ -38,6 +53,8 @@ namespace UnitTest
         [Fact]
         public void TestConstructorWithItems()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             IEnumerable<int> items = Enumerable.Range(1, 3);
             ConcurrentSet<int> set = new ConcurrentSet<int>(items);
 
@@ -48,6 +65,8 @@ namespace UnitTest
         [Fact]
         public void TestGetEnumerator()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             IEnumerable<int> items = Enumerable.Range(1, 3);
             ConcurrentSet<int> set = new ConcurrentSet<int>(items);
 
@@ -63,6 +82,8 @@ namespace UnitTest
         [Fact]
         public void TestNonGenericGetEnumerator()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
             IEnumerable<int> items = Enumerable.Range(1, 3);
             ConcurrentSet<int> set = new ConcurrentSet<int>(items);
 
