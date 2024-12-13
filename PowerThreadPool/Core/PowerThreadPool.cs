@@ -683,15 +683,19 @@ namespace PowerThreadPool
                 {
                     _disposing = true;
                     Stop();
-                    Stop(true);
                     while (AliveWorkerCount > 0 || IdleWorkerCount > 0)
                     {
                         IEnumerable<Worker> workers = _aliveWorkerList;
                         foreach (Worker worker in workers)
                         {
-                            if (!worker._disposed)
+                            CanForceStop origCanForceStop;
+                            worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed, out origCanForceStop);
+                            if (worker.CanForceStop == CanForceStop.NotAllowed)
                             {
-                                worker.ForceStop(true);
+                                if (origCanForceStop == CanForceStop.Allowed)
+                                {
+                                    worker.ForceStop(true);
+                                }
                                 worker.Kill();
                                 worker.DisposeWithJoin();
                             }
