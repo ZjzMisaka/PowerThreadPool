@@ -541,7 +541,10 @@ namespace PowerThreadPool
                 IEnumerable<Worker> workers = _aliveWorkerList;
                 foreach (Worker worker in workers)
                 {
-                    worker.ForceStop(true);
+                    if (worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed))
+                    {
+                        worker.ForceStop(true);
+                    }
                 }
             }
             else

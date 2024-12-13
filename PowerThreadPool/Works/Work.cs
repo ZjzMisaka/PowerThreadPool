@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using PowerThreadPool.Collections;
+using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
@@ -122,7 +123,10 @@ namespace PowerThreadPool.Works
                     {
                         if (Worker.WorkID == ID)
                         {
-                            Worker.ForceStop(false);
+                            if (Worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed))
+                            {
+                                Worker.ForceStop(false);
+                            }
                             res = true;
                         }
                         else

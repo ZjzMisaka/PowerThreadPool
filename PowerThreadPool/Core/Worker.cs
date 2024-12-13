@@ -16,7 +16,8 @@ namespace PowerThreadPool
 {
     internal class Worker : IDisposable
     {
-        internal bool _disposed = false;
+        internal InterlockedFlag<CanDispose> CanDispose { get; } = Constants.CanDispose.Allowed;
+        internal InterlockedFlag<CanForceStop> CanForceStop { get; } = Constants.CanForceStop.Allowed;
 
         internal Thread _thread;
 
@@ -91,7 +92,7 @@ namespace PowerThreadPool
 
                         AssignWork();
                         // May be disposed at WorkerCountOutOfRange().
-                        if (_disposed)
+                        if (CanDispose == Constants.CanDispose.NotAllowed)
                         {
                             return;
                         }
@@ -301,6 +302,10 @@ namespace PowerThreadPool
                     Cancel();
                 }
                 _thread.Interrupt();
+            }
+            else
+            {
+                CanForceStop.InterlockedValue = Constants.CanForceStop.Allowed;
             }
         }
 
@@ -716,7 +721,7 @@ namespace PowerThreadPool
         /// <param name="join"></param>
         protected virtual void Dispose(bool join)
         {
-            if (!_disposed)
+            if (CanDispose.TrySet(Constants.CanDispose.NotAllowed, Constants.CanDispose.Allowed))
             {
                 RemoveSelf();
 
@@ -734,8 +739,6 @@ namespace PowerThreadPool
                 {
                     _killTimer.Dispose();
                 }
-
-                _disposed = true;
             }
         }
     }
