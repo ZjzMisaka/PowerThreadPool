@@ -727,6 +727,7 @@ namespace PowerThreadPool
 
                 if (join)
                 {
+                    Kill();
                     _thread.Join();
                 }
 

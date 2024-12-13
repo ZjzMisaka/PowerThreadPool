@@ -696,7 +696,6 @@ namespace PowerThreadPool
                                 {
                                     worker.ForceStop(true);
                                 }
-                                worker.Kill();
                                 worker.DisposeWithJoin();
                             }
                         }
