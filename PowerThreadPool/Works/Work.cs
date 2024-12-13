@@ -256,5 +256,17 @@ namespace PowerThreadPool.Works
         {
             return ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.Requeue;
         }
+
+        public override void Dispose()
+        {
+            if (PauseSignal != null)
+            {
+                PauseSignal.Dispose();
+            }
+            if (WaitSignal != null)
+            {
+                WaitSignal.Dispose();
+            }
+        }
     }
 }

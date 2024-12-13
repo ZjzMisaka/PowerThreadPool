@@ -69,6 +69,7 @@ namespace PowerThreadPool
                 if (work.Group == null || !work.ShouldStoreResult)
                 {
                     _aliveWorkDic.TryRemove(work.ID, out _);
+                    work.Dispose();
                 }
                 if (work.Group != null && !work.ShouldStoreResult)
                 {
@@ -361,6 +362,7 @@ namespace PowerThreadPool
                             if (_aliveWorkDic.TryRemove(id, out WorkBase work))
                             {
                                 RemoveWorkFromGroup(work.Group, work);
+                                work.Dispose();
                             }
                         }
                     }
