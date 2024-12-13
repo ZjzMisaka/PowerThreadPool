@@ -717,7 +717,6 @@ namespace PowerThreadPool
         /// <summary>
         /// Dispose the instance
         /// </summary>
-        /// <param name="disposing"></param>
         /// <param name="join"></param>
         protected virtual void Dispose(bool join)
         {

@@ -688,8 +688,7 @@ namespace PowerThreadPool
                         IEnumerable<Worker> workers = _aliveWorkerList;
                         foreach (Worker worker in workers)
                         {
-                            CanForceStop origCanForceStop;
-                            worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed, out origCanForceStop);
+                            worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed, out CanForceStop origCanForceStop);
                             if (worker.CanForceStop == CanForceStop.NotAllowed)
                             {
                                 if (origCanForceStop == CanForceStop.Allowed)
