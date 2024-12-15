@@ -392,7 +392,6 @@ namespace PowerThreadPool
             while (true)
             {
                 WorkBase work = null;
-                string waitingWorkID = _waitingWorkIDPriorityCollection.Get();
 
                 if (_powerPool.AliveWorkerCount - _powerPool.LongRunningWorkerCount > _powerPool.PowerPoolOption.MaxThreads)
                 {
@@ -401,6 +400,7 @@ namespace PowerThreadPool
                     return;
                 }
 
+                string waitingWorkID = _waitingWorkIDPriorityCollection.Get();
                 if (waitingWorkID == null && _powerPool.AliveWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
                 {
                     StealWorksFromOtherWorker(ref waitingWorkID, ref work);
