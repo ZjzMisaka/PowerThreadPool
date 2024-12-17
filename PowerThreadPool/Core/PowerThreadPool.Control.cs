@@ -1,4 +1,8 @@
 ﻿using System;
+#if NET5_0_OR_GREATER
+#else
+using System.Collections.Concurrent;
+#endif
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -727,6 +731,13 @@ namespace PowerThreadPool
             {
                 worker.Cancel();
             }
+
+            _stopSuspendedWork.Clear();
+#if NET5_0_OR_GREATER
+            _stopSuspendedWorkQueue.Clear();
+#else
+            _stopSuspendedWorkQueue = new ConcurrentQueue<string>();
+#endif
         }
 
         /// <summary>
@@ -742,6 +753,10 @@ namespace PowerThreadPool
             }
 
             if (_suspendedWork.TryRemove(id, out _))
+            {
+                return true;
+            }
+            else if (_stopSuspendedWork.TryRemove(id, out _))
             {
                 return true;
             }

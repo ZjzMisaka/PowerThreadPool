@@ -1125,6 +1125,112 @@ namespace UnitTest
         }
 
         [Fact]
+        public async Task TestQueueWhenStoppingAndCancel()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            int doneCount = 0;
+
+            bool canReturn = false;
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 9999999; ++i)
+                {
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        while (!canReturn)
+                        {
+                            Thread.Sleep(100);
+                        }
+                        return;
+                    }
+                    Thread.Sleep(100);
+                }
+            }, (e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Stop(false);
+
+            await Task.Delay(100);
+
+            string id = powerPool.QueueWorkItem(() =>
+            {
+            }, (e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Cancel(id);
+
+            canReturn = true;
+
+            await powerPool.WaitAsync();
+
+            Assert.NotNull(id);
+
+            await Task.Delay(100);
+
+            Assert.Equal(1, doneCount);
+        }
+
+        [Fact]
+        public async Task TestQueueWhenStoppingAndCancelAll()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            int doneCount = 0;
+
+            bool canReturn = false;
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 9999999; ++i)
+                {
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        while (!canReturn)
+                        {
+                            Thread.Sleep(100);
+                        }
+                        return;
+                    }
+                    Thread.Sleep(100);
+                }
+            }, (e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Stop(false);
+
+            await Task.Delay(100);
+
+            string id = powerPool.QueueWorkItem(() =>
+            {
+            }, (e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Cancel();
+
+            canReturn = true;
+
+            await powerPool.WaitAsync();
+
+            Assert.NotNull(id);
+
+            await Task.Delay(100);
+
+            Assert.Equal(1, doneCount);
+        }
+
+        [Fact]
         public async Task TestStartSuspendWhenStopping()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
@@ -1177,6 +1283,120 @@ namespace UnitTest
             await Task.Delay(100);
 
             Assert.Equal(2, doneCount);
+        }
+
+        [Fact]
+        public async Task TestStartSuspendWhenStoppingAndCancel()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            int doneCount = 0;
+
+            bool canReturn = false;
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { StartSuspended = true });
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 9999999; ++i)
+                {
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        while (!canReturn)
+                        {
+                            Thread.Sleep(100);
+                        }
+                        return;
+                    }
+                    Thread.Sleep(100);
+                }
+            }, (e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Start();
+
+            powerPool.Stop(false);
+
+            await Task.Delay(100);
+
+            string id = powerPool.QueueWorkItem(() =>
+            {
+            }, (e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Start();
+
+            powerPool.Cancel(id);
+
+            canReturn = true;
+
+            await powerPool.WaitAsync();
+
+            Assert.NotNull(id);
+
+            await Task.Delay(100);
+
+            Assert.Equal(1, doneCount);
+        }
+
+        [Fact]
+        public async Task TestStartSuspendWhenStoppingAndCancelAll()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            int doneCount = 0;
+
+            bool canReturn = false;
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { StartSuspended = true });
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 9999999; ++i)
+                {
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        while (!canReturn)
+                        {
+                            Thread.Sleep(100);
+                        }
+                        return;
+                    }
+                    Thread.Sleep(100);
+                }
+            }, (e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Start();
+
+            powerPool.Stop(false);
+
+            await Task.Delay(100);
+
+            string id = powerPool.QueueWorkItem(() =>
+            {
+            }, (e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Start();
+
+            powerPool.Cancel();
+
+            canReturn = true;
+
+            await powerPool.WaitAsync();
+
+            Assert.NotNull(id);
+
+            await Task.Delay(100);
+
+            Assert.Equal(1, doneCount);
         }
 
         [Fact]
