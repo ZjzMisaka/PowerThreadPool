@@ -1078,6 +1078,8 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
 
+            int doneCount = 0;
+
             bool canReturn = false;
 
             PowerPool powerPool = new PowerPool();
@@ -1095,8 +1097,9 @@ namespace UnitTest
                     }
                     Thread.Sleep(100);
                 }
-            }, new WorkOption()
+            }, (e) =>
             {
+                Interlocked.Increment(ref doneCount);
             });
 
             powerPool.Stop(false);
@@ -1105,15 +1108,75 @@ namespace UnitTest
 
             string id = powerPool.QueueWorkItem(() =>
             {
-            }, new WorkOption()
+            }, (e) =>
             {
+                Interlocked.Increment(ref doneCount);
             });
 
             canReturn = true;
 
             await powerPool.WaitAsync();
 
-            Assert.Null(id);
+            Assert.NotNull(id);
+
+            await Task.Delay(100);
+
+            Assert.Equal(2, doneCount);
+        }
+
+        [Fact]
+        public async Task TestStartSuspendWhenStopping()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            int doneCount = 0;
+
+            bool canReturn = false;
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { StartSuspended = true });
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 9999999; ++i)
+                {
+                    if (powerPool.CheckIfRequestedStop())
+                    {
+                        while (!canReturn)
+                        {
+                            Thread.Sleep(100);
+                        }
+                        return;
+                    }
+                    Thread.Sleep(100);
+                }
+            }, (e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Start();
+
+            powerPool.Stop(false);
+
+            await Task.Delay(100);
+
+            string id = powerPool.QueueWorkItem(() =>
+            {
+            }, (e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Start();
+
+            canReturn = true;
+
+            await powerPool.WaitAsync();
+
+            Assert.NotNull(id);
+
+            await Task.Delay(100);
+
+            Assert.Equal(2, doneCount);
         }
 
         [Fact]
@@ -4082,7 +4145,7 @@ namespace UnitTest
 
             powerPool.Stop();
 
-            Thread.Sleep(500);
+            Thread.Sleep(600);
             Assert.Equal(3, stopCount1);
             Assert.Equal(5, cancelCount1);
             Assert.Equal(8, doneCount2);

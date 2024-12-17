@@ -39,6 +39,8 @@ namespace PowerThreadPool
 
         internal ConcurrentQueue<string> _suspendedWorkQueue = new ConcurrentQueue<string>();
         internal ConcurrentDictionary<string, WorkBase> _suspendedWork = new ConcurrentDictionary<string, WorkBase>();
+        internal ConcurrentQueue<string> _stopSuspendedWorkQueue = new ConcurrentQueue<string>();
+        internal ConcurrentDictionary<string, WorkBase> _stopSuspendedWork = new ConcurrentDictionary<string, WorkBase>();
 
         internal ConcurrentDictionary<string, ExecuteResultBase> _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
 
@@ -46,8 +48,6 @@ namespace PowerThreadPool
         internal long _endCount = 0;
         internal long _queueTime = 0;
         internal long _executeTime = 0;
-
-        private bool _suspended;
 
         private DateTime _startDateTime;
         private DateTime _endDateTime;
@@ -62,7 +62,6 @@ namespace PowerThreadPool
             set
             {
                 _powerPoolOption = value;
-                _suspended = value.StartSuspended;
                 InitWorkerQueue();
             }
         }
@@ -239,12 +238,6 @@ namespace PowerThreadPool
         {
             CheckDisposed();
 
-            if (!_suspended)
-            {
-                return;
-            }
-
-            _suspended = false;
             while (_suspendedWorkQueue.TryDequeue(out string key))
             {
                 if (_suspendedWork.TryGetValue(key, out WorkBase work))
@@ -252,7 +245,16 @@ namespace PowerThreadPool
                     ConcurrentSet<string> dependents = work.Dependents;
                     if (dependents == null || dependents.Count == 0)
                     {
-                        SetWork(work);
+                        if (PoolStopping)
+                        {
+                            _stopSuspendedWork[work.ID] = work;
+                            _stopSuspendedWorkQueue.Enqueue(work.ID);
+                            Interlocked.Decrement(ref _waitingWorkCount);
+                        }
+                        else
+                        {
+                            SetWork(work);
+                        }
                     }
                 }
             }
@@ -588,8 +590,6 @@ namespace PowerThreadPool
                 _timeoutTimer.Enabled = false;
             }
 
-            _suspended = PowerPoolOption.StartSuspended;
-
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = new CancellationTokenSource();
 
@@ -597,6 +597,14 @@ namespace PowerThreadPool
             if (_poolStopping)
             {
                 _poolStopping = false;
+
+                while (_stopSuspendedWorkQueue.TryDequeue(out string key))
+                {
+                    if (_stopSuspendedWork.TryGetValue(key, out WorkBase work))
+                    {
+                        SetWork(work);
+                    }
+                }
             }
 
             _waitAllSignal.Set();
