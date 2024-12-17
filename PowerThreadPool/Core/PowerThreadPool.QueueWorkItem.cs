@@ -406,11 +406,6 @@ namespace PowerThreadPool
 
             string workID;
 
-            if (PoolStopping)
-            {
-                return null;
-            }
-
             if (PowerPoolOption == null)
             {
                 PowerPoolOption = new PowerPoolOption();
@@ -441,12 +436,19 @@ namespace PowerThreadPool
                 return workID;
             }
 
-            Interlocked.Increment(ref _waitingWorkCount);
-
             if (work.Group != null)
             {
                 _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
             }
+
+            if (!PowerPoolOption.StartSuspended && PoolStopping)
+            {
+                _stopSuspendedWork[workID] = work;
+                _stopSuspendedWorkQueue.Enqueue(workID);
+                return workID;
+            }
+
+            Interlocked.Increment(ref _waitingWorkCount);
 
             if (PowerPoolOption.StartSuspended)
             {
