@@ -2,9 +2,9 @@
 
 namespace PowerThreadPool.Helpers
 {
-    internal static class DelegateHelper<TResult>
+    internal static class DelegateHelper
     {
-        internal static Func<object[], TResult> ToNormalFunc(Func<TResult> function)
+        internal static Func<object[], TResult> ToNormalFunc<TResult>(Func<TResult> function)
         {
             TResult func(object[] param)
             {
@@ -13,17 +13,17 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<object[], TResult> ToNormalFunc(Action action)
+        internal static Func<object[], TResult> ToNormalFunc<TResult>(Action action)
         {
             TResult func()
             {
                 action();
                 return default;
             }
-            return DelegateHelper<TResult>.ToNormalFunc(func);
+            return ToNormalFunc(func);
         }
 
-        internal static Func<object[], TResult> ToNormalFunc(Action<object[]> action, object[] param)
+        internal static Func<object[], TResult> ToNormalFunc<TResult>(Action<object[]> action, object[] param)
         {
             TResult func(object[] p)
             {
@@ -32,115 +32,122 @@ namespace PowerThreadPool.Helpers
             }
             return func;
         }
-    }
 
-    internal static class DelegateHelper<T1, TResult>
-    {
-        internal static Func<object[], TResult> ToNormalFunc(Action<T1> action, T1 param1)
+        internal static Func<object[], TResult> ToNormalFunc<T1, TResult>(Action<T1> action, T1 param1)
         {
-            TResult func(T1 p)
+            TResult func(object[] p)
             {
-                action(p);
+                action(param1);
                 return default;
             }
-            return DelegateHelper<T1, TResult>.ToNormalFunc(func, param1);
+            return func;
         }
 
-        internal static Func<object[], TResult> ToNormalFunc(Func<T1, TResult> function, T1 param1)
+        internal static Func<object[], TResult> ToNormalFunc<T1, TResult>(Func<T1, TResult> function, T1 param1)
         {
-            TResult func()
+            TResult func(object[] p)
             {
                 return function(param1);
             }
-            return DelegateHelper<TResult>.ToNormalFunc(func);
+            return func;
         }
-    }
 
-    internal static class DelegateHelper<T1, T2, TResult>
-    {
-        internal static Func<object[], TResult> ToNormalFunc(Action<T1, T2> action, T1 param1, T2 param2)
+        internal static Func<object[], TResult> ToNormalFunc<T1, T2, TResult>(Action<T1, T2> action, T1 param1, T2 param2)
         {
-            TResult func(T1 p1, T2 p2)
+            TResult func(object[] p)
             {
-                action(p1, p2);
+                action(param1, param2);
                 return default;
             }
-            return DelegateHelper<T1, T2, TResult>.ToNormalFunc(func, param1, param2);
+            return func;
         }
 
-        internal static Func<object[], TResult> ToNormalFunc(Func<T1, T2, TResult> function, T1 param1, T2 param2)
+        internal static Func<object[], TResult> ToNormalFunc<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2)
         {
-            TResult func()
+            TResult func(object[] p)
             {
                 return function(param1, param2);
             }
-            return DelegateHelper<TResult>.ToNormalFunc(func);
+            return func;
         }
-    }
 
-    internal static class DelegateHelper<T1, T2, T3, TResult>
-    {
-        internal static Func<object[], TResult> ToNormalFunc(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3)
+        internal static Func<object[], TResult> ToNormalFunc<T1, T2, T3, TResult>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3)
         {
-            TResult func(T1 p1, T2 p2, T3 p3)
+            TResult func(object[] p)
             {
-                action(p1, p2, p3);
+                action(param1, param2, param3);
                 return default;
             }
-            return DelegateHelper<T1, T2, T3, TResult>.ToNormalFunc(func, param1, param2, param3);
+            return func;
         }
 
-        internal static Func<object[], TResult> ToNormalFunc(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3)
+        internal static Func<object[], TResult> ToNormalFunc<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3)
         {
-            TResult func()
+            TResult func(object[] p)
             {
                 return function(param1, param2, param3);
             }
-            return DelegateHelper<TResult>.ToNormalFunc(func);
+            return func;
         }
-    }
 
-    internal static class DelegateHelper<T1, T2, T3, T4, TResult>
-    {
-        internal static Func<object[], TResult> ToNormalFunc(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4)
+        internal static Func<object[], TResult> ToNormalFunc<T1, T2, T3, T4, TResult>(
+            Action<T1, T2, T3, T4> action,
+            T1 param1,
+            T2 param2,
+            T3 param3,
+            T4 param4)
         {
-            TResult func(T1 p1, T2 p2, T3 p3, T4 p4)
+            TResult func(object[] p)
             {
-                action(p1, p2, p3, p4);
+                action(param1, param2, param3, param4);
                 return default;
             }
-            return DelegateHelper<T1, T2, T3, T4, TResult>.ToNormalFunc(func, param1, param2, param3, param4);
+            return func;
         }
 
-        internal static Func<object[], TResult> ToNormalFunc(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4)
+        internal static Func<object[], TResult> ToNormalFunc<T1, T2, T3, T4, TResult>(
+            Func<T1, T2, T3, T4, TResult> function,
+            T1 param1,
+            T2 param2,
+            T3 param3,
+            T4 param4)
         {
-            TResult func()
+            TResult func(object[] p)
             {
                 return function(param1, param2, param3, param4);
             }
-            return DelegateHelper<TResult>.ToNormalFunc(func);
+            return func;
         }
-    }
 
-    internal static class DelegateHelper<T1, T2, T3, T4, T5, TResult>
-    {
-        internal static Func<object[], TResult> ToNormalFunc(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5)
+        internal static Func<object[], TResult> ToNormalFunc<T1, T2, T3, T4, T5, TResult>(
+            Action<T1, T2, T3, T4, T5> action,
+            T1 param1,
+            T2 param2,
+            T3 param3,
+            T4 param4,
+            T5 param5)
         {
-            TResult func(T1 p1, T2 p2, T3 p3, T4 p4, T5 p5)
+            TResult func(object[] p)
             {
-                action(p1, p2, p3, p4, p5);
+                action(param1, param2, param3, param4, param5);
                 return default;
             }
-            return DelegateHelper<T1, T2, T3, T4, T5, TResult>.ToNormalFunc(func, param1, param2, param3, param4, param5);
+            return func;
         }
 
-        internal static Func<object[], TResult> ToNormalFunc(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5)
+        internal static Func<object[], TResult> ToNormalFunc<T1, T2, T3, T4, T5, TResult>(
+            Func<T1, T2, T3, T4, T5, TResult> function,
+            T1 param1,
+            T2 param2,
+            T3 param3,
+            T4 param4,
+            T5 param5)
         {
-            TResult func()
+            TResult func(object[] p)
             {
                 return function(param1, param2, param3, param4, param5);
             }
-            return DelegateHelper<TResult>.ToNormalFunc(func);
+            return func;
         }
     }
 }
