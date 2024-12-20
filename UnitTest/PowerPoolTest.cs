@@ -972,7 +972,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestMaxThreadsNumberErrorWhenSetAgain()
+        public void TestMaxThreadsNumberErrorWhenSetAgainError()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
 
@@ -995,7 +995,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestMinThreadsNumberErrorWhenSetAgain()
+        public void TestMinThreadsNumberErrorWhenSetAgainError()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
 
@@ -1015,6 +1015,50 @@ namespace UnitTest
                 errored = true;
             }
             Assert.True(errored);
+        }
+
+        [Fact]
+        public void TestMaxThreadsNumberErrorWhenSetAgain()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            bool errored = false;
+            try
+            {
+                PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 10, DestroyThreadOption = new DestroyThreadOption() { MinThreads = 5 } });
+                powerPool.PowerPoolOption.MaxThreads = 20;
+                string id = powerPool.QueueWorkItem(() =>
+                {
+                    Thread.Sleep(1000);
+                });
+            }
+            catch (Exception ex)
+            {
+                errored = true;
+            }
+            Assert.False(errored);
+        }
+
+        [Fact]
+        public void TestMinThreadsNumberErrorWhenSetAgain()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            bool errored = false;
+            try
+            {
+                PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 10, DestroyThreadOption = new DestroyThreadOption() { MinThreads = 5 } });
+                powerPool.PowerPoolOption.DestroyThreadOption.MinThreads = 8;
+                string id = powerPool.QueueWorkItem(() =>
+                {
+                    Thread.Sleep(1000);
+                });
+            }
+            catch (Exception ex)
+            {
+                errored = true;
+            }
+            Assert.False(errored);
         }
 
         [Fact]
