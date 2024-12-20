@@ -1032,7 +1032,7 @@ namespace UnitTest
                     Thread.Sleep(1000);
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 errored = true;
             }
@@ -1054,7 +1054,7 @@ namespace UnitTest
                     Thread.Sleep(1000);
                 });
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 errored = true;
             }
