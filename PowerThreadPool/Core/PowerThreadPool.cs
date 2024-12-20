@@ -271,14 +271,6 @@ namespace PowerThreadPool
         /// </summary>
         private void InitWorkerQueue()
         {
-            if (PowerPoolOption.DestroyThreadOption != null)
-            {
-                if (PowerPoolOption.DestroyThreadOption.MinThreads > PowerPoolOption.MaxThreads)
-                {
-                    throw new ArgumentException("The minimum number of threads cannot be greater than the maximum number of threads.");
-                }
-            }
-
             int minThreads = PowerPoolOption.MaxThreads;
             if (PowerPoolOption.DestroyThreadOption != null)
             {

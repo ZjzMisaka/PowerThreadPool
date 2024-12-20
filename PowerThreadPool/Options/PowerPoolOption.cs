@@ -11,15 +11,39 @@ namespace PowerThreadPool.Options
     }
     public class PowerPoolOption
     {
+        private int _maxThreads = Environment.ProcessorCount * 2;
         /// <summary>
         /// The maximum number of threads that the thread pool can support.
         /// </summary>
-        public int MaxThreads { get; set; } = Environment.ProcessorCount * 2;
+        public int MaxThreads
+        {
+            get => _maxThreads;
+            set
+            {
+                if (DestroyThreadOption != null)
+                {
+                    DestroyThreadOption.CheckThreadCount(DestroyThreadOption.MinThreads, value);
+                }
+                _maxThreads = value;
+            }
+        }
 
+        private DestroyThreadOption _destroyThreadOption;
         /// <summary>
         /// The option for destroying threads in the thread pool.
         /// </summary>
-        public DestroyThreadOption DestroyThreadOption { get; set; } = null;
+        public DestroyThreadOption DestroyThreadOption
+        {
+            get => _destroyThreadOption;
+            set
+            {
+                if (value != null)
+                {
+                    value.PowerPoolOption = this;
+                }
+                _destroyThreadOption = value;
+            }
+        }
 
         /// <summary>
         /// The total maximum amount of time that all works in the thread pool are permitted to run collectively before they are terminated.
