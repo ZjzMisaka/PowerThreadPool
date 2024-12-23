@@ -6,12 +6,13 @@
 ![GitHub release (with filter)](https://img.shields.io/github/v/release/ZjzMisaka/PowerThreadPool?style=for-the-badge)
 ![GitHub Repo stars](https://img.shields.io/github/stars/ZjzMisaka/PowerThreadPool?style=for-the-badge)
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/ZjzMisaka/PowerThreadPool/test.yml?style=for-the-badge)
-![Codecov](https://img.shields.io/codecov/c/github/ZjzMisaka/PowerThreadPool?style=for-the-badge)
+[![Codecov](https://img.shields.io/codecov/c/github/ZjzMisaka/PowerThreadPool?style=for-the-badge)](https://app.codecov.io/gh/ZjzMisaka/PowerThreadPool)
+[![CodeFactor](https://www.codefactor.io/repository/github/zjzmisaka/powerthreadpool/badge?style=for-the-badge)](https://www.codefactor.io/repository/github/zjzmisaka/powerthreadpool)
 
 A comprehensive and efficient lock-free thread pool with granular work control, flexible concurrency, and robust error handling, alongside an easy-to-use API for diverse work submissions.  
 
 ## Documentation
-Read the [Wiki](https://github.com/ZjzMisaka/PowerThreadPool/wiki) here.  
+Read the [English](https://github.com/ZjzMisaka/PowerThreadPool/wiki) | [中文](https://github.com/ZjzMisaka/PowerThreadPool.zh-CN.Wiki/wiki) Wiki here.  
 
 ## Installation
 If you want to include PowerThreadPool in your project, you can [install it directly from NuGet](https://www.nuget.org/packages/PowerThreadPool/).  
