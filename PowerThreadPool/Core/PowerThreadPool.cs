@@ -544,24 +544,14 @@ namespace PowerThreadPool
                 _endDateTime = DateTime.UtcNow;
                 if (PoolIdled != null)
                 {
-                    try
+                    PoolIdledEventArgs poolIdledEventArgs = new PoolIdledEventArgs
                     {
-                        PoolIdledEventArgs poolIdledEventArgs = new PoolIdledEventArgs
-                        {
-                            StartDateTime = _startDateTime,
-                            EndDateTime = DateTime.UtcNow,
-                        };
-                        SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorFrom.PoolIdled, null);
-                    }
-                    finally
-                    {
-                        IdleSetting();
-                    }
+                        StartDateTime = _startDateTime,
+                        EndDateTime = DateTime.UtcNow,
+                    };
+                    SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorFrom.PoolIdled, null);
                 }
-                else
-                {
-                    IdleSetting();
-                }
+                IdleSetting();
             }
         }
 
