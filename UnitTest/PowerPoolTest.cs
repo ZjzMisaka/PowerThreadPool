@@ -654,8 +654,11 @@ namespace UnitTest
                 MaxThreads = 2,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 0, KeepAliveTime = 3000 }
             };
+            bool work1Started = false;
+            bool work2Started = false;
             powerPool.QueueWorkItem(() =>
             {
+                work1Started = true;
                 Thread.Sleep(300);
                 lock (powerPool)
                 {
@@ -666,6 +669,7 @@ namespace UnitTest
             });
             powerPool.QueueWorkItem(() =>
             {
+                work2Started = true;
                 Thread.Sleep(300);
                 lock (powerPool)
                 {
@@ -674,9 +678,9 @@ namespace UnitTest
             }, new WorkOption()
             {
             });
-            while (powerPool.RunningWorkerCount < 2)
+            while (!work1Started || !work2Started)
             {
-                Thread.Sleep(1);
+                Thread.Yield();
             }
             powerPool.QueueWorkItem(() =>
             {
