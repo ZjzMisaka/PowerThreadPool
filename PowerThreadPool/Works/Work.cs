@@ -197,7 +197,11 @@ namespace PowerThreadPool.Works
             // Ensure that the target Work is not stolen during the operation of the Worker
             using (new WorkGuard(this, needFreeze))
             {
-                bool res = Worker.Cancel(ID);
+                bool res = false;
+                if (Worker != null)
+                {
+                    res = Worker.Cancel(ID);
+                }
                 return res;
             }
         }
