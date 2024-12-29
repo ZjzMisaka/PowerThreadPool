@@ -117,7 +117,7 @@ namespace PowerThreadPool.Works
             if (forceStop)
             {
                 // Ensure that the executing Work is not switched and the target Work is not stolen during the operation of the Worker
-                using (new WorkGuard(this, true, true))
+                using (new WorkGuard(this, true))
                 {
                     if (Worker != null)
                     {
@@ -195,13 +195,9 @@ namespace PowerThreadPool.Works
         internal override bool Cancel(bool needFreeze)
         {
             // Ensure that the target Work is not stolen during the operation of the Worker
-            using (new WorkGuard(this, false, needFreeze))
+            using (new WorkGuard(this, needFreeze))
             {
-                bool res = false;
-                if (Worker != null)
-                {
-                    res = Worker.Cancel(ID);
-                }
+                bool res = Worker.Cancel(ID);
                 return res;
             }
         }
