@@ -12,7 +12,6 @@ namespace PowerThreadPool.Helpers
     {
         private readonly WorkBase _work;
         private Worker _worker = null;
-        private readonly bool _isHoldWork;
         private bool _disposed;
 
         /// <summary>
@@ -22,34 +21,49 @@ namespace PowerThreadPool.Helpers
         /// <param name="isHoldWork">Ensure that the executing Work is not switched</param>
         /// <param name="needFreeze">Ensure that the target Work is not stolen</param>
         public WorkGuard(WorkBase work,
-                            bool isHoldWork,
                             bool needFreeze)
         {
             _work = work;
-            _isHoldWork = isHoldWork;
 
             if (needFreeze)
+            {
                 Freeze();
+            }
         }
 
         private void Freeze()
         {
             do
             {
+                // Do not perform UnFreeze when _worker is null. Cases where _worker is null:
+                // 1. When first entering the loop, _worker is null.
+                // 2. Inside the SpinWait.SpinUntil() function below, _work.Worker is null 
+                //    (e.g., the task has already been completed, or during the work-stealing logic).
                 UnFreeze();
 
+                // First, retrieve the Worker from _work, then prevent it from performing work-stealing 
+                // and ensure it does not switch to the next task after completing the current one 
+                // (temporarily keeping the Worker bound to this task).
+                // Perform another check to see if the current Worker in _work matches the previously retrieved Worker. 
+                // If they are different, it means the Freeze operation has failed and a retry is needed.
+                // ----
+                // In the work-stealing logic, _work.Worker may be null, but the work-stealing algorithm is non-blocking and executes quickly,
+                // Therefore, SpinUntil will not consume excessive resources during this waiting process.
                 SpinWait.SpinUntil(() => (_worker = _work.Worker) != null || _work.IsDone);
 
                 if (!_work.IsDone)
                 {
                     // Prevent the target work from being stolen by other workers using the work-stealing algorithm when it is stopped or canceled
+                    // ----
+                    // In the work-stealing logic, WorkStealability may be WorkStealability.NotAllowed, but the work-stealing algorithm is non-blocking and executes quickly,
+                    // Therefore, SpinUntil will not consume excessive resources during this waiting process.
                     SpinWait.SpinUntil(() => _worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed));
 
                     // Temporarily prevent the executing work from allowing the worker to switch to the next work when the current work is completed
-                    if (_isHoldWork)
-                    {
-                        SpinWait.SpinUntil(() => _worker.WorkHeldState.TrySet(WorkHeldStates.Held, WorkHeldStates.NotHeld));
-                    }
+                    // ----
+                    // In the WorkGuard.Freeze logic, WorkHeldStates may be WorkHeldStates.Held, but the WorkGuard.Freeze logic is non-blocking and executes quickly,
+                    // Therefore, SpinUntil will not consume excessive resources during this waiting process.
+                    SpinWait.SpinUntil(() => _worker.WorkHeldState.TrySet(WorkHeldStates.Held, WorkHeldStates.NotHeld));
                 }
             }
             while (_work.Worker?.ID != _worker?.ID);
@@ -63,10 +77,7 @@ namespace PowerThreadPool.Helpers
             {
                 _worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
 
-                if (_isHoldWork)
-                {
-                    _worker.WorkHeldState.InterlockedValue = WorkHeldStates.NotHeld;
-                }
+                _worker.WorkHeldState.InterlockedValue = WorkHeldStates.NotHeld;
             }
         }
 
