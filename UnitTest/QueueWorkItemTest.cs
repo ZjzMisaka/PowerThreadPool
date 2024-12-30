@@ -349,5 +349,36 @@ namespace UnitTest
             powerPool.Wait();
             Assert.Equal("1", p);
         }
+
+        [Fact]
+        public void testSugar1()
+        {
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool + (() => { });
+            Assert.NotEmpty(id);
+        }
+
+        [Fact]
+        public void testSugar2()
+        {
+            int doneCount = 0;
+            PowerPool powerPool = new PowerPool();
+            _ = powerPool
+                | (() => { Interlocked.Increment(ref doneCount); })
+                | (() => { Interlocked.Increment(ref doneCount); })
+                | (() => { Interlocked.Increment(ref doneCount); });
+            powerPool.Wait();
+            Assert.Equal(3, doneCount);
+        }
+
+        [Fact]
+        public void testSugar3()
+        {
+            int doneCount = 0;
+            PowerPool powerPool = new PowerPool();
+            powerPool |= () => { Interlocked.Increment(ref doneCount); };
+            powerPool.Wait();
+            Assert.Equal(1, doneCount);
+        }
     }
 }

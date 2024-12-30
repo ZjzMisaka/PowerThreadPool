@@ -467,6 +467,27 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Queues a work for execution.
+        /// </summary>
+        /// <param name="powerPool"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public static string operator +(PowerPool powerPool, Action action)
+            => powerPool.QueueWorkItem(action);
+
+        /// <summary>
+        /// Queues a work for execution.
+        /// </summary>
+        /// <param name="powerPool"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
+        public static PowerPool operator |(PowerPool powerPool, Action action)
+        {
+            powerPool.QueueWorkItem(action);
+            return powerPool;
+        }
+
+        /// <summary>
         /// Create and return a WorkOption<TResult> instance with callback.
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
