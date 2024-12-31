@@ -18,8 +18,8 @@ namespace PowerThreadPool
     /// </summary>
     public partial class PowerPool : IDisposable
     {
-        private bool _disposed = false;
-        private bool _disposing = false;
+        internal bool _disposed = false;
+        internal bool _disposing = false;
 
         private readonly ManualResetEvent _waitAllSignal = new ManualResetEvent(false);
         private readonly ManualResetEvent _pauseSignal = new ManualResetEvent(true);
@@ -61,8 +61,17 @@ namespace PowerThreadPool
             get => _powerPoolOption;
             set
             {
+                if (_powerPoolOption != null)
+                {
+                    _powerPoolOption.PowerPoolList.Remove(this);
+                }
+                else
+                {
+                    value.PowerPoolList.Add(this);
+                }
+
                 _powerPoolOption = value;
-                InitWorkerQueue();
+                FillWorkerQueue();
             }
         }
 
@@ -267,9 +276,9 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Init worker queue
+        /// Fill worker queue
         /// </summary>
-        private void InitWorkerQueue()
+        internal void FillWorkerQueue()
         {
             int minThreads = PowerPoolOption.MaxThreads;
             if (PowerPoolOption.DestroyThreadOption != null)
@@ -285,6 +294,15 @@ namespace PowerThreadPool
                     Interlocked.Increment(ref _aliveWorkerCount);
                     _aliveWorkerList = _aliveWorkerDic.Values;
                 }
+
+                if (PoolRunning && WaitingWorkCount > 0)
+                {
+                    if (worker.TryAssignWorkForNewWorker())
+                    {
+                        continue;
+                    }
+                }
+
                 _idleWorkerDic[worker.ID] = worker;
                 Interlocked.Increment(ref _idleWorkerCount);
                 _idleWorkerQueue.Enqueue(worker.ID);
@@ -544,7 +562,7 @@ namespace PowerThreadPool
                 return;
             }
 
-            InitWorkerQueue();
+            FillWorkerQueue();
 
             if (RunningWorkerCount == 0 &&
                 WaitingWorkCount == 0 &&

@@ -35,6 +35,11 @@ namespace PowerThreadPool.Options
                     CheckThreadCount(value, PowerPoolOption.MaxThreads);
                 }
                 _minThreads = value;
+
+                if (PowerPoolOption != null)
+                {
+                    PowerPoolOption.OnThreadCountSettingChanged();
+                }
             }
         }
 
