@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Results;
 
@@ -11,6 +12,8 @@ namespace PowerThreadPool.Options
     }
     public class PowerPoolOption
     {
+        internal List<PowerPool> PowerPoolList { get; set; } = new List<PowerPool>();
+
         private int _maxThreads = Environment.ProcessorCount * 2;
         /// <summary>
         /// The maximum number of threads that the thread pool can support.
@@ -25,6 +28,8 @@ namespace PowerThreadPool.Options
                     DestroyThreadOption.CheckThreadCount(DestroyThreadOption.MinThreads, value);
                 }
                 _maxThreads = value;
+
+                OnThreadCountSettingChanged();
             }
         }
 
@@ -90,5 +95,16 @@ namespace PowerThreadPool.Options
         /// <see cref="IStealablePriorityCollection{T}"/> of type <see cref="string"/>.
         /// </summary>
         public Func<IStealablePriorityCollection<string>> CustomQueueFactory { get; set; }
+
+        internal void OnThreadCountSettingChanged()
+        {
+            foreach (PowerPool powerPool in PowerPoolList)
+            {
+                if (!powerPool._disposed && !powerPool._disposing)
+                {
+                    powerPool.FillWorkerQueue();
+                }
+            }
+        }
     }
 }

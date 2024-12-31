@@ -407,7 +407,8 @@ namespace PowerThreadPool
                 string waitingWorkID = _waitingWorkIDPriorityCollection.Get();
                 if (waitingWorkID == null && _powerPool.AliveWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
                 {
-                    StealWorksFromOtherWorker(ref waitingWorkID, ref work);
+                    List<WorkBase> stolenWorkList = StealWorksFromOtherWorker();
+                    SetStolenWorkList(ref waitingWorkID, ref work, stolenWorkList, false);
                 }
 
                 if (waitingWorkID == null)
@@ -445,7 +446,23 @@ namespace PowerThreadPool
             }
         }
 
-        private void StealWorksFromOtherWorker(ref string waitingWorkID, ref WorkBase work)
+        internal bool TryAssignWorkForNewWorker()
+        {
+            string waitingWorkID = null;
+            WorkBase work = null;
+
+            List<WorkBase> stolenWorkList = StealWorksFromOtherWorker();
+
+            if (stolenWorkList != null && stolenWorkList.Count > 0)
+            {
+                SetStolenWorkList(ref waitingWorkID, ref work, stolenWorkList, true);
+                return true;
+            }
+
+            return false;
+        }
+
+        private List<WorkBase> StealWorksFromOtherWorker()
         {
             Worker worker = null;
             int max = 0;
@@ -481,20 +498,26 @@ namespace PowerThreadPool
                     stolenWorkList = worker.Steal(count);
                 }
                 worker.WorkStealability.InterlockedValue = Constants.WorkStealability.Allowed;
-                if (stolenWorkList != null)
+                return stolenWorkList;
+            }
+            return null;
+        }
+
+        private void SetStolenWorkList(ref string waitingWorkID, ref WorkBase work, List<WorkBase> stolenWorkList, bool newWorker)
+        {
+            if (stolenWorkList != null)
+            {
+                foreach (WorkBase stolenWork in stolenWorkList)
                 {
-                    foreach (WorkBase stolenWork in stolenWorkList)
+                    if (!newWorker && waitingWorkID == null)
                     {
-                        if (waitingWorkID == null)
-                        {
-                            waitingWorkID = stolenWork.ID;
-                            work = stolenWork;
-                            work.Worker = this;
-                        }
-                        else
-                        {
-                            SetWork(stolenWork, true);
-                        }
+                        waitingWorkID = stolenWork.ID;
+                        work = stolenWork;
+                        work.Worker = this;
+                    }
+                    else
+                    {
+                        SetWork(stolenWork, true);
                     }
                 }
             }
