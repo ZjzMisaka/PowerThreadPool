@@ -34,7 +34,7 @@ namespace PowerThreadPool.Collections
         {
             T item = default;
 
-            if (_updated)
+            if (_updated || _reversed == null)
             {
                 _updated = false;
                 _reversed = _prioritySet.OrderByDescending(x => x).ToList();
