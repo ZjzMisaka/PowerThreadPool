@@ -54,18 +54,7 @@ namespace PowerThreadPool
         {
             _powerPool = powerPool;
 
-            if (_powerPool.PowerPoolOption.CustomQueueFactory != null)
-            {
-                _waitingWorkIDPriorityCollection = _powerPool.PowerPoolOption.CustomQueueFactory();
-            }
-            else if (_powerPool.PowerPoolOption.QueueType == QueueType.FIFO)
-            {
-                _waitingWorkIDPriorityCollection = new ConcurrentStealablePriorityQueue<string>();
-            }
-            else
-            {
-                _waitingWorkIDPriorityCollection = new ConcurrentStealablePriorityStack<string>();
-            }
+            _waitingWorkIDPriorityCollection = QueueFactory();
 
             _thread = new Thread(() =>
             {
@@ -105,6 +94,22 @@ namespace PowerThreadPool
             });
             ID = _thread.ManagedThreadId;
             _thread.Start();
+        }
+
+        private IStealablePriorityCollection<string> QueueFactory()
+        {
+            if (_powerPool.PowerPoolOption.CustomQueueFactory != null)
+            {
+                return _powerPool.PowerPoolOption.CustomQueueFactory();
+            }
+            else if (_powerPool.PowerPoolOption.QueueType == QueueType.FIFO)
+            {
+                return new ConcurrentStealablePriorityQueue<string>();
+            }
+            else
+            {
+                return new ConcurrentStealablePriorityStack<string>();
+            }
         }
 
         private void ExecuteWork()
@@ -186,14 +191,7 @@ namespace PowerThreadPool
 
             _powerPool.WorkCallbackEnd(Work, Status.Failed);
 
-            bool hasWaitingWork = false;
-            IEnumerable<WorkBase> waitingWorkList = _waitingWorkDic.Values;
-            foreach (WorkBase work in waitingWorkList)
-            {
-                _powerPool.SetWork(work);
-                hasWaitingWork = true;
-            }
-
+            bool hasWaitingWork = RequeueAllWaitingWork();
             Work.IsDone = true;
 
             if (Work.WaitSignal != null)
@@ -223,13 +221,7 @@ namespace PowerThreadPool
                     _powerPool._aliveWorkerList = _powerPool._aliveWorkerDic.Values;
                 }
 
-                bool hasWaitingWork = false;
-                IEnumerable<WorkBase> waitingWorkList = _waitingWorkDic.Values;
-                foreach (WorkBase work in waitingWorkList)
-                {
-                    _powerPool.SetWork(work);
-                    hasWaitingWork = true;
-                }
+                bool hasWaitingWork = RequeueAllWaitingWork();
 
                 Interlocked.Decrement(ref _powerPool._runningWorkerCount);
                 _powerPool.InvokeRunningWorkerCountChangedEvent(false);
@@ -243,6 +235,18 @@ namespace PowerThreadPool
 
                 _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
             }
+        }
+
+        private bool RequeueAllWaitingWork()
+        {
+            bool hasWaitingWork = false;
+            IEnumerable<WorkBase> waitingWorkList = _waitingWorkDic.Values;
+            foreach (WorkBase work in waitingWorkList)
+            {
+                _powerPool.SetWork(work);
+                hasWaitingWork = true;
+            }
+            return hasWaitingWork;
         }
 
         private void SetKillTimer()
@@ -448,6 +452,8 @@ namespace PowerThreadPool
 
         internal bool TryAssignWorkForNewWorker()
         {
+            bool res = false;
+
             string waitingWorkID = null;
             WorkBase work = null;
 
@@ -456,10 +462,10 @@ namespace PowerThreadPool
             if (stolenWorkList != null && stolenWorkList.Count > 0)
             {
                 SetStolenWorkList(ref waitingWorkID, ref work, stolenWorkList, true);
-                return true;
+                res = true;
             }
 
-            return false;
+            return res;
         }
 
         private List<WorkBase> StealWorksFromOtherWorker()
