@@ -452,20 +452,11 @@ namespace PowerThreadPool
 
         internal bool TryAssignWorkForNewWorker()
         {
-            bool res = false;
-
             string waitingWorkID = null;
             WorkBase work = null;
 
             List<WorkBase> stolenWorkList = StealWorksFromOtherWorker();
-
-            if (stolenWorkList != null && stolenWorkList.Count > 0)
-            {
-                SetStolenWorkList(ref waitingWorkID, ref work, stolenWorkList, true);
-                res = true;
-            }
-
-            return res;
+            return SetStolenWorkList(ref waitingWorkID, ref work, stolenWorkList, true);
         }
 
         private List<WorkBase> StealWorksFromOtherWorker()
@@ -509,12 +500,14 @@ namespace PowerThreadPool
             return null;
         }
 
-        private void SetStolenWorkList(ref string waitingWorkID, ref WorkBase work, List<WorkBase> stolenWorkList, bool newWorker)
+        private bool SetStolenWorkList(ref string waitingWorkID, ref WorkBase work, List<WorkBase> stolenWorkList, bool newWorker)
         {
+            bool res = false;
             if (stolenWorkList != null)
             {
                 foreach (WorkBase stolenWork in stolenWorkList)
                 {
+                    res = true;
                     if (!newWorker && waitingWorkID == null)
                     {
                         waitingWorkID = stolenWork.ID;
@@ -527,6 +520,7 @@ namespace PowerThreadPool
                     }
                 }
             }
+            return res;
         }
 
         private bool TurnToIdle(ref string waitingWorkID, ref WorkBase work)
