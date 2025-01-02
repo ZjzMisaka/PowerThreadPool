@@ -475,7 +475,7 @@ namespace PowerThreadPool
                 }
 
                 int waitingWorkCountTemp = runningWorker.WaitingWorkCount;
-                if (waitingWorkCountTemp >= 2 && waitingWorkCountTemp > max)
+                if (waitingWorkCountTemp >= 1 && waitingWorkCountTemp > max)
                 {
                     if (!runningWorker.WorkStealability.TrySet(Constants.WorkStealability.NotAllowed, Constants.WorkStealability.Allowed))
                     {
@@ -491,7 +491,7 @@ namespace PowerThreadPool
             }
             if (worker != null)
             {
-                int count = max / 2;
+                int count = max == 1 ? 1 : max / 2;
                 List<WorkBase> stolenWorkList = null;
                 if (count > 0)
                 {
