@@ -15,6 +15,7 @@ namespace PowerThreadPool.Collections
         {
             _queueDic = new ConcurrentDictionary<int, ConcurrentStack<T>>();
             _prioritySet = new ConcurrentSet<int>();
+            _reversed = new List<int>();
             _updated = false;
         }
 
@@ -34,7 +35,7 @@ namespace PowerThreadPool.Collections
         {
             T item = default;
 
-            if (_updated || _reversed == null)
+            if (_updated)
             {
                 _updated = false;
                 _reversed = _prioritySet.OrderByDescending(x => x).ToList();
