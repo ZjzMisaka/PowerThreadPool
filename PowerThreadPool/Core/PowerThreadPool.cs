@@ -295,12 +295,9 @@ namespace PowerThreadPool
                     _aliveWorkerList = _aliveWorkerDic.Values;
                 }
 
-                if (PoolRunning && WaitingWorkCount > 0)
+                if (PoolRunning && WaitingWorkCount > 0 && worker.TryAssignWorkForNewWorker())
                 {
-                    if (worker.TryAssignWorkForNewWorker())
-                    {
-                        continue;
-                    }
+                    continue;
                 }
 
                 _idleWorkerDic[worker.ID] = worker;
