@@ -81,7 +81,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Invoke running worker count changed event
         /// </summary>
-        /// <param name="executeResult"></param>
+        /// <param name="isIncrement"></param>
         internal void InvokeRunningWorkerCountChangedEvent(bool isIncrement)
         {
             if (RunningWorkerCountChanged != null)
@@ -130,7 +130,8 @@ namespace PowerThreadPool
         /// <summary>
         /// Work end
         /// </summary>
-        /// <param name="guid"></param>
+        /// <param name="work"></param>
+        /// <param name="status"></param>
         internal void WorkCallbackEnd(WorkBase work, Status status)
         {
             if (status == Status.Failed)

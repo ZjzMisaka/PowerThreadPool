@@ -309,6 +309,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Set a work into a worker's work queue.
         /// </summary>
+        /// <param name="work"></param>
         internal void SetWork(WorkBase work)
         {
             CheckPoolStart();
@@ -329,7 +330,8 @@ namespace PowerThreadPool
         /// <summary>
         /// Get a Worker
         /// </summary>
-        /// <returns>worker</returns>
+        /// <param name="longRunning"></param>
+        /// <returns></returns>
         private Worker GetWorker(bool longRunning)
         {
             Worker worker = TryDequeueIdleWorker(longRunning);
@@ -620,8 +622,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Add worker into _aliveWorkDic
         /// </summary>
-        /// <param name="workId"></param>
-        /// <param name="worker"></param>
+        /// <param name="work"></param>
         internal void SetWorkOwner(WorkBase work)
         {
             _aliveWorkDic[work.ID] = work;
@@ -647,7 +648,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Clear result storage
         /// </summary>
-        /// <param name="workID">work ID list</param>
+        /// <param name="workIDList">work ID list</param>
         public void ClearResultStorage(IEnumerable<string> workIDList)
         {
             foreach (string workID in workIDList)
