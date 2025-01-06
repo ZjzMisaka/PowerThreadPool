@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Collections.ObjectModel;
 using System.Reflection;
 using PowerThreadPool;
 using PowerThreadPool.Collections;
@@ -4138,6 +4139,48 @@ namespace UnitTest
             list.Add(3);
 
             string groupName = powerPool.ForEach(list, (i) => result.Add(i), "Group1").Name;
+
+            Assert.Equal("Group1", groupName);
+        }
+
+        [Fact]
+        public void TestParallelWatch()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ObservableCollection<int> list = new ObservableCollection<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.Add(1);
+            list.Add(2);
+            list.Add(3);
+
+            powerPool.Watch(list, (i) => result.Add(i));
+
+            list.Add(4);
+            list.Add(5);
+            list.Add(6);
+
+            powerPool.Wait();
+
+            Assert.Equal(6, result.Count);
+        }
+
+        [Fact]
+        public void TestParallelWatchGroupID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ObservableCollection<int> list = new ObservableCollection<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.Add(1);
+            list.Add(2);
+            list.Add(3);
+
+            string groupName = powerPool.Watch(list, (i) => result.Add(i), "Group1").Name;
 
             Assert.Equal("Group1", groupName);
         }

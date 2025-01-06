@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using PowerThreadPool.Groups;
 using PowerThreadPool.Options;
 
@@ -129,6 +131,48 @@ namespace PowerThreadPool
                 int localI = i++;
                 QueueWorkItem(() => { body(item, localI); }, workOption);
             }
+            return GetGroup(groupID);
+        }
+
+        /// <summary>
+        /// Watches an observable collection for changes and processes each element in the collection using the specified action. 
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements in the source collection.</typeparam>
+        /// <param name="source">The source collection of elements to be processed.</param>
+        /// <param name="body">The action to execute for each element in the source collection and its index.</param>
+        /// <param name="groupName">The optional name for the group. Default is null.</param>
+        /// <returns></returns>
+        public Group Watch<TSource>(ObservableCollection<TSource> source, Action<TSource> body, string groupName = null)
+        {
+            string groupID = null;
+            if (string.IsNullOrEmpty(groupName))
+            {
+                groupID = Guid.NewGuid().ToString();
+            }
+            else
+            {
+                groupID = groupName;
+            }
+            WorkOption workOption = new WorkOption()
+            {
+                Group = groupID,
+            };
+
+            void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            {
+                while (source.Count > 0)
+                {
+                    TSource item = source[0];
+                    source.RemoveAt(0);
+
+                    QueueWorkItem(() => { body(item); }, workOption);
+                }
+            }
+
+            source.CollectionChanged += OnCollectionChanged;
+
+            OnCollectionChanged(null, null);
+
             return GetGroup(groupID);
         }
     }
