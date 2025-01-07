@@ -86,4 +86,9 @@ public class ConcurrentObservableCollection<T>
         }
         return res;
     }
+
+    public void StopWatching()
+    {
+        CollectionChanged = null;
+    }
 }

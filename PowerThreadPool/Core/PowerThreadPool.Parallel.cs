@@ -176,5 +176,10 @@ namespace PowerThreadPool
 
             return GetGroup(groupID);
         }
+
+        public void StopWatching<TSource>(ConcurrentObservableCollection<TSource> source)
+        {
+            source.StopWatching();
+        }
     }
 }
