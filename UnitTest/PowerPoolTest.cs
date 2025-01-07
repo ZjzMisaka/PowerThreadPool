@@ -4150,17 +4150,67 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            ObservableCollection<int> list = new ObservableCollection<int>();
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>();
             ConcurrentSet<int> result = new ConcurrentSet<int>();
-            list.Add(1);
-            list.Add(2);
-            list.Add(3);
+            list.TryAdd(1);
+            list.TryAdd(2);
+            list.TryAdd(3);
 
             powerPool.Watch(list, (i) => result.Add(i));
 
-            list.Add(4);
-            list.Add(5);
-            list.Add(6);
+            list.TryAdd(4);
+            list.TryAdd(5);
+            list.TryAdd(6);
+
+            powerPool.Wait();
+
+            Assert.Equal(6, result.Count);
+        }
+
+        [Fact]
+        public void TestParallelWatchConcurrentBag()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentBag<int> bag = new ConcurrentBag<int>();
+            bag.Add(1);
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>(bag);
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(2);
+            list.TryAdd(3);
+
+            powerPool.Watch(list, (i) => result.Add(i));
+
+            list.TryAdd(4);
+            list.TryAdd(5);
+            list.TryAdd(6);
+
+            powerPool.Wait();
+
+            Assert.Equal(6, result.Count);
+        }
+
+        [Fact]
+        public void TestParallelWatchBlockingCollection()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            BlockingCollection<int> bag = new BlockingCollection<int>();
+            bag.Add(1);
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>(bag);
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(2);
+            list.TryAdd(3);
+
+            powerPool.Watch(list, (i) => result.Add(i));
+
+            list.TryAdd(4);
+            list.TryAdd(5);
+            list.TryAdd(6);
 
             powerPool.Wait();
 
@@ -4174,11 +4224,11 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            ObservableCollection<int> list = new ObservableCollection<int>();
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>(new ConcurrentBag<int>());
             ConcurrentSet<int> result = new ConcurrentSet<int>();
-            list.Add(1);
-            list.Add(2);
-            list.Add(3);
+            list.TryAdd(1);
+            list.TryAdd(2);
+            list.TryAdd(3);
 
             string groupName = powerPool.Watch(list, (i) => result.Add(i), "Group1").Name;
 

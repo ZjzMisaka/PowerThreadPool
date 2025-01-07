@@ -142,7 +142,7 @@ namespace PowerThreadPool
         /// <param name="body">The action to execute for each element in the source collection and its index.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns></returns>
-        public Group Watch<TSource>(ObservableCollection<TSource> source, Action<TSource> body, string groupName = null)
+        public Group Watch<TSource>(ConcurrentObservableCollection<TSource> source, Action<TSource> body, string groupName = null)
         {
             string groupID = null;
             if (string.IsNullOrEmpty(groupName))
@@ -158,14 +158,15 @@ namespace PowerThreadPool
                 Group = groupID,
             };
 
-            void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+            void OnCollectionChanged(object sender, EventArgs e)
             {
                 while (source.Count > 0)
                 {
-                    TSource item = source[0];
-                    source.RemoveAt(0);
-
-                    QueueWorkItem(() => { body(item); }, workOption);
+                    bool res = source.TryTake(out TSource item);
+                    if (res)
+                    {
+                        QueueWorkItem(() => { body(item); }, workOption);
+                    }
                 }
             }
 
