@@ -177,6 +177,11 @@ namespace PowerThreadPool
             return GetGroup(groupID);
         }
 
+        /// <summary>
+        /// Stops watching the observable collection for changes.
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <param name="source"></param>
         public void StopWatching<TSource>(ConcurrentObservableCollection<TSource> source)
         {
             source.StopWatching();

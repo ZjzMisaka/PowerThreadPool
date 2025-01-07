@@ -23,6 +23,7 @@ public class ConcurrentObservableCollection<T>
     public ConcurrentObservableCollection()
     {
         _innerBlockingCollection = new BlockingCollection<T>();
+        _innerProducerConsumerCollection = null;
     }
 
     public int Count
