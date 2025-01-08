@@ -35,7 +35,7 @@ namespace PowerThreadPool.Works
         internal ManualResetEvent PauseSignal { get; set; }
         internal DateTime QueueDateTime { get; set; }
         internal abstract object Execute();
-        internal abstract bool Stop(bool forceStop);
+        internal abstract bool Stop(bool forceStop, bool cancel = true);
         internal abstract bool Wait();
         internal abstract ExecuteResult<T> Fetch<T>();
         internal abstract bool Pause();

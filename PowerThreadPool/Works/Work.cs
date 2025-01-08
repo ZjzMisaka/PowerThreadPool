@@ -110,7 +110,7 @@ namespace PowerThreadPool.Works
             return _function(_param);
         }
 
-        internal override bool Stop(bool forceStop)
+        internal override bool Stop(bool forceStop, bool cancel = true)
         {
             bool res = false;
 
@@ -131,7 +131,10 @@ namespace PowerThreadPool.Works
                         }
                         else
                         {
-                            res = Cancel(false);
+                            if (cancel)
+                            {
+                                res = Cancel(false);
+                            }
                         }
                     }
                 }
@@ -139,7 +142,10 @@ namespace PowerThreadPool.Works
             else
             {
                 ShouldStop = true;
-                Cancel(true);
+                if (cancel)
+                {
+                    Cancel(true);
+                }
                 res = true;
             }
 

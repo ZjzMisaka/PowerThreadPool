@@ -158,9 +158,9 @@ namespace PowerThreadPool.Groups
         /// </summary>
         /// <param name="forceStop">Call Thread.Interrupt() for force stop</param>
         /// <returns>Return false if no thread running</returns>
-        public List<string> Stop(bool forceStop = false)
+        public List<string> Stop(bool forceStop = false, bool cancel = true)
         {
-            return _powerPool.Stop(_powerPool.GetGroupMemberList(Name), forceStop);
+            return _powerPool.Stop(_powerPool.GetGroupMemberList(Name), forceStop, cancel);
         }
 
         /// <summary>

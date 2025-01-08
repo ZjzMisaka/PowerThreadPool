@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
+using PowerThreadPool.Constants;
 using PowerThreadPool.Groups;
+using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 
 namespace PowerThreadPool
 {
     public partial class PowerPool
     {
+        private InterlockedFlag<CanWatch> _canWatch = CanWatch.Allowed;
+
         /// <summary>
         /// Creates a parallel loop that executes iterations from start to end.
         /// </summary>
@@ -144,6 +146,11 @@ namespace PowerThreadPool
         /// <returns></returns>
         public Group Watch<TSource>(ConcurrentObservableCollection<TSource> source, Action<TSource> body, string groupName = null)
         {
+            if (source._watching)
+            {
+                return null;
+            }
+
             string groupID = null;
             if (string.IsNullOrEmpty(groupName))
             {
@@ -160,17 +167,22 @@ namespace PowerThreadPool
 
             void OnCollectionChanged(object sender, EventArgs e)
             {
-                while (source.Count > 0)
+                source.CollectionChanged -= OnCollectionChanged;
+                if (_canWatch.TrySet(CanWatch.NotAllowed, CanWatch.Allowed))
                 {
-                    bool res = source.TryTake(out TSource item);
-                    if (res)
+                    while (source.TryTake(out TSource item))
                     {
                         QueueWorkItem(() => { body(item); }, workOption);
+                    }
+                    _canWatch.InterlockedValue = CanWatch.Allowed;
+                    if (source._watching)
+                    {
+                        source.CollectionChanged += OnCollectionChanged;
                     }
                 }
             }
 
-            source.CollectionChanged += OnCollectionChanged;
+            source.StartWatching(OnCollectionChanged);
 
             OnCollectionChanged(null, null);
 

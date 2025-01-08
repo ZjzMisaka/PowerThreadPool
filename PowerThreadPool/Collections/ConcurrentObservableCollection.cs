@@ -5,6 +5,7 @@ public class ConcurrentObservableCollection<T>
 {
     private readonly IProducerConsumerCollection<T> _innerProducerConsumerCollection;
     private readonly BlockingCollection<T> _innerBlockingCollection;
+    internal volatile bool _watching = false;
 
     public event EventHandler CollectionChanged;
 
@@ -88,8 +89,15 @@ public class ConcurrentObservableCollection<T>
         return res;
     }
 
+    internal void StartWatching(EventHandler handler)
+    {
+        _watching = true;
+        CollectionChanged += handler;
+    }
+
     public void StopWatching()
     {
+        _watching = false;
         CollectionChanged = null;
     }
 }
