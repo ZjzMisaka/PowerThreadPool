@@ -160,6 +160,8 @@ namespace PowerThreadPool
             {
                 groupID = groupName;
             }
+            source._group = groupID;
+            source._powerPool = this;
             WorkOption workOption = new WorkOption()
             {
                 Group = groupID,
@@ -208,9 +210,9 @@ namespace PowerThreadPool
         /// </summary>
         /// <typeparam name="TSource"></typeparam>
         /// <param name="source"></param>
-        public void StopWatching<TSource>(ConcurrentObservableCollection<TSource> source)
+        public void StopWatching<TSource>(ConcurrentObservableCollection<TSource> source, bool keepRunning = false)
         {
-            source.StopWatching();
+            source.StopWatching(keepRunning);
         }
     }
 }
