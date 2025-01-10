@@ -4254,7 +4254,7 @@ namespace UnitTest
             list.TryAdd(5);
             list.TryAdd(6);
 
-            powerPool.StopWatching(list);
+            powerPool.StopWatching(list, true);
 
             list.TryAdd(7);
             list.TryAdd(8);
@@ -4285,7 +4285,7 @@ namespace UnitTest
             list.TryAdd(5);
             list.TryAdd(6);
 
-            list.StopWatching();
+            list.StopWatching(true);
 
             list.TryAdd(7);
             list.TryAdd(8);
