@@ -537,7 +537,7 @@ namespace PowerThreadPool
                     {
                         if (PoolTimedOut != null)
                         {
-                            SafeInvoke(PoolTimedOut, new EventArgs(), ErrorFrom.PoolTimedOut, null);
+                            SafeInvoke(PoolTimedOut, new EventArgs(), ErrorFrom.PoolTimedOut, null, null);
                         }
                         Stop(PowerPoolOption.TimeoutOption.ForceStop);
                     };
@@ -576,7 +576,7 @@ namespace PowerThreadPool
                         StartDateTime = _startDateTime,
                         EndDateTime = DateTime.UtcNow,
                     };
-                    SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorFrom.PoolIdled, null);
+                    SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorFrom.PoolIdled, null, null);
                 }
                 IdleSetting();
             }

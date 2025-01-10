@@ -220,11 +220,11 @@ namespace PowerThreadPool.Works
         {
             if (_workOption.Callback != null)
             {
-                powerPool.SafeCallback(_workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
+                powerPool.SafeCallback(_workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult, Parameter);
             }
             else if (powerPoolOption.DefaultCallback != null)
             {
-                powerPool.SafeCallback(powerPoolOption.DefaultCallback, EventArguments.ErrorFrom.DefaultCallback, executeResult);
+                powerPool.SafeCallback(powerPoolOption.DefaultCallback, EventArguments.ErrorFrom.DefaultCallback, executeResult, Parameter);
             }
         }
 
