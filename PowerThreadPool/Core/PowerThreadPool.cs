@@ -475,7 +475,7 @@ namespace PowerThreadPool
             {
                 if (PoolStarted != null)
                 {
-                    SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted, null);
+                    SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted, null, null);
                 }
 
                 _startCount = 0;

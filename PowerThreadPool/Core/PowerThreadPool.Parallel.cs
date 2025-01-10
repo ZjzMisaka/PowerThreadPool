@@ -172,7 +172,7 @@ namespace PowerThreadPool
                 {
                     while (source.TryTake(out TSource item))
                     {
-                        QueueWorkItem(() =>
+                        string id = QueueWorkItem(() =>
                         {
                             StopIfRequested(() =>
                             {

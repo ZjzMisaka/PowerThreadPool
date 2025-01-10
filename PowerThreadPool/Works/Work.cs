@@ -22,6 +22,10 @@ namespace PowerThreadPool.Works
             get => _executeResult;
             set => _executeResult = value;
         }
+        internal override object[] Parameter
+        {
+            get => Parameter;
+        }
 
         internal override string Group
         {

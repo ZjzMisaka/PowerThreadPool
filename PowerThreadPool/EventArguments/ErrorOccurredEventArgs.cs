@@ -36,11 +36,12 @@ namespace PowerThreadPool.EventArguments
         /// </summary>
         public ExecuteResultBase ExecuteResult { get; internal set; }
 
-        public ErrorOccurredEventArgs(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult)
+        public ErrorOccurredEventArgs(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult, object[] parameter)
         {
             if (executeResult != null)
             {
                 ID = executeResult.ID;
+                Parameter = parameter;
                 QueueDateTime = executeResult.QueueDateTime;
                 StartDateTime = executeResult.StartDateTime;
                 EndDateTime = executeResult.EndDateTime;
