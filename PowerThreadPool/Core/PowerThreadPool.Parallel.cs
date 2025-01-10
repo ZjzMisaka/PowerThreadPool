@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Groups;
@@ -167,6 +168,15 @@ namespace PowerThreadPool
                 Group = groupID,
             };
 
+            ConcurrentDictionary<string, TSource> idDict = new ConcurrentDictionary<string, TSource>();
+            WorkCanceled += (sWorkCanceled, eWorkCanceled) =>
+            {
+                if (idDict.TryGetValue(eWorkCanceled.ID, out TSource item))
+                {
+                    source.TryAdd(item);
+                }
+            };
+
             void OnCollectionChanged(object sender, EventArgs e)
             {
                 source.CollectionChanged -= OnCollectionChanged;
@@ -182,13 +192,7 @@ namespace PowerThreadPool
                             });
                             body(item);
                         }, workOption);
-                        WorkCanceled += (sWorkCanceled, eWorkCanceled) =>
-                        {
-                            if (id == eWorkCanceled.ID)
-                            {
-                                source.TryAdd(item);
-                            }
-                        };
+                        idDict[id] = item;
                     }
                     _canWatch.InterlockedValue = CanWatch.Allowed;
                     if (source._watching)
