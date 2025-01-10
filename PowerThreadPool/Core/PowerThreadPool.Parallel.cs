@@ -172,7 +172,14 @@ namespace PowerThreadPool
                 {
                     while (source.TryTake(out TSource item))
                     {
-                        QueueWorkItem(() => { body(item); }, workOption);
+                        QueueWorkItem(() =>
+                        {
+                            StopIfRequested(() =>
+                            {
+                                source.TryAdd(item);
+                            });
+                            body(item);
+                        }, workOption);
                     }
                     _canWatch.InterlockedValue = CanWatch.Allowed;
                     if (source._watching)
