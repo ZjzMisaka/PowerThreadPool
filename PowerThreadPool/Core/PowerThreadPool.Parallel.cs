@@ -182,7 +182,10 @@ namespace PowerThreadPool
                         }, workOption);
                         WorkCanceled += (sWorkCanceled, eWorkCanceled) =>
                         {
-                            source.TryAdd(item);
+                            if (id == eWorkCanceled.ID)
+                            {
+                                source.TryAdd(item);
+                            }
                         };
                     }
                     _canWatch.InterlockedValue = CanWatch.Allowed;

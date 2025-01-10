@@ -22,10 +22,6 @@ namespace PowerThreadPool.Works
             get => _executeResult;
             set => _executeResult = value;
         }
-        internal override object[] Parameter
-        {
-            get => Parameter;
-        }
 
         internal override string Group
         {
@@ -220,11 +216,11 @@ namespace PowerThreadPool.Works
         {
             if (_workOption.Callback != null)
             {
-                powerPool.SafeCallback(_workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult, Parameter);
+                powerPool.SafeCallback(_workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
             }
             else if (powerPoolOption.DefaultCallback != null)
             {
-                powerPool.SafeCallback(powerPoolOption.DefaultCallback, EventArguments.ErrorFrom.DefaultCallback, executeResult, Parameter);
+                powerPool.SafeCallback(powerPoolOption.DefaultCallback, EventArguments.ErrorFrom.DefaultCallback, executeResult);
             }
         }
 

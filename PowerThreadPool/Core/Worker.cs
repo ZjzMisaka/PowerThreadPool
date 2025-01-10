@@ -114,7 +114,7 @@ namespace PowerThreadPool
 
         private void ExecuteWork()
         {
-            _powerPool.OnWorkStarted(Work.ID, Work.Parameter);
+            _powerPool.OnWorkStarted(Work.ID);
 
             ExecuteResultBase executeResult;
             do
@@ -123,11 +123,11 @@ namespace PowerThreadPool
 
                 if (executeResult.Status == Status.Stopped)
                 {
-                    _powerPool.InvokeWorkStoppedEvent(executeResult, Work.Parameter);
+                    _powerPool.InvokeWorkStoppedEvent(executeResult);
                 }
                 else
                 {
-                    _powerPool.InvokeWorkEndedEvent(executeResult, Work.Parameter);
+                    _powerPool.InvokeWorkEndedEvent(executeResult);
                 }
                 Work.InvokeCallback(_powerPool, executeResult, _powerPool.PowerPoolOption);
             } while (Work.ShouldImmediateRetry(executeResult));
@@ -181,7 +181,7 @@ namespace PowerThreadPool
 
             ExecuteResultBase executeResult = Work.SetExecuteResult(_powerPool, null, ex, Status.ForceStopped);
             executeResult.ID = Work.ID;
-            _powerPool.InvokeWorkStoppedEvent(executeResult, Work.Parameter);
+            _powerPool.InvokeWorkStoppedEvent(executeResult);
 
             if (!ex.Data.Contains("ThrowedWhenExecuting"))
             {
@@ -288,7 +288,7 @@ namespace PowerThreadPool
             catch (Exception ex)
             {
                 executeResult = Work.SetExecuteResult(_powerPool, null, ex, Status.Failed);
-                _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult, Work.Parameter);
+                _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
             }
             // During the WorkGuard.Freeze logic, the WorkHeldState will be set to WorkHeldStates.Held
             // to temporarily prevent the executing work from allowing the worker to switch to the next work 
@@ -589,11 +589,7 @@ namespace PowerThreadPool
                 timer.AutoReset = false;
                 timer.Elapsed += (s, e) =>
                 {
-                    _powerPool.OnWorkTimedOut(_powerPool, new WorkTimedOutEventArgs()
-                    {
-                        ID = WorkID,
-                        Parameter = work.Parameter
-                    }, work.Parameter);
+                    _powerPool.OnWorkTimedOut(_powerPool, new WorkTimedOutEventArgs() { ID = WorkID });
                     _powerPool.Stop(WorkID, workTimeoutOption.ForceStop);
                 };
                 timer.Start();
@@ -708,7 +704,7 @@ namespace PowerThreadPool
                 ExecuteResultBase executeResult = work.SetExecuteResult(_powerPool, null, null, Status.Canceled);
                 executeResult.ID = id;
 
-                _powerPool.InvokeWorkCanceledEvent(executeResult, work.Parameter);
+                _powerPool.InvokeWorkCanceledEvent(executeResult);
                 work.InvokeCallback(_powerPool, executeResult, _powerPool.PowerPoolOption);
                 _powerPool.WorkCallbackEnd(Work, Status.Canceled);
 

@@ -27,7 +27,7 @@ namespace PowerThreadPool
         /// Invoke work end event
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult, object[] parameter)
+        internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult)
         {
             executeResult.EndDateTime = DateTime.UtcNow;
             Interlocked.Increment(ref _endCount);
@@ -37,7 +37,6 @@ namespace PowerThreadPool
                 WorkEndedEventArgs e = new WorkEndedEventArgs()
                 {
                     ID = executeResult.ID,
-                    Parameter = parameter,
                     Exception = executeResult.Exception,
                     Result = executeResult.GetResult(),
                     Succeed = executeResult.Status == Status.Succeed,
@@ -52,7 +51,7 @@ namespace PowerThreadPool
                     executeResult.RetryInfo.StopRetry = e.RetryInfo.StopRetry;
                 }
 
-                SafeInvoke(WorkEnded, e, ErrorFrom.WorkEnded, executeResult, parameter);
+                SafeInvoke(WorkEnded, e, ErrorFrom.WorkEnded, executeResult);
             }
         }
 
@@ -60,7 +59,7 @@ namespace PowerThreadPool
         /// Invoke work stopped event
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult, object[] parameter)
+        internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult)
         {
             executeResult.EndDateTime = DateTime.UtcNow;
             Interlocked.Increment(ref _endCount);
@@ -70,13 +69,12 @@ namespace PowerThreadPool
                 WorkStoppedEventArgs e = new WorkStoppedEventArgs()
                 {
                     ID = executeResult.ID,
-                    Parameter = parameter,
                     ForceStop = executeResult.Status == Status.ForceStopped,
                     QueueDateTime = executeResult.QueueDateTime,
                     StartDateTime = executeResult.StartDateTime,
                     EndDateTime = executeResult.EndDateTime,
                 };
-                SafeInvoke(WorkStopped, e, ErrorFrom.WorkStopped, executeResult, parameter);
+                SafeInvoke(WorkStopped, e, ErrorFrom.WorkStopped, executeResult);
             }
         }
 
@@ -103,7 +101,7 @@ namespace PowerThreadPool
                     NowCount = runningWorkerCountTemp,
                     PreviousCount = prevRunningWorkerCount,
                 };
-                SafeInvoke(RunningWorkerCountChanged, runningWorkerCountChangedEventArgs, ErrorFrom.RunningWorkerCountChanged, null, null);
+                SafeInvoke(RunningWorkerCountChanged, runningWorkerCountChangedEventArgs, ErrorFrom.RunningWorkerCountChanged, null);
             }
         }
 
@@ -111,7 +109,7 @@ namespace PowerThreadPool
         /// Invoke work canceled event
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void InvokeWorkCanceledEvent(ExecuteResultBase executeResult, object[] parameter)
+        internal void InvokeWorkCanceledEvent(ExecuteResultBase executeResult)
         {
             executeResult.EndDateTime = DateTime.UtcNow;
             Interlocked.Increment(ref _endCount);
@@ -121,12 +119,11 @@ namespace PowerThreadPool
                 WorkCanceledEventArgs e = new WorkCanceledEventArgs()
                 {
                     ID = executeResult.ID,
-                    Parameter = parameter,
                     QueueDateTime = executeResult.QueueDateTime,
                     StartDateTime = executeResult.StartDateTime,
                     EndDateTime = executeResult.EndDateTime,
                 };
-                SafeInvoke(WorkCanceled, e, ErrorFrom.WorkCanceled, executeResult, parameter);
+                SafeInvoke(WorkCanceled, e, ErrorFrom.WorkCanceled, executeResult);
             }
         }
 
@@ -172,11 +169,11 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        internal void OnWorkTimedOut(object sender, WorkTimedOutEventArgs e, object[] parameter)
+        internal void OnWorkTimedOut(object sender, WorkTimedOutEventArgs e)
         {
             if (WorkTimedOut != null)
             {
-                SafeInvoke(WorkTimedOut, e, ErrorFrom.WorkTimedOut, null, parameter);
+                SafeInvoke(WorkTimedOut, e, ErrorFrom.WorkTimedOut, null);
             }
         }
 
@@ -184,15 +181,11 @@ namespace PowerThreadPool
         /// Invoke WorkStarted event
         /// </summary>
         /// <param name="workID"></param>
-        internal void OnWorkStarted(string workID, object[] parameter)
+        internal void OnWorkStarted(string workID)
         {
             if (WorkStarted != null)
             {
-                SafeInvoke(WorkStarted, new WorkStartedEventArgs()
-                {
-                    ID = workID,
-                    Parameter = parameter
-                }, ErrorFrom.WorkStarted, null, parameter);
+                SafeInvoke(WorkStarted, new WorkStartedEventArgs() { ID = workID }, ErrorFrom.WorkStarted, null);
             }
         }
 
@@ -204,7 +197,7 @@ namespace PowerThreadPool
         /// <param name="e"></param>
         /// <param name="errorFrom"></param>
         /// <param name="executeResult"></param>
-        internal void SafeInvoke<TEventArgs>(EventHandler<TEventArgs> eventHandler, TEventArgs e, ErrorFrom errorFrom, ExecuteResultBase executeResult, object[] parameter)
+        internal void SafeInvoke<TEventArgs>(EventHandler<TEventArgs> eventHandler, TEventArgs e, ErrorFrom errorFrom, ExecuteResultBase executeResult)
             where TEventArgs : EventArgs
         {
             try
@@ -219,7 +212,7 @@ namespace PowerThreadPool
             {
                 if (ErrorOccurred != null)
                 {
-                    ErrorOccurredEventArgs ea = new ErrorOccurredEventArgs(ex, errorFrom, executeResult, parameter);
+                    ErrorOccurredEventArgs ea = new ErrorOccurredEventArgs(ex, errorFrom, executeResult);
 
                     ErrorOccurred.Invoke(this, ea);
                 }
@@ -232,11 +225,11 @@ namespace PowerThreadPool
         /// <param name="exception"></param>
         /// <param name="errorFrom"></param>
         /// <param name="executeResult"></param>
-        internal void OnWorkErrorOccurred(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult, object[] parameter)
+        internal void OnWorkErrorOccurred(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult)
         {
             if (ErrorOccurred != null)
             {
-                ErrorOccurredEventArgs e = new ErrorOccurredEventArgs(exception, errorFrom, executeResult, parameter);
+                ErrorOccurredEventArgs e = new ErrorOccurredEventArgs(exception, errorFrom, executeResult);
 
                 ErrorOccurred.Invoke(this, e);
             }
@@ -249,7 +242,7 @@ namespace PowerThreadPool
         /// <param name="callback"></param>
         /// <param name="errorFrom"></param>
         /// <param name="executeResult"></param>
-        internal void SafeCallback<TResult>(Action<ExecuteResult<TResult>> callback, ErrorFrom errorFrom, ExecuteResultBase executeResult, object[] parameter)
+        internal void SafeCallback<TResult>(Action<ExecuteResult<TResult>> callback, ErrorFrom errorFrom, ExecuteResultBase executeResult)
         {
             try
             {
@@ -263,7 +256,7 @@ namespace PowerThreadPool
             {
                 if (ErrorOccurred != null)
                 {
-                    ErrorOccurredEventArgs e = new ErrorOccurredEventArgs(ex, errorFrom, executeResult, parameter);
+                    ErrorOccurredEventArgs e = new ErrorOccurredEventArgs(ex, errorFrom, executeResult);
 
                     ErrorOccurred.Invoke(this, e);
                 }

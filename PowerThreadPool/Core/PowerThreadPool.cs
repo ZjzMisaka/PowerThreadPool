@@ -475,7 +475,7 @@ namespace PowerThreadPool
             {
                 if (PoolStarted != null)
                 {
-                    SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted, null, null);
+                    SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted, null);
                 }
 
                 _startCount = 0;
@@ -537,7 +537,7 @@ namespace PowerThreadPool
                     {
                         if (PoolTimedOut != null)
                         {
-                            SafeInvoke(PoolTimedOut, new EventArgs(), ErrorFrom.PoolTimedOut, null, null);
+                            SafeInvoke(PoolTimedOut, new EventArgs(), ErrorFrom.PoolTimedOut, null);
                         }
                         Stop(PowerPoolOption.TimeoutOption.ForceStop);
                     };
@@ -576,7 +576,7 @@ namespace PowerThreadPool
                         StartDateTime = _startDateTime,
                         EndDateTime = DateTime.UtcNow,
                     };
-                    SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorFrom.PoolIdled, null, null);
+                    SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorFrom.PoolIdled, null);
                 }
                 IdleSetting();
             }

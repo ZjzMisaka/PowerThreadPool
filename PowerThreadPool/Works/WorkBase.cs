@@ -47,7 +47,6 @@ namespace PowerThreadPool.Works
         internal abstract bool ShouldImmediateRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldRequeue(ExecuteResultBase executeResult);
         public abstract void Dispose();
-        internal abstract object[] Parameter { get; }
         internal abstract string Group { get; set; }
         internal abstract ThreadPriority ThreadPriority { get; }
         internal abstract bool IsBackground { get; }
