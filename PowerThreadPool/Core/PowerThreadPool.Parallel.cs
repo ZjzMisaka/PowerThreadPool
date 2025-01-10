@@ -180,6 +180,10 @@ namespace PowerThreadPool
                             });
                             body(item);
                         }, workOption);
+                        WorkCanceled += (sWorkCanceled, eWorkCanceled) =>
+                        {
+                            source.TryAdd(item);
+                        };
                     }
                     _canWatch.InterlockedValue = CanWatch.Allowed;
                     if (source._watching)
