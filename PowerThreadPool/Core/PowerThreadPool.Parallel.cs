@@ -161,8 +161,8 @@ namespace PowerThreadPool
             {
                 groupID = groupName;
             }
-            source._group = groupID;
-            source._powerPool = this;
+            Group group = GetGroup(groupID);
+            source._group = group;
             WorkOption workOption = new WorkOption()
             {
                 Group = groupID,
@@ -206,7 +206,7 @@ namespace PowerThreadPool
 
             OnCollectionChanged(null, null);
 
-            return GetGroup(groupID);
+            return group;
         }
 
         /// <summary>

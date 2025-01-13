@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using PowerThreadPool;
+using PowerThreadPool.Groups;
 
 public class ConcurrentObservableCollection<T>
 {
     private readonly IProducerConsumerCollection<T> _innerProducerConsumerCollection;
     private readonly BlockingCollection<T> _innerBlockingCollection;
     internal volatile bool _watching = false;
-    internal string _group = null;
-    internal PowerPool _powerPool = null;
+    internal Group _group = null;
 
     public event EventHandler CollectionChanged;
 
@@ -105,7 +104,7 @@ public class ConcurrentObservableCollection<T>
 
         if (!keepRunning)
         {
-            _powerPool.GetGroup(_group).Stop();
+            _group.Stop();
         }
     }
 }
