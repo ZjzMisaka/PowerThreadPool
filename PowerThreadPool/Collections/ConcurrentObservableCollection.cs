@@ -97,14 +97,19 @@ public class ConcurrentObservableCollection<T>
         CollectionChanged += handler;
     }
 
-    public void StopWatching(bool keepRunning = false)
+    public void StopWatching(bool keepRunning = false, bool forceStop = false)
     {
+        if (!_watching)
+        {
+            return;
+        }
+
         _watching = false;
         CollectionChanged = null;
 
         if (!keepRunning)
         {
-            _group.Stop();
+            _group.Stop(forceStop);
         }
     }
 }

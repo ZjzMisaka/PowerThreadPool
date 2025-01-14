@@ -4254,6 +4254,68 @@ namespace UnitTest
             list.TryAdd(5);
             list.TryAdd(6);
 
+            Thread.Sleep(100);
+
+            powerPool.StopWatching(list);
+
+            list.TryAdd(7);
+            list.TryAdd(8);
+            list.TryAdd(9);
+
+            powerPool.Wait();
+
+            Assert.Equal(6, result.Count);
+            Assert.Equal(3, list.Count);
+        }
+
+        [Fact]
+        public void TestStopWatchingBeforeWatching()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(1);
+            list.TryAdd(2);
+            list.TryAdd(3);
+
+            list.TryAdd(4);
+            list.TryAdd(5);
+            list.TryAdd(6);
+
+            powerPool.StopWatching(list);
+
+            list.TryAdd(7);
+            list.TryAdd(8);
+            list.TryAdd(9);
+
+            powerPool.Wait();
+
+            Assert.Equal(0, result.Count);
+            Assert.Equal(9, list.Count);
+        }
+
+        [Fact]
+        public void TestStopWatchingKeepRunning()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(1);
+            list.TryAdd(2);
+            list.TryAdd(3);
+
+            powerPool.Watch(list, (i) => result.Add(i));
+
+            list.TryAdd(4);
+            list.TryAdd(5);
+            list.TryAdd(6);
+
             powerPool.StopWatching(list, true);
 
             list.TryAdd(7);
@@ -4295,6 +4357,119 @@ namespace UnitTest
 
             Assert.Equal(6, result.Count);
             Assert.Equal(3, list.Count);
+        }
+
+        [Fact]
+        public void TestStopWatchingHalfFailed()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(1);
+            list.TryAdd(2);
+            list.TryAdd(3);
+
+            powerPool.Watch(list, (i) =>
+            {
+                if (i % 2 == 1)
+                {
+                    result.Add(i);
+                }
+                else
+                {
+                    throw new Exception();
+                }
+            });
+
+            list.TryAdd(4);
+            list.TryAdd(5);
+            list.TryAdd(6);
+
+            powerPool.StopWatching(list);
+
+            list.TryAdd(7);
+            list.TryAdd(8);
+            list.TryAdd(9);
+
+            powerPool.Wait();
+
+            Assert.Equal(3, result.Count);
+            Assert.Equal(6, list.Count);
+        }
+
+        [Fact]
+        public void TestStopWatchingCancel()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
+
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(1);
+            list.TryAdd(2);
+            list.TryAdd(3);
+
+            powerPool.Watch(list, (i) =>
+            {
+                Thread.Sleep(1000);
+                result.Add(i);
+            });
+
+            list.TryAdd(4);
+            list.TryAdd(5);
+            list.TryAdd(6);
+
+            powerPool.StopWatching(list);
+
+            list.TryAdd(7);
+            list.TryAdd(8);
+            list.TryAdd(9);
+
+            powerPool.Wait();
+
+            Assert.Equal(2, result.Count);
+            Assert.Equal(7, list.Count);
+        }
+
+        [Fact]
+        public void TestStopWatchingForceStop()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
+
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(1);
+            list.TryAdd(2);
+            list.TryAdd(3);
+
+            powerPool.Watch(list, (i) =>
+            {
+                Thread.Sleep(1000000);
+                result.Add(i);
+            });
+
+            list.TryAdd(4);
+            list.TryAdd(5);
+            list.TryAdd(6);
+
+            Thread.Sleep(100);
+
+            powerPool.StopWatching(list, false, true);
+
+            list.TryAdd(7);
+            list.TryAdd(8);
+            list.TryAdd(9);
+
+            powerPool.Wait();
+
+            Assert.Equal(0, result.Count);
+            Assert.Equal(9, list.Count);
         }
 
         [Fact]

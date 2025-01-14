@@ -169,6 +169,7 @@ namespace PowerThreadPool
             };
 
             ConcurrentDictionary<string, TSource> idDict = new ConcurrentDictionary<string, TSource>();
+
             WorkCanceled += (sWorkCanceled, eWorkCanceled) =>
             {
                 if (idDict.TryRemove(eWorkCanceled.ID, out TSource item))
@@ -176,7 +177,21 @@ namespace PowerThreadPool
                     source.TryAdd(item);
                 }
             };
-
+            WorkStopped += (sWorkStopped, eWorkStopped) =>
+            {
+                if (idDict.TryRemove(eWorkStopped.ID, out TSource item))
+                {
+                    source.TryAdd(item);
+                }
+            };
+            WorkEnded += (sWorkEnded, eWorkEnded) =>
+            {
+                idDict.TryRemove(eWorkEnded.ID, out TSource item);
+                if (!eWorkEnded.Succeed)
+                {
+                    source.TryAdd(item);
+                }
+            };
             void OnCollectionChanged(object sender, EventArgs e)
             {
                 source.CollectionChanged -= OnCollectionChanged;
@@ -186,10 +201,6 @@ namespace PowerThreadPool
                     {
                         string id = QueueWorkItem(() =>
                         {
-                            StopIfRequested(() =>
-                            {
-                                source.TryAdd(item);
-                            });
                             body(item);
                         }, workOption);
                         idDict[id] = item;
@@ -214,9 +225,9 @@ namespace PowerThreadPool
         /// </summary>
         /// <typeparam name="TSource"></typeparam>
         /// <param name="source"></param>
-        public void StopWatching<TSource>(ConcurrentObservableCollection<TSource> source, bool keepRunning = false)
+        public void StopWatching<TSource>(ConcurrentObservableCollection<TSource> source, bool keepRunning = false, bool forceStop = false)
         {
-            source.StopWatching(keepRunning);
+            source.StopWatching(keepRunning, forceStop);
         }
     }
 }
