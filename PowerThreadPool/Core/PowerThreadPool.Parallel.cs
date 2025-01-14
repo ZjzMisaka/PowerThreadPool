@@ -145,11 +145,6 @@ namespace PowerThreadPool
         /// <returns></returns>
         public Group Watch<TSource>(ConcurrentObservableCollection<TSource> source, Action<TSource> body, string groupName = null)
         {
-            if (source._watching)
-            {
-                return null;
-            }
-
             string groupID = null;
             if (string.IsNullOrEmpty(groupName))
             {
@@ -207,14 +202,17 @@ namespace PowerThreadPool
                         idDict[id] = item;
                     }
                     source._canWatch.InterlockedValue = CanWatch.Allowed;
-                    if (source._watching)
+                    if (source._watchState == WatchStates.Watching)
                     {
                         source.CollectionChanged += OnCollectionChanged;
                     }
                 }
             }
 
-            source.StartWatching(OnCollectionChanged);
+            if (!source.StartWatching(OnCollectionChanged))
+            {
+                return null;
+            }
 
             OnCollectionChanged(null, null);
 
