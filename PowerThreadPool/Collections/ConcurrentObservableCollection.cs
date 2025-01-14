@@ -114,6 +114,7 @@ public class ConcurrentObservableCollection<T>
         }
 
         CollectionChanged = null;
+        _watchState.InterlockedValue = WatchStates.Idle;
 
         if (!keepRunning)
         {
