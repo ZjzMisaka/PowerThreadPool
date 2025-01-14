@@ -10,8 +10,6 @@ namespace PowerThreadPool
 {
     public partial class PowerPool
     {
-        private InterlockedFlag<CanWatch> _canWatch = CanWatch.Allowed;
-
         /// <summary>
         /// Creates a parallel loop that executes iterations from start to end.
         /// </summary>
@@ -198,7 +196,7 @@ namespace PowerThreadPool
             void OnCollectionChanged(object sender, EventArgs e)
             {
                 source.CollectionChanged -= OnCollectionChanged;
-                if (_canWatch.TrySet(CanWatch.NotAllowed, CanWatch.Allowed))
+                if (source._canWatch.TrySet(CanWatch.NotAllowed, CanWatch.Allowed))
                 {
                     while (source.TryTake(out TSource item))
                     {
@@ -208,7 +206,7 @@ namespace PowerThreadPool
                         }, workOption);
                         idDict[id] = item;
                     }
-                    _canWatch.InterlockedValue = CanWatch.Allowed;
+                    source._canWatch.InterlockedValue = CanWatch.Allowed;
                     if (source._watching)
                     {
                         source.CollectionChanged += OnCollectionChanged;

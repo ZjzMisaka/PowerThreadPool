@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using PowerThreadPool.Constants;
 using PowerThreadPool.Groups;
+using PowerThreadPool.Helpers;
 
 public class ConcurrentObservableCollection<T>
 {
+    internal InterlockedFlag<CanWatch> _canWatch = CanWatch.Allowed;
+
     private readonly IProducerConsumerCollection<T> _innerProducerConsumerCollection;
     private readonly BlockingCollection<T> _innerBlockingCollection;
     internal volatile bool _watching = false;
