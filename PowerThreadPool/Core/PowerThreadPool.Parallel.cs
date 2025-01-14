@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using PowerThreadPool.Constants;
 using PowerThreadPool.Groups;
+using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 
 namespace PowerThreadPool
 {
     public partial class PowerPool
     {
+        private InterlockedFlag<CanWatch> _canWatch = CanWatch.Allowed;
+
         /// <summary>
         /// Creates a parallel loop that executes iterations from start to end.
         /// </summary>
@@ -130,6 +135,98 @@ namespace PowerThreadPool
                 QueueWorkItem(() => { body(item, localI); }, workOption);
             }
             return GetGroup(groupID);
+        }
+
+        /// <summary>
+        /// Watches an observable collection for changes and processes each element in the collection using the specified action. 
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements in the source collection.</typeparam>
+        /// <param name="source">The source collection of elements to be processed.</param>
+        /// <param name="body">The action to execute for each element in the source collection and its index.</param>
+        /// <param name="groupName">The optional name for the group. Default is null.</param>
+        /// <returns></returns>
+        public Group Watch<TSource>(ConcurrentObservableCollection<TSource> source, Action<TSource> body, string groupName = null)
+        {
+            if (source._watching)
+            {
+                return null;
+            }
+
+            string groupID = null;
+            if (string.IsNullOrEmpty(groupName))
+            {
+                groupID = Guid.NewGuid().ToString();
+            }
+            else
+            {
+                groupID = groupName;
+            }
+            Group group = GetGroup(groupID);
+            source._group = group;
+            WorkOption workOption = new WorkOption()
+            {
+                Group = groupID,
+            };
+
+            ConcurrentDictionary<string, TSource> idDict = new ConcurrentDictionary<string, TSource>();
+
+            WorkCanceled += (sWorkCanceled, eWorkCanceled) =>
+            {
+                if (idDict.TryRemove(eWorkCanceled.ID, out TSource item))
+                {
+                    source.TryAdd(item);
+                }
+            };
+            WorkStopped += (sWorkStopped, eWorkStopped) =>
+            {
+                if (idDict.TryRemove(eWorkStopped.ID, out TSource item))
+                {
+                    source.TryAdd(item);
+                }
+            };
+            WorkEnded += (sWorkEnded, eWorkEnded) =>
+            {
+                if (idDict.TryRemove(eWorkEnded.ID, out TSource item) && !eWorkEnded.Succeed)
+                {
+                    source.TryAdd(item);
+                }
+            };
+            void OnCollectionChanged(object sender, EventArgs e)
+            {
+                source.CollectionChanged -= OnCollectionChanged;
+                if (_canWatch.TrySet(CanWatch.NotAllowed, CanWatch.Allowed))
+                {
+                    while (source.TryTake(out TSource item))
+                    {
+                        string id = QueueWorkItem(() =>
+                        {
+                            body(item);
+                        }, workOption);
+                        idDict[id] = item;
+                    }
+                    _canWatch.InterlockedValue = CanWatch.Allowed;
+                    if (source._watching)
+                    {
+                        source.CollectionChanged += OnCollectionChanged;
+                    }
+                }
+            }
+
+            source.StartWatching(OnCollectionChanged);
+
+            OnCollectionChanged(null, null);
+
+            return group;
+        }
+
+        /// <summary>
+        /// Stops watching the observable collection for changes.
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <param name="source"></param>
+        public void StopWatching<TSource>(ConcurrentObservableCollection<TSource> source, bool keepRunning = false, bool forceStop = false)
+        {
+            source.StopWatching(keepRunning, forceStop);
         }
     }
 }
