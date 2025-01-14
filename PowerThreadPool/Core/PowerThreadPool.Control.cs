@@ -531,7 +531,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="forceStop">Call Thread.Interrupt() for force stop</param>
         /// <returns>Return false if no thread running</returns>
-        public bool Stop(bool forceStop = false, bool cancel = true)
+        public bool Stop(bool forceStop = false)
         {
             if (_poolState == PoolStates.NotRunning)
             {
@@ -556,10 +556,7 @@ namespace PowerThreadPool
             else
             {
                 _cancellationTokenSource.Cancel();
-                if (cancel)
-                {
-                    Cancel();
-                }
+                Cancel();
             }
 
             return true;
@@ -571,7 +568,7 @@ namespace PowerThreadPool
         /// <param name="id">work id</param>
         /// <param name="forceStop">Call Thread.Interrupt() for force stop</param>
         /// <returns>Return false if the work does not exist or has been done</returns>
-        public bool Stop(string id, bool forceStop = false, bool cancel = true)
+        public bool Stop(string id, bool forceStop = false)
         {
             if (string.IsNullOrEmpty(id))
             {
@@ -581,7 +578,7 @@ namespace PowerThreadPool
             bool res = false;
             if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
-                res = work.Stop(forceStop, cancel);
+                res = work.Stop(forceStop);
             }
 
             return res;
@@ -593,13 +590,13 @@ namespace PowerThreadPool
         /// <param name="idList">work id list</param>
         /// <param name="forceStop">Call Thread.Interrupt() for force stop</param>
         /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
-        public List<string> Stop(IEnumerable<string> idList, bool forceStop = false, bool cancel = true)
+        public List<string> Stop(IEnumerable<string> idList, bool forceStop = false)
         {
             List<string> failedIDList = new List<string>();
 
             foreach (string id in idList)
             {
-                if (!Stop(id, forceStop, cancel))
+                if (!Stop(id, forceStop))
                 {
                     failedIDList.Add(id);
                 }
