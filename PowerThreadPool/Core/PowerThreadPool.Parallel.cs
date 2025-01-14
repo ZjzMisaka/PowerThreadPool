@@ -10,8 +10,6 @@ namespace PowerThreadPool
 {
     public partial class PowerPool
     {
-        private InterlockedFlag<CanWatch> _canWatch = CanWatch.Allowed;
-
         /// <summary>
         /// Creates a parallel loop that executes iterations from start to end.
         /// </summary>
@@ -147,11 +145,6 @@ namespace PowerThreadPool
         /// <returns></returns>
         public Group Watch<TSource>(ConcurrentObservableCollection<TSource> source, Action<TSource> body, string groupName = null)
         {
-            if (source._watching)
-            {
-                return null;
-            }
-
             string groupID = null;
             if (string.IsNullOrEmpty(groupName))
             {
@@ -161,8 +154,6 @@ namespace PowerThreadPool
             {
                 groupID = groupName;
             }
-            Group group = GetGroup(groupID);
-            source._group = group;
             WorkOption workOption = new WorkOption()
             {
                 Group = groupID,
@@ -198,7 +189,7 @@ namespace PowerThreadPool
             void OnCollectionChanged(object sender, EventArgs e)
             {
                 source.CollectionChanged -= OnCollectionChanged;
-                if (_canWatch.TrySet(CanWatch.NotAllowed, CanWatch.Allowed))
+                if (source._canWatch.TrySet(CanWatch.NotAllowed, CanWatch.Allowed))
                 {
                     while (source.TryTake(out TSource item))
                     {
@@ -208,15 +199,21 @@ namespace PowerThreadPool
                         }, workOption);
                         idDict[id] = item;
                     }
-                    _canWatch.InterlockedValue = CanWatch.Allowed;
-                    if (source._watching)
+                    source._canWatch.InterlockedValue = CanWatch.Allowed;
+                    if (source._watchState == WatchStates.Watching)
                     {
                         source.CollectionChanged += OnCollectionChanged;
                     }
                 }
             }
 
-            source.StartWatching(OnCollectionChanged);
+            if (!source.StartWatching(OnCollectionChanged))
+            {
+                return null;
+            }
+
+            Group group = GetGroup(groupID);
+            source._group = group;
 
             OnCollectionChanged(null, null);
 

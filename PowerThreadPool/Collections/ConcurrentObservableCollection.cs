@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using PowerThreadPool.Constants;
 using PowerThreadPool.Groups;
+using PowerThreadPool.Helpers;
 
 public class ConcurrentObservableCollection<T>
 {
+    internal InterlockedFlag<WatchStates> _watchState = WatchStates.Idle;
+    internal InterlockedFlag<CanWatch> _canWatch = CanWatch.Allowed;
+
     private readonly IProducerConsumerCollection<T> _innerProducerConsumerCollection;
     private readonly BlockingCollection<T> _innerBlockingCollection;
-    internal volatile bool _watching = false;
     internal Group _group = null;
 
     public event EventHandler CollectionChanged;
@@ -104,10 +108,15 @@ public class ConcurrentObservableCollection<T>
         return res;
     }
 
-    internal void StartWatching(EventHandler handler)
+    internal bool StartWatching(EventHandler handler)
     {
-        _watching = true;
-        CollectionChanged += handler;
+        bool res = false;
+        if (_watchState.TrySet(WatchStates.Watching, WatchStates.Idle))
+        {
+            CollectionChanged += handler;
+            res = true;
+        }
+        return res;
     }
 
     /// <summary>
@@ -117,13 +126,13 @@ public class ConcurrentObservableCollection<T>
     /// <param name="forceStop"></param>
     public void StopWatching(bool keepRunning = false, bool forceStop = false)
     {
-        if (!_watching)
+        if (_watchState == WatchStates.Idle)
         {
             return;
         }
 
-        _watching = false;
         CollectionChanged = null;
+        _watchState.InterlockedValue = WatchStates.Idle;
 
         if (!keepRunning)
         {

@@ -4470,7 +4470,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestStopWatchTwice()
+        public void TestWatchTwice()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
 
