@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
 using System.Reflection;
 using PowerThreadPool;
 using PowerThreadPool.Collections;
 using PowerThreadPool.EventArguments;
+using PowerThreadPool.Groups;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using Xunit.Abstractions;
@@ -4190,6 +4190,7 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(6, result.Count);
+            Assert.Equal(0, list.Count);
         }
 
         [Fact]
@@ -4253,8 +4254,6 @@ namespace UnitTest
             list.TryAdd(4);
             list.TryAdd(5);
             list.TryAdd(6);
-
-            Thread.Sleep(100);
 
             powerPool.StopWatching(list);
 
@@ -4458,7 +4457,46 @@ namespace UnitTest
             list.TryAdd(5);
             list.TryAdd(6);
 
-            Thread.Sleep(100);
+            powerPool.StopWatching(list, false, true);
+
+            list.TryAdd(7);
+            list.TryAdd(8);
+            list.TryAdd(9);
+
+            powerPool.Wait();
+
+            Assert.Equal(0, result.Count);
+            Assert.Equal(9, list.Count);
+        }
+
+        [Fact]
+        public void TestStopWatchTwice()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
+
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(1);
+            list.TryAdd(2);
+            list.TryAdd(3);
+
+            Group group1 = powerPool.Watch(list, (i) =>
+            {
+                Thread.Sleep(1000000);
+                result.Add(i);
+            });
+
+            Group group2 = powerPool.Watch(list, (i) =>
+            {
+                Thread.Sleep(1000000);
+                result.Add(i);
+            });
+
+            list.TryAdd(4);
+            list.TryAdd(5);
+            list.TryAdd(6);
 
             powerPool.StopWatching(list, false, true);
 
@@ -4470,6 +4508,8 @@ namespace UnitTest
 
             Assert.Equal(0, result.Count);
             Assert.Equal(9, list.Count);
+            Assert.NotNull(group1);
+            Assert.Null(group2);
         }
 
         [Fact]
