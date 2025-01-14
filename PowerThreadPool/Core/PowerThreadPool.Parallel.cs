@@ -154,8 +154,6 @@ namespace PowerThreadPool
             {
                 groupID = groupName;
             }
-            Group group = GetGroup(groupID);
-            source._group = group;
             WorkOption workOption = new WorkOption()
             {
                 Group = groupID,
@@ -213,6 +211,9 @@ namespace PowerThreadPool
             {
                 return null;
             }
+
+            Group group = GetGroup(groupID);
+            source._group = group;
 
             OnCollectionChanged(null, null);
 
