@@ -186,7 +186,11 @@ namespace PowerThreadPool
             };
             WorkEnded += (sWorkEnded, eWorkEnded) =>
             {
-                if (idDict.TryRemove(eWorkEnded.ID, out TSource item) && !eWorkEnded.Succeed)
+                if (eWorkEnded.Succeed)
+                {
+                    return;
+                }
+                if (idDict.TryRemove(eWorkEnded.ID, out TSource item))
                 {
                     source.TryAdd(item);
                 }
