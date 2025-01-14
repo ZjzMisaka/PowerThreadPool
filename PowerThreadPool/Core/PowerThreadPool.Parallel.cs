@@ -228,6 +228,8 @@ namespace PowerThreadPool
         /// </summary>
         /// <typeparam name="TSource"></typeparam>
         /// <param name="source"></param>
+        /// <param name="keepRunning"></param>
+        /// <param name="forceStop"></param>
         public void StopWatching<TSource>(ConcurrentObservableCollection<TSource> source, bool keepRunning = false, bool forceStop = false)
         {
             source.StopWatching(keepRunning, forceStop);

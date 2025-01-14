@@ -29,6 +29,9 @@ public class ConcurrentObservableCollection<T>
         _innerProducerConsumerCollection = null;
     }
 
+    /// <summary>
+    /// Gets the number of elements contained in the collection
+    /// </summary>
     public int Count
     {
         get
@@ -46,7 +49,7 @@ public class ConcurrentObservableCollection<T>
         }
     }
 
-    protected virtual void OnCollectionChanged()
+    internal virtual void OnCollectionChanged()
     {
         if (CollectionChanged != null)
         {
@@ -54,6 +57,11 @@ public class ConcurrentObservableCollection<T>
         }
     }
 
+    /// <summary>
+    /// Attempts to add an object to the collection
+    /// </summary>
+    /// <param name="item"></param>
+    /// <returns></returns>
     public bool TryAdd(T item)
     {
         bool res = false;
@@ -72,6 +80,11 @@ public class ConcurrentObservableCollection<T>
         return res;
     }
 
+    /// <summary>
+    /// Attempts to remove and return an object from the collection
+    /// </summary>
+    /// <param name="item"></param>
+    /// <returns></returns>
     public bool TryTake(out T item)
     {
         bool res = false;
@@ -97,6 +110,11 @@ public class ConcurrentObservableCollection<T>
         CollectionChanged += handler;
     }
 
+    /// <summary>
+    /// Stops watching the observable collection for changes.
+    /// </summary>
+    /// <param name="keepRunning"></param>
+    /// <param name="forceStop"></param>
     public void StopWatching(bool keepRunning = false, bool forceStop = false)
     {
         if (!_watching)
