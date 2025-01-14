@@ -171,7 +171,7 @@ namespace PowerThreadPool
             ConcurrentDictionary<string, TSource> idDict = new ConcurrentDictionary<string, TSource>();
             WorkCanceled += (sWorkCanceled, eWorkCanceled) =>
             {
-                if (idDict.TryGetValue(eWorkCanceled.ID, out TSource item))
+                if (idDict.TryRemove(eWorkCanceled.ID, out TSource item))
                 {
                     source.TryAdd(item);
                 }
