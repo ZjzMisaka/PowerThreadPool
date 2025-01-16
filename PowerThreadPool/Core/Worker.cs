@@ -240,11 +240,14 @@ namespace PowerThreadPool
         private bool RequeueAllWaitingWork()
         {
             bool hasWaitingWork = false;
-            IEnumerable<WorkBase> waitingWorkList = _waitingWorkDic.Values;
-            foreach (WorkBase work in waitingWorkList)
+            string workID;
+            while ((workID = _waitingWorkIDPriorityCollection.Get()) != null)
             {
-                _powerPool.SetWork(work);
-                hasWaitingWork = true;
+                if (_waitingWorkDic.TryRemove(workID, out WorkBase work))
+                {
+                    _powerPool.SetWork(work);
+                    hasWaitingWork = true;
+                }
             }
             return hasWaitingWork;
         }

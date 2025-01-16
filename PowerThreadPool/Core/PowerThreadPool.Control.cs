@@ -594,6 +594,10 @@ namespace PowerThreadPool
         {
             List<string> failedIDList = new List<string>();
 
+            if (forceStop)
+            {
+                idList = Cancel(idList);
+            }
             foreach (string id in idList)
             {
                 if (!Stop(id, forceStop))
