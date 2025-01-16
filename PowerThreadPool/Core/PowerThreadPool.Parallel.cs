@@ -141,9 +141,18 @@ namespace PowerThreadPool
         /// <typeparam name="TSource">The type of the elements in the source collection.</typeparam>
         /// <param name="source">The source collection of elements to be processed.</param>
         /// <param name="body">The action to execute for each element in the source collection and its index.</param>
+        /// <param name="addBackWhenWorkCanceled">If the work is canceled, the elements will be added back to the collection.</param>
+        /// <param name="addBackWorkStopped">If the work is stopped, the elements will be added back to the collection.</param>
+        /// <param name="addBackWhenWorkFailed">If an exception occurs, the elements will be added back to the collection.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns></returns>
-        public Group Watch<TSource>(ConcurrentObservableCollection<TSource> source, Action<TSource> body, string groupName = null)
+        public Group Watch<TSource>(
+            ConcurrentObservableCollection<TSource> source,
+            Action<TSource> body,
+            bool addBackWhenWorkCanceled = true,
+            bool addBackWorkStopped = true,
+            bool addBackWhenWorkFailed = true,
+            string groupName = null)
         {
             string groupID = null;
             if (string.IsNullOrEmpty(groupName))
@@ -161,31 +170,41 @@ namespace PowerThreadPool
 
             ConcurrentDictionary<string, TSource> idDict = new ConcurrentDictionary<string, TSource>();
 
-            WorkCanceled += (sWorkCanceled, eWorkCanceled) =>
+            if (addBackWhenWorkCanceled)
             {
-                if (idDict.TryRemove(eWorkCanceled.ID, out TSource item))
+                WorkCanceled += (sWorkCanceled, eWorkCanceled) =>
                 {
-                    source.TryAdd(item);
-                }
-            };
-            WorkStopped += (sWorkStopped, eWorkStopped) =>
+                    if (idDict.TryRemove(eWorkCanceled.ID, out TSource item))
+                    {
+                        source.TryAdd(item);
+                    }
+                };
+            }
+            if (addBackWorkStopped)
             {
-                if (idDict.TryRemove(eWorkStopped.ID, out TSource item))
+                WorkStopped += (sWorkStopped, eWorkStopped) =>
                 {
-                    source.TryAdd(item);
-                }
-            };
-            WorkEnded += (sWorkEnded, eWorkEnded) =>
+                    if (idDict.TryRemove(eWorkStopped.ID, out TSource item))
+                    {
+                        source.TryAdd(item);
+                    }
+                };
+            }
+            if (addBackWhenWorkFailed)
             {
-                if (eWorkEnded.Succeed)
+                WorkEnded += (sWorkEnded, eWorkEnded) =>
                 {
-                    return;
-                }
-                if (idDict.TryRemove(eWorkEnded.ID, out TSource item))
-                {
-                    source.TryAdd(item);
-                }
-            };
+                    if (eWorkEnded.Succeed)
+                    {
+                        return;
+                    }
+                    if (idDict.TryRemove(eWorkEnded.ID, out TSource item))
+                    {
+                        source.TryAdd(item);
+                    }
+                };
+            }
+
             void OnCollectionChanged(object sender, EventArgs e)
             {
                 source.CollectionChanged -= OnCollectionChanged;
