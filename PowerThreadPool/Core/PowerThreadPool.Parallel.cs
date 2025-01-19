@@ -18,7 +18,7 @@ namespace PowerThreadPool
         /// <param name="body">The action to execute for each loop iteration.</param>
         /// <param name="step">The step value for each loop iteration. Default is 1.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
-        /// <returns>Returns a  group object.</returns>
+        /// <returns>Returns a group object.</returns>
         public Group For(int start, int end, Action<int> body, int step = 1, string groupName = null)
         {
             return For<object>(start, end, null, (_, index) => { body(index); }, step, groupName);
@@ -34,7 +34,7 @@ namespace PowerThreadPool
         /// <param name="body">The action to execute for each loop iteration, receiving an element from the source collection.</param>
         /// <param name="step">The step value for each loop iteration. Default is 1.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
-        /// <returns>Returns a  group object.</returns>
+        /// <returns>Returns a group object.</returns>
         public Group For<TSource>(int start, int end, IList<TSource> source, Action<TSource> body, int step = 1, string groupName = null)
         {
             return For(start, end, source, (item, _) => { body(item); }, step, groupName);
@@ -50,7 +50,7 @@ namespace PowerThreadPool
         /// <param name="body">The action to execute for each loop iteration, receiving an element from the source collection and the iteration index.</param>
         /// <param name="step">The step value for each loop iteration. Default is 1.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
-        /// <returns>Returns a  group object.</returns>
+        /// <returns>Returns a group object.</returns>
         /// <exception cref="ArgumentException">Thrown when the step is zero or the loop configuration is invalid.</exception>
         public Group For<TSource>(int start, int end, IList<TSource> source, Action<TSource, int> body, int step = 1, string groupName = null)
         {
@@ -96,7 +96,7 @@ namespace PowerThreadPool
         /// <param name="source">The source collection of elements to be processed.</param>
         /// <param name="body">The action to execute for each element in the source collection.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
-        /// <returns>Returns a  group object.</returns>
+        /// <returns>Returns a group object.</returns>
         public Group ForEach<TSource>(IEnumerable<TSource> source, Action<TSource> body, string groupName = null)
         {
             return ForEach(source, (item, _) => body(item), groupName);
@@ -109,7 +109,7 @@ namespace PowerThreadPool
         /// <param name="source">The source collection of elements to be processed.</param>
         /// <param name="body">The action to execute for each element in the source collection and its index.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
-        /// <returns>Returns a  group object.</returns>
+        /// <returns>Returns a group object.</returns>
         public Group ForEach<TSource>(IEnumerable<TSource> source, Action<TSource, int> body, string groupName = null)
         {
             string groupID = null;
@@ -145,7 +145,7 @@ namespace PowerThreadPool
         /// <param name="addBackWorkStopped">If the work is stopped, the elements will be added back to the collection.</param>
         /// <param name="addBackWhenWorkFailed">If an exception occurs, the elements will be added back to the collection.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
-        /// <returns></returns>
+        /// <returns>Returns a group object.</returns>
         public Group Watch<TSource>(
             ConcurrentObservableCollection<TSource> source,
             Action<TSource> body,
