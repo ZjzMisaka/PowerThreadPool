@@ -620,7 +620,7 @@ namespace PowerThreadPool
             TryDisposeSelf(true);
         }
 
-        private void TryDisposeSelf(bool isIdle)
+        internal void TryDisposeSelf(bool isIdle)
         {
             if (isIdle ? _powerPool.IdleWorkerCount > _powerPool.PowerPoolOption.DestroyThreadOption.MinThreads : _powerPool.IdleWorkerCount >= _powerPool.PowerPoolOption.DestroyThreadOption.MinThreads)
             {
@@ -648,9 +648,7 @@ namespace PowerThreadPool
 
                 // Reaching this point means that WorkerState was not set from Idle to ToBeDisposed, 
                 // indicating that situation ① has occurred and that work is currently running. 
-                // Therefore, reset the CanGetWork. This is also an extremely rare case, 
-                // and it's almost impossible to reproduce this situation with code coverage testing, 
-                // so code coverage testing for this line is ignored.
+                // Therefore, reset the CanGetWork. This is also an extremely rare case. 
                 CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.Disabled);
             }
         }

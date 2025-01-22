@@ -2,10 +2,13 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using PowerThreadPool;
 using PowerThreadPool.Collections;
+using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
 using PowerThreadPool.Groups;
+using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
+using PowerThreadPool.Works;
 using Xunit.Abstractions;
 
 namespace UnitTest
@@ -5555,6 +5558,70 @@ namespace UnitTest
             Assert.Equal(0, powerPool.AliveWorkerCount);
             Assert.Equal(0, powerPool.RunningWorkerCount);
             Assert.Equal(0, powerPool.IdleWorkerCount);
+        }
+
+        [Fact]
+        public void TestDisposeSelfShouldSetCanGetWorkToAllowedWhenStateTransitionFails()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 2,
+                DestroyThreadOption = new DestroyThreadOption
+                {
+                    MinThreads = 1,
+                    KeepAliveTime = 100000
+                }
+            };
+
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            powerPool.QueueWorkItem(() => { Thread.Sleep(1000); });
+            powerPool.QueueWorkItem(() => { Thread.Sleep(1000); });
+
+            Assert.Equal(0, powerPool.IdleWorkerCount);
+
+            powerPool.Wait();
+
+            Assert.Equal(2, powerPool.IdleWorkerCount);
+
+            var worker = new Worker(powerPool);
+
+            worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
+            worker.WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
+
+            worker.TryDisposeSelf(isIdle: true);
+
+            Assert.Equal(CanGetWork.Allowed, worker.CanGetWork.InterlockedValue);
+            Assert.Equal(WorkerStates.ToBeDisposed, worker.WorkerState.InterlockedValue);
+        }
+
+        [Fact]
+        public async Task TestWorkGuardFreezeLoopAsync()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption());
+            WorkOption<string> workOption = new WorkOption<string>();
+            Work<string> work = new Work<string>(powerPool, "", (o) => { return ""; }, new object[1], workOption);
+            work.IsDone = false;
+            Worker worker = new Worker(powerPool);
+            worker.WorkStealability.InterlockedValue = WorkStealability.NotAllowed;
+            work.Worker = worker;
+            Task task1 = Task.Run(async () =>
+            {
+                await Task.Delay(1000);
+                work.Worker = null;
+                worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
+            });
+            Task task2 = Task.Run(async () =>
+            {
+                await Task.Delay(2000);
+                work.Worker = worker;
+            });
+            WorkGuard workGuard = new WorkGuard(work, true);
+
+            await task1;
+            await task2;
+
+            Assert.NotNull(work.Worker);
         }
     }
 }
