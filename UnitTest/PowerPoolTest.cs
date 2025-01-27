@@ -377,6 +377,30 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestErrorInPoolIdledEvent()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            int count = 0;
+            PowerPool powerPool = new PowerPool();
+
+            powerPool.PoolIdled += (s, e) =>
+            {
+                throw new ThreadInterruptedException();
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(300);
+                Interlocked.Increment(ref count);
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(1, count);
+        }
+
+        [Fact]
         public void TestDependents()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
