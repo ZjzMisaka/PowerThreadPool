@@ -206,7 +206,8 @@ namespace PowerThreadPool
             }
             catch (ThreadInterruptedException)
             {
-                throw;
+                if (errorFrom != ErrorFrom.PoolIdled)
+                    throw;
             }
             catch (Exception ex)
             {
