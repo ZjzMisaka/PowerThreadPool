@@ -377,27 +377,40 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestErrorInPoolIdledEvent()
+        public void TestThreadInterruptedErrorInPoolIdledEvent()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
 
             int count = 0;
+            int inEvent = 0;
             PowerPool powerPool = new PowerPool();
 
+            powerPool.WorkStarted += (s, e) =>
+            {
+                powerPool.Stop(true);
+            };
             powerPool.PoolIdled += (s, e) =>
             {
-                throw new ThreadInterruptedException();
+                try
+                {
+                    Thread.Sleep(10000000);
+                }
+                catch
+                {
+                    Interlocked.Increment(ref inEvent);
+                    throw;
+                }
             };
 
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(300);
                 Interlocked.Increment(ref count);
             });
 
             powerPool.Wait();
 
             Assert.Equal(1, count);
+            Assert.Equal(1, inEvent);
         }
 
         [Fact]
