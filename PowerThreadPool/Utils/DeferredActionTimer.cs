@@ -36,6 +36,7 @@ internal class DeferredActionTimer : IDisposable
         _remainingMilliseconds = milliseconds;
         _isPaused = false;
         _stopwatch.Reset();
+        _stopwatch.Start();
         DueTime = milliseconds;
         _timer.Change(milliseconds, _isRecurring ? DueTime : Timeout.Infinite);
     }
