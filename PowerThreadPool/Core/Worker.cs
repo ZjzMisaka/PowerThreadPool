@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using System.Timers;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
@@ -31,8 +30,8 @@ namespace PowerThreadPool
         private IStealablePriorityCollection<string> _waitingWorkIDPriorityCollection;
         private ConcurrentDictionary<string, WorkBase> _waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
 
-        private System.Timers.Timer _timeoutTimer;
-        private System.Timers.Timer _killTimer;
+        private DeferredActionTimer _timeoutTimer;
+        private DeferredActionTimer _killTimer;
 
         private ManualResetEvent _runSignal = new ManualResetEvent(false);
 
@@ -53,6 +52,9 @@ namespace PowerThreadPool
         internal Worker(PowerPool powerPool)
         {
             _powerPool = powerPool;
+
+            _killTimer = new DeferredActionTimer(() => { TryDisposeSelf(true); });
+            _timeoutTimer = new DeferredActionTimer();
 
             _waitingWorkIDPriorityCollection = QueueFactory();
 
@@ -254,16 +256,13 @@ namespace PowerThreadPool
 
         private void SetKillTimer()
         {
-            if (_killTimer == null && _powerPool.PowerPoolOption.DestroyThreadOption != null && _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime != 0)
+            if (_powerPool.PowerPoolOption.DestroyThreadOption != null && _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime != 0)
             {
-                _killTimer = new System.Timers.Timer(_powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime);
-                _killTimer.AutoReset = false;
-                _killTimer.Elapsed += OnKillTimerElapsed;
+                _killTimer.Set(_powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime);
             }
-            else if (_killTimer != null && _powerPool.PowerPoolOption.DestroyThreadOption == null)
+            else if (_powerPool.PowerPoolOption.DestroyThreadOption == null)
             {
-                _killTimer.Dispose();
-                _killTimer = null;
+                _killTimer.Cancel();
             }
         }
 
@@ -352,10 +351,7 @@ namespace PowerThreadPool
             Interlocked.Increment(ref _waitingWorkCount);
             WorkerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
 
-            if (_killTimer != null)
-            {
-                _killTimer.Stop();
-            }
+            _killTimer.Cancel();
 
             if (!reset)
             {
@@ -439,10 +435,7 @@ namespace PowerThreadPool
                     continue;
                 }
 
-                if (_killTimer != null)
-                {
-                    _killTimer.Stop();
-                }
+                _killTimer.Cancel();
 
                 Interlocked.Decrement(ref _powerPool._waitingWorkCount);
 
@@ -560,10 +553,9 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    if (_killTimer != null && powerPoolOption.DestroyThreadOption != null && _powerPool.IdleWorkerCount >= powerPoolOption.DestroyThreadOption.MinThreads)
+                    if (powerPoolOption.DestroyThreadOption != null && _powerPool.IdleWorkerCount >= powerPoolOption.DestroyThreadOption.MinThreads)
                     {
-                        _killTimer.Interval = _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime;
-                        _killTimer.Start();
+                        _killTimer.Set(_powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime);
                     }
 
                     WorkerState.InterlockedValue = WorkerStates.Idle;
@@ -588,18 +580,11 @@ namespace PowerThreadPool
             TimeoutOption workTimeoutOption = work.WorkTimeoutOption;
             if (workTimeoutOption != null)
             {
-                System.Timers.Timer timer = new System.Timers.Timer(workTimeoutOption.Duration);
-                timer.AutoReset = false;
-                timer.Elapsed += (s, e) =>
+                _timeoutTimer.Set(workTimeoutOption.Duration, () =>
                 {
                     _powerPool.OnWorkTimedOut(_powerPool, new WorkTimedOutEventArgs() { ID = WorkID });
                     _powerPool.Stop(WorkID, workTimeoutOption.ForceStop);
-                };
-                timer.Start();
-
-                _timeoutTimer?.Dispose();
-
-                _timeoutTimer = timer;
+                });
             }
 
             Work = work;
@@ -613,11 +598,6 @@ namespace PowerThreadPool
             {
                 _thread.IsBackground = work.IsBackground;
             }
-        }
-
-        private void OnKillTimerElapsed(object s, ElapsedEventArgs e)
-        {
-            TryDisposeSelf(true);
         }
 
         internal void TryDisposeSelf(bool isIdle)
@@ -675,18 +655,12 @@ namespace PowerThreadPool
 
         internal void PauseTimer()
         {
-            if (_timeoutTimer != null)
-            {
-                _timeoutTimer.Stop();
-            }
+            _timeoutTimer.Pause();
         }
 
         internal void ResumeTimer()
         {
-            if (_timeoutTimer != null)
-            {
-                _timeoutTimer.Start();
-            }
+            _timeoutTimer.Resume();
         }
 
         internal void Cancel()
@@ -761,14 +735,8 @@ namespace PowerThreadPool
                 }
 
                 _runSignal.Dispose();
-                if (_timeoutTimer != null)
-                {
-                    _timeoutTimer.Dispose();
-                }
-                if (_killTimer != null)
-                {
-                    _killTimer.Dispose();
-                }
+                _timeoutTimer.Dispose();
+                _killTimer.Dispose();
             }
         }
     }

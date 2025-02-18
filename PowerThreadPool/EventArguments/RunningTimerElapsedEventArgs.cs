@@ -6,10 +6,15 @@ namespace PowerThreadPool.EventArguments
     {
         public RunningTimerElapsedEventArgs() { }
 
+        private DateTime _signalTime;
         /// <summary>
         /// The date/time when the System.Timers.Timer.Elapsed event was raised.
         /// </summary>
-        public DateTime SignalTime { get; internal set; }
+        public DateTime SignalTime
+        {
+            get => _signalTime.ToLocalTime();
+            internal set => _signalTime = value;
+        }
 
         /// <summary>
         /// Pool runtime duration.

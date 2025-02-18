@@ -611,10 +611,7 @@ namespace PowerThreadPool
         /// </summary>
         public void Pause()
         {
-            if (_timeoutTimer != null)
-            {
-                _timeoutTimer.Stop();
-            }
+            _timeoutTimer.Pause();
             _pauseSignal.Reset();
         }
 
@@ -665,10 +662,7 @@ namespace PowerThreadPool
         /// <param name="resumeWorkPausedByID">if resume work paused by ID</param>
         public void Resume(bool resumeWorkPausedByID = false)
         {
-            if (_timeoutTimer != null)
-            {
-                _timeoutTimer.Start();
-            }
+            _timeoutTimer.Resume();
             _pauseSignal.Set();
             if (resumeWorkPausedByID)
             {
