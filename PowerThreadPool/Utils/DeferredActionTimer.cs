@@ -9,13 +9,21 @@ internal class DeferredActionTimer : IDisposable
     private int _remainingMilliseconds;
     private Stopwatch _stopwatch;
     private bool _isPaused;
+    private bool _isRecurring;
 
-    internal DeferredActionTimer(Action action = null)
+    internal int DueTime { get; set; }
+
+    internal DeferredActionTimer(Action action = null, bool isRecurring = false)
     {
         _callback = action;
+        _isRecurring = isRecurring;
         _timer = new Timer(_ =>
         {
-            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            if (!isRecurring)
+            {
+                _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            }
+            
             _callback.Invoke();
         });
         _stopwatch = new Stopwatch();
@@ -28,7 +36,8 @@ internal class DeferredActionTimer : IDisposable
         _remainingMilliseconds = milliseconds;
         _isPaused = false;
         _stopwatch.Reset();
-        _timer.Change(milliseconds, Timeout.Infinite);
+        DueTime = milliseconds;
+        _timer.Change(milliseconds, _isRecurring ? DueTime : Timeout.Infinite);
     }
 
     internal void Set(int milliseconds, Action action)
@@ -73,7 +82,7 @@ internal class DeferredActionTimer : IDisposable
 
         _isPaused = false;
         _stopwatch.Restart();
-        _timer.Change(_remainingMilliseconds, Timeout.Infinite);
+        _timer.Change(_remainingMilliseconds, _isRecurring ? DueTime : Timeout.Infinite);
     }
 
     public void Dispose()
