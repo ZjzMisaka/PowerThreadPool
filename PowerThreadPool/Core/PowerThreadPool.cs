@@ -76,7 +76,7 @@ namespace PowerThreadPool
         }
 
         private System.Timers.Timer _runningTimer;
-        private System.Timers.Timer _timeoutTimer;
+        private DeferredActionTimer _timeoutTimer;
 
         private readonly InterlockedFlag<PoolStates> _poolState = PoolStates.NotRunning;
 
@@ -233,9 +233,17 @@ namespace PowerThreadPool
 
         public PowerPool()
         {
+            _timeoutTimer = new DeferredActionTimer(() =>
+            {
+                if (PoolTimedOut != null)
+                {
+                    SafeInvoke(PoolTimedOut, new EventArgs(), ErrorFrom.PoolTimedOut, null);
+                }
+                Stop(PowerPoolOption.TimeoutOption.ForceStop);
+            });
         }
 
-        public PowerPool(PowerPoolOption powerPoolOption)
+        public PowerPool(PowerPoolOption powerPoolOption) : this()
         {
             PowerPoolOption = powerPoolOption;
         }
@@ -527,21 +535,7 @@ namespace PowerThreadPool
 
                 if (PowerPoolOption.TimeoutOption != null)
                 {
-                    if (_timeoutTimer != null)
-                    {
-                        _timeoutTimer.Dispose();
-                    }
-                    _timeoutTimer = new System.Timers.Timer(PowerPoolOption.TimeoutOption.Duration);
-                    _timeoutTimer.AutoReset = false;
-                    _timeoutTimer.Elapsed += (s, e) =>
-                    {
-                        if (PoolTimedOut != null)
-                        {
-                            SafeInvoke(PoolTimedOut, new EventArgs(), ErrorFrom.PoolTimedOut, null);
-                        }
-                        Stop(PowerPoolOption.TimeoutOption.ForceStop);
-                    };
-                    _timeoutTimer.Start();
+                    _timeoutTimer.Set(PowerPoolOption.TimeoutOption.Duration);
                 }
             }
         }
@@ -593,11 +587,7 @@ namespace PowerThreadPool
                 _runningTimer.Enabled = false;
             }
 
-            if (_timeoutTimer != null)
-            {
-                _timeoutTimer.Stop();
-                _timeoutTimer.Enabled = false;
-            }
+            _timeoutTimer.Cancel();
 
             _cancellationTokenSource.Dispose();
             _cancellationTokenSource = new CancellationTokenSource();
@@ -724,10 +714,7 @@ namespace PowerThreadPool
                     {
                         _runningTimer.Dispose();
                     }
-                    if (_timeoutTimer != null)
-                    {
-                        _timeoutTimer.Dispose();
-                    }
+                    _timeoutTimer.Dispose();
                 }
 
                 _disposed = true;

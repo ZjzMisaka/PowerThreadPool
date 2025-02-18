@@ -613,7 +613,7 @@ namespace PowerThreadPool
         {
             if (_timeoutTimer != null)
             {
-                _timeoutTimer.Stop();
+                _timeoutTimer.Pause();
             }
             _pauseSignal.Reset();
         }
@@ -667,7 +667,7 @@ namespace PowerThreadPool
         {
             if (_timeoutTimer != null)
             {
-                _timeoutTimer.Start();
+                _timeoutTimer.Resume();
             }
             _pauseSignal.Set();
             if (resumeWorkPausedByID)
