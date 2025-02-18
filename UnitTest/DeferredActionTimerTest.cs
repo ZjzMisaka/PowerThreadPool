@@ -7,11 +7,12 @@ namespace UnitTest
     public class DeferredActionTimerTest
     {
         private readonly ITestOutputHelper _output;
-        Stopwatch _stopwatch = new Stopwatch();
+        private readonly Stopwatch _stopwatch;
 
         public DeferredActionTimerTest(ITestOutputHelper output)
         {
             _output = output;
+            _stopwatch = new Stopwatch();
         }
 
         [Fact]
