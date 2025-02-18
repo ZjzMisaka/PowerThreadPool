@@ -76,7 +76,7 @@ internal class DeferredActionTimer : IDisposable
 
     internal void Resume()
     {
-        if (!_isPaused || _remainingMilliseconds <= 0)
+        if (!_isPaused)
         {
             return;
         }

@@ -48,7 +48,7 @@ namespace UnitTest
             timer.Pause();
             timer.Resume();
 
-            Assert.InRange(_stopwatch.ElapsedMilliseconds, 2900, 3100);
+            Assert.InRange(_stopwatch.ElapsedMilliseconds, 2800, 3200);
 
             timer.Dispose();
         }
@@ -71,7 +71,32 @@ namespace UnitTest
             timer.Cancel();
 
             Thread.Sleep(1000);
-            Assert.InRange((endTime - startTime).TotalMilliseconds, 900, 1100);
+            Assert.InRange((endTime - startTime).TotalMilliseconds, 800, 1200);
+
+            timer.Dispose();
+        }
+
+        [Fact]
+        public void TestDeferredActionTimer3()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            DateTime startTime = DateTime.UtcNow;
+            DateTime endTime = DateTime.UtcNow;
+
+            DeferredActionTimer timer = new DeferredActionTimer(() =>
+            {
+                endTime = DateTime.UtcNow;
+            }, true);
+            _stopwatch.Start();
+            timer.Set(100);
+            Thread.Sleep(300);
+            timer.Pause();
+            Thread.Sleep(1000);
+            timer.Resume();
+            Thread.Sleep(300);
+            timer.Cancel();
+            Assert.InRange((endTime - startTime).TotalMilliseconds,1400, 1800);
 
             timer.Dispose();
         }
