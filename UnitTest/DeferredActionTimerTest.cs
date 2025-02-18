@@ -23,6 +23,10 @@ namespace UnitTest
             bool isCallbackInvoked = false;
 
             DeferredActionTimer timer = new DeferredActionTimer();
+
+            timer.Pause();
+            timer.Resume();
+
             _stopwatch.Start();
             timer.Set(2000, () =>
             {
@@ -31,13 +35,18 @@ namespace UnitTest
             });
             Thread.Sleep(1000);
             timer.Pause();
+            timer.Pause();
             Thread.Sleep(1000);
+            timer.Resume();
             timer.Resume();
 
             while (!isCallbackInvoked)
             {
                 Thread.Sleep(100);
             }
+
+            timer.Pause();
+            timer.Resume();
 
             Assert.InRange(_stopwatch.ElapsedMilliseconds, 2900, 3100);
 
