@@ -17,7 +17,7 @@ namespace UnitTest
         [Fact]
         public void TestDefaultConstructor()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             ConcurrentSet<int> set = new ConcurrentSet<int>();
             Assert.Equal(0, set.Count);
@@ -26,7 +26,7 @@ namespace UnitTest
         [Fact]
         public void TestAddAndCountMethods()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             ConcurrentSet<int> set = new ConcurrentSet<int>();
             set.Add(1);
@@ -39,7 +39,7 @@ namespace UnitTest
         [Fact]
         public void TestTryRemoveMethod()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             ConcurrentSet<int> set = new ConcurrentSet<int>();
             set.Add(1);
@@ -53,7 +53,7 @@ namespace UnitTest
         [Fact]
         public void TestConstructorWithItems()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             IEnumerable<int> items = Enumerable.Range(1, 3);
             ConcurrentSet<int> set = new ConcurrentSet<int>(items);
@@ -65,7 +65,7 @@ namespace UnitTest
         [Fact]
         public void TestGetEnumerator()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             IEnumerable<int> items = Enumerable.Range(1, 3);
             ConcurrentSet<int> set = new ConcurrentSet<int>(items);
@@ -82,7 +82,7 @@ namespace UnitTest
         [Fact]
         public void TestNonGenericGetEnumerator()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             IEnumerable<int> items = Enumerable.Range(1, 3);
             ConcurrentSet<int> set = new ConcurrentSet<int>(items);

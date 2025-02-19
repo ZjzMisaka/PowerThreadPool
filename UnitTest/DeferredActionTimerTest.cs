@@ -18,7 +18,7 @@ namespace UnitTest
         [Fact]
         public void TestDeferredActionTimer1()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             bool isCallbackInvoked = false;
 
@@ -56,7 +56,7 @@ namespace UnitTest
         [Fact]
         public void TestDeferredActionTimer2()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             DateTime startTime = DateTime.UtcNow;
             DateTime endTime = DateTime.UtcNow;
@@ -79,7 +79,7 @@ namespace UnitTest
         [Fact]
         public void TestDeferredActionTimer3()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             DateTime startTime = DateTime.UtcNow;
             DateTime endTime = DateTime.UtcNow;

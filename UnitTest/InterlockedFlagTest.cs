@@ -26,7 +26,7 @@ namespace UnitTest
         [Fact]
         public void TestGetSet()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 
@@ -37,7 +37,7 @@ namespace UnitTest
         [Fact]
         public void TestValue()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 
@@ -48,7 +48,7 @@ namespace UnitTest
         [Fact]
         public void TestDebuggerDisplay()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 
@@ -59,7 +59,7 @@ namespace UnitTest
         [Fact]
         public void TestGet()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 
@@ -70,7 +70,7 @@ namespace UnitTest
         [Fact]
         public void TestTrySet()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 
@@ -87,7 +87,7 @@ namespace UnitTest
         [Fact]
         public void TestTrySetWithOrigValueParam()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 
@@ -106,7 +106,7 @@ namespace UnitTest
         [Fact]
         public void TestOperator1()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 
@@ -134,7 +134,7 @@ namespace UnitTest
         [Fact]
         public void TestOperator2()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 
@@ -156,7 +156,7 @@ namespace UnitTest
         [Fact]
         public void Testimplicit()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 
@@ -169,7 +169,7 @@ namespace UnitTest
         [Fact]
         public void TestEquals1()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 
@@ -186,7 +186,7 @@ namespace UnitTest
         [Fact]
         public void TestEquals2()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 
@@ -203,7 +203,7 @@ namespace UnitTest
         [Fact]
         public void TestEquals3()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 
@@ -217,7 +217,7 @@ namespace UnitTest
         [Fact]
         public void TestGetHashCode()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             InitFlags();
 

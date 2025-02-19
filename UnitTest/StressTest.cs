@@ -21,7 +21,7 @@ namespace UnitTest
         [Fact(Timeout = 15 * 60 * 1000)]
         public async Task StressTest1()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             await Task.Run(async () =>
             {
@@ -72,7 +72,7 @@ namespace UnitTest
         [Fact(Timeout = 15 * 60 * 1000)]
         public async Task StressTest2()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             await Task.Run(async () =>
             {
@@ -214,7 +214,7 @@ namespace UnitTest
         [Fact(Timeout = 15 * 60 * 1000)]
         public async Task StressTest3()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             await Task.Run(async () =>
             {
@@ -251,7 +251,7 @@ namespace UnitTest
         [Fact(Timeout = 15 * 60 * 1000)]
         public async Task StressTest4()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             await Task.Run(async () =>
             {

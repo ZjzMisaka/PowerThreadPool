@@ -17,7 +17,7 @@ namespace UnitTest
         [Fact]
         public void Test1()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -29,7 +29,7 @@ namespace UnitTest
         [Fact]
         public void Test2()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -41,7 +41,7 @@ namespace UnitTest
         [Fact]
         public void Test3()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -53,7 +53,7 @@ namespace UnitTest
         [Fact]
         public void Test4()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -65,7 +65,7 @@ namespace UnitTest
         [Fact]
         public void Test5()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -77,7 +77,7 @@ namespace UnitTest
         [Fact]
         public void Test6()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -89,7 +89,7 @@ namespace UnitTest
         [Fact]
         public void Test7()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -101,7 +101,7 @@ namespace UnitTest
         [Fact]
         public void Test8()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -113,7 +113,7 @@ namespace UnitTest
         [Fact]
         public void Test9()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -125,7 +125,7 @@ namespace UnitTest
         [Fact]
         public void Test10()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -137,7 +137,7 @@ namespace UnitTest
         [Fact]
         public void Test11()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -149,7 +149,7 @@ namespace UnitTest
         [Fact]
         public void Test12()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -161,7 +161,7 @@ namespace UnitTest
         [Fact]
         public void Test13()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -173,7 +173,7 @@ namespace UnitTest
         [Fact]
         public void Test14()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -185,7 +185,7 @@ namespace UnitTest
         [Fact]
         public void Test15()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -197,7 +197,7 @@ namespace UnitTest
         [Fact]
         public void Test16()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -209,7 +209,7 @@ namespace UnitTest
         [Fact]
         public void Test17()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -221,7 +221,7 @@ namespace UnitTest
         [Fact]
         public void Test18()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -233,7 +233,7 @@ namespace UnitTest
         [Fact]
         public void Test19()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -245,7 +245,7 @@ namespace UnitTest
         [Fact]
         public void Test20()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -257,7 +257,7 @@ namespace UnitTest
         [Fact]
         public void Test21()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -269,7 +269,7 @@ namespace UnitTest
         [Fact]
         public void Test22()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -281,7 +281,7 @@ namespace UnitTest
         [Fact]
         public void Test23()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -293,7 +293,7 @@ namespace UnitTest
         [Fact]
         public void Test24()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -305,7 +305,7 @@ namespace UnitTest
         [Fact]
         public void Test25()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -317,7 +317,7 @@ namespace UnitTest
         [Fact]
         public void Test26()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -329,7 +329,7 @@ namespace UnitTest
         [Fact]
         public void Test27()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
@@ -341,7 +341,7 @@ namespace UnitTest
         [Fact]
         public void Test28()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
             PowerPool powerPool = new PowerPool();
