@@ -23,7 +23,7 @@ internal class DeferredActionTimer : IDisposable
             {
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
             }
-            
+
             _callback.Invoke();
         });
         _stopwatch = new Stopwatch();

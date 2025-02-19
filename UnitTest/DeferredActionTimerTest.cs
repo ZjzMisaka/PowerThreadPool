@@ -96,7 +96,7 @@ namespace UnitTest
             timer.Resume();
             Thread.Sleep(300);
             timer.Cancel();
-            Assert.InRange((endTime - startTime).TotalMilliseconds,1400, 1800);
+            Assert.InRange((endTime - startTime).TotalMilliseconds, 1400, 1800);
 
             timer.Dispose();
         }
