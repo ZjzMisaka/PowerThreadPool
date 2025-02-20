@@ -689,7 +689,19 @@ namespace PowerThreadPool
                 _powerPool.WorkCallbackEnd(work, Status.Canceled);
 
                 Interlocked.Decrement(ref _waitingWorkCount);
-                Interlocked.Decrement(ref _powerPool._waitingWorkCount);
+                int waitingWorkCount = Interlocked.Decrement(ref _powerPool._waitingWorkCount);
+
+                if (waitingWorkCount == 0)
+                {
+                    // The Cancel function decreases the count of _powerPool.PowerPoolOption before execution. 
+                    // Although in most cases, an Idle check will be performed after the currently running work completes, 
+                    // if the Worker has already completed its Idle check when the count is decreased, 
+                    // it may cause the thread pool to remain in a running state indefinitely. 
+                    // Therefore, an additional check is required here to ensure that an Idle check is performed 
+                    // after reducing the count of _powerPool.PowerPoolOption.
+                    _powerPool.CheckPoolIdle();
+                }
+
                 return true;
             }
             return false;
