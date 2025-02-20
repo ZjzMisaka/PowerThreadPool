@@ -602,7 +602,12 @@ namespace PowerThreadPool
 
         internal void TryDisposeSelf(bool isIdle)
         {
-            if (isIdle ? _powerPool.IdleWorkerCount > _powerPool.PowerPoolOption.DestroyThreadOption.MinThreads : _powerPool.IdleWorkerCount >= _powerPool.PowerPoolOption.DestroyThreadOption.MinThreads)
+            DestroyThreadOption destroyThreadOption = _powerPool.PowerPoolOption.DestroyThreadOption;
+            if (destroyThreadOption == null)
+            {
+                return;
+            }
+            if (isIdle ? _powerPool.IdleWorkerCount > destroyThreadOption.MinThreads : _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
             {
                 // ① There is a possibility that a worker may still obtain and execute work between the 
                 // time the _killTimer triggers OnKillTimerElapsed and when CanGetWork is set to Disabled. 

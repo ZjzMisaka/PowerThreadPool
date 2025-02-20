@@ -5633,6 +5633,43 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestDisposeSelfSetDestroyThreadOptionAsNull()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 2,
+                DestroyThreadOption = new DestroyThreadOption
+                {
+                    MinThreads = 1,
+                    KeepAliveTime = 100000
+                }
+            };
+
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            powerPool.QueueWorkItem(() => { Thread.Sleep(1000); });
+            powerPool.QueueWorkItem(() => { Thread.Sleep(1000); });
+
+            powerPoolOption.DestroyThreadOption = null;
+
+            Assert.Equal(0, powerPool.IdleWorkerCount);
+
+            powerPool.Wait();
+
+            Assert.Equal(2, powerPool.IdleWorkerCount);
+
+            var worker = new Worker(powerPool);
+
+            worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
+            worker.WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
+
+            worker.TryDisposeSelf(isIdle: true);
+
+            Assert.Equal(CanGetWork.Allowed, worker.CanGetWork.InterlockedValue);
+            Assert.Equal(WorkerStates.ToBeDisposed, worker.WorkerState.InterlockedValue);
+        }
+
+        [Fact]
         public async Task TestWorkGuardFreezeLoopAsync()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption());
