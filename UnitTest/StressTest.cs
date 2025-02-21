@@ -57,7 +57,7 @@ namespace UnitTest
 
                     _powerPool.EnablePoolIdleCheck = true;
 
-                    while (_powerPool.WaitingWorkCount > 0)
+                    while (_powerPool.WaitingWorkCount > 0 && _powerPool.RunningWorkerCount > 0)
                     {
                         await _powerPool.WaitAsync();
                     }
@@ -180,7 +180,7 @@ namespace UnitTest
                     if (r1 >= 81 && r1 <= 100)
                     {
                         _powerPool.Stop();
-                        while (_powerPool.WaitingWorkCount > 0)
+                        while (_powerPool.WaitingWorkCount > 0 && _powerPool.RunningWorkerCount > 0)
                         {
                             await _powerPool.WaitAsync();
                         }
@@ -242,7 +242,7 @@ namespace UnitTest
 
                     await Task.WhenAll(tasks);
 
-                    while (_powerPool.WaitingWorkCount > 0)
+                    while (_powerPool.WaitingWorkCount > 0 && _powerPool.RunningWorkerCount > 0)
                     {
                         await _powerPool.WaitAsync();
                     }
