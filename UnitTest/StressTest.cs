@@ -57,11 +57,7 @@ namespace UnitTest
 
                     _powerPool.EnablePoolIdleCheck = true;
 
-                    while (_powerPool.WaitingWorkCount > 0 && _powerPool.RunningWorkerCount > 0)
-                    {
-                        await _powerPool.WaitAsync();
-                        Thread.Sleep(1);
-                    }
+                    await _powerPool.WaitAsync();
 
                     string errLog = "";
                     errLog = "doneCount: " + doneCount + "/" + totalTasks + " | failedCount: " + failedCount + " | powerPool.RunningWorkerCount: " + _powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + _powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + _powerPool.IdleWorkerCount + " | powerPool.MaxThreads: " + _powerPool.PowerPoolOption.MaxThreads;
@@ -181,11 +177,7 @@ namespace UnitTest
                     if (r1 >= 81 && r1 <= 100)
                     {
                         _powerPool.Stop();
-                        while (_powerPool.WaitingWorkCount > 0 && _powerPool.RunningWorkerCount > 0)
-                        {
-                            await _powerPool.WaitAsync();
-                            Thread.Sleep(1);
-                        }
+                        await _powerPool.WaitAsync();
                         if (_powerPool.RunningWorkerCount > 0 || _powerPool.WaitingWorkCount > 0)
                         {
                             Assert.Fail();
@@ -232,6 +224,8 @@ namespace UnitTest
                 int doneCount = 0;
                 for (int i = 0; i < 1000000; ++i)
                 {
+                    _powerPool.EnablePoolIdleCheck = false;
+
                     Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
                         Task.Run(() =>
                         {
@@ -244,11 +238,9 @@ namespace UnitTest
 
                     await Task.WhenAll(tasks);
 
-                    while (_powerPool.WaitingWorkCount > 0 && _powerPool.RunningWorkerCount > 0)
-                    {
-                        await _powerPool.WaitAsync();
-                        Thread.Sleep(1);
-                    }
+                    _powerPool.EnablePoolIdleCheck = true;
+
+                    await _powerPool.WaitAsync();
                 }
 
                 string errLog = "";
