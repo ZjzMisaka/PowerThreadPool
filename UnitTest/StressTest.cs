@@ -59,6 +59,7 @@ namespace UnitTest
 
                     while (_powerPool.WaitingWorkCount > 0 && _powerPool.RunningWorkerCount > 0)
                     {
+                        Thread.Sleep(1);
                         await _powerPool.WaitAsync();
                     }
 
@@ -182,6 +183,7 @@ namespace UnitTest
                         _powerPool.Stop();
                         while (_powerPool.WaitingWorkCount > 0 && _powerPool.RunningWorkerCount > 0)
                         {
+                            Thread.Sleep(1);
                             await _powerPool.WaitAsync();
                         }
                         if (_powerPool.RunningWorkerCount > 0 || _powerPool.WaitingWorkCount > 0)
@@ -244,6 +246,7 @@ namespace UnitTest
 
                     while (_powerPool.WaitingWorkCount > 0 && _powerPool.RunningWorkerCount > 0)
                     {
+                        Thread.Sleep(1);
                         await _powerPool.WaitAsync();
                     }
                 }
