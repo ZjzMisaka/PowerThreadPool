@@ -298,9 +298,11 @@ namespace PowerThreadPool
         internal void FillWorkerQueue()
         {
             int minThreads = PowerPoolOption.MaxThreads;
-            if (PowerPoolOption.DestroyThreadOption != null)
+            DestroyThreadOption destroyThreadOption = PowerPoolOption.DestroyThreadOption;
+
+            if (destroyThreadOption != null)
             {
-                minThreads = PowerPoolOption.DestroyThreadOption.MinThreads;
+                minThreads = destroyThreadOption.MinThreads;
             }
 
             while (AliveWorkerCount < minThreads)

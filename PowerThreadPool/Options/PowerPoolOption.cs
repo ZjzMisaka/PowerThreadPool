@@ -23,9 +23,11 @@ namespace PowerThreadPool.Options
             get => _maxThreads;
             set
             {
-                if (DestroyThreadOption != null)
+                DestroyThreadOption destroyThreadOption = DestroyThreadOption;
+
+                if (destroyThreadOption != null)
                 {
-                    DestroyThreadOption.CheckThreadCount(DestroyThreadOption.MinThreads, value);
+                    destroyThreadOption.CheckThreadCount(destroyThreadOption.MinThreads, value);
                 }
                 _maxThreads = value;
 

@@ -256,11 +256,13 @@ namespace PowerThreadPool
 
         private void SetKillTimer()
         {
-            if (_powerPool.PowerPoolOption.DestroyThreadOption != null && _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime != 0)
+            DestroyThreadOption destroyThreadOption = _powerPool.PowerPoolOption.DestroyThreadOption;
+
+            if (destroyThreadOption != null && destroyThreadOption.KeepAliveTime != 0)
             {
-                _killTimer.Set(_powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime);
+                _killTimer.Set(destroyThreadOption.KeepAliveTime);
             }
-            else if (_powerPool.PowerPoolOption.DestroyThreadOption == null)
+            else if (destroyThreadOption == null)
             {
                 _killTimer.Cancel();
             }
@@ -546,16 +548,18 @@ namespace PowerThreadPool
                 Interlocked.Decrement(ref _powerPool._runningWorkerCount);
                 _powerPool.InvokeRunningWorkerCountChangedEvent(false);
 
-                if (powerPoolOption.DestroyThreadOption != null && _powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime == 0 && _powerPool.IdleWorkerCount >= powerPoolOption.DestroyThreadOption.MinThreads)
+                DestroyThreadOption destroyThreadOption = powerPoolOption.DestroyThreadOption;
+
+                if (destroyThreadOption != null && destroyThreadOption.KeepAliveTime == 0 && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
                 {
                     CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.ToBeDisabled);
                     TryDisposeSelf(false);
                 }
                 else
                 {
-                    if (powerPoolOption.DestroyThreadOption != null && _powerPool.IdleWorkerCount >= powerPoolOption.DestroyThreadOption.MinThreads)
+                    if (destroyThreadOption != null && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
                     {
-                        _killTimer.Set(_powerPool.PowerPoolOption.DestroyThreadOption.KeepAliveTime);
+                        _killTimer.Set(destroyThreadOption.KeepAliveTime);
                     }
 
                     WorkerState.InterlockedValue = WorkerStates.Idle;
