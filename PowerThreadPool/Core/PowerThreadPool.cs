@@ -547,8 +547,6 @@ namespace PowerThreadPool
                 return;
             }
 
-            FillWorkerQueue();
-
             if (RunningWorkerCount == 0 &&
                 WaitingWorkCount == 0 &&
                 _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
