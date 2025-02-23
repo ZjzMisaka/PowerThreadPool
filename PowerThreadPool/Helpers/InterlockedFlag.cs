@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+#if NET5_0_OR_GREATER
 using System.Runtime.CompilerServices;
+#endif
 using System.Threading;
 
 namespace PowerThreadPool.Helpers

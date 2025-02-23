@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Groups;
-using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 
 namespace PowerThreadPool
