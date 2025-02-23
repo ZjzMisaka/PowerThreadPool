@@ -201,6 +201,8 @@ namespace PowerThreadPool
                 Work.WaitSignal.Set();
             }
 
+            _powerPool.FillWorkerQueue();
+
             if (!hasWaitingWork)
             {
                 _powerPool.CheckPoolIdle();
@@ -227,6 +229,8 @@ namespace PowerThreadPool
 
                 Interlocked.Decrement(ref _powerPool._runningWorkerCount);
                 _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
+                _powerPool.FillWorkerQueue();
 
                 if (!hasWaitingWork)
                 {
