@@ -28,7 +28,7 @@ namespace PowerThreadPool
         internal InterlockedFlag<WorkStealability> WorkStealability { get; } = Constants.WorkStealability.Allowed;
 
         private IStealablePriorityCollection<string> _waitingWorkIDPriorityCollection;
-        private ConcurrentDictionary<string, WorkBase> _waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+        private FasterConcurrentDictionary<string, WorkBase> _waitingWorkDic = new FasterConcurrentDictionary<string, WorkBase>();
 
         private DeferredActionTimer _timeoutTimer;
         private DeferredActionTimer _killTimer;

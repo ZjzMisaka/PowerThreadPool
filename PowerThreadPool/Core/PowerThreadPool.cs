@@ -28,21 +28,21 @@ namespace PowerThreadPool
         internal ConcurrentSet<string> _failedWorkSet = new ConcurrentSet<string>();
         internal ConcurrentSet<string> _canceledWorkSet = new ConcurrentSet<string>();
 
-        internal ConcurrentDictionary<int, Worker> _idleWorkerDic = new ConcurrentDictionary<int, Worker>();
+        internal FasterConcurrentDictionary<int, Worker> _idleWorkerDic = new FasterConcurrentDictionary<int, Worker>();
         internal ConcurrentQueue<int> _idleWorkerQueue = new ConcurrentQueue<int>();
 
-        internal ConcurrentDictionary<string, WorkBase> _aliveWorkDic = new ConcurrentDictionary<string, WorkBase>();
+        internal FasterConcurrentDictionary<string, WorkBase> _aliveWorkDic = new FasterConcurrentDictionary<string, WorkBase>();
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _groupRelationDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
-        internal ConcurrentDictionary<int, Worker> _aliveWorkerDic = new ConcurrentDictionary<int, Worker>();
+        internal FasterConcurrentDictionary<int, Worker> _aliveWorkerDic = new FasterConcurrentDictionary<int, Worker>();
         internal IEnumerable<Worker> _aliveWorkerList = new List<Worker>();
 
         internal ConcurrentQueue<string> _suspendedWorkQueue = new ConcurrentQueue<string>();
-        internal ConcurrentDictionary<string, WorkBase> _suspendedWork = new ConcurrentDictionary<string, WorkBase>();
+        internal FasterConcurrentDictionary<string, WorkBase> _suspendedWork = new FasterConcurrentDictionary<string, WorkBase>();
         internal ConcurrentQueue<string> _stopSuspendedWorkQueue = new ConcurrentQueue<string>();
-        internal ConcurrentDictionary<string, WorkBase> _stopSuspendedWork = new ConcurrentDictionary<string, WorkBase>();
+        internal FasterConcurrentDictionary<string, WorkBase> _stopSuspendedWork = new FasterConcurrentDictionary<string, WorkBase>();
 
-        internal ConcurrentDictionary<string, ExecuteResultBase> _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
+        internal FasterConcurrentDictionary<string, ExecuteResultBase> _resultDic = new FasterConcurrentDictionary<string, ExecuteResultBase>();
 
         internal long _startCount = 0;
         internal long _endCount = 0;

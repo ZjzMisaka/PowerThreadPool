@@ -6,18 +6,18 @@ namespace PowerThreadPool.Collections
 {
     public class ConcurrentSet<T> : IEnumerable<T>
     {
-        private readonly ConcurrentDictionary<T, byte> _dictionary;
+        private readonly FasterConcurrentDictionary<T, byte> _dictionary;
 
         private static readonly byte s_dummyValue = default;
 
         public ConcurrentSet()
         {
-            _dictionary = new ConcurrentDictionary<T, byte>();
+            _dictionary = new FasterConcurrentDictionary<T, byte>();
         }
 
         public ConcurrentSet(IEnumerable<T> items)
         {
-            _dictionary = new ConcurrentDictionary<T, byte>();
+            _dictionary = new FasterConcurrentDictionary<T, byte>();
             foreach (T item in items)
             {
                 _dictionary.TryAdd(item, s_dummyValue);
@@ -65,7 +65,7 @@ namespace PowerThreadPool.Collections
         /// Returns an enumerator that iterates through the items.
         /// </summary>
         /// <returns></returns>
-        public IEnumerator<T> GetEnumerator() => _dictionary.Keys.GetEnumerator();
+        public IEnumerator<T> GetEnumerator() => _dictionary.GetKeyEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Groups;
 using PowerThreadPool.Options;
@@ -167,7 +168,7 @@ namespace PowerThreadPool
                 Group = groupID,
             };
 
-            ConcurrentDictionary<string, TSource> idDict = new ConcurrentDictionary<string, TSource>();
+            FasterConcurrentDictionary<string, TSource> idDict = new FasterConcurrentDictionary<string, TSource>();
 
             if (addBackWhenWorkCanceled)
             {
