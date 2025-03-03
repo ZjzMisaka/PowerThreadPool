@@ -5674,7 +5674,7 @@ namespace UnitTest
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption());
             WorkOption<string> workOption = new WorkOption<string>();
-            Work<string> work = new Work<string>(powerPool, "", (o) => { return ""; }, new object[1], workOption);
+            Work<string> work = new Work<string>(powerPool, "", () => { return ""; }, workOption);
             work.IsDone = false;
             Worker worker = new Worker(powerPool);
             worker.WorkStealability.InterlockedValue = WorkStealability.NotAllowed;
@@ -5703,7 +5703,7 @@ namespace UnitTest
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption());
             WorkOption<string> workOption = new WorkOption<string>();
-            Work<string> work = new Work<string>(powerPool, "", (o) => { return ""; }, new object[1], workOption);
+            Work<string> work = new Work<string>(powerPool, "", () => { return ""; }, workOption);
             work.IsDone = false;
             Worker worker = new Worker(powerPool);
             worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
