@@ -11,8 +11,7 @@ namespace PowerThreadPool.Works
 {
     internal class Work<TResult> : WorkBase
     {
-        private Func<object[], TResult> _function;
-        private object[] _param;
+        private Func<TResult> _function;
         private WorkOption<TResult> _workOption;
         private CallbackEndEventHandler _callbackEndHandler;
 
@@ -37,12 +36,11 @@ namespace PowerThreadPool.Works
         internal override bool ShouldStoreResult => _workOption.ShouldStoreResult;
         internal override ConcurrentSet<string> Dependents => _workOption.Dependents;
 
-        internal Work(PowerPool powerPool, string id, Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
+        internal Work(PowerPool powerPool, string id, Func<TResult> function, WorkOption<TResult> option)
         {
             ID = id;
             ExecuteCount = 0;
             _function = function;
-            _param = param;
             _workOption = option;
             ShouldStop = false;
             IsPausing = false;
@@ -107,7 +105,7 @@ namespace PowerThreadPool.Works
         internal override object Execute()
         {
             ++_executeCount;
-            return _function(_param);
+            return _function();
         }
 
         internal override bool Stop(bool forceStop)
