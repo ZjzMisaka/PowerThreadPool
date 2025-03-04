@@ -115,14 +115,6 @@ namespace PowerThreadPool
                 List<string> list = _aliveWorkDic.Values
                     .Where(x => x.ExecuteCount == 0)
                     .Select(x => x.ID).ToList();
-                IEnumerable<Worker> workers = _aliveWorkerList;
-                foreach (Worker worker in workers)
-                {
-                    if (worker.WorkerState == WorkerStates.Running)
-                    {
-                        list.Remove(worker.WorkID);
-                    }
-                }
                 return list;
             }
         }
