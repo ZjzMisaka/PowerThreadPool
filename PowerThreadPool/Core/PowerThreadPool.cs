@@ -112,7 +112,9 @@ namespace PowerThreadPool
         {
             get
             {
-                List<string> list = _aliveWorkDic.Keys.ToList();
+                List<string> list = _aliveWorkDic.Values
+                    .Where(x => x.ExecuteCount == 0)
+                    .Select(x => x.ID).ToList();
                 IEnumerable<Worker> workers = _aliveWorkerList;
                 foreach (Worker worker in workers)
                 {
