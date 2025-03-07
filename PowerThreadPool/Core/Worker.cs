@@ -586,6 +586,11 @@ namespace PowerThreadPool
         private void SetWorkToRun(WorkBase work)
         {
             TimeoutOption workTimeoutOption = work.WorkTimeoutOption;
+            if (workTimeoutOption == null)
+            {
+                workTimeoutOption = _powerPool.PowerPoolOption.DefaultWorkTimeoutOption;
+            }
+
             if (workTimeoutOption != null)
             {
                 _timeoutTimer.Set(workTimeoutOption.Duration, () =>
