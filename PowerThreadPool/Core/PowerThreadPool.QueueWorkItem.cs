@@ -400,11 +400,6 @@ namespace PowerThreadPool
                 workID = Guid.NewGuid().ToString();
             }
 
-            if (option.TimeoutOption == null && PowerPoolOption.DefaultWorkTimeoutOption != null)
-            {
-                option.TimeoutOption = PowerPoolOption.DefaultWorkTimeoutOption;
-            }
-
             Work<TResult> work = new Work<TResult>(this, workID, function, option);
 
             if (work.DependencyFailed)
