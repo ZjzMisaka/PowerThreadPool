@@ -31,7 +31,7 @@ namespace PowerThreadPool
         {
             executeResult.EndDateTime = DateTime.UtcNow;
             Interlocked.Increment(ref _endCount);
-            Interlocked.Add(ref _executeTime, (long)(executeResult.EndDateTime - executeResult.StartDateTime).TotalMilliseconds);
+            Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
             if (WorkEnded != null)
             {
                 WorkEndedEventArgs e = new WorkEndedEventArgs()
@@ -40,9 +40,9 @@ namespace PowerThreadPool
                     Exception = executeResult.Exception,
                     Result = executeResult.GetResult(),
                     Succeed = executeResult.Status == Status.Succeed,
-                    QueueDateTime = executeResult.QueueDateTime,
-                    StartDateTime = executeResult.StartDateTime,
-                    EndDateTime = executeResult.EndDateTime,
+                    QueueDateTime = executeResult.UtcQueueDateTime,
+                    StartDateTime = executeResult.UtcStartDateTime,
+                    EndDateTime = executeResult.UtcEndDateTime,
                     RetryInfo = executeResult.RetryInfo,
                 };
 
@@ -63,16 +63,16 @@ namespace PowerThreadPool
         {
             executeResult.EndDateTime = DateTime.UtcNow;
             Interlocked.Increment(ref _endCount);
-            Interlocked.Add(ref _executeTime, (long)(executeResult.EndDateTime - executeResult.StartDateTime).TotalMilliseconds);
+            Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
             if (WorkStopped != null)
             {
                 WorkStoppedEventArgs e = new WorkStoppedEventArgs()
                 {
                     ID = executeResult.ID,
                     ForceStop = executeResult.Status == Status.ForceStopped,
-                    QueueDateTime = executeResult.QueueDateTime,
-                    StartDateTime = executeResult.StartDateTime,
-                    EndDateTime = executeResult.EndDateTime,
+                    QueueDateTime = executeResult.UtcQueueDateTime,
+                    StartDateTime = executeResult.UtcStartDateTime,
+                    EndDateTime = executeResult.UtcEndDateTime,
                 };
                 SafeInvoke(WorkStopped, e, ErrorFrom.WorkStopped, executeResult);
             }
@@ -113,15 +113,15 @@ namespace PowerThreadPool
         {
             executeResult.EndDateTime = DateTime.UtcNow;
             Interlocked.Increment(ref _endCount);
-            Interlocked.Add(ref _executeTime, (long)(executeResult.EndDateTime - executeResult.StartDateTime).TotalMilliseconds);
+            Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
             if (WorkCanceled != null)
             {
                 WorkCanceledEventArgs e = new WorkCanceledEventArgs()
                 {
                     ID = executeResult.ID,
-                    QueueDateTime = executeResult.QueueDateTime,
-                    StartDateTime = executeResult.StartDateTime,
-                    EndDateTime = executeResult.EndDateTime,
+                    QueueDateTime = executeResult.UtcQueueDateTime,
+                    StartDateTime = executeResult.UtcStartDateTime,
+                    EndDateTime = executeResult.UtcEndDateTime,
                 };
                 SafeInvoke(WorkCanceled, e, ErrorFrom.WorkCanceled, executeResult);
             }

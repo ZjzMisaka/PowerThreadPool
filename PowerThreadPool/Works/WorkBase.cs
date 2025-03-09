@@ -33,6 +33,9 @@ namespace PowerThreadPool.Works
         internal bool ShouldStop { get; set; }
         internal bool DependencyFailed { get; set; }
         internal ManualResetEvent PauseSignal { get; set; }
+        /// <summary>
+        /// Queue datetime (UTC).
+        /// </summary>
         internal DateTime QueueDateTime { get; set; }
         internal abstract object Execute();
         internal abstract bool Stop(bool forceStop);
