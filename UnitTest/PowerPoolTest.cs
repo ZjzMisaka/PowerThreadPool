@@ -892,6 +892,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
             });
+            Thread.Sleep(10);
             Assert.Equal(0, powerPool.IdleWorkerCount);
             Assert.Equal(1, powerPool.RunningWorkerCount);
             Assert.Equal(1, powerPool.WaitingWorkCount);
