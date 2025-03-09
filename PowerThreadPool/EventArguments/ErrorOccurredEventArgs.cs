@@ -41,9 +41,9 @@ namespace PowerThreadPool.EventArguments
             if (executeResult != null)
             {
                 ID = executeResult.ID;
-                QueueDateTime = executeResult.QueueDateTime;
-                StartDateTime = executeResult.StartDateTime;
-                EndDateTime = executeResult.EndDateTime;
+                QueueDateTime = executeResult.UtcQueueDateTime;
+                StartDateTime = executeResult.UtcStartDateTime;
+                EndDateTime = executeResult.UtcEndDateTime;
             }
             Exception = exception;
             ErrorFrom = errorFrom;

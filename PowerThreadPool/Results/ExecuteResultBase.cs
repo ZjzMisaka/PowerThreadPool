@@ -31,6 +31,7 @@ namespace PowerThreadPool.Results
             get => _queueDateTime.ToLocalTime();
             internal set => _queueDateTime = value;
         }
+        internal DateTime UtcQueueDateTime => _queueDateTime;
 
         private DateTime _startDateTime;
         /// <summary>
@@ -41,6 +42,7 @@ namespace PowerThreadPool.Results
             get => _startDateTime.ToLocalTime();
             internal set => _startDateTime = value;
         }
+        internal DateTime UtcStartDateTime => _startDateTime;
 
         private DateTime _endDateTime;
         /// <summary>
@@ -51,6 +53,7 @@ namespace PowerThreadPool.Results
             get => _endDateTime.ToLocalTime();
             internal set => _endDateTime = value;
         }
+        internal DateTime UtcEndDateTime => _endDateTime;
 
         /// <summary>
         /// Retry information.

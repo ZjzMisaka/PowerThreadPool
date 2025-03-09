@@ -51,7 +51,7 @@ namespace PowerThreadPool.Results
                     Exception = Exception,
                     Result = (TRes)(object)Result,
                     ID = ID,
-                    QueueDateTime = QueueDateTime
+                    QueueDateTime = UtcQueueDateTime
                 };
             }
             return result;
