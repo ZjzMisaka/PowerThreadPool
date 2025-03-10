@@ -30,7 +30,7 @@ namespace PowerThreadPool.Collections
                 for (int i = 0; i < _reversed.Count; ++i)
                 {
                     int p = _reversed[i];
-                    if (priority >= p)
+                    if (priority > p)
                     {
                         _reversed.Insert(i, priority);
                         inserted = true;
