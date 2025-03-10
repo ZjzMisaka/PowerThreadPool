@@ -1,6 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading;
+using PowerThreadPool.Constants;
+using PowerThreadPool.Helpers;
 
 namespace PowerThreadPool.Collections
 {
@@ -9,14 +11,13 @@ namespace PowerThreadPool.Collections
         private readonly ConcurrentDictionary<int, ConcurrentStack<T>> _queueDic;
         private readonly ConcurrentSet<int> _prioritySet;
         private List<int> _reversed;
-        private volatile bool _updated;
+        private InterlockedFlag<CanInsertPriority> _canInsertPriority = CanInsertPriority.Allowed;
 
         internal ConcurrentStealablePriorityStack()
         {
             _queueDic = new ConcurrentDictionary<int, ConcurrentStack<T>>();
             _prioritySet = new ConcurrentSet<int>();
             _reversed = new List<int>();
-            _updated = false;
         }
 
         public void Set(T item, int priority)
@@ -24,7 +25,23 @@ namespace PowerThreadPool.Collections
             ConcurrentStack<T> queue = _queueDic.GetOrAdd(priority, _ =>
             {
                 _prioritySet.Add(priority);
-                _updated = true;
+                SpinWait.SpinUntil(() => _canInsertPriority.TrySet(CanInsertPriority.NotAllowed, CanInsertPriority.Allowed));
+                bool inserted = false;
+                for (int i = 0; i < _reversed.Count; ++i)
+                {
+                    int p = _reversed[i];
+                    if (priority >= p)
+                    {
+                        _reversed.Insert(i, priority);
+                        inserted = true;
+                        break;
+                    }
+                }
+                if (!inserted)
+                {
+                    _reversed.Add(priority);
+                }
+                _canInsertPriority = CanInsertPriority.Allowed;
                 return new ConcurrentStack<T>();
             });
 
@@ -34,12 +51,6 @@ namespace PowerThreadPool.Collections
         public T Get()
         {
             T item = default;
-
-            if (_updated)
-            {
-                _updated = false;
-                _reversed = _prioritySet.OrderByDescending(x => x).ToList();
-            }
 
             for (int i = 0; i < _reversed.Count; ++i)
             {
