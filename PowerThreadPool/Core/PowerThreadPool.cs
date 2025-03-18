@@ -55,6 +55,8 @@ namespace PowerThreadPool
         private readonly InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
         internal readonly InterlockedFlag<CanDeleteRedundantWorker> _canDeleteRedundantWorker = CanDeleteRedundantWorker.Allowed;
 
+        private ConcurrentBag<WorkBase> _setWorkBag = new ConcurrentBag<WorkBase>();
+
         private PowerPoolOption _powerPoolOption;
         public PowerPoolOption PowerPoolOption
         {
@@ -328,16 +330,50 @@ namespace PowerThreadPool
             CheckPoolStart();
 
             Worker worker = null;
-            // In the GetWorker logic:
-            // 1. It will try to get an available Worker.
-            // 2. If no free Workers are available, it will attempt to create a new Worker.
-            // 3. If creation fails, it will try to select an existing Worker.
-            // This logic rarely results in spinning, unless a large number of Work items are added at once.
-            // Even if spinning occurs, GetWorker is non-blocking and executes quickly,
-            // so spinning will not consume a lot of CPU resources. 
-            Spinner.Start(() => (worker = GetWorker(work.LongRunning)) != null);
-            work.QueueDateTime = DateTime.UtcNow;
-            worker.SetWork(work, false);
+            if ((worker = GetWorker(work.LongRunning)) != null)
+            {
+                if (!work.LongRunning)
+                {
+                    while (_setWorkBag.TryTake(out WorkBase takedWork))
+                    {
+                        takedWork.QueueDateTime = DateTime.UtcNow;
+                        worker.SetWork(takedWork, false, false);
+                    }
+                }
+                work.QueueDateTime = DateTime.UtcNow;
+                worker.SetWork(work, false, true);
+            }
+            else
+            {
+                if (work.LongRunning)
+                {
+                    Thread.Yield();
+                    SetWork(work);
+                }
+                _setWorkBag.Add(work);
+            }
+        }
+
+        /// <summary>
+        /// Set a work into a worker's work queue.
+        /// </summary>
+        /// <param name="work"></param>
+        internal void SetWork()
+        {
+            Worker worker = null;
+            if ((worker = GetWorker(false)) != null)
+            {
+                while (_setWorkBag.TryTake(out WorkBase takedWork))
+                {
+                    takedWork.QueueDateTime = DateTime.UtcNow;
+                    bool isLast = _setWorkBag.IsEmpty;
+                    worker.SetWork(takedWork, false, isLast);
+                    if (isLast)
+                    {
+                        break;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -407,11 +443,11 @@ namespace PowerThreadPool
         {
             Worker worker = null;
 
-            if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount)
+            if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount || longRunning)
             {
                 if (_canCreateNewWorker.TrySet(CanCreateNewWorker.NotAllowed, CanCreateNewWorker.Allowed))
                 {
-                    if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount)
+                    if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount || longRunning)
                     {
                         worker = new Worker(this);
                         worker.CanGetWork.InterlockedValue = CanGetWork.NotAllowed;
@@ -531,6 +567,12 @@ namespace PowerThreadPool
         /// </summary>
         internal void CheckPoolIdle()
         {
+            if (!_setWorkBag.IsEmpty)
+            {
+                SetWork();
+                return;
+            }
+
             if (_disposing || _disposed)
             {
                 return;
