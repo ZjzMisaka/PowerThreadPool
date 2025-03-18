@@ -358,8 +358,9 @@ namespace PowerThreadPool
         /// Set a work into a worker's work queue.
         /// </summary>
         /// <param name="work"></param>
-        internal void SetWork()
+        internal bool SetWork()
         {
+            bool res = false;
             Worker worker = null;
             if ((worker = GetWorker(false)) != null)
             {
@@ -370,10 +371,12 @@ namespace PowerThreadPool
                     worker.SetWork(takedWork, false, isLast);
                     if (isLast)
                     {
+                        res = true;
                         break;
                     }
                 }
             }
+            return res;
         }
 
         /// <summary>
@@ -569,7 +572,7 @@ namespace PowerThreadPool
         {
             if (!_setWorkBag.IsEmpty)
             {
-                SetWork();
+                Spinner.Start(() => SetWork());
                 return;
             }
 
