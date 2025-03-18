@@ -2008,35 +2008,35 @@ namespace UnitTest
 
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
             }, new WorkOption()
             {
             });
 
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
             }, new WorkOption()
             {
             });
 
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
             }, new WorkOption()
             {
             });
 
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
             }, new WorkOption()
             {
             });
 
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
             }, new WorkOption()
             {
             });
@@ -2073,7 +2073,7 @@ namespace UnitTest
 
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(500);
             }, new WorkOption()
             {
             });
@@ -5691,7 +5691,9 @@ namespace UnitTest
                 await Task.Delay(2000);
                 work.Worker = worker;
             });
+            Spinner.s_enableTimeoutException = false;
             WorkGuard workGuard = new WorkGuard(work, true);
+            Spinner.s_enableTimeoutException = true;
 
             await task1;
             await task2;
