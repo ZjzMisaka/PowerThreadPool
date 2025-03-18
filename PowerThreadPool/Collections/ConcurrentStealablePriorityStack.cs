@@ -25,7 +25,7 @@ namespace PowerThreadPool.Collections
             ConcurrentStack<T> queue = _queueDic.GetOrAdd(priority, _ =>
             {
                 _prioritySet.Add(priority);
-                SpinWait.SpinUntil(() => _canInsertPriority.TrySet(CanInsertPriority.NotAllowed, CanInsertPriority.Allowed));
+                Spinner.Start(() => _canInsertPriority.TrySet(CanInsertPriority.NotAllowed, CanInsertPriority.Allowed));
                 bool inserted = false;
                 for (int i = 0; i < _reversed.Count; ++i)
                 {

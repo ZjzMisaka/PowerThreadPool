@@ -335,7 +335,7 @@ namespace PowerThreadPool
             // This logic rarely results in spinning, unless a large number of Work items are added at once.
             // Even if spinning occurs, GetWorker is non-blocking and executes quickly,
             // so spinning will not consume a lot of CPU resources. 
-            SpinWait.SpinUntil(() => (worker = GetWorker(work.LongRunning)) != null);
+            Spinner.Start(() => (worker = GetWorker(work.LongRunning)) != null);
             work.QueueDateTime = DateTime.UtcNow;
             worker.SetWork(work, false);
         }
@@ -383,7 +383,7 @@ namespace PowerThreadPool
                     // Prevent Worker from being disturbed when getting tasks and causing race condition. 
                     // CanGetWork will reset Allowed after tasks are added to the Worker. 
                     // It executes quickly, so spinning will not consume a lot of CPU resources. 
-                    SpinWait.SpinUntil(() => worker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed));
+                    Spinner.Start(() => worker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed));
                     Interlocked.Decrement(ref _idleWorkerCount);
 
                     if (longRunning)

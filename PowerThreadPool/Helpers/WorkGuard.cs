@@ -37,7 +37,7 @@ namespace PowerThreadPool.Helpers
             {
                 // Do not perform UnFreeze when _worker is null. Cases where _worker is null:
                 // 1. When first entering the loop, _worker is null.
-                // 2. Inside the SpinWait.SpinUntil() function below, _work.Worker is null 
+                // 2. Inside the Spinner.Start() function below, _work.Worker is null 
                 //    (e.g., the task has already been completed, or during the work-stealing logic).
                 UnFreeze();
 
@@ -49,7 +49,7 @@ namespace PowerThreadPool.Helpers
                 // ----
                 // In the work-stealing logic, _work.Worker may be null, but the work-stealing algorithm is non-blocking and executes quickly,
                 // Therefore, SpinUntil will not consume excessive resources during this waiting process.
-                SpinWait.SpinUntil(() => (_worker = _work.Worker) != null || _work.IsDone);
+                Spinner.Start(() => (_worker = _work.Worker) != null || _work.IsDone);
 
                 if (!_work.IsDone)
                 {
@@ -57,13 +57,13 @@ namespace PowerThreadPool.Helpers
                     // ----
                     // In the work-stealing logic, WorkStealability may be WorkStealability.NotAllowed, but the work-stealing algorithm is non-blocking and executes quickly,
                     // Therefore, SpinUntil will not consume excessive resources during this waiting process.
-                    SpinWait.SpinUntil(() => _worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed));
+                    Spinner.Start(() => _worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed));
 
                     // Temporarily prevent the executing work from allowing the worker to switch to the next work when the current work is completed
                     // ----
                     // In the WorkGuard.Freeze logic, WorkHeldStates may be WorkHeldStates.Held, but the WorkGuard.Freeze logic is non-blocking and executes quickly,
                     // Therefore, SpinUntil will not consume excessive resources during this waiting process.
-                    SpinWait.SpinUntil(() => _worker.WorkHeldState.TrySet(WorkHeldStates.Held, WorkHeldStates.NotHeld));
+                    Spinner.Start(() => _worker.WorkHeldState.TrySet(WorkHeldStates.Held, WorkHeldStates.NotHeld));
                 }
             }
             while (_work.Worker?.ID != _worker?.ID);

@@ -302,7 +302,7 @@ namespace PowerThreadPool
             // to temporarily prevent the executing work from allowing the worker to switch to the next work 
             // when the current work is completed. The WorkGuard.Freeze logic is non-blocking and executes quickly,
             // so spinning will not consume a lot of CPU resources. 
-            SpinWait.SpinUntil(() => WorkHeldState == WorkHeldStates.NotHeld);
+            Spinner.Start(() => WorkHeldState == WorkHeldStates.NotHeld);
             Work.Worker = null;
             executeResult.ID = Work.ID;
 
@@ -529,7 +529,7 @@ namespace PowerThreadPool
         {
             // The time that CanGetWork is in other states is very short; these logics are non-blocking and execute quickly,
             // so spinning will not consume a lot of CPU resources.
-            SpinWait.SpinUntil(() => CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed));
+            Spinner.Start(() => CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed));
 
             waitingWorkID = _waitingWorkIDPriorityCollection.Get();
             if (waitingWorkID != null)
@@ -624,7 +624,7 @@ namespace PowerThreadPool
             {
                 // ① There is a possibility that a worker may still obtain and execute work between the 
                 // time the _killTimer triggers OnKillTimerElapsed and when CanGetWork is set to Disabled. 
-                SpinWait.SpinUntil(() =>
+                Spinner.Start(() =>
                 {
                     CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.Allowed, out CanGetWork origValue);
                     // If situation ① occurs and _killTimer.Stop() has not yet been executed, the current state 
