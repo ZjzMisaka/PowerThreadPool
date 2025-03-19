@@ -30,7 +30,7 @@ namespace PowerThreadPool.Helpers
             SpinWait.SpinUntil(func);
 #if DEBUG
             stopwatch.Stop();
-            if (stopwatch.Elapsed.Ticks >= 8000)
+            if (stopwatch.Elapsed.Ticks >= 5000)
             {
                 double milliseconds = (double)stopwatch.Elapsed.Ticks / Stopwatch.Frequency * 1000;
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
