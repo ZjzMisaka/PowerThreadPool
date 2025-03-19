@@ -419,18 +419,22 @@ namespace PowerThreadPool
             {
                 if (_idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    // Prevent Worker from being disturbed when getting tasks and causing race condition. 
-                    // CanGetWork will reset Allowed after tasks are added to the Worker. 
-                    // It executes quickly, so spinning will not consume a lot of CPU resources. 
-                    Spinner.Start(() => worker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed));
-                    Interlocked.Decrement(ref _idleWorkerCount);
-
-                    if (longRunning)
+                    if (worker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
                     {
-                        Interlocked.Increment(ref _longRunningWorkerCount);
-                    }
+                        Interlocked.Decrement(ref _idleWorkerCount);
 
-                    return worker;
+                        if (longRunning)
+                        {
+                            Interlocked.Increment(ref _longRunningWorkerCount);
+                        }
+
+                        return worker;
+                    }
+                    else
+                    {
+                        _idleWorkerDic[firstWorkerID] = worker;
+                        _idleWorkerQueue.Enqueue(firstWorkerID);
+                    }
                 }
             }
             return null;
