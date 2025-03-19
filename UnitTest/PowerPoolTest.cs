@@ -5691,9 +5691,13 @@ namespace UnitTest
                 await Task.Delay(2000);
                 work.Worker = worker;
             });
+#if DEBUG
             Spinner.s_enableTimeoutException = false;
+#endif
             WorkGuard workGuard = new WorkGuard(work, true);
+#if DEBUG
             Spinner.s_enableTimeoutException = true;
+#endif
 
             await task1;
             await task2;

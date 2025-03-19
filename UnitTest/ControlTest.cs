@@ -919,7 +919,9 @@ namespace UnitTest
         [Fact]
         public void TestStopByIDAfterWorkStart()
         {
+#if DEBUG
             Spinner.s_enableTimeoutException = false;
+#endif
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool() { PowerPoolOption = new PowerPoolOption() { StartSuspended = true } };
@@ -936,7 +938,9 @@ namespace UnitTest
 
             powerPool.Start();
             powerPool.Wait();
+#if DEBUG
             Spinner.s_enableTimeoutException = true;
+#endif
         }
 
         [Fact]
