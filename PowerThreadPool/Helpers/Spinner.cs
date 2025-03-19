@@ -9,6 +9,7 @@ namespace PowerThreadPool.Helpers
 {
     internal class Spinner
     {
+#if DEBUG
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         internal static bool s_enableTimeoutException = true;
         internal static void Start(
@@ -16,6 +17,9 @@ namespace PowerThreadPool.Helpers
         [CallerMemberName] string callerName = null,
         [CallerFilePath] string callerFilePath = null,
         [CallerLineNumber] int callerLineNumber = 0)
+#else
+        internal static void Start(Func<bool> func)
+#endif
 #else
         internal static void Start(Func<bool> func)
 #endif
