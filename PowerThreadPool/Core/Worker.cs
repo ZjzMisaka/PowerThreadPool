@@ -527,59 +527,62 @@ namespace PowerThreadPool
 
         private bool TurnToIdle(ref string waitingWorkID, ref WorkBase work)
         {
-            // The time that CanGetWork is in other states is very short; these logics are non-blocking and execute quickly,
-            // so spinning will not consume a lot of CPU resources.
-            Spinner.Start(() => CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed));
-
-            waitingWorkID = _waitingWorkIDPriorityCollection.Get();
-            if (waitingWorkID != null)
+            if (CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed))
             {
-                if (_waitingWorkDic.TryRemove(waitingWorkID, out work))
+                waitingWorkID = _waitingWorkIDPriorityCollection.Get();
+                if (waitingWorkID != null)
                 {
-                    Interlocked.Decrement(ref _waitingWorkCount);
-                }
-
-                CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
-
-                return false;
-            }
-            else
-            {
-                _runSignal.Reset();
-
-                PowerPoolOption powerPoolOption = _powerPool.PowerPoolOption;
-
-                Interlocked.Decrement(ref _powerPool._runningWorkerCount);
-                _powerPool.InvokeRunningWorkerCountChangedEvent(false);
-
-                DestroyThreadOption destroyThreadOption = powerPoolOption.DestroyThreadOption;
-
-                if (destroyThreadOption != null && destroyThreadOption.KeepAliveTime == 0 && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
-                {
-                    CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.ToBeDisabled);
-                    TryDisposeSelf(false);
-                }
-                else
-                {
-                    if (destroyThreadOption != null && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
+                    if (_waitingWorkDic.TryRemove(waitingWorkID, out work))
                     {
-                        _killTimer.Set(destroyThreadOption.KeepAliveTime);
+                        Interlocked.Decrement(ref _waitingWorkCount);
                     }
-
-                    WorkerState.InterlockedValue = WorkerStates.Idle;
 
                     CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
-                    if (_powerPool._idleWorkerDic.TryAdd(ID, this))
-                    {
-                        Interlocked.Increment(ref _powerPool._idleWorkerCount);
-                        _powerPool._idleWorkerQueue.Enqueue(ID);
-                    }
+                    return false;
                 }
+                else
+                {
+                    _runSignal.Reset();
 
-                _powerPool.CheckPoolIdle();
+                    PowerPoolOption powerPoolOption = _powerPool.PowerPoolOption;
 
-                return true;
+                    Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                    _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
+                    DestroyThreadOption destroyThreadOption = powerPoolOption.DestroyThreadOption;
+
+                    if (destroyThreadOption != null && destroyThreadOption.KeepAliveTime == 0 && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
+                    {
+                        CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.ToBeDisabled);
+                        TryDisposeSelf(false);
+                    }
+                    else
+                    {
+                        if (destroyThreadOption != null && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
+                        {
+                            _killTimer.Set(destroyThreadOption.KeepAliveTime);
+                        }
+
+                        WorkerState.InterlockedValue = WorkerStates.Idle;
+
+                        CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
+
+                        if (_powerPool._idleWorkerDic.TryAdd(ID, this))
+                        {
+                            Interlocked.Increment(ref _powerPool._idleWorkerCount);
+                            _powerPool._idleWorkerQueue.Enqueue(ID);
+                        }
+                    }
+
+                    _powerPool.CheckPoolIdle();
+
+                    return true;
+                }
+            }
+            else
+            {
+                return false;
             }
         }
 
