@@ -1,4 +1,7 @@
 ﻿using System;
+#if DEBUG
+using System.Diagnostics;
+#endif
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
 using System.Runtime.CompilerServices;
 #endif
