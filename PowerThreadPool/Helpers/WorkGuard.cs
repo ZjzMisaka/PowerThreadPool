@@ -46,23 +46,14 @@ namespace PowerThreadPool.Helpers
                 // (temporarily keeping the Worker bound to this task).
                 // Perform another check to see if the current Worker in _work matches the previously retrieved Worker. 
                 // If they are different, it means the Freeze operation has failed and a retry is needed.
-                // ----
-                // In the work-stealing logic, _work.Worker may be null, but the work-stealing algorithm is non-blocking and executes quickly,
-                // Therefore, SpinUntil will not consume excessive resources during this waiting process.
                 Spinner.Start(() => (_worker = _work.Worker) != null || _work.IsDone);
 
                 if (!_work.IsDone)
                 {
                     // Prevent the target work from being stolen by other workers using the work-stealing algorithm when it is stopped or canceled
-                    // ----
-                    // In the work-stealing logic, WorkStealability may be WorkStealability.NotAllowed, but the work-stealing algorithm is non-blocking and executes quickly,
-                    // Therefore, SpinUntil will not consume excessive resources during this waiting process.
                     Spinner.Start(() => _worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed));
 
                     // Temporarily prevent the executing work from allowing the worker to switch to the next work when the current work is completed
-                    // ----
-                    // In the WorkGuard.Freeze logic, WorkHeldStates may be WorkHeldStates.Held, but the WorkGuard.Freeze logic is non-blocking and executes quickly,
-                    // Therefore, SpinUntil will not consume excessive resources during this waiting process.
                     Spinner.Start(() => _worker.WorkHeldState.TrySet(WorkHeldStates.Held, WorkHeldStates.NotHeld));
                 }
             }
