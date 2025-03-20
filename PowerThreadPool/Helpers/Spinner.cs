@@ -11,7 +11,7 @@ namespace PowerThreadPool.Helpers
     {
 #if DEBUG
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        internal static bool s_enableTimeoutException = true;
+        internal static bool s_enableTimeoutLog = true;
         internal static void Start(
         Func<bool> func,
         [CallerMemberName] string callerName = null,
@@ -34,16 +34,16 @@ namespace PowerThreadPool.Helpers
             {
                 double milliseconds = (double)stopwatch.Elapsed.Ticks / Stopwatch.Frequency * 1000;
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-                if (s_enableTimeoutException)
+                if (s_enableTimeoutLog)
                 {
-                    throw new TimeoutException(
+                    Console.WriteLine(
                        $"The operation took too long to complete: {stopwatch.Elapsed.Ticks} ticks. ({milliseconds:f3}ms)" +
-                       $"\nCaller: {callerName}" +
-                       $"\nFile: {callerFilePath}" +
-                       $"\nLine: {callerLineNumber}");
+                       $"\n\tCaller: {callerName}" +
+                       $"\n\tFile: {callerFilePath}" +
+                       $"\n\tLine: {callerLineNumber}");
                 }
 #else
-                throw new TimeoutException($"The operation took too long to complete: {stopwatch.Elapsed.Ticks} ticks.");
+                Console.WriteLine($"The operation took too long to complete: {stopwatch.Elapsed.Ticks} ticks.");
 #endif
             }
 #endif

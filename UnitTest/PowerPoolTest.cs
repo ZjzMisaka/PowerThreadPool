@@ -5692,11 +5692,11 @@ namespace UnitTest
                 work.Worker = worker;
             });
 #if DEBUG
-            Spinner.s_enableTimeoutException = false;
+            Spinner.s_enableTimeoutLog = false;
 #endif
             WorkGuard workGuard = new WorkGuard(work, true);
 #if DEBUG
-            Spinner.s_enableTimeoutException = true;
+            Spinner.s_enableTimeoutLog = true;
 #endif
 
             await task1;
