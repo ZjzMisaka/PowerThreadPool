@@ -350,7 +350,10 @@ namespace PowerThreadPool
                     Thread.Yield();
                     SetWork(work);
                 }
-                _setWorkBag.Add(work);
+                else
+                {
+                    _setWorkBag.Add(work);
+                }
             }
         }
 
