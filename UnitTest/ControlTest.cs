@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using PowerThreadPool;
+#if DEBUG
+using PowerThreadPool.Helpers;
+#endif
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using Xunit.Abstractions;
@@ -919,6 +921,9 @@ namespace UnitTest
         [Fact]
         public void TestStopByIDAfterWorkStart()
         {
+#if DEBUG
+            Spinner.s_enableTimeoutLog = false;
+#endif
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool() { PowerPoolOption = new PowerPoolOption() { StartSuspended = true } };
@@ -935,6 +940,9 @@ namespace UnitTest
 
             powerPool.Start();
             powerPool.Wait();
+#if DEBUG
+            Spinner.s_enableTimeoutLog = true;
+#endif
         }
 
         [Fact]

@@ -298,11 +298,17 @@ namespace PowerThreadPool
                 executeResult = Work.SetExecuteResult(_powerPool, null, ex, Status.Failed);
                 _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
             }
-            // During the WorkGuard.Freeze logic, the WorkHeldState will be set to WorkHeldStates.Held
-            // to temporarily prevent the executing work from allowing the worker to switch to the next work 
-            // when the current work is completed. The WorkGuard.Freeze logic is non-blocking and executes quickly,
-            // so spinning will not consume a lot of CPU resources. 
-            SpinWait.SpinUntil(() => WorkHeldState == WorkHeldStates.NotHeld);
+#if DEBUG
+            Spinner.Start(() => WorkHeldState == WorkHeldStates.NotHeld);
+#else
+            while (true)
+            {
+                if (WorkHeldState == WorkHeldStates.NotHeld)
+                {
+                    break;
+                }
+            }
+#endif
             Work.Worker = null;
             executeResult.ID = Work.ID;
 
@@ -527,59 +533,62 @@ namespace PowerThreadPool
 
         private bool TurnToIdle(ref string waitingWorkID, ref WorkBase work)
         {
-            // The time that CanGetWork is in other states is very short; these logics are non-blocking and execute quickly,
-            // so spinning will not consume a lot of CPU resources.
-            SpinWait.SpinUntil(() => CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed));
-
-            waitingWorkID = _waitingWorkIDPriorityCollection.Get();
-            if (waitingWorkID != null)
+            if (CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed))
             {
-                if (_waitingWorkDic.TryRemove(waitingWorkID, out work))
+                waitingWorkID = _waitingWorkIDPriorityCollection.Get();
+                if (waitingWorkID != null)
                 {
-                    Interlocked.Decrement(ref _waitingWorkCount);
-                }
-
-                CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
-
-                return false;
-            }
-            else
-            {
-                _runSignal.Reset();
-
-                PowerPoolOption powerPoolOption = _powerPool.PowerPoolOption;
-
-                Interlocked.Decrement(ref _powerPool._runningWorkerCount);
-                _powerPool.InvokeRunningWorkerCountChangedEvent(false);
-
-                DestroyThreadOption destroyThreadOption = powerPoolOption.DestroyThreadOption;
-
-                if (destroyThreadOption != null && destroyThreadOption.KeepAliveTime == 0 && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
-                {
-                    CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.ToBeDisabled);
-                    TryDisposeSelf(false);
-                }
-                else
-                {
-                    if (destroyThreadOption != null && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
+                    if (_waitingWorkDic.TryRemove(waitingWorkID, out work))
                     {
-                        _killTimer.Set(destroyThreadOption.KeepAliveTime);
+                        Interlocked.Decrement(ref _waitingWorkCount);
                     }
-
-                    WorkerState.InterlockedValue = WorkerStates.Idle;
 
                     CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
-                    if (_powerPool._idleWorkerDic.TryAdd(ID, this))
-                    {
-                        Interlocked.Increment(ref _powerPool._idleWorkerCount);
-                        _powerPool._idleWorkerQueue.Enqueue(ID);
-                    }
+                    return false;
                 }
+                else
+                {
+                    _runSignal.Reset();
 
-                _powerPool.CheckPoolIdle();
+                    PowerPoolOption powerPoolOption = _powerPool.PowerPoolOption;
 
-                return true;
+                    Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                    _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
+                    DestroyThreadOption destroyThreadOption = powerPoolOption.DestroyThreadOption;
+
+                    if (destroyThreadOption != null && destroyThreadOption.KeepAliveTime == 0 && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
+                    {
+                        CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.ToBeDisabled);
+                        TryDisposeSelf(false);
+                    }
+                    else
+                    {
+                        if (destroyThreadOption != null && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
+                        {
+                            _killTimer.Set(destroyThreadOption.KeepAliveTime);
+                        }
+
+                        WorkerState.InterlockedValue = WorkerStates.Idle;
+
+                        CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
+
+                        if (_powerPool._idleWorkerDic.TryAdd(ID, this))
+                        {
+                            Interlocked.Increment(ref _powerPool._idleWorkerCount);
+                            _powerPool._idleWorkerQueue.Enqueue(ID);
+                        }
+                    }
+
+                    _powerPool.CheckPoolIdle();
+
+                    return true;
+                }
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -624,7 +633,7 @@ namespace PowerThreadPool
             {
                 // ① There is a possibility that a worker may still obtain and execute work between the 
                 // time the _killTimer triggers OnKillTimerElapsed and when CanGetWork is set to Disabled. 
-                SpinWait.SpinUntil(() =>
+                Spinner.Start(() =>
                 {
                     CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.Allowed, out CanGetWork origValue);
                     // If situation ① occurs and _killTimer.Stop() has not yet been executed, the current state 

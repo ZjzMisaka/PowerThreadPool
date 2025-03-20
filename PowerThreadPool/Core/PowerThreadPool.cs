@@ -328,14 +328,17 @@ namespace PowerThreadPool
             CheckPoolStart();
 
             Worker worker = null;
-            // In the GetWorker logic:
-            // 1. It will try to get an available Worker.
-            // 2. If no free Workers are available, it will attempt to create a new Worker.
-            // 3. If creation fails, it will try to select an existing Worker.
-            // This logic rarely results in spinning, unless a large number of Work items are added at once.
-            // Even if spinning occurs, GetWorker is non-blocking and executes quickly,
-            // so spinning will not consume a lot of CPU resources. 
-            SpinWait.SpinUntil(() => (worker = GetWorker(work.LongRunning)) != null);
+#if DEBUG
+            Spinner.Start(() => (worker = GetWorker(work.LongRunning)) != null);
+#else
+            while (true)
+            {
+                if ((worker = GetWorker(work.LongRunning)) != null)
+                {
+                    break;
+                }
+            }
+#endif
             work.QueueDateTime = DateTime.UtcNow;
             worker.SetWork(work, false);
         }
@@ -380,18 +383,22 @@ namespace PowerThreadPool
             {
                 if (_idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
-                    // Prevent Worker from being disturbed when getting tasks and causing race condition. 
-                    // CanGetWork will reset Allowed after tasks are added to the Worker. 
-                    // It executes quickly, so spinning will not consume a lot of CPU resources. 
-                    SpinWait.SpinUntil(() => worker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed));
-                    Interlocked.Decrement(ref _idleWorkerCount);
-
-                    if (longRunning)
+                    if (worker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
                     {
-                        Interlocked.Increment(ref _longRunningWorkerCount);
-                    }
+                        Interlocked.Decrement(ref _idleWorkerCount);
 
-                    return worker;
+                        if (longRunning)
+                        {
+                            Interlocked.Increment(ref _longRunningWorkerCount);
+                        }
+
+                        return worker;
+                    }
+                    else
+                    {
+                        _idleWorkerDic[firstWorkerID] = worker;
+                        _idleWorkerQueue.Enqueue(firstWorkerID);
+                    }
                 }
             }
             return null;
@@ -407,11 +414,11 @@ namespace PowerThreadPool
         {
             Worker worker = null;
 
-            if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount)
+            if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount || longRunning)
             {
                 if (_canCreateNewWorker.TrySet(CanCreateNewWorker.NotAllowed, CanCreateNewWorker.Allowed))
                 {
-                    if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount)
+                    if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount || longRunning)
                     {
                         worker = new Worker(this);
                         worker.CanGetWork.InterlockedValue = CanGetWork.NotAllowed;
