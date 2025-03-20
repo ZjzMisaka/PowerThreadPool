@@ -55,8 +55,6 @@ namespace PowerThreadPool
         private readonly InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
         internal readonly InterlockedFlag<CanDeleteRedundantWorker> _canDeleteRedundantWorker = CanDeleteRedundantWorker.Allowed;
 
-        private ConcurrentBag<WorkBase> _setWorkBag = new ConcurrentBag<WorkBase>();
-
         private PowerPoolOption _powerPoolOption;
         public PowerPoolOption PowerPoolOption
         {
@@ -330,56 +328,9 @@ namespace PowerThreadPool
             CheckPoolStart();
 
             Worker worker = null;
-            if ((worker = GetWorker(work.LongRunning)) != null)
-            {
-                if (!work.LongRunning)
-                {
-                    while (_setWorkBag.TryTake(out WorkBase takedWork))
-                    {
-                        takedWork.QueueDateTime = DateTime.UtcNow;
-                        worker.SetWork(takedWork, false, false);
-                    }
-                }
-                work.QueueDateTime = DateTime.UtcNow;
-                worker.SetWork(work, false, true);
-            }
-            else
-            {
-                if (work.LongRunning)
-                {
-                    Thread.Yield();
-                    SetWork(work);
-                }
-                else
-                {
-                    _setWorkBag.Add(work);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Set a work into a worker's work queue.
-        /// </summary>
-        /// <param name="work"></param>
-        internal bool SetWork()
-        {
-            bool res = false;
-            Worker worker = null;
-            if ((worker = GetWorker(false)) != null)
-            {
-                while (_setWorkBag.TryTake(out WorkBase takedWork))
-                {
-                    takedWork.QueueDateTime = DateTime.UtcNow;
-                    bool isLast = _setWorkBag.IsEmpty;
-                    worker.SetWork(takedWork, false, isLast);
-                    if (isLast)
-                    {
-                        res = true;
-                        break;
-                    }
-                }
-            }
-            return res;
+            Spinner.Start(() => (worker = GetWorker(work.LongRunning)) != null);
+            work.QueueDateTime = DateTime.UtcNow;
+            worker.SetWork(work, false);
         }
 
         /// <summary>
@@ -577,12 +528,6 @@ namespace PowerThreadPool
         /// </summary>
         internal void CheckPoolIdle()
         {
-            if (!_setWorkBag.IsEmpty)
-            {
-                Spinner.Start(() => SetWork());
-                return;
-            }
-
             if (_disposing || _disposed)
             {
                 return;
