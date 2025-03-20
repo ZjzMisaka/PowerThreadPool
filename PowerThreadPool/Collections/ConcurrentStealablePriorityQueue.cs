@@ -25,7 +25,14 @@ namespace PowerThreadPool.Collections
             ConcurrentQueue<T> queue = _queueDic.GetOrAdd(priority, _ =>
             {
                 _prioritySet.Add(priority);
+#if DEBUG
                 Spinner.Start(() => _canInsertPriority.TrySet(CanInsertPriority.NotAllowed, CanInsertPriority.Allowed));
+#else
+                while (!_canInsertPriority.TrySet(CanInsertPriority.NotAllowed, CanInsertPriority.Allowed))
+                {
+                    Thread.Yield();
+                }
+#endif
                 bool inserted = false;
                 for (int i = 0; i < _reversed.Count; ++i)
                 {

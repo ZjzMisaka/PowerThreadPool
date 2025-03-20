@@ -298,11 +298,14 @@ namespace PowerThreadPool
                 executeResult = Work.SetExecuteResult(_powerPool, null, ex, Status.Failed);
                 _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
             }
-            // During the WorkGuard.Freeze logic, the WorkHeldState will be set to WorkHeldStates.Held
-            // to temporarily prevent the executing work from allowing the worker to switch to the next work 
-            // when the current work is completed. The WorkGuard.Freeze logic is non-blocking and executes quickly,
-            // so spinning will not consume a lot of CPU resources. 
+#if DEBUG
             Spinner.Start(() => WorkHeldState == WorkHeldStates.NotHeld);
+#else
+            while (WorkHeldState != WorkHeldStates.NotHeld)
+            {
+                Thread.Yield();
+            }
+#endif
             Work.Worker = null;
             executeResult.ID = Work.ID;
 
