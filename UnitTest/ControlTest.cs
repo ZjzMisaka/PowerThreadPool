@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using PowerThreadPool;
+#if DEBUG
 using PowerThreadPool.Helpers;
+#endif
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using Xunit.Abstractions;
