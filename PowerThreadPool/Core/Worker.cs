@@ -301,9 +301,12 @@ namespace PowerThreadPool
 #if DEBUG
             Spinner.Start(() => WorkHeldState == WorkHeldStates.NotHeld);
 #else
-            while (WorkHeldState != WorkHeldStates.NotHeld)
+            while (true)
             {
-                Thread.Yield();
+                if (WorkHeldState == WorkHeldStates.NotHeld)
+                {
+                    break;
+                }
             }
 #endif
             Work.Worker = null;

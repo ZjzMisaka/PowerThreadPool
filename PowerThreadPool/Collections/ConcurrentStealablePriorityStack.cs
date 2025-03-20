@@ -28,9 +28,12 @@ namespace PowerThreadPool.Collections
 #if DEBUG
                 Spinner.Start(() => _canInsertPriority.TrySet(CanInsertPriority.NotAllowed, CanInsertPriority.Allowed));
 #else
-                while (!_canInsertPriority.TrySet(CanInsertPriority.NotAllowed, CanInsertPriority.Allowed))
+                while (true)
                 {
-                    Thread.Yield();
+                    if (_canInsertPriority.TrySet(CanInsertPriority.NotAllowed, CanInsertPriority.Allowed))
+                    {
+                        break;
+                    }
                 }
 #endif
                 bool inserted = false;

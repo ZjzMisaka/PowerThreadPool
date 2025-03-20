@@ -331,9 +331,12 @@ namespace PowerThreadPool
 #if DEBUG
             Spinner.Start(() => (worker = GetWorker(work.LongRunning)) != null);
 #else
-            while ((worker = GetWorker(work.LongRunning)) == null)
+            while (true)
             {
-                Thread.Yield();
+                if ((worker = GetWorker(work.LongRunning)) != null)
+                {
+                    break;
+                }
             }
 #endif
             work.QueueDateTime = DateTime.UtcNow;
