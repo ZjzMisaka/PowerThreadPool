@@ -453,9 +453,10 @@ namespace PowerThreadPool
         {
             Worker selectedWorker = null;
             int minWaitingWorkCount = int.MaxValue;
-            UpdateAliveWorkerList();
 
-            foreach (Worker aliveWorker in _aliveWorkerList)
+            UpdateAliveWorkerList();
+            IEnumerable<Worker> workerList = _aliveWorkerList;
+            foreach (Worker aliveWorker in workerList)
             {
                 if (aliveWorker.LongRunning)
                 {
