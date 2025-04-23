@@ -544,8 +544,7 @@ namespace PowerThreadPool
             {
                 _aliveWorkDic.Clear();
                 _workGroupDic.Clear();
-                IEnumerable<Worker> workers = _aliveWorkerList;
-                foreach (Worker worker in workers)
+                foreach (Worker worker in _aliveWorkerDic.Values)
                 {
                     if (worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed))
                     {
@@ -666,8 +665,7 @@ namespace PowerThreadPool
             _pauseSignal.Set();
             if (resumeWorkPausedByID)
             {
-                IEnumerable<Worker> workers = _aliveWorkerList;
-                foreach (Worker worker in workers)
+                foreach (Worker worker in _aliveWorkerDic.Values)
                 {
                     if (worker.WorkerState == WorkerStates.Running)
                     {
@@ -721,8 +719,7 @@ namespace PowerThreadPool
         /// </summary>
         public void Cancel()
         {
-            IEnumerable<Worker> workers = _aliveWorkerList;
-            foreach (Worker worker in workers)
+            foreach (Worker worker in _aliveWorkerDic.Values)
             {
                 worker.Cancel();
             }

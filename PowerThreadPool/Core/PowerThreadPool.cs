@@ -35,6 +35,7 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _groupRelationDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<int, Worker> _aliveWorkerDic = new ConcurrentDictionary<int, Worker>();
+        internal volatile bool _aliveWorkerDicChanged = false;
         internal IEnumerable<Worker> _aliveWorkerList = new List<Worker>();
 
         internal ConcurrentQueue<string> _suspendedWorkQueue = new ConcurrentQueue<string>();
@@ -305,7 +306,7 @@ namespace PowerThreadPool
                 if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                 {
                     Interlocked.Increment(ref _aliveWorkerCount);
-                    _aliveWorkerList = _aliveWorkerDic.Values;
+                    _aliveWorkerDicChanged = true;
                 }
 
                 if (PoolRunning && WaitingWorkCount > 0 && worker.TryAssignWorkForNewWorker())
@@ -426,7 +427,7 @@ namespace PowerThreadPool
                         if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                         {
                             Interlocked.Increment(ref _aliveWorkerCount);
-                            _aliveWorkerList = _aliveWorkerDic.Values;
+                            _aliveWorkerDicChanged = true;
                         }
 
                         if (longRunning)
@@ -452,9 +453,9 @@ namespace PowerThreadPool
         {
             Worker selectedWorker = null;
             int minWaitingWorkCount = int.MaxValue;
-            IEnumerable<Worker> workers = _aliveWorkerList;
+            UpdateAliveWorkerList();
 
-            foreach (Worker aliveWorker in workers)
+            foreach (Worker aliveWorker in _aliveWorkerList)
             {
                 if (aliveWorker.LongRunning)
                 {
@@ -596,6 +597,18 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Update alive worker list when _aliveWorkerDic is already updated
+        /// </summary>
+        internal void UpdateAliveWorkerList()
+        {
+            if (_aliveWorkerDicChanged)
+            {
+                _aliveWorkerDicChanged = false;
+                _aliveWorkerList = _aliveWorkerDic.Values.ToArray();
+            }
+        }
+
+        /// <summary>
         /// Add worker into _aliveWorkDic
         /// </summary>
         /// <param name="work"></param>
@@ -677,8 +690,7 @@ namespace PowerThreadPool
                     Stop();
                     while (AliveWorkerCount > 0 || IdleWorkerCount > 0)
                     {
-                        IEnumerable<Worker> workers = _aliveWorkerList;
-                        foreach (Worker worker in workers)
+                        foreach (Worker worker in _aliveWorkerDic.Values)
                         {
                             worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed, out CanForceStop origCanForceStop);
                             if (worker.CanForceStop == CanForceStop.NotAllowed)
