@@ -174,7 +174,7 @@ namespace PowerThreadPool
             if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
             {
                 Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
-                _powerPool._aliveWorkerList = _powerPool._aliveWorkerDic.Values;
+                _powerPool._aliveWorkerDicChanged = true;
             }
             if (_powerPool._idleWorkerDic.TryRemove(ID, out _))
             {
@@ -222,7 +222,7 @@ namespace PowerThreadPool
                 if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
                 {
                     Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
-                    _powerPool._aliveWorkerList = _powerPool._aliveWorkerDic.Values;
+                    _powerPool._aliveWorkerDicChanged = true;
                 }
 
                 bool hasWaitingWork = RequeueAllWaitingWork();
@@ -471,8 +471,8 @@ namespace PowerThreadPool
         {
             Worker worker = null;
             int max = 0;
-            IEnumerable<Worker> workers = _powerPool._aliveWorkerList;
-            foreach (Worker runningWorker in workers)
+            _powerPool.UpdateAliveWorkerList();
+            foreach (Worker runningWorker in _powerPool._aliveWorkerList)
             {
                 if (runningWorker.WorkerState != WorkerStates.Running || runningWorker.ID == ID)
                 {
@@ -669,7 +669,7 @@ namespace PowerThreadPool
             if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
             {
                 Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
-                _powerPool._aliveWorkerList = _powerPool._aliveWorkerDic.Values;
+                _powerPool._aliveWorkerDicChanged = true;
             }
             Kill();
         }
