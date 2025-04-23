@@ -471,8 +471,10 @@ namespace PowerThreadPool
         {
             Worker worker = null;
             int max = 0;
+
             _powerPool.UpdateAliveWorkerList();
-            foreach (Worker runningWorker in _powerPool._aliveWorkerList)
+            IEnumerable<Worker> workerList = _powerPool._aliveWorkerList;
+            foreach (Worker runningWorker in workerList)
             {
                 if (runningWorker.WorkerState != WorkerStates.Running || runningWorker.ID == ID)
                 {
