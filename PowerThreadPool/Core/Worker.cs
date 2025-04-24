@@ -473,11 +473,27 @@ namespace PowerThreadPool
             int max = 0;
 
             _powerPool.UpdateAliveWorkerList();
-            IEnumerable<Worker> workerList = _powerPool._aliveWorkerList;
-            foreach (Worker runningWorker in workerList)
+            Worker[] workerList = _powerPool._aliveWorkerList;
+            int step = 0;
+            int startIndex = _powerPool._aliveWorkerListLoopIndex;
+            int loopIndex = _powerPool._aliveWorkerListLoopIndex;
+            while (true)
             {
+                if ((step >= 5 && worker != null) || step >= workerList.Length)
+                {
+                    break;
+                }
+                ++step;
+                if (loopIndex >= workerList.Length)
+                {
+                    loopIndex = 0;
+                }
+
+                Worker runningWorker = workerList[loopIndex];
+
                 if (runningWorker.WorkerState != WorkerStates.Running || runningWorker.ID == ID)
                 {
+                    ++loopIndex;
                     continue;
                 }
 
@@ -486,6 +502,7 @@ namespace PowerThreadPool
                 {
                     if (!runningWorker.WorkStealability.TrySet(Constants.WorkStealability.NotAllowed, Constants.WorkStealability.Allowed))
                     {
+                        ++loopIndex;
                         continue;
                     }
                     if (worker != null)
@@ -495,7 +512,9 @@ namespace PowerThreadPool
                     max = waitingWorkCountTemp;
                     worker = runningWorker;
                 }
+                ++loopIndex;
             }
+            _powerPool._aliveWorkerListLoopIndex = loopIndex;
             if (worker != null)
             {
                 int count = max == 1 ? 1 : max / 2;

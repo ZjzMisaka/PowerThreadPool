@@ -36,7 +36,8 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _groupRelationDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<int, Worker> _aliveWorkerDic = new ConcurrentDictionary<int, Worker>();
         internal volatile bool _aliveWorkerDicChanged = false;
-        internal IEnumerable<Worker> _aliveWorkerList = new List<Worker>();
+        internal Worker[] _aliveWorkerList = new List<Worker>().ToArray();
+        internal int _aliveWorkerListLoopIndex = 0;
 
         internal ConcurrentQueue<string> _suspendedWorkQueue = new ConcurrentQueue<string>();
         internal ConcurrentDictionary<string, WorkBase> _suspendedWork = new ConcurrentDictionary<string, WorkBase>();
@@ -455,11 +456,27 @@ namespace PowerThreadPool
             int minWaitingWorkCount = int.MaxValue;
 
             UpdateAliveWorkerList();
-            IEnumerable<Worker> workerList = _aliveWorkerList;
-            foreach (Worker aliveWorker in workerList)
+            Worker[] workerList = _aliveWorkerList;
+            int step = 0;
+            int startIndex = _aliveWorkerListLoopIndex;
+            int loopIndex = _aliveWorkerListLoopIndex;
+            while (true)
             {
+                if ((step >= 5 && selectedWorker != null) || step >= workerList.Length)
+                {
+                    break;
+                }
+                ++step;
+                if (loopIndex >= workerList.Length)
+                {
+                    loopIndex = 0;
+                }
+
+                Worker aliveWorker = workerList[loopIndex];
+
                 if (aliveWorker.LongRunning)
                 {
+                    ++loopIndex;
                     continue;
                 }
 
@@ -483,7 +500,11 @@ namespace PowerThreadPool
                         minWaitingWorkCount = waitingWorkCountTemp;
                     }
                 }
+
+                ++loopIndex;
             }
+
+            _aliveWorkerListLoopIndex = loopIndex;
 
             return selectedWorker;
         }
