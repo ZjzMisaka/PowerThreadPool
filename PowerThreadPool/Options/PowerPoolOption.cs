@@ -116,7 +116,9 @@ namespace PowerThreadPool.Options
             }
         }
 
-
+        /// <summary>
+        /// The type of work ID to be used.
+        /// </summary>
         public WorkIDType WorkIDType { get; set; } = WorkIDType.LongIncrement;
     }
 }
