@@ -131,7 +131,7 @@ namespace PowerThreadPool
                 {
                     _powerPool.InvokeWorkEndedEvent(executeResult);
                 }
-                Work.InvokeCallback(_powerPool, executeResult, _powerPool.PowerPoolOption);
+                Work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
             } while (Work.ShouldImmediateRetry(executeResult));
 
             if (Work.ShouldRequeue(executeResult))
@@ -181,7 +181,7 @@ namespace PowerThreadPool
                 Interlocked.Decrement(ref _powerPool._idleWorkerCount);
             }
 
-            ExecuteResultBase executeResult = Work.SetExecuteResult(_powerPool, null, ex, Status.ForceStopped);
+            ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
             executeResult.ID = Work.ID;
             _powerPool.InvokeWorkStoppedEvent(executeResult);
 
@@ -189,7 +189,7 @@ namespace PowerThreadPool
             {
                 ex.Data.Add("ThrowedWhenExecuting", false);
             }
-            Work.InvokeCallback(_powerPool, executeResult, _powerPool.PowerPoolOption);
+            Work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
 
             _powerPool.WorkCallbackEnd(Work, Status.Failed);
 
@@ -281,7 +281,7 @@ namespace PowerThreadPool
                 Interlocked.Increment(ref _powerPool._startCount);
                 Interlocked.Add(ref _powerPool._queueTime, (long)(runDateTime - Work.QueueDateTime).TotalMilliseconds);
                 object result = Work.Execute();
-                executeResult = Work.SetExecuteResult(_powerPool, result, null, Status.Succeed);
+                executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
                 executeResult.StartDateTime = runDateTime;
             }
             catch (ThreadInterruptedException ex)
@@ -291,11 +291,11 @@ namespace PowerThreadPool
             }
             catch (WorkStopException ex)
             {
-                executeResult = Work.SetExecuteResult(_powerPool, null, ex, Status.Stopped);
+                executeResult = Work.SetExecuteResult(null, ex, Status.Stopped);
             }
             catch (Exception ex)
             {
-                executeResult = Work.SetExecuteResult(_powerPool, null, ex, Status.Failed);
+                executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
                 _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
             }
 #if DEBUG
@@ -724,11 +724,11 @@ namespace PowerThreadPool
         {
             if (_waitingWorkDic.TryRemove(id, out WorkBase work))
             {
-                ExecuteResultBase executeResult = work.SetExecuteResult(_powerPool, null, null, Status.Canceled);
+                ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
                 executeResult.ID = id;
 
                 _powerPool.InvokeWorkCanceledEvent(executeResult);
-                work.InvokeCallback(_powerPool, executeResult, _powerPool.PowerPoolOption);
+                work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
                 _powerPool.WorkCallbackEnd(work, Status.Canceled);
 
                 Interlocked.Decrement(ref _waitingWorkCount);

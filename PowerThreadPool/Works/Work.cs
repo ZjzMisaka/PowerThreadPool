@@ -38,6 +38,7 @@ namespace PowerThreadPool.Works
 
         internal Work(PowerPool powerPool, string id, Func<TResult> function, WorkOption<TResult> option)
         {
+            PowerPool = powerPool;
             ID = id;
             ExecuteCount = 0;
             _function = function;
@@ -45,51 +46,29 @@ namespace PowerThreadPool.Works
             ShouldStop = false;
             IsPausing = false;
 
-            _callbackEndHandler = (workId) =>
-            {
-                foreach (string dependedId in _workOption.Dependents)
-                {
-                    if (PrecedingWorkNotSuccessfullyCompleted(powerPool, dependedId))
-                    {
-                        powerPool.CallbackEnd -= _callbackEndHandler;
-                        DependencyFailed = true;
-                        Interlocked.Decrement(ref powerPool._waitingWorkCount);
-                        powerPool.CheckPoolIdle();
-                        return;
-                    }
-                }
-
-                if (_workOption.Dependents.Remove(workId))
-                {
-                    if (_workOption.Dependents.Count == 0)
-                    {
-                        powerPool.CallbackEnd -= _callbackEndHandler;
-                        powerPool.SetWork(this);
-                    }
-                }
-            };
-
             if (_workOption != null && _workOption.Dependents != null && _workOption.Dependents.Count != 0)
             {
-                powerPool.CallbackEnd += _callbackEndHandler;
+                _callbackEndHandler = OnCallbackEnd;
+
+                PowerPool.CallbackEnd += _callbackEndHandler;
 
                 foreach (string dependedId in _workOption.Dependents)
                 {
-                    if (!powerPool._aliveWorkDic.ContainsKey(dependedId) && !powerPool._suspendedWork.ContainsKey(dependedId))
+                    if (!PowerPool._aliveWorkDic.ContainsKey(dependedId) && !PowerPool._suspendedWork.ContainsKey(dependedId))
                     {
-                        if (PrecedingWorkNotSuccessfullyCompleted(powerPool, dependedId))
+                        if (PrecedingWorkNotSuccessfullyCompleted(dependedId))
                         {
-                            powerPool.CallbackEnd -= _callbackEndHandler;
+                            PowerPool.CallbackEnd -= _callbackEndHandler;
                             DependencyFailed = true;
-                            powerPool.CheckPoolIdle();
+                            PowerPool.CheckPoolIdle();
                             return;
                         }
                         else if (_workOption.Dependents.Remove(dependedId))
                         {
                             if (_workOption.Dependents.Count == 0)
                             {
-                                powerPool.CallbackEnd -= _callbackEndHandler;
-                                // No need to call powerPool.SetWork here
+                                PowerPool.CallbackEnd -= _callbackEndHandler;
+                                // No need to call PowerPool.SetWork here
                             }
                         }
                     }
@@ -97,9 +76,33 @@ namespace PowerThreadPool.Works
             }
         }
 
-        private bool PrecedingWorkNotSuccessfullyCompleted(PowerPool powerPool, string dependedId)
+        private void OnCallbackEnd(string workID)
         {
-            return powerPool._failedWorkSet.Contains(dependedId) || powerPool._canceledWorkSet.Contains(dependedId);
+            foreach (string dependedId in _workOption.Dependents)
+            {
+                if (PrecedingWorkNotSuccessfullyCompleted(dependedId))
+                {
+                    PowerPool.CallbackEnd -= _callbackEndHandler;
+                    DependencyFailed = true;
+                    Interlocked.Decrement(ref PowerPool._waitingWorkCount);
+                    PowerPool.CheckPoolIdle();
+                    return;
+                }
+            }
+
+            if (_workOption.Dependents.Remove(workID))
+            {
+                if (_workOption.Dependents.Count == 0)
+                {
+                    PowerPool.CallbackEnd -= _callbackEndHandler;
+                    PowerPool.SetWork(this);
+                }
+            }
+        }
+
+        private bool PrecedingWorkNotSuccessfullyCompleted(string dependedId)
+        {
+            return PowerPool._failedWorkSet.Contains(dependedId) || PowerPool._canceledWorkSet.Contains(dependedId);
         }
 
         internal override object Execute()
@@ -204,19 +207,19 @@ namespace PowerThreadPool.Works
             }
         }
 
-        internal override void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
+        internal override void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
             if (_workOption.Callback != null)
             {
-                powerPool.SafeCallback(_workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
+                PowerPool.SafeCallback(_workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
             }
             else if (powerPoolOption.DefaultCallback != null)
             {
-                powerPool.SafeCallback(powerPoolOption.DefaultCallback, EventArguments.ErrorFrom.DefaultCallback, executeResult);
+                PowerPool.SafeCallback(powerPoolOption.DefaultCallback, EventArguments.ErrorFrom.DefaultCallback, executeResult);
             }
         }
 
-        internal override ExecuteResultBase SetExecuteResult(PowerPool powerPool, object result, Exception exception, Status status)
+        internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status)
         {
             Status = status;
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
@@ -224,7 +227,7 @@ namespace PowerThreadPool.Works
             ExecuteResult = executeResult;
             if (_workOption.ShouldStoreResult)
             {
-                powerPool._resultDic[ID] = ExecuteResult;
+                PowerPool._resultDic[ID] = ExecuteResult;
             }
             return executeResult;
         }
