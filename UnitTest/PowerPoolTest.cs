@@ -5718,5 +5718,21 @@ namespace UnitTest
             WorkGuard workGuard = new WorkGuard(work, true);
             Assert.NotNull(work.Worker);
         }
+
+        [Fact]
+        public void TestWorkIDType()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption { WorkIDType = WorkIDType.LongIncrement };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+            string longID = powerPool.QueueWorkItem(() => { });
+            bool parseLong = long.TryParse(longID, out long _);
+
+            powerPoolOption.WorkIDType = WorkIDType.Guid;
+            string guidID = powerPool.QueueWorkItem(() => { });
+            bool parseGuid = Guid.TryParse(guidID, out Guid _);
+
+            Assert.True(parseLong);
+            Assert.True(parseGuid);
+        }
     }
 }

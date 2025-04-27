@@ -10,6 +10,8 @@ namespace PowerThreadPool
 {
     public partial class PowerPool
     {
+        private long _workIDIncrement = 0;
+
         /// <summary>
         /// Queues a work for execution. 
         /// </summary>
@@ -397,7 +399,14 @@ namespace PowerThreadPool
             }
             else
             {
-                workID = Guid.NewGuid().ToString();
+                if (PowerPoolOption.WorkIDType == WorkIDType.LongIncrement)
+                {
+                    workID = Interlocked.Increment(ref _workIDIncrement).ToString();
+                }
+                else
+                {
+                    workID = Guid.NewGuid().ToString();
+                }
             }
 
             Work<TResult> work = new Work<TResult>(this, workID, function, option);
