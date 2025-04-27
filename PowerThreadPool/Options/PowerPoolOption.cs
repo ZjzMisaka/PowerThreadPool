@@ -105,6 +105,11 @@ namespace PowerThreadPool.Options
         /// </summary>
         public Func<IStealablePriorityCollection<string>> CustomQueueFactory { get; set; }
 
+        /// <summary>
+        /// The type of work ID to be used.
+        /// </summary>
+        public WorkIDType WorkIDType { get; set; } = WorkIDType.LongIncrement;
+
         internal void OnThreadCountSettingChanged()
         {
             foreach (PowerPool powerPool in PowerPoolList)
@@ -115,10 +120,5 @@ namespace PowerThreadPool.Options
                 }
             }
         }
-
-        /// <summary>
-        /// The type of work ID to be used.
-        /// </summary>
-        public WorkIDType WorkIDType { get; set; } = WorkIDType.LongIncrement;
     }
 }
