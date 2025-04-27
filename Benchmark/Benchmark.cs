@@ -119,6 +119,7 @@ namespace Benchmark
                     {
                         Interlocked.Increment(ref powerThreadPoolRunCount);
                         DoWork();
+                        return true;
                     });
                 }
                 _powerPool.EnablePoolIdleCheck = true;
