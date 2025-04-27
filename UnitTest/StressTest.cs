@@ -63,7 +63,7 @@ namespace UnitTest
                     errLog = "doneCount: " + doneCount + "/" + totalTasks + " | failedCount: " + failedCount + " | powerPool.RunningWorkerCount: " + _powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + _powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + _powerPool.IdleWorkerCount + " | powerPool.MaxThreads: " + _powerPool.PowerPoolOption.MaxThreads;
                     if (totalTasks != doneCount || 0 != failedCount || 0 != _powerPool.RunningWorkerCount || 0 != _powerPool.WaitingWorkCount || _powerPool.IdleWorkerCount == 0)
                     {
-                        Assert.Fail(errLog);
+                        Assert.Fail(errLog + " | PoolRunning: " + _powerPool.PoolRunning);
                     }
                 }
             });
@@ -247,7 +247,7 @@ namespace UnitTest
                 errLog = "doneCount: " + doneCount + "/" + 100 * 1000000 + " | powerPool.RunningWorkerCount: " + _powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + _powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + _powerPool.IdleWorkerCount + " | powerPool.MaxThreads: " + _powerPool.PowerPoolOption.MaxThreads;
                 if (100 * 1000000 != doneCount || 0 != _powerPool.RunningWorkerCount || 0 != _powerPool.WaitingWorkCount || _powerPool.IdleWorkerCount == 0)
                 {
-                    Assert.Fail(errLog);
+                    Assert.Fail(errLog + " | PoolRunning: " + _powerPool.PoolRunning);
                 }
             });
         }
