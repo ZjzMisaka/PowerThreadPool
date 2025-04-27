@@ -10,6 +10,7 @@ namespace PowerThreadPool.Works
     {
         internal string ID { get; set; }
         internal Worker Worker { get; set; }
+        internal PowerPool PowerPool { get; set; }
         internal volatile int _executeCount;
         internal int ExecuteCount
         {
@@ -44,8 +45,8 @@ namespace PowerThreadPool.Works
         internal abstract bool Pause();
         internal abstract bool Resume();
         internal abstract bool Cancel(bool needFreeze);
-        internal abstract void InvokeCallback(PowerPool powerPool, ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
-        internal abstract ExecuteResultBase SetExecuteResult(PowerPool powerPool, object result, Exception exception, Status status);
+        internal abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
+        internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
         internal abstract bool ShouldRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldImmediateRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldRequeue(ExecuteResultBase executeResult);
