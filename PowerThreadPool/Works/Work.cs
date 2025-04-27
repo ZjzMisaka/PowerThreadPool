@@ -25,7 +25,14 @@ namespace PowerThreadPool.Works
         internal override string Group
         {
             get => _workOption.Group;
-            set => _workOption.Group = value;
+            set
+            {
+                if (_workOption.IsDefaultInstance)
+                {
+                    _workOption = new WorkOption<TResult>();
+                }
+                _workOption.Group = value;
+            }
         }
         internal override ThreadPriority ThreadPriority => _workOption.ThreadPriority;
         internal override bool IsBackground => _workOption.IsBackground;
