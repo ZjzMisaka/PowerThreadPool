@@ -1,6 +1,7 @@
 ﻿using Amib.Threading;
 using BenchmarkDotNet.Attributes;
 using PowerThreadPool;
+using PowerThreadPool.Options;
 
 namespace Benchmark
 {
@@ -88,6 +89,7 @@ namespace Benchmark
                             _signal.Set();
                         }
                         DoWork();
+                        return true;
                     });
                 }
                 _signal.WaitOne();
@@ -113,6 +115,7 @@ namespace Benchmark
             {
                 int powerThreadPoolRunCount = 0;
                 _powerPool.EnablePoolIdleCheck = false;
+                WorkOption workOption = new WorkOption();
                 for (int i = 0; i < 1000; ++i)
                 {
                     _powerPool.QueueWorkItem(() =>
@@ -120,7 +123,7 @@ namespace Benchmark
                         Interlocked.Increment(ref powerThreadPoolRunCount);
                         DoWork();
                         return true;
-                    });
+                    }, workOption);
                 }
                 _powerPool.EnablePoolIdleCheck = true;
                 _powerPool.Wait();
