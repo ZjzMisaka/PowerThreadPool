@@ -497,10 +497,18 @@ namespace PowerThreadPool
         /// <returns>A WorkOption<TResult> instance</returns>
         private WorkOption<TResult> GetOption<TResult>(Action<ExecuteResult<TResult>> callBack)
         {
-            WorkOption<TResult> option = new WorkOption<TResult>
+            WorkOption<TResult> option = null;
+            if (callBack == null)
             {
-                Callback = callBack
-            };
+                option = WorkOption<TResult>.DefaultInstance;
+            }
+            else
+            {
+                option = new WorkOption<TResult>
+                {
+                    Callback = callBack
+                };
+            }
             return option;
         }
 
@@ -512,10 +520,18 @@ namespace PowerThreadPool
         /// <returns>A WorkOption<TResult> instance</returns>
         private WorkOption GetOption(Action<ExecuteResult<object>> callBack)
         {
-            WorkOption option = new WorkOption
+            WorkOption option = null;
+            if (callBack == null)
             {
-                Callback = callBack
-            };
+                option = WorkOption.DefaultInstance;
+            }
+            else
+            {
+                option = new WorkOption
+                {
+                    Callback = callBack
+                };
+            }
             return option;
         }
     }
