@@ -7,8 +7,6 @@ namespace PowerThreadPool.Options
 {
     public class WorkOption<TResult>
     {
-        internal static WorkOption<TResult> DefaultInstance { get; set; } = new WorkOption<TResult>();
-
         /// <summary>
         /// The custom work ID. If set to null, the thread pool will use a Guid as the work ID.
         /// </summary>
