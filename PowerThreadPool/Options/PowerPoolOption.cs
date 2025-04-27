@@ -8,8 +8,15 @@ namespace PowerThreadPool.Options
     public enum QueueType
     {
         FIFO,
-        LIFO
+        LIFO,
     }
+
+    public enum WorkIDType
+    {
+        LongIncrement,
+        Guid,
+    }
+
     public class PowerPoolOption
     {
         internal List<PowerPool> PowerPoolList { get; set; } = new List<PowerPool>();
@@ -108,5 +115,8 @@ namespace PowerThreadPool.Options
                 }
             }
         }
+
+
+        public WorkIDType WorkIDType { get; set; } = WorkIDType.LongIncrement;
     }
 }
