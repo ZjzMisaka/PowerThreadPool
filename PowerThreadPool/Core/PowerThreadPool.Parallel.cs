@@ -141,7 +141,7 @@ namespace PowerThreadPool
         /// <param name="source">The source collection of elements to be processed.</param>
         /// <param name="body">The action to execute for each element in the source collection and its index.</param>
         /// <param name="addBackWhenWorkCanceled">If the work is canceled, the elements will be added back to the collection.</param>
-        /// <param name="addBackWorkStopped">If the work is stopped, the elements will be added back to the collection.</param>
+        /// <param name="addBackWhenWorkStopped">If the work is stopped, the elements will be added back to the collection.</param>
         /// <param name="addBackWhenWorkFailed">If an exception occurs, the elements will be added back to the collection.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
@@ -149,7 +149,7 @@ namespace PowerThreadPool
             ConcurrentObservableCollection<TSource> source,
             Action<TSource> body,
             bool addBackWhenWorkCanceled = true,
-            bool addBackWorkStopped = true,
+            bool addBackWhenWorkStopped = true,
             bool addBackWhenWorkFailed = true,
             string groupName = null)
         {
@@ -179,7 +179,7 @@ namespace PowerThreadPool
                     }
                 };
             }
-            if (addBackWorkStopped)
+            if (addBackWhenWorkStopped)
             {
                 WorkStopped += (sWorkStopped, eWorkStopped) =>
                 {
