@@ -1,7 +1,6 @@
 ﻿using Amib.Threading;
 using BenchmarkDotNet.Attributes;
 using PowerThreadPool;
-using PowerThreadPool.Options;
 
 namespace Benchmark
 {
@@ -10,7 +9,7 @@ namespace Benchmark
     {
         private SmartThreadPool _smartThreadPool;
         private PowerPool _powerPool;
-        ManualResetEvent _signal;
+        private ManualResetEvent _signal;
 
         [GlobalSetup]
         public void Setup()
