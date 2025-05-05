@@ -334,7 +334,7 @@ namespace PowerThreadPool
 
             while (true)
             {
-                bool rejected = true;
+                bool rejected = PowerPoolOption.RejectOption != null;
 
                 if ((worker = GetWorker(work.LongRunning, ref rejected)) != null)
                 {
