@@ -78,5 +78,23 @@ namespace PowerThreadPool.Collections
         }
 
         public T Steal() => Get();
+
+        public T Discard()
+        {
+            T item = default;
+
+            for (int i = _reversed.Count - 1; i >= 0; --i)
+            {
+                int priority = _reversed[i];
+                if (_queueDic.TryGetValue(priority, out ConcurrentQueue<T> queue))
+                {
+                    if (queue.TryDequeue(out item))
+                    {
+                        break;
+                    }
+                }
+            }
+            return item;
+        }
     }
 }

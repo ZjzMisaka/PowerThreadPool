@@ -110,6 +110,11 @@ namespace PowerThreadPool.Options
         /// </summary>
         public WorkIDType WorkIDType { get; set; } = WorkIDType.LongIncrement;
 
+        /// <summary>
+        /// Reject policy.
+        /// </summary>
+        public RejectOption RejectOption { get; set; } = null;
+
         internal void OnThreadCountSettingChanged()
         {
             foreach (PowerPool powerPool in PowerPoolList)
