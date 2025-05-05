@@ -6,6 +6,7 @@ using System.Threading;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
+using PowerThreadPool.Exceptions;
 using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
@@ -330,17 +331,65 @@ namespace PowerThreadPool
             CheckPoolStart();
 
             Worker worker = null;
-#if DEBUG
-            Spinner.Start(() => (worker = GetWorker(work.LongRunning)) != null);
-#else
+
             while (true)
             {
-                if ((worker = GetWorker(work.LongRunning)) != null)
+                bool rejected = true;
+
+                if ((worker = GetWorker(work.LongRunning, ref rejected)) != null)
                 {
                     break;
                 }
+
+                if (rejected)
+                {
+                    RejectType rejectType = PowerPoolOption.RejectOption.RejectType;
+
+                    if (WorkRejected != null)
+                    {
+                        WorkRejectedEventArgs workRejectedEventArgs = new WorkRejectedEventArgs
+                        {
+                            ID = work.ID,
+                        };
+                        SafeInvoke(WorkRejected, workRejectedEventArgs, ErrorFrom.WorkRejected, null);
+                    }
+
+                    if (rejectType == RejectType.AbortPolicy)
+                    {
+                        WorkRejectedException workRejectedException = new WorkRejectedException
+                        {
+                            ID = work.ID,
+                        };
+                        Interlocked.Decrement(ref _waitingWorkCount);
+                        throw workRejectedException;
+                    }
+                    else if (rejectType == RejectType.CallerRunsPolicy)
+                    {
+                        worker = new Worker(this, work);
+                        worker.ExecuteWork();
+                        worker.Dispose();
+                        return;
+                    }
+                    else if (rejectType == RejectType.DiscardPolicy)
+                    {
+                        Interlocked.Decrement(ref _waitingWorkCount);
+                        return;
+                    }
+                    else if (rejectType == RejectType.DiscardOldestPolicy)
+                    {
+                        foreach (Worker workerDiscard in _aliveWorkerList)
+                        {
+                            if (workerDiscard.WorkerState == WorkerStates.Running && workerDiscard.DiscardOneWork())
+                            {
+                                Interlocked.Decrement(ref _waitingWorkCount);
+                                worker = workerDiscard;
+                                break;
+                            }
+                        }
+                    }
+                }
             }
-#endif
+
             work.QueueDateTime = DateTime.UtcNow;
             worker.SetWork(work, false);
         }
@@ -350,7 +399,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="longRunning"></param>
         /// <returns></returns>
-        private Worker GetWorker(bool longRunning)
+        private Worker GetWorker(bool longRunning, ref bool rejected)
         {
             Worker worker = TryDequeueIdleWorker(longRunning);
             if (worker != null)
@@ -367,7 +416,7 @@ namespace PowerThreadPool
 
             if (!longRunning)
             {
-                worker = TrySelectExistingWorker();
+                worker = TrySelectExistingWorker(ref rejected);
             }
 
             return worker;
@@ -450,7 +499,7 @@ namespace PowerThreadPool
         /// with the least amount of pending work.
         /// </summary>
         /// <returns>worker</returns>
-        private Worker TrySelectExistingWorker()
+        private Worker TrySelectExistingWorker(ref bool rejected)
         {
             Worker selectedWorker = null;
             int minWaitingWorkCount = int.MaxValue;
@@ -460,10 +509,17 @@ namespace PowerThreadPool
             int step = 0;
             int startIndex = _aliveWorkerListLoopIndex;
             int loopIndex = _aliveWorkerListLoopIndex;
+
+            RejectOption rejectOption = PowerPoolOption.RejectOption;
+
             while (true)
             {
                 if ((step >= 5 && selectedWorker != null) || step >= workerList.Length)
                 {
+                    if (selectedWorker != null && rejectOption != null)
+                    {
+                        rejected = false;
+                    }
                     break;
                 }
                 ++step;
@@ -481,6 +537,13 @@ namespace PowerThreadPool
                 }
 
                 int waitingWorkCountTemp = aliveWorker.WaitingWorkCount;
+
+                if (rejectOption != null && waitingWorkCountTemp >= rejectOption.ThreadQueueLimit)
+                {
+                    ++loopIndex;
+                    continue;
+                }
+
                 if (waitingWorkCountTemp < minWaitingWorkCount)
                 {
                     if (aliveWorker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))

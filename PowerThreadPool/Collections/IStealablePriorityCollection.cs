@@ -17,10 +17,16 @@
         T Get();
 
         /// <summary>
-        /// Steals and removes the lowest priority item from the collection.
+        /// Steals and removes an item from the collection.
         /// This method is typically called by other threads to steal work from the owner thread.
         /// </summary>
-        /// <returns>The lowest priority item in the collection.</returns>
+        /// <returns>An item in the collection.</returns>
         T Steal();
+
+        /// <summary>
+        /// Discard the lowest priority item from the collection.
+        /// </summary>
+        /// <returns>The lowest priority item in the collection.</returns>
+        T Discard();
     }
 }

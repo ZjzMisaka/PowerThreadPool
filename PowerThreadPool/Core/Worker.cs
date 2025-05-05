@@ -98,6 +98,15 @@ namespace PowerThreadPool
             _thread.Start();
         }
 
+        internal Worker(PowerPool powerPool, WorkBase work)
+        {
+            _powerPool = powerPool;
+            Interlocked.Decrement(ref _powerPool._waitingWorkCount);
+            SetWorkToRun(work);
+            _timeoutTimer = new DeferredActionTimer();
+            _waitingWorkIDPriorityCollection = QueueFactory();
+        }
+
         private IStealablePriorityCollection<string> QueueFactory()
         {
             if (_powerPool.PowerPoolOption.CustomQueueFactory != null)
@@ -114,7 +123,7 @@ namespace PowerThreadPool
             }
         }
 
-        private void ExecuteWork()
+        internal void ExecuteWork()
         {
             _powerPool.OnWorkStarted(Work.ID);
 
@@ -633,13 +642,16 @@ namespace PowerThreadPool
             Work = work;
             LongRunning = work.LongRunning;
 
-            if (_thread.Priority != work.ThreadPriority)
+            if (_thread != null)
             {
-                _thread.Priority = work.ThreadPriority;
-            }
-            if (_thread.IsBackground != work.IsBackground)
-            {
-                _thread.IsBackground = work.IsBackground;
+                if (_thread.Priority != work.ThreadPriority)
+                {
+                    _thread.Priority = work.ThreadPriority;
+                }
+                if (_thread.IsBackground != work.IsBackground)
+                {
+                    _thread.IsBackground = work.IsBackground;
+                }
             }
         }
 
@@ -750,6 +762,18 @@ namespace PowerThreadPool
             return false;
         }
 
+        internal bool DiscardOneWork()
+        {
+            bool res = false;
+            string workID = _waitingWorkIDPriorityCollection.Discard();
+            if (_waitingWorkDic.TryRemove(workID, out WorkBase work))
+            {
+                Interlocked.Decrement(ref _waitingWorkCount);
+                res = true;
+            }
+            return res;
+        }
+
         internal bool IsCancellationRequested()
         {
             return Work.ShouldStop;
@@ -796,7 +820,10 @@ namespace PowerThreadPool
 
                 _runSignal.Dispose();
                 _timeoutTimer.Dispose();
-                _killTimer.Dispose();
+                if (_killTimer != null)
+                {
+                    _killTimer.Dispose();
+                }
             }
         }
     }
