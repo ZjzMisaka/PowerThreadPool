@@ -6100,10 +6100,12 @@ namespace UnitTest
 
             bool workRejected = false;
             string id = "";
+            RejectType rejectType = RejectType.CallerRunsPolicy;
             powerPool.WorkRejected += (s, e) =>
             {
                 workRejected = true;
                 id = e.ID;
+                rejectType = e.RejectType;
             };
 
             _ = powerPool
@@ -6180,6 +6182,7 @@ namespace UnitTest
 
             Assert.True(workRejected);
             Assert.NotEmpty(id);
+            Assembly.Equals(RejectType.DiscardPolicy, rejectType);
         }
 
         [Fact]

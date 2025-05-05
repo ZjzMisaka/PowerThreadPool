@@ -347,7 +347,7 @@ namespace PowerThreadPool
 
                     if (WorkRejected != null)
                     {
-                        WorkRejectedEventArgs workRejectedEventArgs = new WorkRejectedEventArgs
+                        WorkRejectedEventArgs workRejectedEventArgs = new WorkRejectedEventArgs(rejectType)
                         {
                             ID = work.ID,
                         };
