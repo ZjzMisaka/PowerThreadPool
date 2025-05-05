@@ -6181,5 +6181,104 @@ namespace UnitTest
             Assert.True(workRejected);
             Assert.NotEmpty(id);
         }
+
+        [Fact]
+        public void TestRejectEventError()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 4,
+                RejectOption = new RejectOption
+                {
+                    ThreadQueueLimit = 1,
+                    RejectType = RejectType.DiscardPolicy,
+                }
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            powerPool.WorkRejected += (s, e) =>
+            {
+                throw new Exception();
+            };
+            ErrorFrom errorFrom = ErrorFrom.Callback;
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                errorFrom = e.ErrorFrom;
+            };
+
+            _ = powerPool
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                });
+
+            powerPool.QueueWorkItem(() =>
+            {
+            });
+
+            powerPool.Stop();
+
+            Assert.Equal(ErrorFrom.WorkRejected, errorFrom);
+        }
     }
 }
