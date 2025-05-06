@@ -558,6 +558,8 @@ namespace PowerThreadPool
                 Cancel();
             }
 
+            _workDependencyController.Cancel();
+
             return true;
         }
 
@@ -579,6 +581,8 @@ namespace PowerThreadPool
             {
                 res = work.Stop(forceStop);
             }
+
+            _workDependencyController.Cancel(id);
 
             return res;
         }

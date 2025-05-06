@@ -21,7 +21,7 @@ namespace PowerThreadPool
         public event EventHandler<WorkRejectedEventArgs> WorkRejected;
         public event EventHandler<ErrorOccurredEventArgs> ErrorOccurred;
 
-        internal delegate void CallbackEndEventHandler(string id);
+        internal delegate void CallbackEndEventHandler(WorkBase work, Status status);
         internal event CallbackEndEventHandler CallbackEnd;
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace PowerThreadPool
 
             if (CallbackEnd != null)
             {
-                CallbackEnd.Invoke(work.ID);
+                CallbackEnd.Invoke(work, status);
             }
 
             // If the result needs to be stored, there is a possibility of fetching the result through Group.

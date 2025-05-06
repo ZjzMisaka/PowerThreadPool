@@ -22,6 +22,8 @@ namespace PowerThreadPool
         internal bool _disposed = false;
         internal bool _disposing = false;
 
+        private WorkDependencyController _workDependencyController;
+
         private readonly ManualResetEvent _waitAllSignal = new ManualResetEvent(false);
         private readonly ManualResetEvent _pauseSignal = new ManualResetEvent(true);
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
@@ -230,6 +232,7 @@ namespace PowerThreadPool
 
         public PowerPool()
         {
+            _workDependencyController = new WorkDependencyController(this);
             _timeoutTimer = new DeferredActionTimer(() =>
             {
                 if (PoolTimedOut != null)

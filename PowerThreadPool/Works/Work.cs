@@ -52,64 +52,6 @@ namespace PowerThreadPool.Works
             _workOption = option;
             ShouldStop = false;
             IsPausing = false;
-
-            if (_workOption != null && _workOption.Dependents != null && _workOption.Dependents.Count != 0)
-            {
-                _callbackEndHandler = OnCallbackEnd;
-
-                PowerPool.CallbackEnd += _callbackEndHandler;
-
-                foreach (string dependedId in _workOption.Dependents)
-                {
-                    if (!PowerPool._aliveWorkDic.ContainsKey(dependedId) && !PowerPool._suspendedWork.ContainsKey(dependedId))
-                    {
-                        if (PrecedingWorkNotSuccessfullyCompleted(dependedId))
-                        {
-                            PowerPool.CallbackEnd -= _callbackEndHandler;
-                            DependencyFailed = true;
-                            PowerPool.CheckPoolIdle();
-                            return;
-                        }
-                        else if (_workOption.Dependents.Remove(dependedId))
-                        {
-                            if (_workOption.Dependents.Count == 0)
-                            {
-                                PowerPool.CallbackEnd -= _callbackEndHandler;
-                                // No need to call PowerPool.SetWork here
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void OnCallbackEnd(string workID)
-        {
-            foreach (string dependedId in _workOption.Dependents)
-            {
-                if (PrecedingWorkNotSuccessfullyCompleted(dependedId))
-                {
-                    PowerPool.CallbackEnd -= _callbackEndHandler;
-                    DependencyFailed = true;
-                    Interlocked.Decrement(ref PowerPool._waitingWorkCount);
-                    PowerPool.CheckPoolIdle();
-                    return;
-                }
-            }
-
-            if (_workOption.Dependents.Remove(workID))
-            {
-                if (_workOption.Dependents.Count == 0)
-                {
-                    PowerPool.CallbackEnd -= _callbackEndHandler;
-                    PowerPool.SetWork(this);
-                }
-            }
-        }
-
-        private bool PrecedingWorkNotSuccessfullyCompleted(string dependedId)
-        {
-            return PowerPool._failedWorkSet.Contains(dependedId) || PowerPool._canceledWorkSet.Contains(dependedId);
         }
 
         internal override object Execute()

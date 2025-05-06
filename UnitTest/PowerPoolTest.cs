@@ -575,7 +575,7 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(2, doneCount);
-            Assert.Equal(1, powerPool.FailedWorkCount);
+            Assert.Equal(2, powerPool.FailedWorkCount);
             Assert.Equal(id0, powerPool.FailedWorkList.First());
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
@@ -631,7 +631,7 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(3, doneCount);
-            Assert.Equal(1, powerPool.FailedWorkCount);
+            Assert.Equal(2, powerPool.FailedWorkCount);
             Assert.Equal(id1, powerPool.FailedWorkList.First());
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
@@ -664,7 +664,7 @@ namespace UnitTest
             {
             });
 
-            Thread.Sleep(2000);
+            Thread.Sleep(200);
 
             powerPool.QueueWorkItem(() =>
             {
@@ -676,11 +676,112 @@ namespace UnitTest
 
             powerPool.EnablePoolIdleCheck = true;
 
+            Assert.Equal(2, doneCount);
+            Assert.Equal(0, powerPool.FailedWorkCount);
+            Assert.Equal(1, powerPool.WaitingWorkCount);
+
+            powerPool.Stop();
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestDependentsHasCycle()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            List<string> logList = new List<string>();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 8,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
+            };
+            string id = powerPool.QueueWorkItem<object>(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { "2" }
+            });
+            Assert.Throws<CycleDetectedException>(() =>
+            {
+                powerPool.QueueWorkItem<object>(() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                }, new WorkOption
+                {
+                    Dependents = new ConcurrentSet<string> { "1" }
+                });
+            });
+
+            powerPool.Wait();
+        }
+
+        [Fact]
+        public void TestDependentsOldWorkDependOnNewWork()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            List<string> logList = new List<string>();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 8,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
+            };
+            int done = 0;
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref done);
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { "2" }
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref done);
+            });
+
             powerPool.Wait();
 
-            Assert.Equal(3, doneCount);
-            Assert.Equal(0, powerPool.FailedWorkCount);
-            Assert.Equal(0, powerPool.WaitingWorkCount);
+            Assert.Equal(2, done);
+        }
+
+        [Fact]
+        public void TestDependentsStopByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            List<string> logList = new List<string>();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 8,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
+            };
+            int done = 0;
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref done);
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { "2" }
+            });
+
+            powerPool.Stop(id);
+
+            powerPool.Wait();
+
+            Assert.Equal(0, done);
         }
 
         [Fact]
