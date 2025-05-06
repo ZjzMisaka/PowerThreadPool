@@ -83,16 +83,44 @@ namespace PowerThreadPool.Helpers
 
         private bool CheckHasCycle(string id, ConcurrentSet<string> dependents)
         {
-            foreach (string dependent in dependents)
+            Dictionary<string, HashSet<string>> dependencyGraph = new Dictionary<string, HashSet<string>>();
+            dependencyGraph[id] = new HashSet<string>(dependents);
+
+            foreach (var kvp in _workDict)
             {
-                foreach (WorkBase work in _workDict.Values)
+                dependencyGraph[kvp.Key] = new HashSet<string>(kvp.Value.Dependents);
+            }
+
+            HashSet<string> visited = new HashSet<string>();
+            HashSet<string> recursionStack = new HashSet<string>();
+
+            return DetectCycleDFS(id, dependencyGraph, visited, recursionStack);
+        }
+
+        private bool DetectCycleDFS(string current, Dictionary<string, HashSet<string>> graph, HashSet<string> visited, HashSet<string> recursionStack)
+        {
+            if (!graph.ContainsKey(current))
+            {
+                return false;
+            }
+
+            visited.Add(current);
+            recursionStack.Add(current);
+
+            foreach (var dependent in graph[current])
+            {
+                if (recursionStack.Contains(dependent))
                 {
-                    if (dependent == work.ID && work.Dependents.Contains(id))
-                    {
-                        return true;
-                    }
+                    return true;
+                }
+
+                if (!visited.Contains(dependent) && DetectCycleDFS(dependent, graph, visited, recursionStack))
+                {
+                    return true;
                 }
             }
+
+            recursionStack.Remove(current);
             return false;
         }
 
