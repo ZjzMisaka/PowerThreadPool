@@ -766,7 +766,7 @@ namespace PowerThreadPool
         {
             bool res = false;
             string workID = _waitingWorkIDPriorityCollection.Discard();
-            if (_waitingWorkDic.TryRemove(workID, out WorkBase work))
+            if (workID != null && _waitingWorkDic.TryRemove(workID, out WorkBase work))
             {
                 Interlocked.Decrement(ref _waitingWorkCount);
                 res = true;

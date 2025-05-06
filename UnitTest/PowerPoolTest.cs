@@ -6283,5 +6283,402 @@ namespace UnitTest
 
             Assert.Equal(ErrorFrom.WorkRejected, errorFrom);
         }
+
+        [Fact]
+        public void TestRejectNormalRun()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 4,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.DiscardPolicy,
+                    ThreadQueueLimit = 20,
+                }
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            _ = powerPool
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                });
+            Assert.Equal(15, powerPool.WaitingWorkCount);
+
+            powerPool.Stop();
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestRejectLIFO()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 4,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.DiscardPolicy,
+                    ThreadQueueLimit = 1,
+                },
+                QueueType = QueueType.LIFO,
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            _ = powerPool
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                });
+
+            bool done = false;
+            powerPool.QueueWorkItem(() =>
+            {
+                done = true;
+            });
+            Assert.False(done);
+            Assert.Equal(4, powerPool.WaitingWorkCount);
+
+            powerPool.Stop();
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestRejectDiscardOldestPolicyGetPriorityLoop()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 4,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.DiscardOldestPolicy,
+                    ThreadQueueLimit = 1,
+                },
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            powerPool.QueueWorkItem(() => { }, new WorkOption { WorkPriority = 0 });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+
+            bool done = false;
+            powerPool.QueueWorkItem(() =>
+            {
+                done = true;
+            }, new WorkOption { WorkPriority = 1 });
+            Assert.False(done);
+            Assert.Equal(4, powerPool.WaitingWorkCount);
+
+            powerPool.Wait();
+
+            Assert.True(done);
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestRejectDiscardOldestPolicyGetPriorityLoopLIFO()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 4,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.DiscardOldestPolicy,
+                    ThreadQueueLimit = 1,
+                },
+                QueueType = QueueType.LIFO,
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            powerPool.QueueWorkItem(() => { }, new WorkOption { WorkPriority = 0 });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+            }, new WorkOption { WorkPriority = 1 });
+
+            bool done = false;
+            powerPool.QueueWorkItem(() =>
+            {
+                done = true;
+            }, new WorkOption { WorkPriority = 1 });
+            Assert.False(done);
+            Assert.Equal(4, powerPool.WaitingWorkCount);
+
+            powerPool.Wait();
+
+            Assert.True(done);
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
     }
 }
