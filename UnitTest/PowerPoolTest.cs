@@ -6435,6 +6435,69 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestRejectDiscardOldestPolicyDiscardOneWorkFail()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 4,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.DiscardOldestPolicy,
+                    ThreadQueueLimit = 0,
+                }
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            _ = powerPool
+                | (() =>
+                {
+                    Thread.Sleep(100);
+                })
+                | (() =>
+                {
+                    Thread.Sleep(100);
+                })
+                | (() =>
+                {
+                    Thread.Sleep(100);
+                })
+                | (() =>
+                {
+                    Thread.Sleep(100);
+                })
+                | (() =>
+                {
+                    Thread.Sleep(100);
+                })
+                | (() =>
+                {
+                    Thread.Sleep(100);
+                })
+                | (() =>
+                {
+                    Thread.Sleep(100);
+                })
+                | (() =>
+                {
+                    Thread.Sleep(100);
+                });
+
+            bool done = false;
+            powerPool.QueueWorkItem(() =>
+            {
+                done = true;
+            });
+            Assert.False(done);
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+
+            powerPool.Wait();
+
+            Assert.True(done);
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
         public void TestRejectEvent()
         {
             PowerPoolOption powerPoolOption = new PowerPoolOption
