@@ -389,6 +389,11 @@ namespace PowerThreadPool
                                 break;
                             }
                         }
+
+                        if (worker != null)
+                        {
+                            break;
+                        }
                     }
                 }
             }
