@@ -785,6 +785,34 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestDependentsCancelByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            List<string> logList = new List<string>();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 8,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
+            };
+            int done = 0;
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref done);
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { "2" }
+            });
+
+            powerPool.Cancel(id);
+
+            powerPool.Wait();
+
+            Assert.Equal(0, done);
+        }
+
+        [Fact]
         public void TestWorkPriority()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");

@@ -728,6 +728,8 @@ namespace PowerThreadPool
                 worker.Cancel();
             }
 
+            _workDependencyController.Cancel();
+
             _stopSuspendedWork.Clear();
 #if NET5_0_OR_GREATER
             _stopSuspendedWorkQueue.Clear();
@@ -748,7 +750,11 @@ namespace PowerThreadPool
                 return false;
             }
 
-            if (_suspendedWork.TryRemove(id, out _))
+            if (_workDependencyController.Cancel(id))
+            {
+                return true;
+            }
+            else if (_suspendedWork.TryRemove(id, out _))
             {
                 return true;
             }
