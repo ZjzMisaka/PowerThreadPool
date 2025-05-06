@@ -727,6 +727,58 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestDependentsHasDifficultCycle()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            List<string> logList = new List<string>();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 8,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
+            };
+            powerPool.QueueWorkItem<object>(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { "3" }
+            });
+            powerPool.QueueWorkItem<object>(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { "1" }
+            });
+            Assert.Throws<CycleDetectedException>(() =>
+            {
+                powerPool.QueueWorkItem<object>(() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                }, new WorkOption
+                {
+                    Dependents = new ConcurrentSet<string> { "2" }
+                });
+            });
+
+            powerPool.Wait();
+        }
+
+        [Fact]
         public void TestDependentsDoesNotHaveCycle()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
