@@ -15,7 +15,7 @@ namespace PowerThreadPool.Helpers
         private ConcurrentDictionary<string, WorkBase> _workDict = new ConcurrentDictionary<string, WorkBase>();
         private CallbackEndEventHandler _callbackEndHandler;
         private PowerPool _powerPool;
-        private bool _firstRegist = true;
+        private int _firstRegist = 0;
 
         internal WorkDependencyController(PowerPool powerPool)
         {
@@ -34,12 +34,11 @@ namespace PowerThreadPool.Helpers
                     };
                 }
 
-                if (_firstRegist)
+                if (Interlocked.CompareExchange(ref _firstRegist, 1, 0) == 0)
                 {
                     _callbackEndHandler = OnCallbackEnd;
                     _powerPool.CallbackEnd += _callbackEndHandler;
                 }
-                _firstRegist = false;
 
                 _workDict[work.ID] = work;
 
