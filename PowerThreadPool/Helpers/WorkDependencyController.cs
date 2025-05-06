@@ -45,25 +45,6 @@ namespace PowerThreadPool.Helpers
 
                 foreach (string dependedId in dependents)
                 {
-                    //if (!_powerPool._aliveWorkDic.ContainsKey(dependedId) && !_powerPool._suspendedWork.ContainsKey(dependedId))
-                    //{
-                    //    if (PrecedingWorkNotSuccessfullyCompleted(dependedId))
-                    //    {
-                    //        work.DependencyFailed = true;
-                    //        _workDict.TryRemove(work.ID, out _);
-                    //        _powerPool.WorkCallbackEnd(work, Status.Failed);
-                    //        _powerPool.CheckPoolIdle();
-                    //        return;
-                    //    }
-                    //    else if (dependents.Remove(dependedId))
-                    //    {
-                    //        if (dependents.Count == 0)
-                    //        {
-                    //            _workDict.TryRemove(work.ID, out _);
-                    //            // No need to call PowerPool.SetWork here
-                    //        }
-                    //    }
-                    //}
                     if (PrecedingWorkNotSuccessfullyCompleted(dependedId))
                     {
                         work.DependencyFailed = true;

@@ -13,7 +13,6 @@ namespace PowerThreadPool.Works
     {
         private Func<TResult> _function;
         private WorkOption<TResult> _workOption;
-        private CallbackEndEventHandler _callbackEndHandler;
 
         internal ExecuteResult<TResult> _executeResult;
         internal ExecuteResult<TResult> ExecuteResult
