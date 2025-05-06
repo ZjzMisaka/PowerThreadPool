@@ -779,7 +779,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestDependentsHasDifficultDependency()
+        public void TestDependentsHasDifficultDependency1()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -841,6 +841,69 @@ namespace UnitTest
             }, new WorkOption
             {
                 Dependents = new ConcurrentSet<string> { "3", "4" }
+            });
+
+            powerPool.Stop();
+        }
+
+        [Fact]
+        public void TestDependentsHasDifficultDependency2()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            List<string> logList = new List<string>();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 8,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
+            };
+            powerPool.QueueWorkItem<object>(() =>//c
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            }, new WorkOption
+            {
+                CustomWorkID = "3",
+            });
+            powerPool.QueueWorkItem<object>(() =>//b
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            }, new WorkOption
+            {
+                CustomWorkID = "2",
+                Dependents = new ConcurrentSet<string> { "3" }
+            });
+            powerPool.QueueWorkItem<object>(() =>//d
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            }, new WorkOption
+            {
+                CustomWorkID = "4",
+                Dependents = new ConcurrentSet<string> { "2" }
+            });
+            powerPool.QueueWorkItem<object>(() =>//a
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            }, new WorkOption
+            {
+                CustomWorkID = "1",
+                Dependents = new ConcurrentSet<string> { "2", "4" }
             });
 
             powerPool.Stop();
