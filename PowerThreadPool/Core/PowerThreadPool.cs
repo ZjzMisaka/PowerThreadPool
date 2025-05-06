@@ -379,7 +379,7 @@ namespace PowerThreadPool
                     {
                         foreach (Worker workerDiscard in _aliveWorkerList)
                         {
-                            if (workerDiscard.WorkerState == WorkerStates.Running && workerDiscard.DiscardOneWork())
+                            if (workerDiscard.DiscardOneWork())
                             {
                                 Interlocked.Decrement(ref _waitingWorkCount);
                                 worker = workerDiscard;
