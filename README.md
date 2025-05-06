@@ -31,6 +31,7 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
     - [Idle Thread Scheduled Destruction](https://github.com/ZjzMisaka/PowerThreadPool/wiki/DestroyThreadOption)
     - [Thread Starvation Countermeasures (Long-running Work Support)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing#thread-starvation)
 - [Work Callback | Default Callback](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Callback)
+- [Rejection Policy](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Rejection-Policy)
 - [Parallel Execution](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Parallel-Execution)
     - [For](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Parallel-Execution#For)
     - [ForEach](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Parallel-Execution#ForEach)
