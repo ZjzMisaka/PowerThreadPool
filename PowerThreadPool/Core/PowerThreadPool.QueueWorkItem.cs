@@ -410,7 +410,7 @@ namespace PowerThreadPool
             }
 
             Work<TResult> work = new Work<TResult>(this, workID, function, option);
-
+            _workDependencyController.Register(work, option.Dependents);
             if (work.DependencyFailed)
             {
                 return workID;
