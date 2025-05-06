@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Exceptions;
-using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;
 using static PowerThreadPool.PowerPool;
