@@ -779,6 +779,74 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestDependentsHasDifficultDependency()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            List<string> logList = new List<string>();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 8,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
+            };
+            powerPool.QueueWorkItem<object>(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            });
+            powerPool.QueueWorkItem<object>(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { "1" }
+            });
+            powerPool.QueueWorkItem<object>(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { "2" }
+            });
+            powerPool.QueueWorkItem<object>(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { "1" }
+            });
+            powerPool.QueueWorkItem<object>(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(100);
+                }
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { "3", "4" }
+            });
+
+            powerPool.Stop();
+        }
+
+        [Fact]
         public void TestDependentsDoesNotHaveCycle()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
