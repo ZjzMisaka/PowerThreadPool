@@ -9,22 +9,19 @@ namespace PowerThreadPool.Collections
     internal class ConcurrentStealablePriorityQueue<T> : IStealablePriorityCollection<T>
     {
         private readonly ConcurrentDictionary<int, ConcurrentQueue<T>> _queueDic;
-        private readonly ConcurrentSet<int> _prioritySet;
-        private List<int> _reversed;
+        private List<int> _sortedPriorityList;
         private InterlockedFlag<CanInsertPriority> _canInsertPriority = CanInsertPriority.Allowed;
 
         internal ConcurrentStealablePriorityQueue()
         {
             _queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
-            _prioritySet = new ConcurrentSet<int>();
-            _reversed = new List<int>();
+            _sortedPriorityList = new List<int>();
         }
 
         public void Set(T item, int priority)
         {
             ConcurrentQueue<T> queue = _queueDic.GetOrAdd(priority, _ =>
             {
-                _prioritySet.Add(priority);
 #if DEBUG
                 Spinner.Start(() => _canInsertPriority.TrySet(CanInsertPriority.NotAllowed, CanInsertPriority.Allowed));
 #else
@@ -37,19 +34,19 @@ namespace PowerThreadPool.Collections
                 }
 #endif
                 bool inserted = false;
-                for (int i = 0; i < _reversed.Count; ++i)
+                for (int i = 0; i < _sortedPriorityList.Count; ++i)
                 {
-                    int p = _reversed[i];
+                    int p = _sortedPriorityList[i];
                     if (priority > p)
                     {
-                        _reversed.Insert(i, priority);
+                        _sortedPriorityList.Insert(i, priority);
                         inserted = true;
                         break;
                     }
                 }
                 if (!inserted)
                 {
-                    _reversed.Add(priority);
+                    _sortedPriorityList.Add(priority);
                 }
                 _canInsertPriority = CanInsertPriority.Allowed;
                 return new ConcurrentQueue<T>();
@@ -62,9 +59,9 @@ namespace PowerThreadPool.Collections
         {
             T item = default;
 
-            for (int i = 0; i < _reversed.Count; ++i)
+            for (int i = 0; i < _sortedPriorityList.Count; ++i)
             {
-                int priority = _reversed[i];
+                int priority = _sortedPriorityList[i];
                 if (_queueDic.TryGetValue(priority, out ConcurrentQueue<T> queue))
                 {
                     if (queue.TryDequeue(out item))
@@ -83,9 +80,9 @@ namespace PowerThreadPool.Collections
         {
             T item = default;
 
-            for (int i = _reversed.Count - 1; i >= 0; --i)
+            for (int i = _sortedPriorityList.Count - 1; i >= 0; --i)
             {
-                int priority = _reversed[i];
+                int priority = _sortedPriorityList[i];
                 if (_queueDic.TryGetValue(priority, out ConcurrentQueue<T> queue))
                 {
                     if (queue.TryDequeue(out item))
