@@ -5,7 +5,6 @@ using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
-using static PowerThreadPool.PowerPool;
 
 namespace PowerThreadPool.Works
 {
