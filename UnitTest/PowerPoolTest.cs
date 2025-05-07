@@ -6451,35 +6451,35 @@ namespace UnitTest
             _ = powerPool
                 | (() =>
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(300);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(300);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(300);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(300);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(300);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(300);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(300);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(100);
+                    Thread.Sleep(300);
                 });
 
             bool done = false;
