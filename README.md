@@ -12,7 +12,8 @@
 A comprehensive and efficient lock-free thread pool with granular work control, flexible concurrency, and robust error handling, alongside an easy-to-use API for diverse work submissions.  
 
 ## Documentation
-Read the [English](https://github.com/ZjzMisaka/PowerThreadPool/wiki) | [中文](https://github.com/ZjzMisaka/PowerThreadPool.zh-CN.Wiki/wiki) | [日本語](https://github.com/ZjzMisaka/PowerThreadPool.ja-JP.Wiki/wiki) Wiki here.  
+Access the Wiki in [English](https://github.com/ZjzMisaka/PowerThreadPool/wiki) | [中文](https://github.com/ZjzMisaka/PowerThreadPool.zh-CN.Wiki/wiki) | [日本語](https://github.com/ZjzMisaka/PowerThreadPool.ja-JP.Wiki/wiki).  
+Visit the [DeepWiki](https://deepwiki.com/ZjzMisaka/PowerThreadPool) for more information.  
 
 ## Installation
 If you want to include PowerThreadPool in your project, you can [install it directly from NuGet](https://www.nuget.org/packages/PowerThreadPool/).  
