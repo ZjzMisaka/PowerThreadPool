@@ -250,7 +250,6 @@ namespace PowerThreadPool
             }
 
             Dispose();
-
         }
 
         private bool RequeueAllWaitingWork()
