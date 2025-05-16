@@ -234,22 +234,23 @@ namespace PowerThreadPool
                     _powerPool._aliveWorkerDicChanged = true;
                 }
 
-                bool hasWaitingWork = RequeueAllWaitingWork();
-
-                Interlocked.Decrement(ref _powerPool._runningWorkerCount);
-                _powerPool.InvokeRunningWorkerCountChangedEvent(false);
-
-                _powerPool.FillWorkerQueue();
-
-                if (!hasWaitingWork)
-                {
-                    _powerPool.CheckPoolIdle();
-                }
-
-                Dispose();
-
                 _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
             }
+
+            bool hasWaitingWork = RequeueAllWaitingWork();
+
+            Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+            _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
+            _powerPool.FillWorkerQueue();
+
+            if (!hasWaitingWork)
+            {
+                _powerPool.CheckPoolIdle();
+            }
+
+            Dispose();
+
         }
 
         private bool RequeueAllWaitingWork()
