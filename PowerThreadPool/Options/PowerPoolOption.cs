@@ -38,8 +38,17 @@ namespace PowerThreadPool.Options
                 }
                 _maxThreads = value;
 
+                WorkStealingLoopMaxStep = GetWorkStealingLoopMaxStep(_maxThreads);
+
                 OnThreadCountSettingChanged();
             }
+        }
+
+        private int _workStealingLoopMaxStep = GetWorkStealingLoopMaxStep(Environment.ProcessorCount * 2);
+        internal int WorkStealingLoopMaxStep
+        {
+            get => _workStealingLoopMaxStep;
+            set => _workStealingLoopMaxStep = value;
         }
 
         private DestroyThreadOption _destroyThreadOption;
@@ -124,6 +133,11 @@ namespace PowerThreadPool.Options
                     powerPool.FillWorkerQueue();
                 }
             }
+        }
+
+        private static int GetWorkStealingLoopMaxStep(int maxThreads)
+        {
+            return (int)Math.Min(maxThreads, Math.Log(maxThreads + 1) * 3);
         }
     }
 }
