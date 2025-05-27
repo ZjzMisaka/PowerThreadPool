@@ -554,8 +554,8 @@ namespace PowerThreadPool
             }
             else
             {
-                _cancellationTokenSource.Cancel();
                 Cancel();
+                _cancellationTokenSource.Cancel();
             }
 
             _workDependencyController.Cancel();
