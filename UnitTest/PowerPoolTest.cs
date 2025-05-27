@@ -3499,6 +3499,8 @@ namespace UnitTest
             ExecuteResult<string> res1 = powerPool.Fetch<string>(id1);
             Assert.Equal("1", res1.Result);
 
+            powerPool.Wait();
+
             powerPool.ClearResultStorage(id0);
             res0 = powerPool.Fetch<string>(id0);
             res1 = powerPool.Fetch<string>(id1);
