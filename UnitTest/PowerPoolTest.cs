@@ -3494,12 +3494,12 @@ namespace UnitTest
                 ShouldStoreResult = true
             });
 
+            powerPool.Wait();
+
             ExecuteResult<string> res0 = powerPool.Fetch<string>(id0);
             Assert.Equal("0", res0.Result);
             ExecuteResult<string> res1 = powerPool.Fetch<string>(id1);
             Assert.Equal("1", res1.Result);
-
-            powerPool.Wait();
 
             powerPool.ClearResultStorage(id0);
             res0 = powerPool.Fetch<string>(id0);
@@ -6453,35 +6453,35 @@ namespace UnitTest
             _ = powerPool
                 | (() =>
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(500);
+                    Thread.Sleep(1000);
                 });
 
             bool done = false;
@@ -6985,35 +6985,35 @@ namespace UnitTest
 
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(100);
+                Thread.Sleep(1000);
             }, new WorkOption { WorkPriority = 1 });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(100);
+                Thread.Sleep(1000);
             }, new WorkOption { WorkPriority = 1 });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(100);
+                Thread.Sleep(1000);
             }, new WorkOption { WorkPriority = 1 });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(100);
+                Thread.Sleep(1000);
             }, new WorkOption { WorkPriority = 1 });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(100);
+                Thread.Sleep(1000);
             }, new WorkOption { WorkPriority = 1 });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(100);
+                Thread.Sleep(1000);
             }, new WorkOption { WorkPriority = 1 });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(100);
+                Thread.Sleep(1000);
             }, new WorkOption { WorkPriority = 1 });
             powerPool.QueueWorkItem(() =>
             {
-                Thread.Sleep(100);
+                Thread.Sleep(1000);
             }, new WorkOption { WorkPriority = 1 });
 
             bool done = false;
