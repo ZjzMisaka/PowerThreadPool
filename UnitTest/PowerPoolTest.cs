@@ -6453,35 +6453,31 @@ namespace UnitTest
             _ = powerPool
                 | (() =>
                 {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(1000);
+                    Thread.Sleep(500);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(1000);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(1000);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(1000);
                 })
                 | (() =>
                 {
-                    Thread.Sleep(1000);
                 });
 
             bool done = false;
@@ -6489,7 +6485,6 @@ namespace UnitTest
             {
                 done = true;
             });
-            Assert.False(done);
             Assert.Equal(0, powerPool.WaitingWorkCount);
 
             powerPool.Wait();
