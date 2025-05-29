@@ -3445,6 +3445,9 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
+
+            powerPool.EnablePoolIdleCheck = false;
+
             powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 1,
@@ -3459,7 +3462,10 @@ namespace UnitTest
                 ShouldStoreResult = true
             });
 
+            powerPool.EnablePoolIdleCheck = true;
+
             ExecuteResult<string> res = powerPool.Fetch<string>(id0);
+
             Assert.Equal("0", res.Result);
 
             powerPool.ClearResultStorage();
@@ -3479,6 +3485,8 @@ namespace UnitTest
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
             };
 
+            powerPool.EnablePoolIdleCheck = false;
+
             string id0 = powerPool.QueueWorkItem(() =>
             {
                 return "0";
@@ -3493,6 +3501,8 @@ namespace UnitTest
             {
                 ShouldStoreResult = true
             });
+
+            powerPool.EnablePoolIdleCheck = true;
 
             powerPool.Wait();
 
@@ -3520,6 +3530,8 @@ namespace UnitTest
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
             };
 
+            powerPool.EnablePoolIdleCheck = false;
+
             string id0 = powerPool.QueueWorkItem(() =>
             {
                 return "0";
@@ -3534,6 +3546,8 @@ namespace UnitTest
             {
                 ShouldStoreResult = true,
             });
+
+            powerPool.EnablePoolIdleCheck = true;
 
             powerPool.Wait();
 
