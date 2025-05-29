@@ -415,6 +415,29 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestThreadInterruptedWhenWorkerIdle()
+        {
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 8,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 0, KeepAliveTime = 10000 }
+            };
+            powerPool.WorkEnded += (s, e) =>
+            {
+                powerPool.Stop(true);
+            };
+            powerPool.QueueWorkItem(() =>
+            {
+            });
+
+            Thread.Sleep(200);
+
+            Assert.Equal(0, powerPool.IdleWorkerCount);
+            Assert.Equal(0, powerPool.AliveWorkerCount);
+        }
+
+        [Fact]
         public void TestDependents()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
