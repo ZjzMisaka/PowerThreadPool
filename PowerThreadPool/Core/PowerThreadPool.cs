@@ -522,6 +522,10 @@ namespace PowerThreadPool
 
             while (true)
             {
+                // WorkStealingLoopMaxStep is automatically calculated from MaxThreads using a logarithmic formula to optimize loop performance for different thread pool sizes.
+                // It limits the minimum number of steps for each loop iteration.
+                // The number of loop steps will not exceed the length of _aliveWorkerList.
+                // _aliveWorkerListLoopIndex is used to ensure that the starting point of each loop iteration varies as much as possible.
                 if ((step >= PowerPoolOption.WorkLoopMaxStep && selectedWorker != null) || step >= workerList.Length)
                 {
                     if (selectedWorker != null && rejectOption != null)
