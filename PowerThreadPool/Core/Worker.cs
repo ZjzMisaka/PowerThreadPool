@@ -488,7 +488,7 @@ namespace PowerThreadPool
             int loopIndex = _powerPool._aliveWorkerListLoopIndex;
             while (true)
             {
-                if ((step >= _powerPool.PowerPoolOption.WorkStealingLoopMaxStep && worker != null) || step >= workerList.Length)
+                if ((step >= _powerPool.PowerPoolOption.WorkLoopMaxStep && worker != null) || step >= workerList.Length)
                 {
                     break;
                 }

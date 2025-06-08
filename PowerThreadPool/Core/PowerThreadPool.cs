@@ -522,7 +522,7 @@ namespace PowerThreadPool
 
             while (true)
             {
-                if ((step >= 5 && selectedWorker != null) || step >= workerList.Length)
+                if ((step >= PowerPoolOption.WorkLoopMaxStep && selectedWorker != null) || step >= workerList.Length)
                 {
                     if (selectedWorker != null && rejectOption != null)
                     {
