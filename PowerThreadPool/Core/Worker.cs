@@ -486,9 +486,14 @@ namespace PowerThreadPool
             int step = 0;
             int startIndex = _powerPool._aliveWorkerListLoopIndex;
             int loopIndex = _powerPool._aliveWorkerListLoopIndex;
+
             while (true)
             {
-                if ((step >= _powerPool.PowerPoolOption.WorkStealingLoopMaxStep && worker != null) || step >= workerList.Length)
+                // WorkStealingLoopMaxStep is automatically calculated from MaxThreads using a logarithmic formula to optimize loop performance for different thread pool sizes.
+                // It limits the minimum number of steps for each loop iteration.
+                // The number of loop steps will not exceed the length of _aliveWorkerList.
+                // _aliveWorkerListLoopIndex is used to ensure that the starting point of each loop iteration varies as much as possible.
+                if ((step >= _powerPool.PowerPoolOption.WorkLoopMaxStep && worker != null) || step >= workerList.Length)
                 {
                     break;
                 }
