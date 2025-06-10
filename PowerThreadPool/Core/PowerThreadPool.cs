@@ -589,7 +589,7 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckPoolStart()
         {
-            if (_poolState.Value == PoolStates.NotRunning && _poolState.TrySet(PoolStates.Running, PoolStates.NotRunning))
+            if (_poolState == PoolStates.NotRunning && _poolState.TrySet(PoolStates.Running, PoolStates.NotRunning))
             {
                 if (PoolStarted != null)
                 {
