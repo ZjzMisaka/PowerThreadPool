@@ -357,6 +357,7 @@ namespace UnitTest
 
             object p = null;
             object l = null;
+            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItemAsync(async () =>
             {
@@ -366,12 +367,44 @@ namespace UnitTest
                 l = "2";
             }, (res) =>
             {
-                Assert.Equal("2", l);
+                c = "3";
             });
             Thread.Sleep(1000);
             powerPool.Wait();
             Assert.Equal("1", p);
             Assert.Equal("2", l);
+            Assert.Equal("3", c);
+        }
+
+        [Fact]
+        public void Test30()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                c = "3";
+                return "100";
+            }, (res) =>
+            {
+                Assert.Equal("2", l);
+                r = res.Result;
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+            Assert.Equal("100", r);
         }
 
         [Fact]

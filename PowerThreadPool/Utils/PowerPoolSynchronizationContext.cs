@@ -28,7 +28,7 @@ namespace PowerThreadPool.Utils
             _workOption.AsyncWorkID = _powerPool.CreateID<object>();
             _powerPool._asyncWorkIDDict[_workOption.BaseAsyncWorkID].Add(_workOption.AsyncWorkID);
 
-            _powerPool.QueueWorkItem(() =>
+            _powerPool.QueueWorkItem<object>(() =>
             {
                 var prevCtx = SynchronizationContext.Current;
                 SynchronizationContext.SetSynchronizationContext(this);
@@ -38,6 +38,7 @@ namespace PowerThreadPool.Utils
                 {
                     _workOption.AllowEventsAndCallback = true;
                 }
+                return default;
             }, _workOption);
         }
 
@@ -70,7 +71,7 @@ namespace PowerThreadPool.Utils
             _workOption.AsyncWorkID = _powerPool.CreateID<object>();
             _powerPool._asyncWorkIDDict[_workOption.BaseAsyncWorkID].Add(_workOption.AsyncWorkID);
 
-            _powerPool.QueueWorkItem(() =>
+            _powerPool.QueueWorkItem<TResult>(() =>
             {
                 var prevCtx = SynchronizationContext.Current;
                 SynchronizationContext.SetSynchronizationContext(this);
@@ -79,6 +80,10 @@ namespace PowerThreadPool.Utils
                 Interlocked.Exchange(ref _done, 1) == 0)
                 {
                     _workOption.AllowEventsAndCallback = true;
+                    if (_originalTask is Task<TResult> taskWithResult)
+                    {
+                        return taskWithResult.Result;
+                    }
                 }
                 return default;
             }, _workOption);
