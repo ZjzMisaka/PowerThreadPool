@@ -390,8 +390,8 @@ namespace UnitTest
             {
                 p = "1";
                 await Task.Delay(100);
-                await Task.Delay(100);
                 l = "2";
+                await Task.Delay(100);
                 c = "3";
                 return "100";
             }, (res) =>

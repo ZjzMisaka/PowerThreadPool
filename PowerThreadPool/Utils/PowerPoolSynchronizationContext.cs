@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using PowerThreadPool.Collections;
 using PowerThreadPool.Options;
 
 namespace PowerThreadPool.Utils
@@ -25,21 +26,28 @@ namespace PowerThreadPool.Utils
 
         public override void Post(SendOrPostCallback d, object state)
         {
-            _workOption.AsyncWorkID = _powerPool.CreateID<object>();
-            _powerPool._asyncWorkIDDict[_workOption.BaseAsyncWorkID].Add(_workOption.AsyncWorkID);
-
-            _powerPool.QueueWorkItem<object>(() =>
+            if (_powerPool._asyncWorkIDDict.TryGetValue(_workOption.BaseAsyncWorkID, out ConcurrentSet<string> idSet))
             {
-                var prevCtx = SynchronizationContext.Current;
-                SynchronizationContext.SetSynchronizationContext(this);
-                d(state);
-                if (_originalTask.IsCompleted &&
-                Interlocked.Exchange(ref _done, 1) == 0)
+                _workOption.AsyncWorkID = _powerPool.CreateID<object>();
+                idSet.Add(_workOption.AsyncWorkID);
+
+                _powerPool.QueueWorkItem<object>(() =>
                 {
-                    _workOption.AllowEventsAndCallback = true;
-                }
-                return default;
-            }, _workOption);
+                    var prevCtx = SynchronizationContext.Current;
+                    SynchronizationContext.SetSynchronizationContext(this);
+                    _powerPool.StopIfRequested(() =>
+                    {
+                        _workOption.AllowEventsAndCallback = true;
+                    });
+                    d(state);
+                    if (_originalTask.IsCompleted &&
+                    Interlocked.Exchange(ref _done, 1) == 0)
+                    {
+                        _workOption.AllowEventsAndCallback = true;
+                    }
+                    return default;
+                }, _workOption);
+            }
         }
 
         public override void Send(SendOrPostCallback d, object state)
@@ -68,25 +76,32 @@ namespace PowerThreadPool.Utils
 
         public override void Post(SendOrPostCallback d, object state)
         {
-            _workOption.AsyncWorkID = _powerPool.CreateID<object>();
-            _powerPool._asyncWorkIDDict[_workOption.BaseAsyncWorkID].Add(_workOption.AsyncWorkID);
-
-            _powerPool.QueueWorkItem<TResult>(() =>
+            if (_powerPool._asyncWorkIDDict.TryGetValue(_workOption.BaseAsyncWorkID, out ConcurrentSet<string> idSet))
             {
-                var prevCtx = SynchronizationContext.Current;
-                SynchronizationContext.SetSynchronizationContext(this);
-                d(state);
-                if (_originalTask.IsCompleted &&
-                Interlocked.Exchange(ref _done, 1) == 0)
+                _workOption.AsyncWorkID = _powerPool.CreateID<object>();
+                idSet.Add(_workOption.AsyncWorkID);
+
+                _powerPool.QueueWorkItem<TResult>(() =>
                 {
-                    _workOption.AllowEventsAndCallback = true;
-                    if (_originalTask is Task<TResult> taskWithResult)
+                    var prevCtx = SynchronizationContext.Current;
+                    SynchronizationContext.SetSynchronizationContext(this);
+                    _powerPool.StopIfRequested(() =>
                     {
-                        return taskWithResult.Result;
+                        _workOption.AllowEventsAndCallback = true;
+                    });
+                    d(state);
+                    if (_originalTask.IsCompleted &&
+                    Interlocked.Exchange(ref _done, 1) == 0)
+                    {
+                        _workOption.AllowEventsAndCallback = true;
+                        if (_originalTask is Task<TResult> taskWithResult)
+                        {
+                            return taskWithResult.Result;
+                        }
                     }
-                }
-                return default;
-            }, _workOption);
+                    return default;
+                }, _workOption);
+            }
         }
 
         public override void Send(SendOrPostCallback d, object state)

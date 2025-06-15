@@ -410,7 +410,7 @@ namespace PowerThreadPool
                 _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
             }
 
-            if (!PowerPoolOption.StartSuspended && PoolStopping)
+            if (!PowerPoolOption.StartSuspended && PoolStopping && work.BaseAsyncWorkID == null)
             {
                 _stopSuspendedWork[workID] = work;
                 _stopSuspendedWorkQueue.Enqueue(workID);
@@ -463,7 +463,8 @@ namespace PowerThreadPool
 
         public string QueueWorkItemAsync(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
         {
-            return QueueWorkItemAsync(asyncFunc, GetOption(callBack));
+            WorkOption workOption = new WorkOption { Callback = callBack };
+            return QueueWorkItemAsync(asyncFunc, workOption);
         }
 
         public string QueueWorkItemAsync(Func<Task> asyncFunc, WorkOption option)
@@ -477,23 +478,30 @@ namespace PowerThreadPool
             return QueueWorkItem(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
-                Task task;
                 PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, option);
                 SynchronizationContext.SetSynchronizationContext(ctx);
-                task = asyncFunc();
+
+                Task task = asyncFunc();
+                if (task.Exception != null && task.Exception.InnerException != null)
+                {
+                    throw task.Exception.InnerException;
+                }
                 ctx.SetTask(task);
                 task.ContinueWith(t =>
                 {
                     SynchronizationContext.SetSynchronizationContext(prevCtx);
 
-                    _asyncWorkIDDict.TryRemove(option.AsyncWorkID, out _);
+                    _asyncWorkIDDict.TryRemove(option.BaseAsyncWorkID, out _);
+
+                    CheckPoolIdle();
                 });
             }, option);
         }
 
         public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
         {
-            return QueueWorkItemAsync(asyncFunc, GetOption(callBack));
+            WorkOption<TResult> workOption = new WorkOption<TResult> { Callback = callBack };
+            return QueueWorkItemAsync(asyncFunc, workOption);
         }
 
         public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, WorkOption<TResult> option)
@@ -511,12 +519,18 @@ namespace PowerThreadPool
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task task = asyncFunc();
+                if (task.Exception != null && task.Exception.InnerException != null)
+                {
+                    throw task.Exception.InnerException;
+                }
                 ctx.SetTask(task);
                 task.ContinueWith(t =>
                 {
                     SynchronizationContext.SetSynchronizationContext(prevCtx);
 
-                    _asyncWorkIDDict.TryRemove(option.AsyncWorkID, out _);
+                    _asyncWorkIDDict.TryRemove(option.BaseAsyncWorkID, out _);
+
+                    CheckPoolIdle();
                 });
                 return default;
             }, option);

@@ -54,12 +54,17 @@ namespace PowerThreadPool
 
             if (work == null)
             {
+                if(_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker))
+                {
+                    worker.Work.AllowEventsAndCallback = true;
+                }
                 if (beforeStop != null && !beforeStop())
                 {
                     return;
                 }
                 _aliveWorkDic.Clear();
                 _workGroupDic.Clear();
+                _asyncWorkIDDict.Clear();
                 throw new WorkStopException();
             }
             else
@@ -82,6 +87,7 @@ namespace PowerThreadPool
                         idSet.Remove(work.ID);
                     }
                 }
+                _asyncWorkIDDict.TryRemove(work.BaseAsyncWorkID, out _);
                 throw new WorkStopException();
             }
         }
@@ -139,10 +145,18 @@ namespace PowerThreadPool
                 return true;
             }
 
-            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.WorkerState == WorkerStates.Running && worker.IsCancellationRequested())
+            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.WorkerState == WorkerStates.Running)
             {
-                work = worker.Work;
-                return true;
+                if(worker.IsCancellationRequested())
+                {
+                    work = worker.Work;
+                    return true;
+                }
+                else if (_aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase baseAsyncWork) && baseAsyncWork.ShouldStop)
+                {
+                    work = worker.Work;
+                    return true;
+                }
             }
 
             return false;
@@ -580,6 +594,14 @@ namespace PowerThreadPool
             if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
                 res = work.Stop(forceStop);
+            }
+
+            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
+            {
+                foreach (string subID in idSet)
+                {
+                    res = Stop(subID, forceStop);
+                }
             }
 
             _workDependencyController.Cancel(id);
