@@ -60,5 +60,6 @@ namespace PowerThreadPool.Works
         internal abstract bool LongRunning { get; }
         internal abstract bool ShouldStoreResult { get; }
         internal abstract ConcurrentSet<string> Dependents { get; }
+        internal abstract bool AllowEventsAndCallback { get; }
     }
 }

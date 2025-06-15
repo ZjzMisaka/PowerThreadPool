@@ -351,6 +351,30 @@ namespace UnitTest
         }
 
         [Fact]
+        public void Test29()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueAsyncWorkItem(async () =>
+            {
+                p = "1";
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, (res) =>
+            {
+                Assert.Equal("2", l);
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
         public void testSugar1()
         {
             PowerPool powerPool = new PowerPool();

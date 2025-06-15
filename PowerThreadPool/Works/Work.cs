@@ -40,6 +40,7 @@ namespace PowerThreadPool.Works
         internal override bool LongRunning => _workOption.LongRunning;
         internal override bool ShouldStoreResult => _workOption.ShouldStoreResult;
         internal override ConcurrentSet<string> Dependents => _workOption.Dependents;
+        internal override bool AllowEventsAndCallback => _workOption.AllowEventsAndCallback;
 
         internal Work(PowerPool powerPool, string id, Func<TResult> function, WorkOption<TResult> option)
         {

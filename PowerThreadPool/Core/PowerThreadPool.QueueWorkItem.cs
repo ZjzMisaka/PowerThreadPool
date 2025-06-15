@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
+using PowerThreadPool.Utils;
 using PowerThreadPool.Works;
 
 namespace PowerThreadPool
@@ -384,32 +386,19 @@ namespace PowerThreadPool
 
             string workID;
 
-            if (PowerPoolOption == null)
-            {
-                PowerPoolOption = new PowerPoolOption();
-            }
+            CheckPowerPoolOption();
 
-            if (option.CustomWorkID != null)
+            if (option.AsyncWorkID != null)
             {
-                if (_suspendedWork.ContainsKey(option.CustomWorkID) || _aliveWorkDic.ContainsKey(option.CustomWorkID))
-                {
-                    throw new InvalidOperationException($"The work ID '{option.CustomWorkID}' already exists.");
-                }
-                workID = option.CustomWorkID;
+                workID = option.AsyncWorkID;
             }
             else
             {
-                if (PowerPoolOption.WorkIDType == WorkIDType.LongIncrement)
-                {
-                    workID = Interlocked.Increment(ref _workIDIncrement).ToString();
-                }
-                else
-                {
-                    workID = Guid.NewGuid().ToString();
-                }
+                workID = CreateID(option);
             }
 
             Work<TResult> work = new Work<TResult>(this, workID, function, option);
+
             _workDependencyController.Register(work, option.Dependents);
             if (work.DependencyFailed)
             {
@@ -467,6 +456,107 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
             => QueueWorkItem<TResult>(DelegateHelper.ToNormalFunc<TResult>(function, param), option);
+
+
+
+
+
+        public string QueueAsyncWorkItem(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
+        {
+            return QueueAsyncWorkItem(asyncFunc, GetOption(callBack));
+        }
+
+        public string QueueAsyncWorkItem(Func<Task> asyncFunc, WorkOption option)
+        {
+            CheckPowerPoolOption();
+
+            option.AsyncWorkID = CreateID(option);
+            option.BaseAsyncWorkID = option.AsyncWorkID;
+            option.AllowEventsAndCallback = false;
+            _asyncWorkIDDict[option.AsyncWorkID] = new ConcurrentSet<string>();
+            return QueueWorkItem(() =>
+            {
+                SynchronizationContext prevCtx = SynchronizationContext.Current;
+                Task task;
+                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, option);
+                SynchronizationContext.SetSynchronizationContext(ctx);
+                task = asyncFunc();
+                ctx.SetTask(task);
+                task.ContinueWith(t =>
+                {
+                    SynchronizationContext.SetSynchronizationContext(prevCtx);
+
+                    _asyncWorkIDDict.TryRemove(option.AsyncWorkID, out _);
+                });
+            }, option);
+        }
+
+        public string QueueAsyncWorkItem<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
+        {
+            return QueueAsyncWorkItem(asyncFunc, GetOption(callBack));
+        }
+
+        public string QueueAsyncWorkItem<TResult>(Func<Task<TResult>> asyncFunc, WorkOption<TResult> option)
+        {
+            CheckPowerPoolOption();
+
+            option.AsyncWorkID = CreateID(option);
+            option.BaseAsyncWorkID = option.AsyncWorkID;
+            option.AllowEventsAndCallback = false;
+            _asyncWorkIDDict[option.AsyncWorkID] = new ConcurrentSet<string>();
+            return QueueWorkItem(() =>
+            {
+                SynchronizationContext prevCtx = SynchronizationContext.Current;
+                PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, option);
+                SynchronizationContext.SetSynchronizationContext(ctx);
+
+                Task task = asyncFunc();
+                ctx.SetTask(task);
+                task.ContinueWith(t =>
+                {
+                    SynchronizationContext.SetSynchronizationContext(prevCtx);
+
+                    _asyncWorkIDDict.TryRemove(option.AsyncWorkID, out _);
+                });
+                return default;
+            }, option);
+        }
+
+        internal string CreateID<TResult>(WorkOption<TResult> option = null)
+        {
+            string workID;
+
+            if (option != null && option.CustomWorkID != null)
+            {
+                if (_suspendedWork.ContainsKey(option.CustomWorkID) || _aliveWorkDic.ContainsKey(option.CustomWorkID))
+                {
+                    throw new InvalidOperationException($"The work ID '{option.CustomWorkID}' already exists.");
+                }
+                workID = option.CustomWorkID;
+            }
+            else
+            {
+                if (PowerPoolOption.WorkIDType == WorkIDType.LongIncrement)
+                {
+                    workID = Interlocked.Increment(ref _workIDIncrement).ToString();
+                }
+                else
+                {
+                    workID = Guid.NewGuid().ToString();
+                }
+            }
+
+            return workID;
+        }
+
+        private void CheckPowerPoolOption()
+        {
+            if (PowerPoolOption == null)
+            {
+                PowerPoolOption = new PowerPoolOption();
+            }
+        }
+
 
         /// <summary>
         /// Queues a work for execution.

@@ -49,6 +49,8 @@ namespace PowerThreadPool
 
         internal ConcurrentDictionary<string, ExecuteResultBase> _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
 
+        internal ConcurrentDictionary<string, ConcurrentSet<string>> _asyncWorkIDDict = new ConcurrentDictionary<string, ConcurrentSet<string>>();
+
         internal long _startCount = 0;
         internal long _endCount = 0;
         internal long _queueTime = 0;

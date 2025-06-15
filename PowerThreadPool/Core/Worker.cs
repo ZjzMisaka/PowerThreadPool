@@ -132,15 +132,18 @@ namespace PowerThreadPool
             {
                 executeResult = ExecuteMain();
 
-                if (executeResult.Status == Status.Stopped)
+                if (Work.AllowEventsAndCallback)
                 {
-                    _powerPool.InvokeWorkStoppedEvent(executeResult);
+                    if (executeResult.Status == Status.Stopped)
+                    {
+                        _powerPool.InvokeWorkStoppedEvent(executeResult);
+                    }
+                    else
+                    {
+                        _powerPool.InvokeWorkEndedEvent(executeResult);
+                    }
+                    Work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
                 }
-                else
-                {
-                    _powerPool.InvokeWorkEndedEvent(executeResult);
-                }
-                Work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
             } while (Work.ShouldImmediateRetry(executeResult));
 
             if (Work.ShouldRequeue(executeResult))
