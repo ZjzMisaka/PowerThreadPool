@@ -358,7 +358,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueAsyncWorkItem(async () =>
+            powerPool.QueueWorkItemAsync(async () =>
             {
                 p = "1";
                 await Task.Delay(100);

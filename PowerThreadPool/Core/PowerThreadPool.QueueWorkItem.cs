@@ -461,12 +461,12 @@ namespace PowerThreadPool
 
 
 
-        public string QueueAsyncWorkItem(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
+        public string QueueWorkItemAsync(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
         {
-            return QueueAsyncWorkItem(asyncFunc, GetOption(callBack));
+            return QueueWorkItemAsync(asyncFunc, GetOption(callBack));
         }
 
-        public string QueueAsyncWorkItem(Func<Task> asyncFunc, WorkOption option)
+        public string QueueWorkItemAsync(Func<Task> asyncFunc, WorkOption option)
         {
             CheckPowerPoolOption();
 
@@ -491,12 +491,12 @@ namespace PowerThreadPool
             }, option);
         }
 
-        public string QueueAsyncWorkItem<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
+        public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
         {
-            return QueueAsyncWorkItem(asyncFunc, GetOption(callBack));
+            return QueueWorkItemAsync(asyncFunc, GetOption(callBack));
         }
 
-        public string QueueAsyncWorkItem<TResult>(Func<Task<TResult>> asyncFunc, WorkOption<TResult> option)
+        public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, WorkOption<TResult> option)
         {
             CheckPowerPoolOption();
 
