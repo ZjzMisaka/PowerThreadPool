@@ -187,6 +187,14 @@ namespace PowerThreadPool
             }
 
             WorkBase work;
+            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
+            {
+                foreach (string subID in idSet)
+                {
+                    Wait(subID);
+                }
+                return true;
+            }
             if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work))
             {
                 return work.Wait();
@@ -318,6 +326,11 @@ namespace PowerThreadPool
                 return null;
             }
 
+            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
+            {
+                id = idSet.Last;
+            }
+
             WorkBase work;
             ExecuteResultBase executeResultBase = null;
             if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
@@ -362,9 +375,14 @@ namespace PowerThreadPool
 
             foreach (string id in idList)
             {
+                string idFetch = id;
+                if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
+                {
+                    idFetch = idSet.Last;
+                }
                 WorkBase workBase;
                 ExecuteResultBase executeResultBase = null;
-                if (_suspendedWork.TryGetValue(id, out workBase) || _aliveWorkDic.TryGetValue(id, out workBase) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
+                if (_suspendedWork.TryGetValue(idFetch, out workBase) || _aliveWorkDic.TryGetValue(idFetch, out workBase) || (removeAfterFetch ? _resultDic.TryRemove(idFetch, out executeResultBase) : _resultDic.TryGetValue(idFetch, out executeResultBase)))
                 {
                     if (executeResultBase != null)
                     {
@@ -376,8 +394,8 @@ namespace PowerThreadPool
 
                         if (removeAfterFetch)
                         {
-                            _resultDic.TryRemove(id, out _);
-                            if (_aliveWorkDic.TryRemove(id, out WorkBase work))
+                            _resultDic.TryRemove(idFetch, out _);
+                            if (_aliveWorkDic.TryRemove(idFetch, out WorkBase work))
                             {
                                 RemoveWorkFromGroup(work.Group, work);
                                 work.Dispose();
@@ -387,7 +405,7 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    resultList.Add(new ExecuteResult<TResult>() { ID = id });
+                    resultList.Add(new ExecuteResult<TResult>() { ID = idFetch });
                 }
             }
 
@@ -651,6 +669,14 @@ namespace PowerThreadPool
             {
                 return false;
             }
+            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
+            {
+                foreach (string subID in idSet)
+                {
+                    Pause(subID);
+                }
+                return true;
+            }
             if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
                 return work.Pause();
@@ -717,6 +743,14 @@ namespace PowerThreadPool
             {
                 res = work.Resume();
             }
+            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
+            {
+                foreach (string subID in idSet)
+                {
+                    Resume(subID);
+                }
+                return true;
+            }
             return res;
         }
 
@@ -770,6 +804,15 @@ namespace PowerThreadPool
             if (string.IsNullOrEmpty(id))
             {
                 return false;
+            }
+
+            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
+            {
+                foreach (string subID in idSet)
+                {
+                    Cancel(subID);
+                }
+                return true;
             }
 
             if (_workDependencyController.Cancel(id))
