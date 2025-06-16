@@ -65,6 +65,7 @@ namespace PowerThreadPool
                 _aliveWorkDic.Clear();
                 _workGroupDic.Clear();
                 _asyncWorkIDDict.Clear();
+                _asyncWorkCount = 0;
                 throw new WorkStopException();
             }
             else
@@ -89,7 +90,10 @@ namespace PowerThreadPool
                 }
                 if (work.BaseAsyncWorkID != null)
                 {
-                    _asyncWorkIDDict.TryRemove(work.BaseAsyncWorkID, out _);
+                    if (_asyncWorkIDDict.TryRemove(work.BaseAsyncWorkID, out _))
+                    {
+                        Interlocked.Decrement(ref _asyncWorkCount);
+                    }
                 }
                 throw new WorkStopException();
             }
@@ -336,7 +340,6 @@ namespace PowerThreadPool
                     {
                         _asyncWorkIDDict.TryRemove(id, out _);
                         work.Dispose();
-                        CheckPoolIdle();
                     }
                     return res;
                 }
@@ -398,7 +401,6 @@ namespace PowerThreadPool
                                 RemoveWorkFromGroup(work.Group, work);
                                 work.Dispose();
                             }
-                            CheckPoolIdle();
                         }
                     }
                 }
@@ -830,7 +832,10 @@ namespace PowerThreadPool
 
             if (res)
             {
-                _asyncWorkIDDict.TryRemove(id, out _);
+                if (_asyncWorkIDDict.TryRemove(id, out _))
+                {
+                    Interlocked.Decrement(ref _asyncWorkCount);
+                }
             }
 
             return res;

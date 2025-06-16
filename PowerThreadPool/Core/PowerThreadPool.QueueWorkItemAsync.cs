@@ -19,6 +19,7 @@ namespace PowerThreadPool
             option.BaseAsyncWorkID = option.AsyncWorkID;
             option.AllowEventsAndCallback = false;
 
+            Interlocked.Increment(ref _asyncWorkCount);
             _asyncWorkIDDict[option.AsyncWorkID] = new ConcurrentSet<string>();
         }
 
@@ -48,6 +49,8 @@ namespace PowerThreadPool
                 {
                     _asyncWorkIDDict.TryRemove(baseAsyncWorkId, out ConcurrentSet<string> set);
                 }
+
+                Interlocked.Decrement(ref _asyncWorkCount);
 
                 CheckPoolIdle();
             });

@@ -137,6 +137,8 @@ namespace PowerThreadPool
         /// Will be cleared when the thread pool starts again
         /// </summary>
         public IEnumerable<string> FailedWorkList => _failedWorkSet;
+        internal int _asyncWorkCount = 0;
+        public int AsyncWorkCount => _asyncWorkCount;
 
         internal int _runningWorkerCount = 0;
         public int RunningWorkerCount => _runningWorkerCount;
@@ -650,7 +652,7 @@ namespace PowerThreadPool
 
             if (RunningWorkerCount == 0 &&
                 WaitingWorkCount == 0 &&
-                _asyncWorkIDDict.IsEmpty &&
+                AsyncWorkCount == 0 &&
                 _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
                 )
             {
