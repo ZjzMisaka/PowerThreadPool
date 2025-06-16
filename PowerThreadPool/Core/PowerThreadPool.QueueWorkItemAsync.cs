@@ -130,7 +130,7 @@ namespace PowerThreadPool
                 var ctx = new PowerPoolSynchronizationContext<TResult>(this, option);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
-                Task task = asyncFunc();
+                Task<TResult> task = asyncFunc();
                 ThrowInnerIfNeeded(task);
 
                 ctx.SetTask(task);
