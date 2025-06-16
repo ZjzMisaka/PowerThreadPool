@@ -1,6 +1,4 @@
-﻿
-using System.Diagnostics;
-using System.Reflection;
+﻿using System.Reflection;
 using PowerThreadPool;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
@@ -24,11 +22,13 @@ namespace UnitTest
 
             Exception e = null;
 
+            int z = 0;
+
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 await Task.Delay(100);
-                throw new Exception("1");
+                int a = 0 / z;
                 await Task.Delay(100);
                 return "100";
             }, (res) =>
@@ -38,7 +38,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal("1", e.InnerException.Message);
+            Assert.IsType<DivideByZeroException>(e.InnerException);
         }
 
         [Fact]
@@ -192,7 +192,6 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             object p = null;
-            object l = null;
             object c = null;
             object r = null;
             Status s = Status.Succeed;
