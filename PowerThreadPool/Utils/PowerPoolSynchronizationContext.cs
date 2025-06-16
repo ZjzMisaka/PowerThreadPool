@@ -32,7 +32,6 @@ namespace PowerThreadPool.Utils
 
                 _powerPool.QueueWorkItem<object>(() =>
                 {
-                    var prevCtx = SynchronizationContext.Current;
                     SynchronizationContext.SetSynchronizationContext(this);
                     _powerPool.StopIfRequested(() =>
                     {
@@ -77,7 +76,6 @@ namespace PowerThreadPool.Utils
 
                 _powerPool.QueueWorkItem<TResult>(() =>
                 {
-                    var prevCtx = SynchronizationContext.Current;
                     SynchronizationContext.SetSynchronizationContext(this);
                     _powerPool.StopIfRequested(() =>
                     {
