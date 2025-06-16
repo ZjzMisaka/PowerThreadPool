@@ -849,6 +849,11 @@ namespace PowerThreadPool
             else if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
                 res = work.Cancel(true);
+                if (res && _aliveWorkDic.TryRemove(id, out _))
+                {
+                    Interlocked.Decrement(ref _aliveWorkerCount);
+                    work.Dispose();
+                }
             }
             else
             {
