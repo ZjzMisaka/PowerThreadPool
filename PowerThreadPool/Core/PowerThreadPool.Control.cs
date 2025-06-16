@@ -152,7 +152,7 @@ namespace PowerThreadPool
                     work = worker.Work;
                     return true;
                 }
-                else if (_aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase baseAsyncWork) && baseAsyncWork.ShouldStop)
+                else if (worker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase baseAsyncWork) && baseAsyncWork.ShouldStop)
                 {
                     work = worker.Work;
                     return true;
