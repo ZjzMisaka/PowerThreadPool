@@ -459,7 +459,34 @@ namespace PowerThreadPool
 
 
 
+        private void PrepareAsyncWork<T>(WorkOption<T> option)
+        {
+            CheckPowerPoolOption();
 
+            option.AsyncWorkID = CreateID(option);
+            option.BaseAsyncWorkID = option.AsyncWorkID;
+            option.AllowEventsAndCallback = false;
+
+            _asyncWorkIDDict[option.AsyncWorkID] = new ConcurrentSet<string>();
+        }
+
+        private static void ThrowInnerIfNeeded(Task task)
+        {
+            if (task.Exception?.InnerException != null)
+            {
+                throw task.Exception.InnerException;
+            }
+        }
+
+        private void RegisterCompletion(Task task, SynchronizationContext prevCtx, string baseAsyncWorkId)
+        {
+            task.ContinueWith(_ =>
+            {
+                SynchronizationContext.SetSynchronizationContext(prevCtx);
+                _asyncWorkIDDict.TryRemove(baseAsyncWorkId, out ConcurrentSet<string> set);
+                CheckPoolIdle();
+            });
+        }
 
         public string QueueWorkItemAsync(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
         {
@@ -469,32 +496,19 @@ namespace PowerThreadPool
 
         public string QueueWorkItemAsync(Func<Task> asyncFunc, WorkOption option)
         {
-            CheckPowerPoolOption();
+            PrepareAsyncWork(option);
 
-            option.AsyncWorkID = CreateID(option);
-            option.BaseAsyncWorkID = option.AsyncWorkID;
-            option.AllowEventsAndCallback = false;
-            _asyncWorkIDDict[option.AsyncWorkID] = new ConcurrentSet<string>();
             return QueueWorkItem(() =>
             {
-                SynchronizationContext prevCtx = SynchronizationContext.Current;
-                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, option);
+                var prevCtx = SynchronizationContext.Current;
+                var ctx = new PowerPoolSynchronizationContext(this, option);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task task = asyncFunc();
-                if (task.Exception != null && task.Exception.InnerException != null)
-                {
-                    throw task.Exception.InnerException;
-                }
+                ThrowInnerIfNeeded(task);
+
                 ctx.SetTask(task);
-                task.ContinueWith(t =>
-                {
-                    SynchronizationContext.SetSynchronizationContext(prevCtx);
-
-                    _asyncWorkIDDict.TryRemove(option.BaseAsyncWorkID, out _);
-
-                    CheckPoolIdle();
-                });
+                RegisterCompletion(task, prevCtx, option.BaseAsyncWorkID);
             }, option);
         }
 
@@ -504,37 +518,28 @@ namespace PowerThreadPool
             return QueueWorkItemAsync(asyncFunc, workOption);
         }
 
-        public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, WorkOption<TResult> option)
+        public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc,
+                                                  WorkOption<TResult> option)
         {
-            CheckPowerPoolOption();
+            PrepareAsyncWork(option);
 
-            option.AsyncWorkID = CreateID(option);
-            option.BaseAsyncWorkID = option.AsyncWorkID;
-            option.AllowEventsAndCallback = false;
-            _asyncWorkIDDict[option.AsyncWorkID] = new ConcurrentSet<string>();
             return QueueWorkItem(() =>
             {
-                SynchronizationContext prevCtx = SynchronizationContext.Current;
-                PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, option);
+                var prevCtx = SynchronizationContext.Current;
+                var ctx = new PowerPoolSynchronizationContext<TResult>(this, option);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task task = asyncFunc();
-                if (task.Exception != null && task.Exception.InnerException != null)
-                {
-                    throw task.Exception.InnerException;
-                }
+                ThrowInnerIfNeeded(task);
+
                 ctx.SetTask(task);
-                task.ContinueWith(t =>
-                {
-                    SynchronizationContext.SetSynchronizationContext(prevCtx);
+                RegisterCompletion(task, prevCtx, option.BaseAsyncWorkID);
 
-                    _asyncWorkIDDict.TryRemove(option.BaseAsyncWorkID, out _);
-
-                    CheckPoolIdle();
-                });
                 return default;
             }, option);
         }
+
+        
 
         internal string CreateID<TResult>(WorkOption<TResult> option = null)
         {
