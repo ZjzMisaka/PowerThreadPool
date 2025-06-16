@@ -352,11 +352,6 @@ namespace PowerThreadPool
             }
         }
 
-        internal void WaitForResume()
-        {
-            Work.PauseSignal.WaitOne();
-        }
-
         internal void Resume()
         {
             IEnumerable<WorkBase> waitingWorkList = _waitingWorkDic.Values;
@@ -799,11 +794,6 @@ namespace PowerThreadPool
         internal bool IsCancellationRequested()
         {
             return Work.ShouldStop;
-        }
-
-        internal bool IsPausing()
-        {
-            return Work.IsPausing;
         }
 
         /// <summary>

@@ -20,6 +20,7 @@ If you want to include PowerThreadPool in your project, you can [install it dire
 Support: Net40+ | Net5.0+ | netstandard2.0+  
 
 ## Features
+- [Sync | Async](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Sync-Async)
 - [Pool Control | Work Control](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control)
     - [Stop](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#pause-resume-stop)
     - [Pause](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#pause-resume-stop)

@@ -32,7 +32,6 @@ namespace PowerThreadPool.Utils
 
                 _powerPool.QueueWorkItem<object>(() =>
                 {
-                    var prevCtx = SynchronizationContext.Current;
                     SynchronizationContext.SetSynchronizationContext(this);
                     _powerPool.StopIfRequested(() =>
                     {
@@ -47,11 +46,6 @@ namespace PowerThreadPool.Utils
                     return default;
                 }, _workOption);
             }
-        }
-
-        public override void Send(SendOrPostCallback d, object state)
-        {
-            d(state);
         }
     }
 
@@ -82,7 +76,6 @@ namespace PowerThreadPool.Utils
 
                 _powerPool.QueueWorkItem<TResult>(() =>
                 {
-                    var prevCtx = SynchronizationContext.Current;
                     SynchronizationContext.SetSynchronizationContext(this);
                     _powerPool.StopIfRequested(() =>
                     {
@@ -94,18 +87,11 @@ namespace PowerThreadPool.Utils
                     {
                         _workOption.AllowEventsAndCallback = true;
                         if (_originalTask is Task<TResult> taskWithResult)
-                        {
                             return taskWithResult.Result;
-                        }
                     }
                     return default;
                 }, _workOption);
             }
-        }
-
-        public override void Send(SendOrPostCallback d, object state)
-        {
-            d(state);
         }
     }
 }

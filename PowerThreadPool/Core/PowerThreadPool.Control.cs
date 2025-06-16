@@ -26,10 +26,20 @@ namespace PowerThreadPool
             // Directly retrieve the worker from the dictionary since the key is guaranteed to exist
             // If not, just let Work execute failed
             Worker worker = _aliveWorkerDic[Thread.CurrentThread.ManagedThreadId];
-            if (worker.IsPausing())
+            WorkBase pauseWork = null;
+            if (worker.Work.IsPausing)
+            {
+                pauseWork = worker.Work;
+            }
+            else if (worker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase work) && work.IsPausing)
+            {
+                pauseWork = work;
+            }
+
+            if (pauseWork != null)
             {
                 worker.PauseTimer();
-                worker.WaitForResume();
+                pauseWork.PauseSignal.WaitOne();
                 worker.ResumeTimer();
             }
         }
@@ -76,10 +86,13 @@ namespace PowerThreadPool
                 }
                 // If the result needs to be stored, there is a possibility of fetching the result through Group.
                 // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-                if ((work.Group == null || !work.ShouldStoreResult) && work.BaseAsyncWorkID == null)
+                if (work.Group == null || !work.ShouldStoreResult)
                 {
-                    _aliveWorkDic.TryRemove(work.ID, out _);
-                    work.Dispose();
+                    if (work.BaseAsyncWorkID == null)
+                    {
+                        _aliveWorkDic.TryRemove(work.ID, out _);
+                        work.Dispose();
+                    }
                 }
                 if (work.Group != null && !work.ShouldStoreResult)
                 {
@@ -695,14 +708,6 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
-            {
-                foreach (string subID in idSet)
-                {
-                    Pause(subID);
-                }
-                return true;
-            }
             if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
                 return work.Pause();
@@ -768,14 +773,6 @@ namespace PowerThreadPool
             else if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
                 res = work.Resume();
-            }
-            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
-            {
-                foreach (string subID in idSet)
-                {
-                    Resume(subID);
-                }
-                return true;
             }
             return res;
         }
