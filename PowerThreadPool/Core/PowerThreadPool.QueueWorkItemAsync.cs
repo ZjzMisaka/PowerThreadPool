@@ -36,7 +36,7 @@ namespace PowerThreadPool
             task.ContinueWith(_ =>
             {
                 SynchronizationContext.SetSynchronizationContext(prevCtx);
-                
+
                 if (_aliveWorkDic.TryGetValue(baseAsyncWorkId, out WorkBase work))
                 {
                     if (work.WaitSignal != null)
@@ -56,12 +56,24 @@ namespace PowerThreadPool
             });
         }
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <param name="asyncFunc"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public string QueueWorkItemAsync(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
         {
             WorkOption workOption = new WorkOption { Callback = callBack };
             return QueueWorkItemAsync(asyncFunc, workOption);
         }
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <param name="asyncFunc"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public string QueueWorkItemAsync(Func<Task> asyncFunc, WorkOption option)
         {
             PrepareAsyncWork(option);
@@ -80,12 +92,26 @@ namespace PowerThreadPool
             }, option);
         }
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
         {
             WorkOption<TResult> workOption = new WorkOption<TResult> { Callback = callBack };
             return QueueWorkItemAsync(asyncFunc, workOption);
         }
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc,
                                                   WorkOption<TResult> option)
         {
