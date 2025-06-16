@@ -346,6 +346,35 @@ namespace UnitTest
             Assert.InRange(e - st, 1000, 2000);
         }
 
+        [Fact]
+        public void TestCancelByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object c = null;
+
+            PowerPool powerPool = new PowerPool { PowerPoolOption = new PowerPoolOption { MaxThreads = 1 } };
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                c = "2";
+                return "100";
+            });
+            powerPool.Cancel(id);
+            powerPool.Wait();
+
+            Assert.Null(p);
+            Assert.Null(c);
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();

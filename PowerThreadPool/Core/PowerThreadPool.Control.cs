@@ -809,35 +809,35 @@ namespace PowerThreadPool
                 return false;
             }
 
-            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
-            {
-                foreach (string subID in idSet)
-                {
-                    Cancel(subID);
-                }
-                return true;
-            }
+            bool res = false;
 
             if (_workDependencyController.Cancel(id))
             {
-                return true;
+                res = true;
             }
             else if (_suspendedWork.TryRemove(id, out _))
             {
-                return true;
+                res = true;
             }
             else if (_stopSuspendedWork.TryRemove(id, out _))
             {
-                return true;
+                res = true;
             }
             else if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
-                return work.Cancel(true);
+                res = work.Cancel(true);
             }
             else
             {
-                return false;
+                res = false;
             }
+
+            if (res)
+            {
+                _asyncWorkIDDict.TryRemove(id, out _);
+            }
+
+            return res;
         }
 
         /// <summary>
