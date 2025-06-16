@@ -719,6 +719,33 @@ namespace UnitTest
                 item => Assert.Equal("11", item));
         }
 
+        [Fact]
+        public void TestEnablePoolIdleCheck()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int count = 0;
+
+            PowerPool powerPool = new PowerPool();
+
+            powerPool.EnablePoolIdleCheck = false;
+            for (int i = 0; i < 100; ++i)
+            {
+                powerPool.QueueWorkItemAsync(async () =>
+                {
+                    await Task.Delay(10);
+                    await Task.Delay(10);
+                    await Task.Delay(10);
+                    Interlocked.Increment(ref count);
+                });
+            }
+            powerPool.EnablePoolIdleCheck = true;
+
+            powerPool.Wait();
+
+            Assert.Equal(100, count);
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();
