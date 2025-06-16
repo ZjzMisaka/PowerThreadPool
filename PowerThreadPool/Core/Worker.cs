@@ -192,6 +192,10 @@ namespace PowerThreadPool
             {
                 Interlocked.Decrement(ref _powerPool._idleWorkerCount);
             }
+            if (_powerPool._asyncWorkIDDict.TryRemove(Work.BaseAsyncWorkID, out _))
+            {
+                Interlocked.Decrement(ref _powerPool._asyncWorkCount);
+            }
 
             ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
             executeResult.ID = Work.ID;
