@@ -54,7 +54,7 @@ namespace PowerThreadPool
 
             if (work == null)
             {
-                if(_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker))
+                if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker))
                 {
                     worker.Work.AllowEventsAndCallback = true;
                 }
@@ -154,7 +154,7 @@ namespace PowerThreadPool
 
             if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.WorkerState == WorkerStates.Running)
             {
-                if(worker.IsCancellationRequested())
+                if (worker.IsCancellationRequested())
                 {
                     work = worker.Work;
                     return true;

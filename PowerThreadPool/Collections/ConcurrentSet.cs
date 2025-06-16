@@ -10,7 +10,7 @@ namespace PowerThreadPool.Collections
 
         private static readonly byte s_dummyValue = default;
 
-        internal T Last {  get; private set; }
+        internal T Last { get; private set; }
 
         public ConcurrentSet()
         {
@@ -39,7 +39,7 @@ namespace PowerThreadPool.Collections
                 Last = item;
                 res = true;
             }
-            
+
             return res;
         }
 
