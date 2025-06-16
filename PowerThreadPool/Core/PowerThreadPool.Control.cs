@@ -90,9 +90,17 @@ namespace PowerThreadPool
                 }
                 if (work.BaseAsyncWorkID != null)
                 {
-                    if (_asyncWorkIDDict.TryRemove(work.BaseAsyncWorkID, out _))
+                    if (_asyncWorkIDDict.TryRemove(work.BaseAsyncWorkID, out ConcurrentSet<string> asyncIDList))
                     {
                         Interlocked.Decrement(ref _asyncWorkCount);
+                        _aliveWorkDic.TryRemove(work.BaseAsyncWorkID, out _);
+                        foreach (string asyncID in asyncIDList)
+                        {
+                            if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
+                            {
+                                asyncWork.Dispose();
+                            }
+                        }
                     }
                 }
                 throw new WorkStopException();
@@ -338,7 +346,17 @@ namespace PowerThreadPool
                     ExecuteResult<TResult> res = work.Fetch<TResult>();
                     if (removeAfterFetch)
                     {
-                        _asyncWorkIDDict.TryRemove(id, out _);
+                        if (_asyncWorkIDDict.TryRemove(id, out ConcurrentSet<string> asyncIDList))
+                        {
+                            _aliveWorkDic.TryRemove(id, out _);
+                            foreach (string asyncID in asyncIDList)
+                            {
+                                if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
+                                {
+                                    asyncWork.Dispose();
+                                }
+                            }
+                        }
                         work.Dispose();
                     }
                     return res;
@@ -375,14 +393,9 @@ namespace PowerThreadPool
 
             foreach (string id in idList)
             {
-                string idFetch = id;
-                if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
-                {
-                    idFetch = idSet.Last;
-                }
                 WorkBase workBase;
                 ExecuteResultBase executeResultBase = null;
-                if (_suspendedWork.TryGetValue(idFetch, out workBase) || _aliveWorkDic.TryGetValue(idFetch, out workBase) || (removeAfterFetch ? _resultDic.TryRemove(idFetch, out executeResultBase) : _resultDic.TryGetValue(idFetch, out executeResultBase)))
+                if (_suspendedWork.TryGetValue(id, out workBase) || _aliveWorkDic.TryGetValue(id, out workBase) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
                 {
                     if (executeResultBase != null)
                     {
@@ -391,28 +404,40 @@ namespace PowerThreadPool
                     else
                     {
                         workList.Add(workBase);
-
-                        if (removeAfterFetch)
-                        {
-                            _asyncWorkIDDict.TryRemove(id, out _);
-                            _resultDic.TryRemove(idFetch, out _);
-                            if (_aliveWorkDic.TryRemove(idFetch, out WorkBase work))
-                            {
-                                RemoveWorkFromGroup(work.Group, work);
-                                work.Dispose();
-                            }
-                        }
                     }
                 }
                 else
                 {
-                    resultList.Add(new ExecuteResult<TResult>() { ID = idFetch });
+                    resultList.Add(new ExecuteResult<TResult>() { ID = id });
                 }
             }
 
             foreach (WorkBase work in workList)
             {
                 resultList.Add(work.Fetch<TResult>());
+
+                if (removeAfterFetch)
+                {
+                    if (_asyncWorkIDDict.TryRemove(work.ID, out ConcurrentSet<string> asyncIDList))
+                    {
+                        foreach (string asyncID in asyncIDList)
+                        {
+                            if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
+                            {
+                                asyncWork.Dispose();
+                            }
+                        }
+                    }
+                    _resultDic.TryRemove(work.ID, out _);
+                    if (_aliveWorkDic.TryRemove(work.ID, out _))
+                    {
+                        if (work.Group != null)
+                        {
+                            RemoveWorkFromGroup(work.Group, work);
+                        }
+                        work.Dispose();
+                    }
+                }
             }
 
             return resultList;

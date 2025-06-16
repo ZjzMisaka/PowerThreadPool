@@ -47,7 +47,14 @@ namespace PowerThreadPool
 
                 if (!work.ShouldStoreResult)
                 {
-                    _asyncWorkIDDict.TryRemove(baseAsyncWorkId, out ConcurrentSet<string> set);
+                    if (_asyncWorkIDDict.TryRemove(baseAsyncWorkId, out ConcurrentSet<string> asyncIDList))
+                    {
+                        _aliveWorkDic.TryRemove(baseAsyncWorkId, out WorkBase workBase);
+                        foreach (string asyncID in asyncIDList)
+                        {
+                            _aliveWorkDic.TryRemove(asyncID, out WorkBase workBase1);
+                        }
+                    }
                 }
 
                 Interlocked.Decrement(ref _asyncWorkCount);
