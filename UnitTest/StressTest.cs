@@ -160,6 +160,24 @@ namespace UnitTest
                                 Assert.Fail("PoolStopping");
                             }
                         }
+                        else if (r >= 70 && r <= 93)
+                        {
+                            string id = _powerPool.QueueWorkItemAsync(async () =>
+                            {
+                                await Task.Delay(random.Next(200, 600));
+                                int r1 = random.Next(0, 101);
+                                if (r1 >= 100 && r1 <= 100)
+                                {
+                                    await Task.Delay(1);
+                                }
+                                await Task.Delay(random.Next(200, 600));
+                                await Task.Delay(random.Next(200, 600));
+                            });
+                            if (id == null)
+                            {
+                                Assert.Fail("PoolStopping");
+                            }
+                        }
                         else
                         {
                             string id = _powerPool.QueueWorkItem(() =>
@@ -308,7 +326,7 @@ namespace UnitTest
                 run = true;
                 while (run)
                 {
-                    if (GetNowSs() - start >= 300000)
+                    if (GetNowSs() - start >= 30000)
                     {
                         break;
                     }
@@ -352,6 +370,24 @@ namespace UnitTest
                                 {
                                     Thread.Sleep(1);
                                 }
+                            });
+                            if (id == null)
+                            {
+                                Assert.Fail("PoolStopping");
+                            }
+                        }
+                        else if (r >= 70 && r <= 93)
+                        {
+                            string id = _powerPool.QueueWorkItemAsync(async () =>
+                            {
+                                await Task.Delay(random.Next(200, 600));
+                                int r1 = random.Next(0, 101);
+                                if (r1 >= 100 && r1 <= 100)
+                                {
+                                    await Task.Delay(1);
+                                }
+                                await Task.Delay(random.Next(200, 600));
+                                await Task.Delay(random.Next(200, 600));
                             });
                             if (id == null)
                             {
