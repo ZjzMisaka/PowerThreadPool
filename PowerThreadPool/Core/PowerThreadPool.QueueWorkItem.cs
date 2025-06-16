@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
-using PowerThreadPool.Utils;
 using PowerThreadPool.Works;
 
 namespace PowerThreadPool
