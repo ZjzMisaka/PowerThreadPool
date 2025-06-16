@@ -156,6 +156,7 @@ namespace PowerThreadPool
                 if (Work.AllowEventsAndCallback)
                 {
                     _powerPool.WorkCallbackEnd(Work, executeResult.Status);
+                    Work.AsyncDone = true;
                 }
 
                 Work.IsDone = true;
@@ -213,6 +214,7 @@ namespace PowerThreadPool
             _powerPool.WorkCallbackEnd(Work, Status.Failed);
 
             bool hasWaitingWork = RequeueAllWaitingWork();
+            Work.AsyncDone = true;
             Work.IsDone = true;
 
             if (Work.WaitSignal != null)

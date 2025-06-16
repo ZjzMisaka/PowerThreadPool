@@ -107,7 +107,7 @@ namespace PowerThreadPool.Works
                 WaitSignal = new AutoResetEvent(false);
             }
 
-            if (!IsDone)
+            if (!IsDone || (BaseAsyncWorkID != null && !AsyncDone))
             {
                 WaitSignal.WaitOne();
             }

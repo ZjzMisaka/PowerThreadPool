@@ -435,6 +435,31 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestWaitByIDWhenRunning()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object c = null;
+
+            PowerPool powerPool = new PowerPool { PowerPoolOption = new PowerPoolOption { MaxThreads = 1 } };
+            string id = powerPool.QueueWorkItemAsync(async () =>
+            {
+                p = "1";
+                await Task.Delay(200);
+                await Task.Delay(200);
+                await Task.Delay(200);
+                c = "2";
+            });
+            Thread.Sleep(100);
+
+            powerPool.Wait(id);
+
+            Assert.Equal("1", p);
+            Assert.Equal("2", c);
+        }
+
+        [Fact]
         public void TestFetchByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
