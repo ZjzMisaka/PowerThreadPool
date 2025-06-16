@@ -5,6 +5,7 @@ using PowerThreadPool.Collections;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using PowerThreadPool.Utils;
+using PowerThreadPool.Works;
 
 namespace PowerThreadPool
 {
@@ -34,7 +35,20 @@ namespace PowerThreadPool
             task.ContinueWith(_ =>
             {
                 SynchronizationContext.SetSynchronizationContext(prevCtx);
-                _asyncWorkIDDict.TryRemove(baseAsyncWorkId, out ConcurrentSet<string> set);
+                
+                if (_aliveWorkDic.TryGetValue(baseAsyncWorkId, out WorkBase work))
+                {
+                    if (work.WaitSignal != null)
+                    {
+                        work.WaitSignal.Set();
+                    }
+                }
+
+                if (!work.ShouldStoreResult)
+                {
+                    _asyncWorkIDDict.TryRemove(baseAsyncWorkId, out ConcurrentSet<string> set);
+                }
+
                 CheckPoolIdle();
             });
         }

@@ -75,7 +75,7 @@ namespace PowerThreadPool
                 }
                 // If the result needs to be stored, there is a possibility of fetching the result through Group.
                 // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-                if (work.Group == null || !work.ShouldStoreResult)
+                if ((work.Group == null || !work.ShouldStoreResult) && work.BaseAsyncWorkID == null)
                 {
                     _aliveWorkDic.TryRemove(work.ID, out _);
                     work.Dispose();
@@ -190,14 +190,6 @@ namespace PowerThreadPool
             }
 
             WorkBase work;
-            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
-            {
-                foreach (string subID in idSet)
-                {
-                    Wait(subID);
-                }
-                return true;
-            }
             if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work))
             {
                 return work.Wait();
@@ -329,11 +321,6 @@ namespace PowerThreadPool
                 return null;
             }
 
-            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
-            {
-                id = idSet.Last;
-            }
-
             WorkBase work;
             ExecuteResultBase executeResultBase = null;
             if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
@@ -344,7 +331,14 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    return work.Fetch<TResult>();
+                    ExecuteResult<TResult> res = work.Fetch<TResult>();
+                    if (removeAfterFetch)
+                    {
+                        _asyncWorkIDDict.TryRemove(id, out _);
+                        work.Dispose();
+                        CheckPoolIdle();
+                    }
+                    return res;
                 }
             }
             else
@@ -397,12 +391,14 @@ namespace PowerThreadPool
 
                         if (removeAfterFetch)
                         {
+                            _asyncWorkIDDict.TryRemove(id, out _);
                             _resultDic.TryRemove(idFetch, out _);
                             if (_aliveWorkDic.TryRemove(idFetch, out WorkBase work))
                             {
                                 RemoveWorkFromGroup(work.Group, work);
                                 work.Dispose();
                             }
+                            CheckPoolIdle();
                         }
                     }
                 }

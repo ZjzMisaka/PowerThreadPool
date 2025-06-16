@@ -157,7 +157,7 @@ namespace PowerThreadPool
 
                 Work.IsDone = true;
 
-                if (Work.WaitSignal != null)
+                if (Work.WaitSignal != null && Work.BaseAsyncWorkID == null)
                 {
                     Work.WaitSignal.Set();
                 }

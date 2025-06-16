@@ -119,7 +119,14 @@ namespace PowerThreadPool.Works
         {
             Wait();
 
-            return ExecuteResult.ToTypedResult<T>();
+            if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<string> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
+            {
+                return (lastWork as Work<T>).ExecuteResult.ToTypedResult<T>();
+            }
+            else
+            {
+                return ExecuteResult.ToTypedResult<T>();
+            }
         }
 
         internal override bool Pause()

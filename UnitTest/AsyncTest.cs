@@ -375,6 +375,63 @@ namespace UnitTest
             Assert.Null(c);
         }
 
+        [Fact]
+        public void TestWaitByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object c = null;
+
+            PowerPool powerPool = new PowerPool { PowerPoolOption = new PowerPoolOption { MaxThreads = 1 } };
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            string id = powerPool.QueueWorkItemAsync(async () =>
+            {
+                p = "1";
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                c = "2";
+            });
+            powerPool.Wait(id);
+
+            Assert.Equal("1", p);
+            Assert.Equal("2", c);
+        }
+
+        [Fact]
+        public void TestFetchByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object c = null;
+
+            PowerPool powerPool = new PowerPool { PowerPoolOption = new PowerPoolOption { MaxThreads = 1 } };
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                c = "2";
+                return "100";
+            }, new WorkOption<string> { ShouldStoreResult = true });
+            var res = powerPool.Fetch<string>(id, true);
+            powerPool.Wait();
+
+            Assert.Equal("1", p);
+            Assert.Equal("2", c);
+            Assert.Equal("100", res.Result);
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();
