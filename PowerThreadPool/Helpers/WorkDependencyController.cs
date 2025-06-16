@@ -86,7 +86,7 @@ namespace PowerThreadPool.Helpers
             Dictionary<string, HashSet<string>> dependencyGraph = new Dictionary<string, HashSet<string>>();
             dependencyGraph[id] = new HashSet<string>(dependents);
 
-            foreach (var kvp in _workDict)
+            foreach (KeyValuePair<string, WorkBase> kvp in _workDict)
             {
                 dependencyGraph[kvp.Key] = new HashSet<string>(kvp.Value.Dependents);
             }
@@ -107,7 +107,7 @@ namespace PowerThreadPool.Helpers
             visited.Add(current);
             recursionStack.Add(current);
 
-            foreach (var dependent in graph[current])
+            foreach (string dependent in graph[current])
             {
                 if (recursionStack.Contains(dependent))
                 {

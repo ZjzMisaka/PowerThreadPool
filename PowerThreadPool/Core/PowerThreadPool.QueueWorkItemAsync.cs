@@ -87,8 +87,8 @@ namespace PowerThreadPool
 
             return QueueWorkItem(() =>
             {
-                var prevCtx = SynchronizationContext.Current;
-                var ctx = new PowerPoolSynchronizationContext(this, option);
+                SynchronizationContext prevCtx = SynchronizationContext.Current;
+                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, option);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task task = asyncFunc();
@@ -126,8 +126,8 @@ namespace PowerThreadPool
 
             return QueueWorkItem(() =>
             {
-                var prevCtx = SynchronizationContext.Current;
-                var ctx = new PowerPoolSynchronizationContext<TResult>(this, option);
+                SynchronizationContext prevCtx = SynchronizationContext.Current;
+                PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, option);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task<TResult> task = asyncFunc();
