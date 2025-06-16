@@ -526,6 +526,74 @@ namespace UnitTest
             Assert.Equal("100", r);
         }
 
+        [Fact]
+        public void TestDependents()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            object r1 = null;
+            object r2 = null;
+
+            List<string> log = new List<string>();
+
+            string id = powerPool.QueueWorkItemAsync(async () =>
+            {
+                log.Add("0");
+                await Task.Delay(100);
+                log.Add("1");
+                await Task.Delay(100);
+                log.Add("2");
+                await Task.Delay(100);
+                log.Add("3");
+                await Task.Delay(100);
+                log.Add("4");
+                await Task.Delay(100);
+                log.Add("5");
+                r1 = "100";
+            });
+            powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                log.Add("6");
+                await Task.Delay(100);
+                log.Add("7");
+                await Task.Delay(100);
+                log.Add("8");
+                await Task.Delay(100);
+                log.Add("9");
+                await Task.Delay(100);
+                log.Add("10");
+                await Task.Delay(100);
+                log.Add("11");
+                return "200";
+            }, new WorkOption<string>
+            {
+                Dependents = new PowerThreadPool.Collections.ConcurrentSet<string> { id },
+                Callback = (res) =>
+                {
+                    r2 = res.Result;
+                }
+            });
+            powerPool.Wait();
+            Assert.Equal("100", r1);
+            Assert.Equal("200", r2);
+
+            Assert.Collection(log,
+                item => Assert.Equal("0", item),
+                item => Assert.Equal("1", item),
+                item => Assert.Equal("2", item),
+                item => Assert.Equal("3", item),
+                item => Assert.Equal("4", item),
+                item => Assert.Equal("5", item),
+                item => Assert.Equal("6", item),
+                item => Assert.Equal("7", item),
+                item => Assert.Equal("8", item),
+                item => Assert.Equal("9", item),
+                item => Assert.Equal("10", item),
+                item => Assert.Equal("11", item));
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();

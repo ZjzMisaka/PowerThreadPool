@@ -153,7 +153,10 @@ namespace PowerThreadPool
             }
             else
             {
-                _powerPool.WorkCallbackEnd(Work, executeResult.Status);
+                if (Work.AllowEventsAndCallback)
+                {
+                    _powerPool.WorkCallbackEnd(Work, executeResult.Status);
+                }
 
                 Work.IsDone = true;
 

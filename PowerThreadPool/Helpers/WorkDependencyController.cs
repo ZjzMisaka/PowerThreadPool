@@ -128,7 +128,12 @@ namespace PowerThreadPool.Helpers
         {
             foreach (WorkBase work in _workDict.Values)
             {
-                if (work.Dependents.Contains(endWork.ID))
+                string id = endWork.ID;
+                if (endWork.BaseAsyncWorkID != null)
+                {
+                    id = endWork.BaseAsyncWorkID;
+                }
+                if (work.Dependents.Contains(id))
                 {
                     if (status == Status.Failed || status == Status.Canceled)
                     {
@@ -138,7 +143,7 @@ namespace PowerThreadPool.Helpers
                         return;
                     }
 
-                    if (work.Dependents.Remove(endWork.ID))
+                    if (work.Dependents.Remove(id))
                     {
                         if (work.Dependents.Count == 0)
                         {
