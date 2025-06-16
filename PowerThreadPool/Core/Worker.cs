@@ -753,6 +753,11 @@ namespace PowerThreadPool
         {
             if (_waitingWorkDic.TryRemove(id, out WorkBase work))
             {
+                if (_powerPool._asyncWorkIDDict.TryRemove(id, out _))
+                {
+                    Interlocked.Decrement(ref _powerPool._asyncWorkCount);
+                }
+
                 ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
                 executeResult.ID = id;
 

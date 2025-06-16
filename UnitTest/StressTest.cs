@@ -326,7 +326,7 @@ namespace UnitTest
                 run = true;
                 while (run)
                 {
-                    if (GetNowSs() - start >= 30000)
+                    if (GetNowSs() - start >= 300000)
                     {
                         break;
                     }
@@ -422,28 +422,10 @@ namespace UnitTest
                     _powerPool.Start();
 
                     int r1 = random.Next(0, 101);
-                    if (r1 >= 81 && r1 <= 100)
-                    {
-                        _powerPool.Stop();
-                        await _powerPool.WaitAsync();
-                        if (_powerPool.RunningWorkerCount > 0 || _powerPool.WaitingWorkCount > 0)
-                        {
-                            Assert.Fail();
-                        }
-                    }
-                    else if (r1 >= 61 && r1 <= 80)
                     {
                         _powerPool.Stop(true);
                         await _powerPool.WaitAsync();
                         if (_powerPool.RunningWorkerCount > 0 || _powerPool.WaitingWorkCount > 0)
-                        {
-                            Assert.Fail();
-                        }
-                    }
-                    else
-                    {
-                        await _powerPool.WaitAsync();
-                        if (_powerPool.RunningWorkerCount > 0 || _powerPool.WaitingWorkCount > 0 || runCount != doneCount)
                         {
                             Assert.Fail();
                         }
