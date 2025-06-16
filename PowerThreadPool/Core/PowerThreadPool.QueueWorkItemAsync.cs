@@ -43,16 +43,16 @@ namespace PowerThreadPool
                     {
                         work.WaitSignal.Set();
                     }
-                }
 
-                if (!work.ShouldStoreResult)
-                {
-                    if (_asyncWorkIDDict.TryRemove(baseAsyncWorkId, out ConcurrentSet<string> asyncIDList))
+                    if (!work.ShouldStoreResult)
                     {
-                        _aliveWorkDic.TryRemove(baseAsyncWorkId, out WorkBase workBase);
-                        foreach (string asyncID in asyncIDList)
+                        if (_asyncWorkIDDict.TryRemove(baseAsyncWorkId, out ConcurrentSet<string> asyncIDList))
                         {
-                            _aliveWorkDic.TryRemove(asyncID, out WorkBase workBase1);
+                            _aliveWorkDic.TryRemove(baseAsyncWorkId, out WorkBase workBase);
+                            foreach (string asyncID in asyncIDList)
+                            {
+                                _aliveWorkDic.TryRemove(asyncID, out WorkBase workBase1);
+                            }
                         }
                     }
                 }
