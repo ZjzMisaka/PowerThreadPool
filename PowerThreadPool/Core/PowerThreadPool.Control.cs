@@ -31,7 +31,7 @@ namespace PowerThreadPool
             {
                 pauseWork = worker.Work;
             }
-            else if(worker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase work) && work.IsPausing)
+            else if (worker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase work) && work.IsPausing)
             {
                 pauseWork = work;
             }
