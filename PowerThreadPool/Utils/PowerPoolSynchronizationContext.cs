@@ -48,11 +48,6 @@ namespace PowerThreadPool.Utils
                 }, _workOption);
             }
         }
-
-        public override void Send(SendOrPostCallback d, object state)
-        {
-            d(state);
-        }
     }
 
     internal class PowerPoolSynchronizationContext<TResult> : SynchronizationContext
@@ -94,18 +89,11 @@ namespace PowerThreadPool.Utils
                     {
                         _workOption.AllowEventsAndCallback = true;
                         if (_originalTask is Task<TResult> taskWithResult)
-                        {
                             return taskWithResult.Result;
-                        }
                     }
                     return default;
                 }, _workOption);
             }
-        }
-
-        public override void Send(SendOrPostCallback d, object state)
-        {
-            d(state);
         }
     }
 }

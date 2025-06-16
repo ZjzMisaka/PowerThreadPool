@@ -187,6 +187,37 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestStopByIDNoResult()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItemAsync(async () =>
+            {
+                p = "1";
+                await Task.Delay(1000);
+                l = "2";
+                powerPool.StopIfRequested();
+                await Task.Delay(100);
+                c = "3";
+            }, (res) =>
+            {
+                Assert.Equal("2", l);
+                r = res.Result;
+            });
+            powerPool.Stop(id);
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Null(l);
+            Assert.Null(c);
+            Assert.Null(r);
+        }
+
+        [Fact]
         public void TestForceStopByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
