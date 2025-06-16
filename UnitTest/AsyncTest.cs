@@ -271,6 +271,81 @@ namespace UnitTest
             Assert.InRange(d2, 3500, 4500);
         }
 
+        [Fact]
+        public void TestPauseAndResumeByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long s = GetNowSs();
+
+            object p = null;
+            object l = null;
+            object c = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                await Task.Delay(50);
+                l = "2";
+                powerPool.PauseIfRequested();
+                await Task.Delay(100);
+                c = "3";
+                return "100";
+            }, (res) =>
+            {
+                Assert.Equal("2", l);
+                r = res.Result;
+            });
+            powerPool.Pause(id);
+            Thread.Sleep(1000);
+            powerPool.Resume(id);
+            powerPool.Wait();
+
+            long e = GetNowSs();
+
+            Assert.InRange(e - s, 1000, 1500);
+        }
+
+        [Fact]
+        public void TestPauseAndResumeByIDHaveSubID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long st = GetNowSs();
+
+            object p = null;
+            object c = null;
+            object r = null;
+            Status s = Status.Succeed;
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                await Task.Delay(50);
+                await Task.Delay(50);
+                await Task.Delay(50);
+                await Task.Delay(50);
+                powerPool.PauseIfRequested();
+                await Task.Delay(100);
+                c = "3";
+                return "100";
+            }, (res) =>
+            {
+                r = res.Result;
+                s = res.Status;
+            });
+            Thread.Sleep(200);
+            powerPool.Pause(id);
+            Thread.Sleep(1000);
+            powerPool.Resume(id);
+            powerPool.Wait();
+
+            long e = GetNowSs();
+
+            Assert.InRange(e - st, 1000, 2000);
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();
