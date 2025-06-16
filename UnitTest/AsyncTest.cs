@@ -494,6 +494,38 @@ namespace UnitTest
             Assert.Equal("100", res[0].Result);
         }
 
+        [Fact]
+        public void TestStartSuspend()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { StartSuspended = true });
+            powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                await Task.Delay(1000);
+                l = "2";
+                powerPool.StopIfRequested();
+                await Task.Delay(100);
+                c = "3";
+                return "100";
+            }, (res) =>
+            {
+                Assert.Equal("2", l);
+                r = res.Result;
+            });
+            powerPool.Start();
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+            Assert.Equal("100", r);
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();

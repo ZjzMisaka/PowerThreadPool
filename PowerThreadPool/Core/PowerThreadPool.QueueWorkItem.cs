@@ -408,7 +408,13 @@ namespace PowerThreadPool
                 _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
             }
 
-            if (!PowerPoolOption.StartSuspended && PoolStopping && work.BaseAsyncWorkID == null)
+            bool startSuspended = PowerPoolOption.StartSuspended;
+            if (option.BaseAsyncWorkID != null && option.BaseAsyncWorkID != option.AsyncWorkID)
+            {
+                startSuspended = false;
+            }
+
+            if (!startSuspended && PoolStopping && work.BaseAsyncWorkID == null)
             {
                 _stopSuspendedWork[workID] = work;
                 _stopSuspendedWorkQueue.Enqueue(workID);
@@ -417,7 +423,7 @@ namespace PowerThreadPool
 
             Interlocked.Increment(ref _waitingWorkCount);
 
-            if (PowerPoolOption.StartSuspended)
+            if (startSuspended)
             {
                 _suspendedWork[workID] = work;
                 _suspendedWorkQueue.Enqueue(workID);
