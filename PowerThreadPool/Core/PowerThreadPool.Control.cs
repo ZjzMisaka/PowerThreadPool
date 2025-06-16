@@ -87,7 +87,10 @@ namespace PowerThreadPool
                         idSet.Remove(work.ID);
                     }
                 }
-                _asyncWorkIDDict.TryRemove(work.BaseAsyncWorkID, out _);
+                if (work.BaseAsyncWorkID != null)
+                {
+                    _asyncWorkIDDict.TryRemove(work.BaseAsyncWorkID, out _);
+                }
                 throw new WorkStopException();
             }
         }
