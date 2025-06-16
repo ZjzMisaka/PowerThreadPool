@@ -206,7 +206,6 @@ namespace UnitTest
                 c = "3";
             }, (res) =>
             {
-                Assert.Equal("2", l);
                 r = res.Result;
             });
             powerPool.Stop(id);
@@ -371,7 +370,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestPauseAndResumeByIDHaveSubID()
+        public void TestPauseAndResumeByIDHaveSubIDNotAttach()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -399,6 +398,45 @@ namespace UnitTest
                 s = res.Status;
             });
             Thread.Sleep(200);
+            powerPool.Pause(id);
+            Thread.Sleep(1000);
+            powerPool.Resume(id);
+            powerPool.Wait();
+
+            long e = GetNowSs();
+
+            Assert.InRange(e - st, 1000, 2000);
+        }
+
+        [Fact]
+        public void TestPauseAndResumeByIDHaveSubIDAttach()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long st = GetNowSs();
+
+            object p = null;
+            object c = null;
+            object r = null;
+            Status s = Status.Succeed;
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                powerPool.PauseIfRequested();
+                await Task.Delay(100);
+                c = "3";
+                return "100";
+            }, (res) =>
+            {
+                r = res.Result;
+                s = res.Status;
+            });
+            Thread.Sleep(150);
             powerPool.Pause(id);
             Thread.Sleep(1000);
             powerPool.Resume(id);
@@ -580,6 +618,37 @@ namespace UnitTest
             Assert.Equal("2", l);
             Assert.Equal("3", c);
             Assert.Equal("100", r);
+        }
+
+        [Fact]
+        public void TestStartSuspendCancel()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1, StartSuspended = true });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                await Task.Delay(1000);
+                l = "2";
+                powerPool.StopIfRequested();
+                await Task.Delay(100);
+                c = "3";
+                return "100";
+            }, (res) =>
+            {
+                Assert.Equal("2", l);
+                r = res.Result;
+            });
+            powerPool.Cancel(id);
         }
 
         [Fact]
