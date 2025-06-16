@@ -384,32 +384,19 @@ namespace PowerThreadPool
 
             string workID;
 
-            if (PowerPoolOption == null)
-            {
-                PowerPoolOption = new PowerPoolOption();
-            }
+            CheckPowerPoolOption();
 
-            if (option.CustomWorkID != null)
+            if (option.AsyncWorkID != null)
             {
-                if (_suspendedWork.ContainsKey(option.CustomWorkID) || _aliveWorkDic.ContainsKey(option.CustomWorkID))
-                {
-                    throw new InvalidOperationException($"The work ID '{option.CustomWorkID}' already exists.");
-                }
-                workID = option.CustomWorkID;
+                workID = option.AsyncWorkID;
             }
             else
             {
-                if (PowerPoolOption.WorkIDType == WorkIDType.LongIncrement)
-                {
-                    workID = Interlocked.Increment(ref _workIDIncrement).ToString();
-                }
-                else
-                {
-                    workID = Guid.NewGuid().ToString();
-                }
+                workID = CreateID(option);
             }
 
             Work<TResult> work = new Work<TResult>(this, workID, function, option);
+
             _workDependencyController.Register(work, option.Dependents);
             if (work.DependencyFailed)
             {
@@ -421,7 +408,13 @@ namespace PowerThreadPool
                 _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
             }
 
-            if (!PowerPoolOption.StartSuspended && PoolStopping)
+            bool startSuspended = PowerPoolOption.StartSuspended;
+            if (option.BaseAsyncWorkID != null && option.BaseAsyncWorkID != option.AsyncWorkID)
+            {
+                startSuspended = false;
+            }
+
+            if (!startSuspended && PoolStopping && work.BaseAsyncWorkID == null)
             {
                 _stopSuspendedWork[workID] = work;
                 _stopSuspendedWorkQueue.Enqueue(workID);
@@ -430,7 +423,7 @@ namespace PowerThreadPool
 
             Interlocked.Increment(ref _waitingWorkCount);
 
-            if (PowerPoolOption.StartSuspended)
+            if (startSuspended)
             {
                 _suspendedWork[workID] = work;
                 _suspendedWorkQueue.Enqueue(workID);
@@ -467,6 +460,42 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
             => QueueWorkItem<TResult>(DelegateHelper.ToNormalFunc<TResult>(function, param), option);
+
+        internal string CreateID<TResult>(WorkOption<TResult> option = null)
+        {
+            string workID;
+
+            if (option != null && option.CustomWorkID != null)
+            {
+                if (_suspendedWork.ContainsKey(option.CustomWorkID) || _aliveWorkDic.ContainsKey(option.CustomWorkID))
+                {
+                    throw new InvalidOperationException($"The work ID '{option.CustomWorkID}' already exists.");
+                }
+                workID = option.CustomWorkID;
+            }
+            else
+            {
+                if (PowerPoolOption.WorkIDType == WorkIDType.LongIncrement)
+                {
+                    workID = Interlocked.Increment(ref _workIDIncrement).ToString();
+                }
+                else
+                {
+                    workID = Guid.NewGuid().ToString();
+                }
+            }
+
+            return workID;
+        }
+
+        private void CheckPowerPoolOption()
+        {
+            if (PowerPoolOption == null)
+            {
+                PowerPoolOption = new PowerPoolOption();
+            }
+        }
+
 
         /// <summary>
         /// Queues a work for execution.

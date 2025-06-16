@@ -40,6 +40,12 @@ namespace PowerThreadPool.Works
         internal override bool LongRunning => _workOption.LongRunning;
         internal override bool ShouldStoreResult => _workOption.ShouldStoreResult;
         internal override ConcurrentSet<string> Dependents => _workOption.Dependents;
+        internal override bool AllowEventsAndCallback
+        {
+            get => _workOption.AllowEventsAndCallback;
+            set => _workOption.AllowEventsAndCallback = value;
+        }
+        internal override string BaseAsyncWorkID => _workOption.BaseAsyncWorkID;
 
         internal Work(PowerPool powerPool, string id, Func<TResult> function, WorkOption<TResult> option)
         {
@@ -101,7 +107,7 @@ namespace PowerThreadPool.Works
                 WaitSignal = new AutoResetEvent(false);
             }
 
-            if (!IsDone)
+            if (!IsDone || (BaseAsyncWorkID != null && !AsyncDone))
             {
                 WaitSignal.WaitOne();
             }
@@ -113,7 +119,14 @@ namespace PowerThreadPool.Works
         {
             Wait();
 
-            return ExecuteResult.ToTypedResult<T>();
+            if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<string> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
+            {
+                return (lastWork as Work<T>).ExecuteResult.ToTypedResult<T>();
+            }
+            else
+            {
+                return ExecuteResult.ToTypedResult<T>();
+            }
         }
 
         internal override bool Pause()

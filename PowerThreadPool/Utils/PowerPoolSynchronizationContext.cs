@@ -1,0 +1,111 @@
+﻿using System.Threading;
+using System.Threading.Tasks;
+using PowerThreadPool.Collections;
+using PowerThreadPool.Options;
+
+namespace PowerThreadPool.Utils
+{
+    internal class PowerPoolSynchronizationContext : SynchronizationContext
+    {
+        private readonly PowerPool _powerPool;
+        private readonly WorkOption _workOption;
+        private Task _originalTask;
+        private int _done = 0;
+
+        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkOption workOption)
+        {
+            _powerPool = powerPool;
+            _workOption = workOption;
+        }
+
+        internal void SetTask(Task originalTask)
+        {
+            _originalTask = originalTask;
+        }
+
+        public override void Post(SendOrPostCallback d, object state)
+        {
+            if (_powerPool._asyncWorkIDDict.TryGetValue(_workOption.BaseAsyncWorkID, out ConcurrentSet<string> idSet))
+            {
+                _workOption.AsyncWorkID = _powerPool.CreateID<object>();
+                idSet.Add(_workOption.AsyncWorkID);
+
+                _powerPool.QueueWorkItem<object>(() =>
+                {
+                    var prevCtx = SynchronizationContext.Current;
+                    SynchronizationContext.SetSynchronizationContext(this);
+                    _powerPool.StopIfRequested(() =>
+                    {
+                        _workOption.AllowEventsAndCallback = true;
+                    });
+                    d(state);
+                    if (_originalTask.IsCompleted &&
+                    Interlocked.Exchange(ref _done, 1) == 0)
+                    {
+                        _workOption.AllowEventsAndCallback = true;
+                    }
+                    return default;
+                }, _workOption);
+            }
+        }
+
+        public override void Send(SendOrPostCallback d, object state)
+        {
+            d(state);
+        }
+    }
+
+    internal class PowerPoolSynchronizationContext<TResult> : SynchronizationContext
+    {
+        private readonly PowerPool _powerPool;
+        private readonly WorkOption<TResult> _workOption;
+        private Task _originalTask;
+        private int _done = 0;
+
+        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkOption<TResult> workOption)
+        {
+            _powerPool = powerPool;
+            _workOption = workOption;
+        }
+
+        internal void SetTask(Task originalTask)
+        {
+            _originalTask = originalTask;
+        }
+
+        public override void Post(SendOrPostCallback d, object state)
+        {
+            if (_powerPool._asyncWorkIDDict.TryGetValue(_workOption.BaseAsyncWorkID, out ConcurrentSet<string> idSet))
+            {
+                _workOption.AsyncWorkID = _powerPool.CreateID<object>();
+                idSet.Add(_workOption.AsyncWorkID);
+
+                _powerPool.QueueWorkItem<TResult>(() =>
+                {
+                    var prevCtx = SynchronizationContext.Current;
+                    SynchronizationContext.SetSynchronizationContext(this);
+                    _powerPool.StopIfRequested(() =>
+                    {
+                        _workOption.AllowEventsAndCallback = true;
+                    });
+                    d(state);
+                    if (_originalTask.IsCompleted &&
+                    Interlocked.Exchange(ref _done, 1) == 0)
+                    {
+                        _workOption.AllowEventsAndCallback = true;
+                        if (_originalTask is Task<TResult> taskWithResult)
+                        {
+                            return taskWithResult.Result;
+                        }
+                    }
+                    return default;
+                }, _workOption);
+            }
+        }
+
+        public override void Send(SendOrPostCallback d, object state)
+        {
+            d(state);
+        }
+    }
+}

@@ -10,6 +10,8 @@ namespace PowerThreadPool.Collections
 
         private static readonly byte s_dummyValue = default;
 
+        internal T Last { get; private set; }
+
         public ConcurrentSet()
         {
             _dictionary = new ConcurrentDictionary<T, byte>();
@@ -29,7 +31,17 @@ namespace PowerThreadPool.Collections
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public bool Add(T item) => _dictionary.TryAdd(item, s_dummyValue);
+        public bool Add(T item)
+        {
+            bool res = false;
+            if (_dictionary.TryAdd(item, s_dummyValue))
+            {
+                Last = item;
+                res = true;
+            }
+
+            return res;
+        }
 
         /// <summary>
         /// Removes an item.

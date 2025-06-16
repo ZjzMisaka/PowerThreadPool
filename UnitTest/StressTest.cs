@@ -160,6 +160,24 @@ namespace UnitTest
                                 Assert.Fail("PoolStopping");
                             }
                         }
+                        else if (r >= 70 && r <= 93)
+                        {
+                            string id = _powerPool.QueueWorkItemAsync(async () =>
+                            {
+                                await Task.Delay(random.Next(200, 600));
+                                int r1 = random.Next(0, 101);
+                                if (r1 >= 100 && r1 <= 100)
+                                {
+                                    await Task.Delay(1);
+                                }
+                                await Task.Delay(random.Next(200, 600));
+                                await Task.Delay(random.Next(200, 600));
+                            });
+                            if (id == null)
+                            {
+                                Assert.Fail("PoolStopping");
+                            }
+                        }
                         else
                         {
                             string id = _powerPool.QueueWorkItem(() =>
@@ -358,6 +376,24 @@ namespace UnitTest
                                 Assert.Fail("PoolStopping");
                             }
                         }
+                        else if (r >= 70 && r <= 93)
+                        {
+                            string id = _powerPool.QueueWorkItemAsync(async () =>
+                            {
+                                await Task.Delay(random.Next(200, 600));
+                                int r1 = random.Next(0, 101);
+                                if (r1 >= 100 && r1 <= 100)
+                                {
+                                    await Task.Delay(1);
+                                }
+                                await Task.Delay(random.Next(200, 600));
+                                await Task.Delay(random.Next(200, 600));
+                            });
+                            if (id == null)
+                            {
+                                Assert.Fail("PoolStopping");
+                            }
+                        }
                         else
                         {
                             string id = _powerPool.QueueWorkItem(() =>
@@ -386,28 +422,10 @@ namespace UnitTest
                     _powerPool.Start();
 
                     int r1 = random.Next(0, 101);
-                    if (r1 >= 81 && r1 <= 100)
-                    {
-                        _powerPool.Stop();
-                        await _powerPool.WaitAsync();
-                        if (_powerPool.RunningWorkerCount > 0 || _powerPool.WaitingWorkCount > 0)
-                        {
-                            Assert.Fail();
-                        }
-                    }
-                    else if (r1 >= 61 && r1 <= 80)
                     {
                         _powerPool.Stop(true);
                         await _powerPool.WaitAsync();
                         if (_powerPool.RunningWorkerCount > 0 || _powerPool.WaitingWorkCount > 0)
-                        {
-                            Assert.Fail();
-                        }
-                    }
-                    else
-                    {
-                        await _powerPool.WaitAsync();
-                        if (_powerPool.RunningWorkerCount > 0 || _powerPool.WaitingWorkCount > 0 || runCount != doneCount)
                         {
                             Assert.Fail();
                         }

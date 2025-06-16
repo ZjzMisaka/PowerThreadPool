@@ -54,12 +54,18 @@ namespace PowerThreadPool
 
             if (work == null)
             {
+                if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker))
+                {
+                    worker.Work.AllowEventsAndCallback = true;
+                }
                 if (beforeStop != null && !beforeStop())
                 {
                     return;
                 }
                 _aliveWorkDic.Clear();
                 _workGroupDic.Clear();
+                _asyncWorkIDDict.Clear();
+                _asyncWorkCount = 0;
                 throw new WorkStopException();
             }
             else
@@ -70,7 +76,7 @@ namespace PowerThreadPool
                 }
                 // If the result needs to be stored, there is a possibility of fetching the result through Group.
                 // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-                if (work.Group == null || !work.ShouldStoreResult)
+                if ((work.Group == null || !work.ShouldStoreResult) && work.BaseAsyncWorkID == null)
                 {
                     _aliveWorkDic.TryRemove(work.ID, out _);
                     work.Dispose();
@@ -80,6 +86,21 @@ namespace PowerThreadPool
                     if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<string> idSet))
                     {
                         idSet.Remove(work.ID);
+                    }
+                }
+                if (work.BaseAsyncWorkID != null)
+                {
+                    if (_asyncWorkIDDict.TryRemove(work.BaseAsyncWorkID, out ConcurrentSet<string> asyncIDList))
+                    {
+                        Interlocked.Decrement(ref _asyncWorkCount);
+                        _aliveWorkDic.TryRemove(work.BaseAsyncWorkID, out _);
+                        foreach (string asyncID in asyncIDList)
+                        {
+                            if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
+                            {
+                                asyncWork.Dispose();
+                            }
+                        }
                     }
                 }
                 throw new WorkStopException();
@@ -139,10 +160,18 @@ namespace PowerThreadPool
                 return true;
             }
 
-            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.WorkerState == WorkerStates.Running && worker.IsCancellationRequested())
+            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.WorkerState == WorkerStates.Running)
             {
-                work = worker.Work;
-                return true;
+                if (worker.IsCancellationRequested())
+                {
+                    work = worker.Work;
+                    return true;
+                }
+                else if (worker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase baseAsyncWork) && baseAsyncWork.ShouldStop)
+                {
+                    work = worker.Work;
+                    return true;
+                }
             }
 
             return false;
@@ -314,7 +343,23 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    return work.Fetch<TResult>();
+                    ExecuteResult<TResult> res = work.Fetch<TResult>();
+                    if (removeAfterFetch)
+                    {
+                        if (_asyncWorkIDDict.TryRemove(id, out ConcurrentSet<string> asyncIDList))
+                        {
+                            _aliveWorkDic.TryRemove(id, out _);
+                            foreach (string asyncID in asyncIDList)
+                            {
+                                if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
+                                {
+                                    asyncWork.Dispose();
+                                }
+                            }
+                        }
+                        work.Dispose();
+                    }
+                    return res;
                 }
             }
             else
@@ -359,16 +404,6 @@ namespace PowerThreadPool
                     else
                     {
                         workList.Add(workBase);
-
-                        if (removeAfterFetch)
-                        {
-                            _resultDic.TryRemove(id, out _);
-                            if (_aliveWorkDic.TryRemove(id, out WorkBase work))
-                            {
-                                RemoveWorkFromGroup(work.Group, work);
-                                work.Dispose();
-                            }
-                        }
                     }
                 }
                 else
@@ -380,6 +415,29 @@ namespace PowerThreadPool
             foreach (WorkBase work in workList)
             {
                 resultList.Add(work.Fetch<TResult>());
+
+                if (removeAfterFetch)
+                {
+                    if (_asyncWorkIDDict.TryRemove(work.ID, out ConcurrentSet<string> asyncIDList))
+                    {
+                        foreach (string asyncID in asyncIDList)
+                        {
+                            if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
+                            {
+                                asyncWork.Dispose();
+                            }
+                        }
+                    }
+                    _resultDic.TryRemove(work.ID, out _);
+                    if (_aliveWorkDic.TryRemove(work.ID, out _))
+                    {
+                        if (work.Group != null)
+                        {
+                            RemoveWorkFromGroup(work.Group, work);
+                        }
+                        work.Dispose();
+                    }
+                }
             }
 
             return resultList;
@@ -582,6 +640,14 @@ namespace PowerThreadPool
                 res = work.Stop(forceStop);
             }
 
+            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
+            {
+                foreach (string subID in idSet)
+                {
+                    res = Stop(subID, forceStop);
+                }
+            }
+
             _workDependencyController.Cancel(id);
 
             return res;
@@ -628,6 +694,14 @@ namespace PowerThreadPool
             if (string.IsNullOrEmpty(id))
             {
                 return false;
+            }
+            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
+            {
+                foreach (string subID in idSet)
+                {
+                    Pause(subID);
+                }
+                return true;
             }
             if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
@@ -695,6 +769,14 @@ namespace PowerThreadPool
             {
                 res = work.Resume();
             }
+            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<string> idSet))
+            {
+                foreach (string subID in idSet)
+                {
+                    Resume(subID);
+                }
+                return true;
+            }
             return res;
         }
 
@@ -750,26 +832,43 @@ namespace PowerThreadPool
                 return false;
             }
 
+            bool res = false;
+
             if (_workDependencyController.Cancel(id))
             {
-                return true;
+                res = true;
             }
             else if (_suspendedWork.TryRemove(id, out _))
             {
-                return true;
+                res = true;
             }
             else if (_stopSuspendedWork.TryRemove(id, out _))
             {
-                return true;
+                res = true;
             }
             else if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
-                return work.Cancel(true);
+                res = work.Cancel(true);
+                if (res && _aliveWorkDic.TryRemove(id, out _))
+                {
+                    Interlocked.Decrement(ref _aliveWorkerCount);
+                    work.Dispose();
+                }
             }
             else
             {
-                return false;
+                res = false;
             }
+
+            if (res)
+            {
+                if (_asyncWorkIDDict.TryRemove(id, out _))
+                {
+                    Interlocked.Decrement(ref _asyncWorkCount);
+                }
+            }
+
+            return res;
         }
 
         /// <summary>

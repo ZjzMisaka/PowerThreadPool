@@ -23,6 +23,12 @@ namespace PowerThreadPool.Works
             get => _isDone;
             set => _isDone = value;
         }
+        internal volatile bool _asyncDone;
+        internal bool AsyncDone
+        {
+            get => _asyncDone;
+            set => _asyncDone = value;
+        }
         internal volatile bool _isPausing;
         internal bool IsPausing
         {
@@ -60,5 +66,7 @@ namespace PowerThreadPool.Works
         internal abstract bool LongRunning { get; }
         internal abstract bool ShouldStoreResult { get; }
         internal abstract ConcurrentSet<string> Dependents { get; }
+        internal abstract bool AllowEventsAndCallback { get; set; }
+        internal abstract string BaseAsyncWorkID { get; }
     }
 }

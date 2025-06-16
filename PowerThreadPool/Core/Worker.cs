@@ -132,15 +132,18 @@ namespace PowerThreadPool
             {
                 executeResult = ExecuteMain();
 
-                if (executeResult.Status == Status.Stopped)
+                if (Work.AllowEventsAndCallback)
                 {
-                    _powerPool.InvokeWorkStoppedEvent(executeResult);
+                    if (executeResult.Status == Status.Stopped)
+                    {
+                        _powerPool.InvokeWorkStoppedEvent(executeResult);
+                    }
+                    else
+                    {
+                        _powerPool.InvokeWorkEndedEvent(executeResult);
+                    }
+                    Work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
                 }
-                else
-                {
-                    _powerPool.InvokeWorkEndedEvent(executeResult);
-                }
-                Work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
             } while (Work.ShouldImmediateRetry(executeResult));
 
             if (Work.ShouldRequeue(executeResult))
@@ -150,11 +153,15 @@ namespace PowerThreadPool
             }
             else
             {
-                _powerPool.WorkCallbackEnd(Work, executeResult.Status);
+                if (Work.AllowEventsAndCallback)
+                {
+                    _powerPool.WorkCallbackEnd(Work, executeResult.Status);
+                    Work.AsyncDone = true;
+                }
 
                 Work.IsDone = true;
 
-                if (Work.WaitSignal != null)
+                if (Work.WaitSignal != null && Work.BaseAsyncWorkID == null)
                 {
                     Work.WaitSignal.Set();
                 }
@@ -189,6 +196,10 @@ namespace PowerThreadPool
             {
                 Interlocked.Decrement(ref _powerPool._idleWorkerCount);
             }
+            if (Work.BaseAsyncWorkID != null && _powerPool._asyncWorkIDDict.TryRemove(Work.BaseAsyncWorkID, out _))
+            {
+                Interlocked.Decrement(ref _powerPool._asyncWorkCount);
+            }
 
             ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
             executeResult.ID = Work.ID;
@@ -203,6 +214,7 @@ namespace PowerThreadPool
             _powerPool.WorkCallbackEnd(Work, Status.Failed);
 
             bool hasWaitingWork = RequeueAllWaitingWork();
+            Work.AsyncDone = true;
             Work.IsDone = true;
 
             if (Work.WaitSignal != null)
@@ -741,6 +753,11 @@ namespace PowerThreadPool
         {
             if (_waitingWorkDic.TryRemove(id, out WorkBase work))
             {
+                if (_powerPool._asyncWorkIDDict.TryRemove(id, out _))
+                {
+                    Interlocked.Decrement(ref _powerPool._asyncWorkCount);
+                }
+
                 ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
                 executeResult.ID = id;
 

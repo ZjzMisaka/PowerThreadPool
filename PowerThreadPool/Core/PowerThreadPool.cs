@@ -49,6 +49,8 @@ namespace PowerThreadPool
 
         internal ConcurrentDictionary<string, ExecuteResultBase> _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
 
+        internal ConcurrentDictionary<string, ConcurrentSet<string>> _asyncWorkIDDict = new ConcurrentDictionary<string, ConcurrentSet<string>>();
+
         internal long _startCount = 0;
         internal long _endCount = 0;
         internal long _queueTime = 0;
@@ -135,6 +137,8 @@ namespace PowerThreadPool
         /// Will be cleared when the thread pool starts again
         /// </summary>
         public IEnumerable<string> FailedWorkList => _failedWorkSet;
+        internal int _asyncWorkCount = 0;
+        public int AsyncWorkCount => _asyncWorkCount;
 
         internal int _runningWorkerCount = 0;
         public int RunningWorkerCount => _runningWorkerCount;
@@ -648,6 +652,7 @@ namespace PowerThreadPool
 
             if (RunningWorkerCount == 0 &&
                 WaitingWorkCount == 0 &&
+                AsyncWorkCount == 0 &&
                 _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
                 )
             {
