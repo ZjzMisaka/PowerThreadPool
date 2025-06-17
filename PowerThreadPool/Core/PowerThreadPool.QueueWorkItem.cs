@@ -405,7 +405,10 @@ namespace PowerThreadPool
 
             if (work.Group != null)
             {
-                _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
+                if (work.BaseAsyncWorkID == null || (work.BaseAsyncWorkID != null && work.BaseAsyncWorkID == workID))
+                {
+                    _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
+                }
             }
 
             bool startSuspended = PowerPoolOption.StartSuspended;

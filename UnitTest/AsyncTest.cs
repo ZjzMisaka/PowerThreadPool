@@ -785,6 +785,42 @@ namespace UnitTest
             Assert.Equal(100, count);
         }
 
+        [Fact]
+        public void TestGroupMember()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int count = 0;
+
+            PowerPool powerPool = new PowerPool();
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                Interlocked.Increment(ref count);
+            }, new WorkOption { Group = "AAA" });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                Interlocked.Increment(ref count);
+            }, new WorkOption { Group = "AAA" });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                Interlocked.Increment(ref count);
+            }, new WorkOption { Group = "AAA" });
+
+            powerPool.Wait();
+
+            Assert.Empty(powerPool.GetGroupMemberList("AAA"));
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();
