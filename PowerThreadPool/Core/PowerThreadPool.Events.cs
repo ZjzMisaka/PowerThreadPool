@@ -160,7 +160,12 @@ namespace PowerThreadPool
             {
                 if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<string> idSet))
                 {
-                    idSet.Remove(work.BaseAsyncWorkID);
+                    string removeID = work.ID;
+                    if (work.BaseAsyncWorkID != null)
+                    {
+                        removeID = work.BaseAsyncWorkID;
+                    }
+                    idSet.Remove(removeID);
                 }
             }
         }
