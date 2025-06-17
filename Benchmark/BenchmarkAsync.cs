@@ -23,48 +23,6 @@ namespace Benchmark
         }
 
         [Benchmark]
-        public void TestDotnetThreadPool()
-        {
-            try
-            {
-                int threadPoolRunCount = 0;
-                using (CountdownEvent countdown = new CountdownEvent(50))
-                {
-                    for (int i = 0; i < 50; ++i)
-                    {
-                        ThreadPool.QueueUserWorkItem(async state =>
-                        {
-                            try
-                            {
-                                await Task.Delay(10);
-                                await Task.Delay(10);
-                                await Task.Delay(10);
-                                Interlocked.Increment(ref threadPoolRunCount);
-                            }
-                            finally
-                            {
-                                countdown.Signal();
-                            }
-                        });
-                    }
-
-                    countdown.Wait();
-                }
-
-                int count = threadPoolRunCount;
-                if (count != 50)
-                {
-                    throw new InvalidOperationException($"TestDotnetThreadPool: {count} -> 100");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToString());
-                Console.ReadLine();
-            }
-        }
-
-        [Benchmark]
         public void TestTask()
         {
             try
