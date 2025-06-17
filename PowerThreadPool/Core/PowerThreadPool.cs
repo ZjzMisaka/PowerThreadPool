@@ -446,10 +446,10 @@ namespace PowerThreadPool
             {
                 if (_idleWorkerDic.TryRemove(firstWorkerID, out worker))
                 {
+                    Interlocked.Decrement(ref _idleWorkerCount);
+
                     if (worker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
                     {
-                        Interlocked.Decrement(ref _idleWorkerCount);
-
                         if (longRunning)
                         {
                             Interlocked.Increment(ref _longRunningWorkerCount);
@@ -457,9 +457,9 @@ namespace PowerThreadPool
 
                         return worker;
                     }
-                    else
+                    else if (_idleWorkerDic.TryAdd(firstWorkerID, worker))
                     {
-                        _idleWorkerDic[firstWorkerID] = worker;
+                        Interlocked.Increment(ref _idleWorkerCount);
                         _idleWorkerQueue.Enqueue(firstWorkerID);
                     }
                 }
