@@ -202,7 +202,12 @@ namespace PowerThreadPool
             }
 
             ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
-            executeResult.ID = Work.ID;
+            string id = Work.ID;
+            if (Work.BaseAsyncWorkID != null)
+            {
+                id = Work.BaseAsyncWorkID;
+            }
+            executeResult.ID = id;
             _powerPool.InvokeWorkStoppedEvent(executeResult);
 
             if (!ex.Data.Contains("ThrowedWhenExecuting"))
@@ -317,6 +322,12 @@ namespace PowerThreadPool
             catch (Exception ex)
             {
                 executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
+                string idErr = Work.ID;
+                if (Work.BaseAsyncWorkID != null)
+                {
+                    idErr = Work.BaseAsyncWorkID;
+                }
+                executeResult.ID = idErr;
                 _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
             }
 #if DEBUG
@@ -331,7 +342,12 @@ namespace PowerThreadPool
             }
 #endif
             Work.Worker = null;
-            executeResult.ID = Work.ID;
+            string id = Work.ID;
+            if (Work.BaseAsyncWorkID != null)
+            {
+                id = Work.BaseAsyncWorkID;
+            }
+            executeResult.ID = id;
 
             return executeResult;
         }
@@ -754,6 +770,10 @@ namespace PowerThreadPool
                 }
 
                 ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
+                if (work.BaseAsyncWorkID != null)
+                {
+                    id = work.BaseAsyncWorkID;
+                }
                 executeResult.ID = id;
 
                 _powerPool.InvokeWorkCanceledEvent(executeResult);
