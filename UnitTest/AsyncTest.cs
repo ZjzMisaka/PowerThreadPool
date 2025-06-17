@@ -25,7 +25,14 @@ namespace UnitTest
             int z = 0;
 
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItemAsync<string>(async () =>
+            object eventObj = null;
+            object eventObj1 = null;
+            powerPool.ErrorOccurred += (s, e) =>
+            {
+                eventObj = e.Exception;
+                eventObj1 = e.ID;
+            };
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 await Task.Delay(100);
                 int a = 0 / z;
@@ -39,6 +46,8 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.IsType<DivideByZeroException>(e.InnerException);
+            Assert.IsType<DivideByZeroException>((eventObj as Exception).InnerException);
+            Assert.Equal(id, eventObj1);
         }
 
         [Fact]
@@ -50,7 +59,14 @@ namespace UnitTest
             object r = null;
 
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItemAsync<string>(async () =>
+            object eventObj = null;
+            object eventObj1 = null;
+            powerPool.WorkEnded += (s, e) =>
+            {
+                eventObj = e.Result;
+                eventObj1 = e.ID;
+            };
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 return await OuterAsync();
             }, (res) =>
@@ -63,6 +79,8 @@ namespace UnitTest
 
             Assert.Null(e);
             Assert.Equal("123", r);
+            Assert.Equal("123", eventObj);
+            Assert.Equal(id, eventObj1);
         }
 
         [Fact]
@@ -98,7 +116,12 @@ namespace UnitTest
             object c = null;
             object r = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItemAsync<string>(async () =>
+            object eventObj = null;
+            powerPool.WorkStopped += (s, e) =>
+            {
+                eventObj = e.ID;
+            };
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(1000);
@@ -118,6 +141,7 @@ namespace UnitTest
             Assert.Null(l);
             Assert.Null(c);
             Assert.Null(r);
+            Assert.Equal(id, eventObj);
         }
 
         [Fact]
@@ -226,6 +250,13 @@ namespace UnitTest
             object c = null;
             object r = null;
             PowerPool powerPool = new PowerPool();
+            object eventObj = null;
+            bool eventObj1 = false;
+            powerPool.WorkStopped += (s, e) =>
+            {
+                eventObj = e.ID;
+                eventObj1 = e.ForceStop;
+            };
             string id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
@@ -246,6 +277,8 @@ namespace UnitTest
             Assert.Null(l);
             Assert.Null(c);
             Assert.Null(r);
+            Assert.Equal(id, eventObj);
+            Assert.True(eventObj1);
         }
 
         [Fact]
@@ -456,6 +489,11 @@ namespace UnitTest
             object c = null;
 
             PowerPool powerPool = new PowerPool { PowerPoolOption = new PowerPoolOption { MaxThreads = 1 } };
+            object eventObj = null;
+            powerPool.WorkCanceled += (s, e) =>
+            {
+                eventObj = e.ID;
+            };
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
@@ -474,6 +512,7 @@ namespace UnitTest
 
             Assert.Null(p);
             Assert.Null(c);
+            Assert.Equal(id, eventObj);
         }
 
         [Fact]
