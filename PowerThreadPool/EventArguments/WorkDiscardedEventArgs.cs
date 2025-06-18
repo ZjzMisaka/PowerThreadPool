@@ -2,9 +2,9 @@
 
 namespace PowerThreadPool.EventArguments
 {
-    public class WorkDiscardedEventArgs : WorkEventArgsBase
+    public class WorkRejectedEventArgs : WorkEventArgsBase
     {
-        public WorkDiscardedEventArgs(RejectType rejectType)
+        public WorkRejectedEventArgs(RejectType rejectType)
         {
             RejectType = rejectType;
         }

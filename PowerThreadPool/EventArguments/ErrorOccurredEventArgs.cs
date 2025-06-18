@@ -17,6 +17,7 @@ namespace PowerThreadPool.EventArguments
         WorkStopped,
         WorkCanceled,
         WorkRejected,
+        WorkDiscarded,
         WorkLogic,
     }
 

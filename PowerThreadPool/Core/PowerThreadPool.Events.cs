@@ -19,6 +19,7 @@ namespace PowerThreadPool
         public event EventHandler<WorkStoppedEventArgs> WorkStopped;
         public event EventHandler<WorkCanceledEventArgs> WorkCanceled;
         public event EventHandler<WorkRejectedEventArgs> WorkRejected;
+        public event EventHandler<WorkDiscardedEventArgs> WorkDiscarded;
         public event EventHandler<ErrorOccurredEventArgs> ErrorOccurred;
 
         internal delegate void CallbackEndEventHandler(WorkBase work, Status status);
