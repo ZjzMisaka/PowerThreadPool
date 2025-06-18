@@ -6425,9 +6425,11 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool(powerPoolOption);
 
             string discardID = null;
+            RejectType rejectType = RejectType.AbortPolicy;
             powerPool.WorkDiscarded += (s, e) =>
             {
                 discardID = e.ID;
+                rejectType = e.RejectType;
             };
 
             _ = powerPool
@@ -6509,6 +6511,7 @@ namespace UnitTest
 
             Assert.False(done);
             Assert.Equal(id, discardID);
+            Assert.Equal(RejectType.DiscardPolicy, rejectType);
         }
 
         [Fact]
