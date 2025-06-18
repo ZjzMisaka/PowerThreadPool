@@ -799,14 +799,16 @@ namespace PowerThreadPool
             return false;
         }
 
-        internal bool DiscardOneWork()
+        internal bool DiscardOneWork(out WorkBase discardWork)
         {
+            discardWork = null;
             bool res = false;
             string workID = _waitingWorkIDPriorityCollection.Discard();
             if (workID != null && _waitingWorkDic.TryRemove(workID, out WorkBase work))
             {
                 Interlocked.Decrement(ref _waitingWorkCount);
                 res = true;
+                discardWork = work;
             }
             return res;
         }
