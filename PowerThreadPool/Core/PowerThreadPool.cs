@@ -426,7 +426,7 @@ namespace PowerThreadPool
             {
                 WorkDiscardedEventArgs workDiscardedEventArgs = new WorkDiscardedEventArgs(rejectType)
                 {
-                    ID = work.BaseAsyncWorkID == null ? work.ID : work.BaseAsyncWorkID,
+                    ID = work.ID,
                 };
                 SafeInvoke(WorkDiscarded, workDiscardedEventArgs, ErrorFrom.WorkDiscarded, null);
             }

@@ -7372,18 +7372,6 @@ namespace UnitTest
                 await Task.Delay(10);
                 await Task.Delay(10);
                 await Task.Delay(10);
-
-                Interlocked.Increment(ref doneCount);
-            });
-            powerPool.QueueWorkItemAsync(async () =>
-            {
-                await Task.Delay(10);
-                await Task.Delay(10);
-                await Task.Delay(10);
-                await Task.Delay(10);
-                await Task.Delay(10);
-                await Task.Delay(10);
-                await Task.Delay(10);
                 await Task.Delay(10);
                 await Task.Delay(10);
                 await Task.Delay(10);
@@ -7398,6 +7386,45 @@ namespace UnitTest
             });
             powerPool.QueueWorkItemAsync(async () =>
             {
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
                 await Task.Delay(10);
                 await Task.Delay(10);
                 await Task.Delay(10);
