@@ -352,11 +352,17 @@ namespace PowerThreadPool
                 {
                     RejectType rejectType = PowerPoolOption.RejectOption.RejectType;
 
+                    string rejectID = work.ID;
+                    if (work.BaseAsyncWorkID != null)
+                    {
+                        rejectID = work.BaseAsyncWorkID;
+                    }
+
                     if (WorkRejected != null)
                     {
                         WorkRejectedEventArgs workRejectedEventArgs = new WorkRejectedEventArgs(rejectType)
                         {
-                            ID = work.BaseAsyncWorkID == null ? work.ID : work.BaseAsyncWorkID,
+                            ID = rejectID,
                         };
                         SafeInvoke(WorkRejected, workRejectedEventArgs, ErrorFrom.WorkRejected, null);
                     }
@@ -365,7 +371,7 @@ namespace PowerThreadPool
                     {
                         WorkRejectedException workRejectedException = new WorkRejectedException
                         {
-                            ID = work.BaseAsyncWorkID == null ? work.ID : work.BaseAsyncWorkID,
+                            ID = rejectID,
                         };
                         Interlocked.Decrement(ref _waitingWorkCount);
                         throw workRejectedException;
@@ -412,10 +418,6 @@ namespace PowerThreadPool
         {
             ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
             string idErr = work.ID;
-            if (work.BaseAsyncWorkID != null)
-            {
-                idErr = work.BaseAsyncWorkID;
-            }
             executeResult.ID = idErr;
 
             WorkCallbackEnd(work, executeResult.Status);
