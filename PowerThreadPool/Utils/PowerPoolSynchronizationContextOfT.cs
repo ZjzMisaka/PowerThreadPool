@@ -5,20 +5,20 @@ using PowerThreadPool.Options;
 
 namespace PowerThreadPool.Utils
 {
-    internal class PowerPoolSynchronizationContext : SynchronizationContext
+    internal class PowerPoolSynchronizationContext<TResult> : SynchronizationContext
     {
         private readonly PowerPool _powerPool;
-        private readonly WorkOption _workOption;
-        private Task _originalTask;
+        private readonly WorkOption<TResult> _workOption;
+        private Task<TResult> _originalTask;
         private int _done = 0;
 
-        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkOption workOption)
+        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkOption<TResult> workOption)
         {
             _powerPool = powerPool;
             _workOption = workOption;
         }
 
-        internal void SetTask(Task originalTask)
+        internal void SetTask(Task<TResult> originalTask)
         {
             _originalTask = originalTask;
         }
@@ -30,7 +30,7 @@ namespace PowerThreadPool.Utils
                 _workOption.AsyncWorkID = _powerPool.CreateID<object>();
                 idSet.Add(_workOption.AsyncWorkID);
 
-                _powerPool.QueueWorkItem<object>(() =>
+                _powerPool.QueueWorkItem<TResult>(() =>
                 {
                     SynchronizationContext.SetSynchronizationContext(this);
                     _powerPool.StopIfRequested(() =>
@@ -38,12 +38,13 @@ namespace PowerThreadPool.Utils
                         _workOption.AllowEventsAndCallback = true;
                     });
                     d(state);
-                    if (_originalTask.IsCompleted &&
-                    Interlocked.Exchange(ref _done, 1) == 0)
+                    TResult res = default;
+                    if (_originalTask.IsCompleted && Interlocked.Exchange(ref _done, 1) == 0)
                     {
                         _workOption.AllowEventsAndCallback = true;
+                        res = _originalTask.Result;
                     }
-                    return default;
+                    return res;
                 }, _workOption);
             }
         }
