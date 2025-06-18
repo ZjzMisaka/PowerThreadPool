@@ -67,6 +67,7 @@ namespace PowerThreadPool.Works
         internal abstract bool ShouldStoreResult { get; }
         internal abstract ConcurrentSet<string> Dependents { get; }
         internal abstract bool AllowEventsAndCallback { get; set; }
+        internal abstract string AsyncWorkID { get; }
         internal abstract string BaseAsyncWorkID { get; }
     }
 }

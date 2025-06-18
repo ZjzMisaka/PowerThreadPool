@@ -807,8 +807,16 @@ namespace PowerThreadPool
             if (workID != null && _waitingWorkDic.TryRemove(workID, out WorkBase work))
             {
                 Interlocked.Decrement(ref _waitingWorkCount);
-                res = true;
-                discardWork = work;
+                if (work.BaseAsyncWorkID != work.AsyncWorkID)
+                {
+                    _powerPool.SetWork(work);
+                    res = false;
+                }
+                else
+                {
+                    res = true;
+                    discardWork = work;
+                }
             }
             return res;
         }
