@@ -365,7 +365,7 @@ namespace PowerThreadPool
                     {
                         WorkRejectedException workRejectedException = new WorkRejectedException
                         {
-                            ID = work.ID,
+                            ID = work.BaseAsyncWorkID == null ? work.ID : work.BaseAsyncWorkID,
                         };
                         Interlocked.Decrement(ref _waitingWorkCount);
                         throw workRejectedException;
