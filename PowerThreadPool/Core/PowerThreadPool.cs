@@ -356,7 +356,7 @@ namespace PowerThreadPool
                     {
                         WorkRejectedEventArgs workRejectedEventArgs = new WorkRejectedEventArgs(rejectType)
                         {
-                            ID = work.ID,
+                            ID = work.BaseAsyncWorkID == null ? work.ID : work.BaseAsyncWorkID,
                         };
                         SafeInvoke(WorkRejected, workRejectedEventArgs, ErrorFrom.WorkRejected, null);
                     }
