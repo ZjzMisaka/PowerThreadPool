@@ -410,7 +410,7 @@ namespace PowerThreadPool
 
         private void WorkDiscarded(WorkBase work)
         {
-            ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Failed);
+            ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
             string idErr = work.ID;
             if (work.BaseAsyncWorkID != null)
             {
