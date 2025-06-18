@@ -152,7 +152,6 @@ namespace PowerThreadPool.Helpers
                     }
                 }
             }
-
         }
 
         private bool PrecedingWorkNotSuccessfullyCompleted(string dependedId)
