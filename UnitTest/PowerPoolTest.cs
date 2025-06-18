@@ -6411,6 +6411,107 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestRejectDiscardPolicyWorkDiscardedEvent()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 4,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.DiscardPolicy,
+                    ThreadQueueLimit = 1,
+                }
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            string discardID = null;
+            powerPool.WorkDiscarded += (s, e) =>
+            {
+                discardID = e.ID;
+            };
+
+            _ = powerPool
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                })
+                | (() =>
+                {
+                    while (true)
+                    {
+                        powerPool.StopIfRequested();
+                        Thread.Sleep(100);
+                    }
+                });
+
+            bool done = false;
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                done = true;
+            });
+            Assert.False(done);
+            Assert.Equal(4, powerPool.WaitingWorkCount);
+
+            powerPool.Stop();
+            powerPool.Wait();
+
+            Assert.False(done);
+            Assert.Equal(id, discardID);
+        }
+
+        [Fact]
         public void TestRejectDiscardOldestPolicy()
         {
             PowerPoolOption powerPoolOption = new PowerPoolOption

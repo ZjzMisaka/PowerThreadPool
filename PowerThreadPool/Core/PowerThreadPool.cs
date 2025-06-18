@@ -380,7 +380,7 @@ namespace PowerThreadPool
                     else if (rejectType == RejectType.DiscardPolicy)
                     {
                         Interlocked.Decrement(ref _waitingWorkCount);
-                        WorkDiscarded(work);
+                        OnWorkDiscarded(work, rejectType);
                         return;
                     }
                     else if (rejectType == RejectType.DiscardOldestPolicy)
@@ -389,7 +389,7 @@ namespace PowerThreadPool
                         {
                             if (workerDiscard.DiscardOneWork(out WorkBase discardWork))
                             {
-                                WorkDiscarded(discardWork);
+                                OnWorkDiscarded(discardWork, rejectType);
                                 Interlocked.Decrement(ref _waitingWorkCount);
                                 worker = workerDiscard;
                                 break;
@@ -408,7 +408,7 @@ namespace PowerThreadPool
             worker.SetWork(work, false);
         }
 
-        private void WorkDiscarded(WorkBase work)
+        private void OnWorkDiscarded(WorkBase work, RejectType rejectType)
         {
             ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
             string idErr = work.ID;
@@ -419,6 +419,15 @@ namespace PowerThreadPool
             executeResult.ID = idErr;
 
             WorkCallbackEnd(work, executeResult.Status);
+
+            if (WorkDiscarded != null)
+            {
+                WorkDiscardedEventArgs workDiscardedEventArgs = new WorkDiscardedEventArgs(rejectType)
+                {
+                    ID = work.BaseAsyncWorkID == null ? work.ID : work.BaseAsyncWorkID,
+                };
+                SafeInvoke(WorkDiscarded, workDiscardedEventArgs, ErrorFrom.WorkDiscarded, null);
+            }
         }
 
         /// <summary>
