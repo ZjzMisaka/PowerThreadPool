@@ -7127,5 +7127,198 @@ namespace UnitTest
 
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
+
+        [Fact]
+        public void TestRejectDiscardOldestPolicyWithDependents()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 4,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.DiscardOldestPolicy,
+                    ThreadQueueLimit = 1,
+                }
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            int doneCount = 0;
+
+            string id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            });
+            string id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            });
+            string id2 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            });
+            string id3 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            });
+
+            string id4 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            });
+            string id5 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            });
+            string id6 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            });
+            string id7 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            });
+
+            string id8 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { id4 }
+            });
+            string id9 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { id5 }
+            });
+            string id10 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { id6 }
+            });
+            string id11 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<string> { id7 }
+            });
+
+            bool done = false;
+            powerPool.QueueWorkItem(() =>
+            {
+                done = true;
+            });
+            Assert.False(done);
+
+            powerPool.Wait();
+
+            Assert.True(done);
+            Assert.Equal(10, doneCount);
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestRejectDiscardOldestPolicyDiscardAsyncWork()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 1,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.DiscardOldestPolicy,
+                    ThreadQueueLimit = 2,
+                }
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            int doneCount = 0;
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, doneCount);
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
     }
 }

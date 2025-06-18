@@ -356,7 +356,7 @@ namespace PowerThreadPool
                     {
                         WorkRejectedEventArgs workRejectedEventArgs = new WorkRejectedEventArgs(rejectType)
                         {
-                            ID = work.ID,
+                            ID = work.BaseAsyncWorkID == null ? work.ID : work.BaseAsyncWorkID,
                         };
                         SafeInvoke(WorkRejected, workRejectedEventArgs, ErrorFrom.WorkRejected, null);
                     }
@@ -365,7 +365,7 @@ namespace PowerThreadPool
                     {
                         WorkRejectedException workRejectedException = new WorkRejectedException
                         {
-                            ID = work.ID,
+                            ID = work.BaseAsyncWorkID == null ? work.ID : work.BaseAsyncWorkID,
                         };
                         Interlocked.Decrement(ref _waitingWorkCount);
                         throw workRejectedException;
@@ -380,14 +380,16 @@ namespace PowerThreadPool
                     else if (rejectType == RejectType.DiscardPolicy)
                     {
                         Interlocked.Decrement(ref _waitingWorkCount);
+                        WorkDiscarded(work);
                         return;
                     }
                     else if (rejectType == RejectType.DiscardOldestPolicy)
                     {
                         foreach (Worker workerDiscard in _aliveWorkerList)
                         {
-                            if (workerDiscard.DiscardOneWork())
+                            if (workerDiscard.DiscardOneWork(out WorkBase discardWork))
                             {
+                                WorkDiscarded(discardWork);
                                 Interlocked.Decrement(ref _waitingWorkCount);
                                 worker = workerDiscard;
                                 break;
@@ -404,6 +406,19 @@ namespace PowerThreadPool
 
             work.QueueDateTime = DateTime.UtcNow;
             worker.SetWork(work, false);
+        }
+
+        private void WorkDiscarded(WorkBase work)
+        {
+            ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
+            string idErr = work.ID;
+            if (work.BaseAsyncWorkID != null)
+            {
+                idErr = work.BaseAsyncWorkID;
+            }
+            executeResult.ID = idErr;
+
+            WorkCallbackEnd(work, executeResult.Status);
         }
 
         /// <summary>
