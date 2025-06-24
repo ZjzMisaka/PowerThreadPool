@@ -339,6 +339,7 @@ namespace PowerThreadPool
 
             Worker worker = null;
 
+            // In most cases, the loop will not iterate more than once.
             while (true)
             {
                 bool rejected = PowerPoolOption.RejectOption != null;
@@ -393,6 +394,11 @@ namespace PowerThreadPool
                     {
                         foreach (Worker workerDiscard in _aliveWorkerList)
                         {
+                            // When ThreadQueueLimit is 0 and the task rejection policy is set to "DiscardOldestPolicy",
+                            // since there are no tasks in the queue, the oldest task cannot be discarded.
+                            // This may cause excessive spinning with no progress.
+                            // However, this is due to an unreasonable user configuration, so no handling is implemented;
+                            // a warning is provided in the documentation instead.
                             if (workerDiscard.DiscardOneWork(out WorkBase discardWork))
                             {
                                 OnWorkDiscarded(discardWork, rejectType);
@@ -550,6 +556,7 @@ namespace PowerThreadPool
 
             RejectOption rejectOption = PowerPoolOption.RejectOption;
 
+            // In most cases, the loop will not iterate more than once.
             while (true)
             {
                 // WorkStealingLoopMaxStep is automatically calculated from MaxThreads using a logarithmic formula to optimize loop performance for different thread pool sizes.

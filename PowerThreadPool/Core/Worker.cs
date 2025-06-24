@@ -352,6 +352,8 @@ namespace PowerThreadPool
             return executeResult;
         }
 
+        // Due to the unreliability of Thread.Interrupt(), forced stop functionality should be avoided as much as possible.
+        // However, due to requirements, PowerThreadPool still provides this feature, with a warning in the documentation.
         internal void ForceStop(bool cancelOtherWorks)
         {
             if (WorkerState == WorkerStates.Running)
@@ -440,6 +442,7 @@ namespace PowerThreadPool
 
         private void AssignWork()
         {
+            // In most cases, the loop will not iterate more than once.
             while (true)
             {
                 WorkBase work = null;
@@ -510,6 +513,7 @@ namespace PowerThreadPool
             int startIndex = _powerPool._aliveWorkerListLoopIndex;
             int loopIndex = _powerPool._aliveWorkerListLoopIndex;
 
+            // In most cases, the loop will not iterate more than once.
             while (true)
             {
                 // WorkStealingLoopMaxStep is automatically calculated from MaxThreads using a logarithmic formula to optimize loop performance for different thread pool sizes.

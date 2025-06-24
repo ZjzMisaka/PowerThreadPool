@@ -9,6 +9,12 @@ using System.Threading;
 
 namespace PowerThreadPool.Helpers
 {
+    // Spinner usage guidelines:
+    // Before using spinning, you must ensure in tests that the spin duration in Ticks is less than 5000.
+    // Otherwise, spinning should not be used and other optimization methods should be considered.
+    // Unit tests that use mocks to force the Spinner to spin for a long time are exceptions.
+    // If using the Spinner causes significant overhead, use the Spinner only in DEBUG mode for verification,
+    // and manually spin in Release mode.
     internal class Spinner
     {
 #if DEBUG
