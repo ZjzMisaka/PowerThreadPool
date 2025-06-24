@@ -354,6 +354,8 @@ namespace PowerThreadPool
 
         // Due to the unreliability of Thread.Interrupt(), forced stop functionality should be avoided as much as possible.
         // However, due to requirements, PowerThreadPool still provides this feature, with a warning in the documentation.
+        // Although the PowerThreadPool will catch ThreadInterruptedException to ensure its own operation,
+        // it cannot guarantee that business logic will not encounter unexpected issues as a result.
         internal void ForceStop(bool cancelOtherWorks)
         {
             if (WorkerState == WorkerStates.Running)
