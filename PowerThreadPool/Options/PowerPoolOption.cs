@@ -38,13 +38,13 @@ namespace PowerThreadPool.Options
                 }
                 _maxThreads = value;
 
-                WorkLoopMaxStep = GetWorkStealingLoopMaxStep(_maxThreads);
+                WorkLoopMaxStep = GetLoopMaxStep(_maxThreads);
 
                 OnThreadCountSettingChanged();
             }
         }
 
-        private int _workLoopMaxStep = GetWorkStealingLoopMaxStep(Environment.ProcessorCount * 2);
+        private int _workLoopMaxStep = GetLoopMaxStep(Environment.ProcessorCount * 2);
         internal int WorkLoopMaxStep
         {
             get => _workLoopMaxStep;
@@ -135,7 +135,7 @@ namespace PowerThreadPool.Options
             }
         }
 
-        private static int GetWorkStealingLoopMaxStep(int maxThreads)
+        private static int GetLoopMaxStep(int maxThreads)
         {
             return (int)Math.Min(maxThreads, Math.Log(maxThreads + 1) * 3);
         }

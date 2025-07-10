@@ -69,5 +69,6 @@ namespace PowerThreadPool.Works
         internal abstract bool AllowEventsAndCallback { get; set; }
         internal abstract string AsyncWorkID { get; }
         internal abstract string BaseAsyncWorkID { get; }
+        internal abstract string RealWorkID { get; }
     }
 }
