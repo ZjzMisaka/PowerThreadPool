@@ -72,7 +72,6 @@ namespace PowerThreadPool
                 {
                     return;
                 }
-                _aliveWorkDic.Clear();
                 _workGroupDic.Clear();
                 _asyncWorkIDDict.Clear();
                 _asyncWorkCount = 0;
@@ -611,7 +610,6 @@ namespace PowerThreadPool
 
             if (forceStop)
             {
-                _aliveWorkDic.Clear();
                 _workGroupDic.Clear();
                 foreach (Worker worker in _aliveWorkerDic.Values)
                 {

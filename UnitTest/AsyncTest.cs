@@ -650,6 +650,126 @@ namespace UnitTest
         }
 
         [Fact]
+        public async Task TestWaitStopped()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            await Task.Run(async () =>
+            {
+                Random random = new Random();
+                int doneCount = 0;
+
+                PowerPool powerPool = new PowerPool();
+                powerPool.PowerPoolOption = new PowerPoolOption()
+                {
+                    MaxThreads = 8,
+                    DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 0 },
+                    StartSuspended = true,
+                    DefaultCallback = (res) =>
+                    {
+                        Interlocked.Increment(ref doneCount);
+                    },
+                    QueueType = QueueType.LIFO
+                };
+
+                int runCount = 10;
+                doneCount = 0;
+                for (int i = 0; i < runCount; ++i)
+                {
+                    string id = powerPool.QueueWorkItemAsync(async () =>
+                    {
+                        await Task.Delay(200);
+                        await Task.Delay(200);
+                        await Task.Delay(200);
+                        await Task.Delay(200);
+                        await Task.Delay(200);
+                        await Task.Delay(200);
+                    });
+                    if (id == null)
+                    {
+                        Assert.Fail("PoolStopping");
+                    }
+                }
+
+                Thread.Yield();
+
+                if (runCount != powerPool.WaitingWorkCount)
+                {
+                    Assert.Fail();
+                }
+
+                powerPool.Start();
+
+                powerPool.Stop();
+                await powerPool.WaitAsync();
+                if (powerPool.RunningWorkerCount != 0 || powerPool.WaitingWorkCount != 0 || powerPool.AsyncWorkCount != 0)
+                {
+                    Assert.Fail();
+                }
+            });
+        }
+
+        [Fact]
+        public async Task TestWaitForceStopped()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            await Task.Run(async () =>
+            {
+                Random random = new Random();
+                int doneCount = 0;
+
+                PowerPool powerPool = new PowerPool();
+                powerPool.PowerPoolOption = new PowerPoolOption()
+                {
+                    MaxThreads = 8,
+                    DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 0 },
+                    StartSuspended = true,
+                    DefaultCallback = (res) =>
+                    {
+                        Interlocked.Increment(ref doneCount);
+                    },
+                    QueueType = QueueType.LIFO
+                };
+
+                int runCount = 10;
+                doneCount = 0;
+                for (int i = 0; i < runCount; ++i)
+                {
+                    string id = powerPool.QueueWorkItemAsync(async () =>
+                    {
+                        await Task.Delay(200);
+                        await Task.Delay(200);
+                        await Task.Delay(200);
+                        await Task.Delay(200);
+                        await Task.Delay(200);
+                        await Task.Delay(200);
+                    });
+                    if (id == null)
+                    {
+                        Assert.Fail("PoolStopping");
+                    }
+                }
+
+                Thread.Yield();
+
+                if (runCount != powerPool.WaitingWorkCount)
+                {
+                    Assert.Fail();
+                }
+
+                powerPool.Start();
+
+                powerPool.Stop(true);
+                await powerPool.WaitAsync();
+                if (powerPool.RunningWorkerCount != 0 || powerPool.WaitingWorkCount != 0 || powerPool.AsyncWorkCount != 0)
+                {
+                    Assert.Fail();
+                }
+            });
+        }
+
+        [Fact]
         public void TestFetchByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
