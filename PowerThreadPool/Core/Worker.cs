@@ -341,16 +341,9 @@ namespace PowerThreadPool
             }
             catch (Exception ex)
             {
-                if (ex is AggregateException aex && aex.InnerException is WorkStopException aie)
-                {
-                    executeResult = Work.SetExecuteResult(null, aie, Status.Stopped);
-                }
-                else
-                {
-                    executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
-                    executeResult.ID = Work.RealWorkID;
-                    _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
-                }
+                executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
+                executeResult.ID = Work.RealWorkID;
+                _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
             }
 #if DEBUG
             Spinner.Start(() => WorkHeldState == WorkHeldStates.NotHeld);
