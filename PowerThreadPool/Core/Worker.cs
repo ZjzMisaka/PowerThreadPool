@@ -165,6 +165,31 @@ namespace PowerThreadPool
                 {
                     Work.WaitSignal.Set();
                 }
+
+                if (Work.AllowEventsAndCallback && Work.BaseAsyncWorkID != null)
+                {
+                    if (_powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork) && !asyncBaseWork.ShouldStoreResult)
+                    {
+                        if (_powerPool._asyncWorkIDDict.TryRemove(Work.BaseAsyncWorkID, out ConcurrentSet<string> asyncIDList))
+                        {
+                            Interlocked.Decrement(ref _powerPool._asyncWorkCount);
+
+                            foreach (string asyncID in asyncIDList)
+                            {
+                                if (_powerPool._aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
+                                {
+                                    asyncWork.Dispose();
+                                }
+                            }
+                        }
+                        _powerPool._aliveWorkDic.TryRemove(Work.BaseAsyncWorkID, out _);
+                        if (asyncBaseWork.WaitSignal != null)
+                        {
+                            asyncBaseWork.WaitSignal.Set();
+                            asyncBaseWork.Dispose();
+                        }
+                    }
+                }
             }
         }
 
@@ -316,9 +341,16 @@ namespace PowerThreadPool
             }
             catch (Exception ex)
             {
-                executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
-                executeResult.ID = Work.RealWorkID;
-                _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
+                if (ex is AggregateException aex && aex.InnerException is WorkStopException aie)
+                {
+                    executeResult = Work.SetExecuteResult(null, aie, Status.Stopped);
+                }
+                else
+                {
+                    executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
+                    executeResult.ID = Work.RealWorkID;
+                    _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
+                }
             }
 #if DEBUG
             Spinner.Start(() => WorkHeldState == WorkHeldStates.NotHeld);
@@ -753,6 +785,10 @@ namespace PowerThreadPool
 
         internal bool Cancel(string id)
         {
+            if (_waitingWorkDic.TryGetValue(id, out WorkBase getWork) && getWork.BaseAsyncWorkID != null && getWork.BaseAsyncWorkID != id)
+            {
+                return false;
+            }
             if (_waitingWorkDic.TryRemove(id, out WorkBase work))
             {
                 if (_powerPool._asyncWorkIDDict.TryRemove(id, out _))
@@ -761,10 +797,6 @@ namespace PowerThreadPool
                 }
 
                 ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
-                if (work.BaseAsyncWorkID != null)
-                {
-                    id = work.BaseAsyncWorkID;
-                }
                 executeResult.ID = id;
 
                 _powerPool.InvokeWorkCanceledEvent(executeResult);

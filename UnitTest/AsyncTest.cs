@@ -211,6 +211,88 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestStopAndWaitByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                await Task.Delay(1000);
+                l = "2";
+                powerPool.StopIfRequested();
+                await Task.Delay(100);
+                c = "3";
+                return "100";
+            }, (res) =>
+            {
+                Assert.Equal("2", l);
+                r = res.Result;
+            });
+            powerPool.Stop(id);
+            powerPool.Wait(id);
+            Assert.Equal("1", p);
+            Assert.Null(l);
+            Assert.Null(c);
+            Assert.Null(r);
+        }
+
+        [Fact]
+        public void TestStopByIDRunning()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1 });
+            string stoppedID = null;
+            string nsID = null;
+            powerPool.WorkStopped += (s, e) =>
+            {
+                if (nsID == e.ID)
+                {
+                    return;
+                }
+                stoppedID = e.ID;
+            };
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1000);
+                powerPool.StopIfRequested();
+                await Task.Delay(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                return "100";
+            });
+            Thread.Sleep(2);
+            nsID = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+            });
+            Thread.Sleep(10);
+            powerPool.Stop(id);
+            Thread.Sleep(10);
+            powerPool.Stop(nsID);
+            powerPool.Wait();
+            Assert.Equal(id, stoppedID);
+        }
+
+        [Fact]
         public void TestStopByIDNoResult()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");

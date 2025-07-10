@@ -101,21 +101,6 @@ namespace PowerThreadPool
                         idSet.Remove(work.ID);
                     }
                 }
-                if (work.BaseAsyncWorkID != null)
-                {
-                    if (_asyncWorkIDDict.TryRemove(work.BaseAsyncWorkID, out ConcurrentSet<string> asyncIDList))
-                    {
-                        Interlocked.Decrement(ref _asyncWorkCount);
-                        _aliveWorkDic.TryRemove(work.BaseAsyncWorkID, out _);
-                        foreach (string asyncID in asyncIDList)
-                        {
-                            if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
-                            {
-                                asyncWork.Dispose();
-                            }
-                        }
-                    }
-                }
                 throw new WorkStopException();
             }
         }
@@ -361,7 +346,11 @@ namespace PowerThreadPool
                     {
                         if (_asyncWorkIDDict.TryRemove(id, out ConcurrentSet<string> asyncIDList))
                         {
-                            _aliveWorkDic.TryRemove(id, out _);
+                            Interlocked.Decrement(ref _asyncWorkCount);
+                            if (_aliveWorkDic.TryRemove(id, out _))
+                            {
+                                Interlocked.Decrement(ref _aliveWorkerCount);
+                            }
                             foreach (string asyncID in asyncIDList)
                             {
                                 if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
@@ -371,6 +360,8 @@ namespace PowerThreadPool
                             }
                         }
                         work.Dispose();
+
+                        CheckPoolIdle();
                     }
                     return res;
                 }
@@ -433,6 +424,11 @@ namespace PowerThreadPool
                 {
                     if (_asyncWorkIDDict.TryRemove(work.ID, out ConcurrentSet<string> asyncIDList))
                     {
+                        Interlocked.Decrement(ref _asyncWorkCount);
+                        if (_aliveWorkDic.TryRemove(work.ID, out _))
+                        {
+                            Interlocked.Decrement(ref _aliveWorkerCount);
+                        }
                         foreach (string asyncID in asyncIDList)
                         {
                             if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
@@ -450,6 +446,8 @@ namespace PowerThreadPool
                         }
                         work.Dispose();
                     }
+
+                    CheckPoolIdle();
                 }
             }
 
