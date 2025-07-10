@@ -353,11 +353,7 @@ namespace PowerThreadPool
                 {
                     RejectType rejectType = PowerPoolOption.RejectOption.RejectType;
 
-                    string rejectID = work.ID;
-                    if (work.BaseAsyncWorkID != null)
-                    {
-                        rejectID = work.BaseAsyncWorkID;
-                    }
+                    string rejectID = work.RealWorkID;
 
                     if (WorkRejected != null)
                     {

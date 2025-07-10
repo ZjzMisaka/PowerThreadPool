@@ -47,6 +47,7 @@ namespace PowerThreadPool.Works
         }
         internal override string AsyncWorkID => _workOption.AsyncWorkID;
         internal override string BaseAsyncWorkID => _workOption.BaseAsyncWorkID;
+        internal override string RealWorkID => _workOption.BaseAsyncWorkID == null ? ID : _workOption.BaseAsyncWorkID;
 
         internal Work(PowerPool powerPool, string id, Func<TResult> function, WorkOption<TResult> option)
         {
