@@ -786,6 +786,33 @@ namespace PowerThreadPool
             _canceledWorkSet.Clear();
         }
 
+        /// <summary>
+        /// Try remove async work
+        /// </summary>
+        /// <param name="baseID"></param>
+        /// <param name="started"></param>
+        internal void TryRemoveAsyncWork(string baseID, bool started)
+        {
+            if (_asyncWorkIDDict.TryRemove(baseID, out ConcurrentSet<string> asyncIDList))
+            {
+                Interlocked.Decrement(ref _asyncWorkCount);
+                if (_aliveWorkDic.TryRemove(baseID, out WorkBase baseWork))
+                {
+                    baseWork.Dispose();
+                }
+                if (started)
+                {
+                    foreach (string asyncID in asyncIDList)
+                    {
+                        if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
+                        {
+                            asyncWork.Dispose();
+                        }
+                    }
+                }
+            }
+        }
+
         private void CheckDisposed()
         {
 #if NET8_0_OR_GREATER

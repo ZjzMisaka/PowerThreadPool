@@ -170,19 +170,7 @@ namespace PowerThreadPool
                 {
                     if (_powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork) && !asyncBaseWork.ShouldStoreResult)
                     {
-                        if (_powerPool._asyncWorkIDDict.TryRemove(Work.BaseAsyncWorkID, out ConcurrentSet<string> asyncIDList))
-                        {
-                            Interlocked.Decrement(ref _powerPool._asyncWorkCount);
-
-                            foreach (string asyncID in asyncIDList)
-                            {
-                                if (_powerPool._aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
-                                {
-                                    asyncWork.Dispose();
-                                }
-                            }
-                        }
-                        _powerPool._aliveWorkDic.TryRemove(Work.BaseAsyncWorkID, out _);
+                        _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true);
                         if (asyncBaseWork.WaitSignal != null)
                         {
                             asyncBaseWork.WaitSignal.Set();
@@ -221,9 +209,9 @@ namespace PowerThreadPool
             {
                 Interlocked.Decrement(ref _powerPool._idleWorkerCount);
             }
-            if (Work.BaseAsyncWorkID != null && _powerPool._asyncWorkIDDict.TryRemove(Work.BaseAsyncWorkID, out _))
+            if (Work.BaseAsyncWorkID != null)
             {
-                Interlocked.Decrement(ref _powerPool._asyncWorkCount);
+                _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true);
             }
 
             ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
@@ -784,10 +772,7 @@ namespace PowerThreadPool
             }
             if (_waitingWorkDic.TryRemove(id, out WorkBase work))
             {
-                if (_powerPool._asyncWorkIDDict.TryRemove(id, out _))
-                {
-                    Interlocked.Decrement(ref _powerPool._asyncWorkCount);
-                }
+                _powerPool.TryRemoveAsyncWork(id, false);
 
                 ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
                 executeResult.ID = id;
