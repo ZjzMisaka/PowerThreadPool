@@ -405,6 +405,8 @@ namespace UnitTest
         {
             PowerPool powerPool = new PowerPool { PowerPoolOption = new PowerPoolOption { MaxThreads = 1 } };
 
+            int doneCount = 0;
+
             long s1 = GetNowSs();
             powerPool.QueueWorkItemAsync(async () =>
             {
@@ -412,6 +414,7 @@ namespace UnitTest
                 await Task.Delay(500);
                 await Task.Delay(500);
                 await Task.Delay(500);
+                Interlocked.Increment(ref doneCount);
             });
             powerPool.QueueWorkItemAsync(async () =>
             {
@@ -419,6 +422,7 @@ namespace UnitTest
                 await Task.Delay(500);
                 await Task.Delay(500);
                 await Task.Delay(500);
+                Interlocked.Increment(ref doneCount);
             });
             powerPool.Wait();
             long e1 = GetNowSs();
@@ -430,6 +434,7 @@ namespace UnitTest
                 Thread.Sleep(500);
                 Thread.Sleep(500);
                 Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -437,9 +442,12 @@ namespace UnitTest
                 Thread.Sleep(500);
                 Thread.Sleep(500);
                 Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
             });
             powerPool.Wait();
             long e2 = GetNowSs();
+
+            Assert.Equal(4, doneCount);
 
             long d1 = e1 - s1;
             long d2 = e2 - s2;

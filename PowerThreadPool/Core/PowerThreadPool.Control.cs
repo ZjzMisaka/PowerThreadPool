@@ -343,21 +343,7 @@ namespace PowerThreadPool
                     ExecuteResult<TResult> res = work.Fetch<TResult>();
                     if (removeAfterFetch)
                     {
-                        if (_asyncWorkIDDict.TryRemove(id, out ConcurrentSet<string> asyncIDList))
-                        {
-                            Interlocked.Decrement(ref _asyncWorkCount);
-                            if (_aliveWorkDic.TryRemove(id, out _))
-                            {
-                                Interlocked.Decrement(ref _aliveWorkerCount);
-                            }
-                            foreach (string asyncID in asyncIDList)
-                            {
-                                if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
-                                {
-                                    asyncWork.Dispose();
-                                }
-                            }
-                        }
+                        TryRemoveAsyncWork(id, true);
                         work.Dispose();
 
                         CheckPoolIdle();
@@ -421,21 +407,7 @@ namespace PowerThreadPool
 
                 if (removeAfterFetch)
                 {
-                    if (_asyncWorkIDDict.TryRemove(work.ID, out ConcurrentSet<string> asyncIDList))
-                    {
-                        Interlocked.Decrement(ref _asyncWorkCount);
-                        if (_aliveWorkDic.TryRemove(work.ID, out _))
-                        {
-                            Interlocked.Decrement(ref _aliveWorkerCount);
-                        }
-                        foreach (string asyncID in asyncIDList)
-                        {
-                            if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
-                            {
-                                asyncWork.Dispose();
-                            }
-                        }
-                    }
+                    TryRemoveAsyncWork(work.ID, true);
                     _resultDic.TryRemove(work.ID, out _);
                     if (_aliveWorkDic.TryRemove(work.ID, out _))
                     {
@@ -855,10 +827,7 @@ namespace PowerThreadPool
 
             if (res)
             {
-                if (_asyncWorkIDDict.TryRemove(id, out _))
-                {
-                    Interlocked.Decrement(ref _asyncWorkCount);
-                }
+                TryRemoveAsyncWork(id, false);
             }
 
             return res;
