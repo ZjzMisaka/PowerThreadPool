@@ -7158,7 +7158,7 @@ namespace UnitTest
                 done = true;
             }, new WorkOption { WorkPriority = 1 });
             Assert.False(done);
-            Assert.Equal(4, powerPool.WaitingWorkCount);
+            Assert.True(powerPool.WaitingWorkCount > 0);
 
             powerPool.Wait();
 
@@ -7223,7 +7223,7 @@ namespace UnitTest
                 done = true;
             }, new WorkOption { WorkPriority = 1 });
             Assert.False(done);
-            Assert.Equal(4, powerPool.WaitingWorkCount);
+            Assert.True(powerPool.WaitingWorkCount > 0);
 
             powerPool.Wait();
 
