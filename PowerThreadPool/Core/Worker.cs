@@ -772,7 +772,10 @@ namespace PowerThreadPool
             }
             if (_waitingWorkDic.TryRemove(id, out WorkBase work))
             {
-                _powerPool.TryRemoveAsyncWork(id, false);
+                if (work.BaseAsyncWorkID != null)
+                {
+                    _powerPool.TryRemoveAsyncWork(id, false);
+                }
 
                 ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
                 executeResult.ID = id;

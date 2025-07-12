@@ -343,7 +343,10 @@ namespace PowerThreadPool
                     ExecuteResult<TResult> res = work.Fetch<TResult>();
                     if (removeAfterFetch)
                     {
-                        TryRemoveAsyncWork(id, true);
+                        if (work.BaseAsyncWorkID != null)
+                        {
+                            TryRemoveAsyncWork(id, true);
+                        }
                         work.Dispose();
 
                         CheckPoolIdle();
@@ -407,7 +410,10 @@ namespace PowerThreadPool
 
                 if (removeAfterFetch)
                 {
-                    TryRemoveAsyncWork(work.ID, true);
+                    if (work.BaseAsyncWorkID != null)
+                    {
+                        TryRemoveAsyncWork(work.ID, true);
+                    }
                     _resultDic.TryRemove(work.ID, out _);
                     if (_aliveWorkDic.TryRemove(work.ID, out _))
                     {
