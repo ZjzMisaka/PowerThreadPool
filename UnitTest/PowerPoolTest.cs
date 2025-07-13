@@ -7339,7 +7339,211 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestRejectDiscardOldestPolicyDiscardAsyncWork()
+        public void TestRejectDiscardOldestPolicyDiscardAsyncWork1()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 1,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.DiscardOldestPolicy,
+                    ThreadQueueLimit = 2,
+                }
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            int doneCount = 0;
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await Task.Delay(10);
+                }
+
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await Task.Delay(10);
+                }
+
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await Task.Delay(10);
+                }
+
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, doneCount);
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestRejectDiscardOldestPolicyDiscardAsyncWork2()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 1,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.DiscardOldestPolicy,
+                    ThreadQueueLimit = 2,
+                }
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            int doneCount = 0;
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await Task.Delay(10);
+                }
+
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await Task.Delay(10);
+                }
+
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await Task.Delay(10);
+                }
+
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, doneCount);
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestRejectDiscardOldestPolicyDiscardAsyncWork3()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 1,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.DiscardOldestPolicy,
+                    ThreadQueueLimit = 2,
+                }
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            int doneCount = 0;
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await Task.Delay(10);
+                }
+
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await Task.Delay(10);
+                }
+
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await Task.Delay(10);
+                }
+
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, doneCount);
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestRejectDiscardOldestPolicyDiscardAsyncWork4()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 1,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.DiscardOldestPolicy,
+                    ThreadQueueLimit = 2,
+                }
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            int doneCount = 0;
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await Task.Delay(10);
+                }
+
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await Task.Delay(10);
+                }
+
+                Interlocked.Increment(ref doneCount);
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await Task.Delay(10);
+                }
+
+                Interlocked.Increment(ref doneCount);
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, doneCount);
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestRejectDiscardOldestPolicyDiscardAsyncWork5()
         {
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {

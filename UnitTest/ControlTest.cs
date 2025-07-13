@@ -1376,6 +1376,85 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestCancelByIDHasWorkGroup()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
+            List<long> logList = new List<long>();
+            string cid = "";
+            string eid = "";
+            DateTime queueTime = DateTime.MaxValue;
+            DateTime startTime = DateTime.MaxValue;
+            DateTime endTime = DateTime.MaxValue;
+            powerPool.WorkCanceled += (s, e) =>
+            {
+                eid = e.ID;
+                queueTime = e.QueueDateTime;
+                startTime = e.StartDateTime;
+                endTime = e.EndDateTime;
+            };
+            WorkOption<long> workOption = new WorkOption<long>
+            {
+                Group = "1",
+                ShouldStoreResult = true,
+                Callback = (res) =>
+                {
+                    if (res.Status == Status.Succeed)
+                    {
+                        logList.Add(res.Result);
+                    }
+                    else if (res.Status == Status.Canceled)
+                    {
+                        cid = res.ID;
+                    }
+                }
+            };
+            powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+                return GetNowSs() - start;
+            }, workOption);
+            Thread.Sleep(100);
+            powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+                return GetNowSs() - start;
+            }, workOption);
+            Thread.Sleep(100);
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                for (int i = 0; i < 100; ++i)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(10);
+                }
+                return GetNowSs() - start;
+            }, workOption);
+
+            powerPool.Cancel(id);
+            powerPool.Wait();
+
+            Assert.NotEqual(queueTime, DateTime.MinValue.ToLocalTime());
+            Assert.Equal(startTime, DateTime.MinValue.ToLocalTime());
+            Assert.NotEqual(endTime, DateTime.MinValue.ToLocalTime());
+            Assert.Equal(id, cid);
+            Assert.Equal(id, eid);
+            Assert.Equal(2, logList.Count);
+        }
+
+        [Fact]
         public void TestCancelByIDSuspended()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
