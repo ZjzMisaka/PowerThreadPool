@@ -8,6 +8,15 @@
   "commitConvention": "angular",
   "contributors": [
     {
+      "login": "dlnn",
+      "name": "一条咸鱼",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22004270?v=4",
+      "profile": "https://github.com/dlnn",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
       "login": "ZjzMisaka",
       "name": "ZjzMisaka",
       "avatar_url": "https://avatars.githubusercontent.com/u/16731853?v=4",
