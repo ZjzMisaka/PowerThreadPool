@@ -10,7 +10,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/zjzmisaka/powerthreadpool/badge?style=for-the-badge)](https://www.codefactor.io/repository/github/zjzmisaka/powerthreadpool)
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 A comprehensive and efficient lock-free thread pool with granular work control, flexible concurrency, and robust error handling, alongside an easy-to-use API for diverse work submissions.  
@@ -122,6 +122,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/ZjzMisaka"><img src="https://avatars.githubusercontent.com/u/16731853?v=4?s=100" width="100px;" alt="ZjzMisaka"/><br /><sub><b>ZjzMisaka</b></sub></a><br /><a href="https://github.com/ZjzMisaka/PowerThreadPool/commits?author=ZjzMisaka" title="Code">💻</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/r00tee"><img src="https://avatars.githubusercontent.com/u/32619657?v=4?s=100" width="100px;" alt="r00tee"/><br /><sub><b>r00tee</b></sub></a><br /><a href="#ideas-r00tee" title="Ideas, Planning, & Feedback">🤔</a></td>
       <td align="center" valign="top" width="14.28%"><a href="https://github.com/aadog"><img src="https://avatars.githubusercontent.com/u/18098725?v=4?s=100" width="100px;" alt="aadog"/><br /><sub><b>aadog</b></sub></a><br /><a href="https://github.com/ZjzMisaka/PowerThreadPool/issues?q=author%3Aaadog" title="Bug reports">🐛</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/RookieZWH"><img src="https://avatars.githubusercontent.com/u/17580767?v=4?s=100" width="100px;" alt="RookieZWH"/><br /><sub><b>RookieZWH</b></sub></a><br /><a href="#question-RookieZWH" title="Answering Questions">💬</a></td>
     </tr>
   </tbody>
 </table>
