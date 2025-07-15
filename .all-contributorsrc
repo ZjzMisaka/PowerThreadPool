@@ -33,6 +33,15 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "aadog",
+      "name": "aadog",
+      "avatar_url": "https://avatars.githubusercontent.com/u/18098725?v=4",
+      "profile": "https://github.com/aadog",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
