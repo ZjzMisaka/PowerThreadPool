@@ -170,12 +170,12 @@ namespace PowerThreadPool
                 {
                     if (_powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork) && !asyncBaseWork.ShouldStoreResult)
                     {
-                        _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true);
                         if (asyncBaseWork.WaitSignal != null)
                         {
                             asyncBaseWork.WaitSignal.Set();
                             asyncBaseWork.Dispose();
                         }
+                        _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true);
                     }
                 }
             }

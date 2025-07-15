@@ -343,13 +343,7 @@ namespace PowerThreadPool
                     ExecuteResult<TResult> res = work.Fetch<TResult>();
                     if (removeAfterFetch)
                     {
-                        if (work.BaseAsyncWorkID != null)
-                        {
-                            TryRemoveAsyncWork(id, true);
-                        }
-                        work.Dispose();
-
-                        CheckPoolIdle();
+                        RemoveAfterFetch(work);
                     }
                     return res;
                 }
@@ -410,21 +404,7 @@ namespace PowerThreadPool
 
                 if (removeAfterFetch)
                 {
-                    if (work.BaseAsyncWorkID != null)
-                    {
-                        TryRemoveAsyncWork(work.ID, true);
-                    }
-                    _resultDic.TryRemove(work.ID, out _);
-                    if (_aliveWorkDic.TryRemove(work.ID, out _))
-                    {
-                        if (work.Group != null)
-                        {
-                            RemoveWorkFromGroup(work.Group, work);
-                        }
-                        work.Dispose();
-                    }
-
-                    CheckPoolIdle();
+                    RemoveAfterFetch(work);
                 }
             }
 
@@ -857,6 +837,26 @@ namespace PowerThreadPool
             }
 
             return failedIDList;
+        }
+
+        private void RemoveAfterFetch(WorkBase work)
+        {
+            if (work.BaseAsyncWorkID != null)
+            {
+                TryRemoveAsyncWork(work.ID, true);
+            }
+            else if (_aliveWorkDic.TryRemove(work.ID, out _))
+            {
+                if (work.Group != null)
+                {
+                    RemoveWorkFromGroup(work.Group, work);
+                }
+                work.Dispose();
+            }
+
+            _resultDic.TryRemove(work.ID, out _);
+
+            CheckPoolIdle();
         }
     }
 }
