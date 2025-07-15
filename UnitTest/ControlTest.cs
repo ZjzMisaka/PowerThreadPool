@@ -2131,6 +2131,30 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestFetchByIDRemoveAfterFetchNeedWait()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = true });
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "1";
+            }, new WorkOption()
+            {
+                ShouldStoreResult = true
+            });
+
+            ExecuteResult<string> res = powerPool.Fetch<string>(id, true);
+            Assert.Equal("1", res.Result);
+
+            res = powerPool.Fetch<string>(id, true);
+            Assert.Null(res.Result);
+
+            powerPool.Wait();
+        }
+
+        [Fact]
         public void TestFetchObjByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
