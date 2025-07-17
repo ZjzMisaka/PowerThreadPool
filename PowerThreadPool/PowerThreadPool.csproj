@@ -15,6 +15,11 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>icon.png</PackageIcon>
+    
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
   <ItemGroup>
