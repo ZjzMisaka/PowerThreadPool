@@ -44,6 +44,10 @@ jobs:
             dotnet nuget push $pkg.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
           }
 
+      - name: Wait for NuGet.org validation
+        run: Start-Sleep -Seconds 600
+        shell: pwsh
+
       - name: Publish Symbol Package (.snupkg)
         run: |
           $snupkg = Get-ChildItem -Recurse -Filter "*.snupkg"
