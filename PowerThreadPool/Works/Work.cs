@@ -123,7 +123,9 @@ namespace PowerThreadPool.Works
 
             if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<string> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
             {
-                return (lastWork as Work<T>).ExecuteResult.ToTypedResult<T>();
+                Work<T> lastWorkT = lastWork as Work<T>;
+                Spinner.Start(() => lastWorkT.ExecuteResult != null);
+                return lastWorkT.ExecuteResult.ToTypedResult<T>();
             }
             else
             {
