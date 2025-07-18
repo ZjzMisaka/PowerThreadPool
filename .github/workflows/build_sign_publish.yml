@@ -28,8 +28,8 @@ jobs:
         run: |
           $version = "${GITHUB_REF#refs/tags/v}"
           $projFile = "PowerThreadPool/PowerThreadPool.csproj"
-          dotnet build $projFile -c Release /p:SignAssembly=true /p:AssemblyOriginatorKeyFile=../PowerThreadPool.snk
-          dotnet pack $projFile -c Release /p:Version=$version /p:SignAssembly=true /p:AssemblyOriginatorKeyFile=../PowerThreadPool.snk
+          dotnet build $projFile -c Release
+          dotnet pack $projFile -c Release /p:Version=$version
 
       - name: Publish NuGet Package (.nupkg)
         run: |
