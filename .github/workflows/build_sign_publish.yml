@@ -17,7 +17,9 @@ jobs:
 
       - name: Restore .snk file from secret
         run: |
-          echo "${{ secrets.SNK_BASE64 }}" | base64 -d > PowerThreadPool.snk
+          $base64 = "${{ secrets.SNK_BASE64 }}"
+          [IO.File]::WriteAllBytes("PowerThreadPool.snk", [Convert]::FromBase64String($base64))
+        shell: pwsh
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
