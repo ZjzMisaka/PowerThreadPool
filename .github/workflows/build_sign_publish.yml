@@ -29,12 +29,13 @@ jobs:
       - name: Setup NuGet.exe
         uses: nuget/setup-nuget@v2.0.1
 
-      - name: Build, Pack and Sign
+      - name: Pack and Sign
         run: |
-          $version = "${GITHUB_REF#refs/tags/v}"
+          $ref = $env:GITHUB_REF
+          $version = $ref -replace 'refs/tags/v',''
           $projFile = "PowerThreadPool/PowerThreadPool.csproj"
-          dotnet build $projFile -c Release
           dotnet pack $projFile -c Release /p:Version=$version
+        shell: pwsh
 
       - name: Publish NuGet Package (.nupkg)
         run: |
