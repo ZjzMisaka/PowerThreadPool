@@ -1,0 +1,46 @@
+name: Build, Sign and Publish NuGet Package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-sign-publish:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore .snk file from secret
+        run: |
+          [System.Convert]::FromBase64String("${{ secrets.SNK_BASE64 }}") | Set-Content -Encoding Byte PowerThreadPool.snk
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup NuGet.exe
+        uses: nuget/setup-nuget@v2.0.1
+
+      - name: Build, Pack and Sign
+        run: |
+          $version = "${GITHUB_REF#refs/tags/v}"
+          $projFile = "PowerThreadPool/PowerThreadPool.csproj"
+          dotnet build $projFile -c Release /p:SignAssembly=true /p:AssemblyOriginatorKeyFile=../PowerThreadPool.snk
+          dotnet pack $projFile -c Release /p:Version=$version /p:SignAssembly=true /p:AssemblyOriginatorKeyFile=../PowerThreadPool.snk
+
+      - name: Publish NuGet Package (.nupkg)
+        run: |
+          $nupkg = Get-ChildItem -Recurse -Filter "*.nupkg" | Where-Object { $_.Name -notlike "*.symbols.nupkg" }
+          foreach ($pkg in $nupkg) {
+            dotnet nuget push $pkg.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+          }
+
+      - name: Publish Symbol Package (.snupkg)
+        run: |
+          $snupkg = Get-ChildItem -Recurse -Filter "*.snupkg"
+          foreach ($pkg in $snupkg) {
+            dotnet nuget push $pkg.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --symbol-source https://api.nuget.org/v3/index.json
+          }
