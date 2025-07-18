@@ -14,7 +14,7 @@ jobs:
 
       - name: Restore .snk file from secret
         run: |
-          [System.Convert]::FromBase64String("${{ secrets.SNK_BASE64 }}") | Set-Content -Encoding Byte PowerThreadPool.snk
+          echo "${{ secrets.SNK_BASE64 }}" | base64 -d > PowerThreadPool.snk
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
@@ -28,8 +28,8 @@ jobs:
         run: |
           $version = "${GITHUB_REF#refs/tags/v}"
           $projFile = "PowerThreadPool/PowerThreadPool.csproj"
-          dotnet build $projFile -c Release /p:SignAssembly=true /p:AssemblyOriginatorKeyFile=../PowerThreadPool.snk
-          dotnet pack $projFile -c Release /p:Version=$version /p:SignAssembly=true /p:AssemblyOriginatorKeyFile=../PowerThreadPool.snk
+          dotnet build $projFile -c Release
+          dotnet pack $projFile -c Release /p:Version=$version
 
       - name: Publish NuGet Package (.nupkg)
         run: |
