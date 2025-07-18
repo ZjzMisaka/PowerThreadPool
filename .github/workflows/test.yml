@@ -20,7 +20,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Restore .snk file from secret
       run: |
-        [System.Convert]::FromBase64String("${{ secrets.SNK_BASE64 }}") | Set-Content -Encoding Byte PowerThreadPool.snk
+        echo "${{ secrets.SNK_BASE64 }}" | base64 -d > PowerThreadPool.snk
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
