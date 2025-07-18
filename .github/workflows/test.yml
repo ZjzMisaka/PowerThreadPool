@@ -36,6 +36,9 @@ jobs:
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
+      - name: Restore .snk file from secret
+        run: |
+          echo "${{ secrets.SNK_BASE64 }}" | base64 -d > PowerThreadPool.snk
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
