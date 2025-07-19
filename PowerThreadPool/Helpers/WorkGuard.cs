@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Works;
 
@@ -18,7 +17,6 @@ namespace PowerThreadPool.Helpers
         /// Used to ensure that the wrong Work will not be controlled when operating the Worker.
         /// </summary>
         /// <param name="work"></param>
-        /// <param name="isHoldWork">Ensure that the executing Work is not switched</param>
         /// <param name="needFreeze">Ensure that the target Work is not stolen</param>
         public WorkGuard(WorkBase work,
                             bool needFreeze)
