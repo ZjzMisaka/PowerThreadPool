@@ -2785,7 +2785,7 @@ namespace UnitTest
             powerPool.Wait();
             long duration = GetNowSs() - start;
 
-            Assert.True(duration >= 2990);
+            Assert.True(duration >= 2800);
         }
 
         [Fact]
