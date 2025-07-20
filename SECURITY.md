@@ -10,8 +10,9 @@ Upgrading to the latest version is always recommended. Fixes for previous vulner
 | Older   | :x:                |
 
 ### How to Report
-- **Issue Tracker**: Open an issue in the [GitHub repository](https://github.com/ZjzMisaka/PowerThreadPool/issues).
+- **Issue Tracker**: Open an [issue](https://github.com/ZjzMisaka/PowerThreadPool/issues).
 - **Email**: Send an email to [zjzmisaka@outlook.com](mailto:zjzmisaka@outlook.com).
+- **Discord**: Join our [discord](https://discord.gg/drhvZqvXTd).
 
 ### What to Expect After Reporting
 
