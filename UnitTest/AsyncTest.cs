@@ -1093,8 +1093,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
-                await Task.Delay(500);
-                powerPool.StopIfRequested();
+                await Task.Delay(10000);
                 return "100";
             },
             out Task<ExecuteResult<string>> task);
