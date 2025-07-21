@@ -15,7 +15,7 @@ using PowerThreadPool.Works;
 namespace PowerThreadPool
 {
     /// <summary>
-    /// A comprehensive and efficient lock-free thread pool with granular work control, flexible concurrency, and robust error handling, alongside an easy-to-use API for diverse work submissions.
+    /// A comprehensive and efficient lock-free thread pool with granular work control, flexible concurrency, robust error handling, and easy work management for both sync and async workloads.
     /// </summary>
     public partial class PowerPool : IDisposable
     {
