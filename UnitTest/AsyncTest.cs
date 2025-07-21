@@ -1094,23 +1094,25 @@ namespace UnitTest
         }
 
         [Fact]
-        public async Task TestTaskAwaitForceStop()
+        public async void TestTaskAwaitForceStop()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
-                await Task.Delay(100);
                 Thread.Sleep(100);
                 await Task.Delay(100);
                 Thread.Sleep(100);
                 await Task.Delay(100);
                 Thread.Sleep(100);
+                await Task.Delay(100);
+                Thread.Sleep(100);
+                await Task.Delay(100);
                 return "100";
             },
             out Task<ExecuteResult<string>> task);
-            powerPool.Stop(id, true);
+            powerPool.Stop(true);
 
             await Assert.ThrowsAsync<TaskCanceledException>(async () => { await task; });
         }
