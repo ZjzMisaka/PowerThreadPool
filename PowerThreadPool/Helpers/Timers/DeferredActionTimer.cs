@@ -94,5 +94,4 @@ namespace PowerThreadPool.Helpers.Timers
             _stopwatch.Stop();
         }
     }
-
 }
