@@ -144,23 +144,17 @@ namespace PowerThreadPool
                     }
                     if (Work.BaseAsyncWorkID != null)
                     {
-                        if (executeResult.Status == Status.Stopped)
+                        if (_powerPool._tcsDict.TryRemove(Work.RealWorkID, out ITaskCompletionSource tcs))
                         {
-                            if (_powerPool._tcsDict.TryRemove(Work.RealWorkID, out ITaskCompletionSource tcs))
+                            if (executeResult.Status == Status.Stopped)
                             {
                                 tcs.SetCanceled();
                             }
-                        }
-                        else if (executeResult.Status == Status.Failed)
-                        {
-                            if (_powerPool._tcsDict.TryRemove(Work.RealWorkID, out ITaskCompletionSource tcs))
+                            else if (executeResult.Status == Status.Failed)
                             {
                                 tcs.SetException(executeResult.Exception);
                             }
-                        }
-                        else
-                        {
-                            if (_powerPool._tcsDict.TryRemove(Work.RealWorkID, out ITaskCompletionSource tcs))
+                            else
                             {
                                 tcs.SetResult(executeResult);
                             }
