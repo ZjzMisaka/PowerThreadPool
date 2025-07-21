@@ -343,9 +343,11 @@ namespace UnitTest
             {
                 p = "1";
                 await Task.Delay(1000);
+                Thread.Sleep(200);
                 l = "2";
                 powerPool.StopIfRequested();
                 await Task.Delay(100);
+                Thread.Sleep(200);
                 c = "3";
                 return "100";
             }, (res) =>
@@ -746,11 +748,17 @@ namespace UnitTest
                 {
                     string id = powerPool.QueueWorkItemAsync(async () =>
                     {
+                        Thread.Sleep(200);
                         await Task.Delay(200);
+                        Thread.Sleep(200);
                         await Task.Delay(200);
+                        Thread.Sleep(200);
                         await Task.Delay(200);
+                        Thread.Sleep(200);
                         await Task.Delay(200);
+                        Thread.Sleep(200);
                         await Task.Delay(200);
+                        Thread.Sleep(200);
                         await Task.Delay(200);
                     });
                     if (id == null)
@@ -1086,18 +1094,23 @@ namespace UnitTest
         }
 
         [Fact]
-        public async void TestTaskAwaitForceStop()
+        public async Task TestTaskAwaitForceStop()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
             string id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
-                await Task.Delay(10000);
+                await Task.Delay(100);
+                Thread.Sleep(100);
+                await Task.Delay(100);
+                Thread.Sleep(100);
+                await Task.Delay(100);
+                Thread.Sleep(100);
                 return "100";
             },
             out Task<ExecuteResult<string>> task);
-            powerPool.Stop(true);
+            powerPool.Stop(id, true);
 
             await Assert.ThrowsAsync<TaskCanceledException>(async () => { await task; });
         }
