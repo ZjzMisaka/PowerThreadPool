@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 #endif
 using System.Threading;
 
-namespace PowerThreadPool.Helpers
+namespace PowerThreadPool.Helpers.LockFree
 {
     /// <summary>
     /// Provide support for lock-free algorithms.

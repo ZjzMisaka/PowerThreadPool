@@ -6,7 +6,7 @@ using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
 using PowerThreadPool.Exceptions;
 using PowerThreadPool.Groups;
-using PowerThreadPool.Helpers;
+using PowerThreadPool.Helpers.LockFree;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;

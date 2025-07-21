@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using PowerThreadPool.Constants;
-using PowerThreadPool.Helpers;
+using PowerThreadPool.Helpers.LockFree;
 using Xunit.Abstractions;
 
 namespace UnitTest

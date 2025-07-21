@@ -1,7 +1,8 @@
 ﻿using System.Reflection;
 using PowerThreadPool;
 #if DEBUG
-using PowerThreadPool.Helpers;
+using PowerThreadPool.Helpers.LockFree;
+
 #endif
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
