@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reflection;
+using PowerThreadPool.Helpers.Timers;
 using Xunit.Abstractions;
 
 namespace UnitTest

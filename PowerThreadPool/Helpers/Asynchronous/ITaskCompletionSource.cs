@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace PowerThreadPool.Helpers
+namespace PowerThreadPool.Helpers.Asynchronous
 {
     internal interface ITaskCompletionSource
     {

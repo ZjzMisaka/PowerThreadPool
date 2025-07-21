@@ -8,7 +8,7 @@ using PowerThreadPool.Results;
 using PowerThreadPool.Works;
 using static PowerThreadPool.PowerPool;
 
-namespace PowerThreadPool.Helpers
+namespace PowerThreadPool.Helpers.Dependency
 {
     internal class WorkDependencyController
     {
@@ -19,7 +19,7 @@ namespace PowerThreadPool.Helpers
 
         internal WorkDependencyController(PowerPool powerPool)
         {
-            this._powerPool = powerPool;
+            _powerPool = powerPool;
         }
 
         internal void Register(WorkBase work, ConcurrentSet<string> dependents)

@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 #endif
 using System.Threading;
 
-namespace PowerThreadPool.Helpers
+namespace PowerThreadPool.Helpers.LockFree
 {
     // Spinner usage guidelines:
     // Before using spinning, you must ensure in tests that the spin duration in Ticks is less than 5000.

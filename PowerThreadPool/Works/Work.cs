@@ -2,7 +2,7 @@
 using System.Threading;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
-using PowerThreadPool.Helpers;
+using PowerThreadPool.Helpers.LockFree;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 

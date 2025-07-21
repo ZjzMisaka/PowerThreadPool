@@ -2,7 +2,7 @@
 using PowerThreadPool.Constants;
 using PowerThreadPool.Works;
 
-namespace PowerThreadPool.Helpers
+namespace PowerThreadPool.Helpers.LockFree
 {
     /// <summary>
     /// Used to ensure that the wrong Work will not be controlled when operating the Worker.

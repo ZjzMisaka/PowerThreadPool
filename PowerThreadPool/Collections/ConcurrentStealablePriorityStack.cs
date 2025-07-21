@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using PowerThreadPool.Constants;
-using PowerThreadPool.Helpers;
+using PowerThreadPool.Helpers.LockFree;
 
 namespace PowerThreadPool.Collections
 {

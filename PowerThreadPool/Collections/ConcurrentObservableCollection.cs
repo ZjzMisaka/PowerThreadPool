@@ -2,7 +2,7 @@
 using System.Collections.Concurrent;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Groups;
-using PowerThreadPool.Helpers;
+using PowerThreadPool.Helpers.LockFree;
 
 public class ConcurrentObservableCollection<T>
 {
