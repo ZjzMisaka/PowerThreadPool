@@ -142,6 +142,24 @@ namespace PowerThreadPool
                     {
                         _powerPool.InvokeWorkEndedEvent(executeResult);
                     }
+                    if (Work.BaseAsyncWorkID != null)
+                    {
+                        if (_powerPool._tcsDict.TryRemove(Work.RealWorkID, out ITaskCompletionSource tcs))
+                        {
+                            if (executeResult.Status == Status.Stopped)
+                            {
+                                tcs.SetCanceled();
+                            }
+                            else if (executeResult.Status == Status.Failed)
+                            {
+                                tcs.SetException(executeResult.Exception);
+                            }
+                            else
+                            {
+                                tcs.SetResult(executeResult);
+                            }
+                        }
+                    }
                     Work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
                 }
             } while (Work.ShouldImmediateRetry(executeResult));
@@ -212,6 +230,11 @@ namespace PowerThreadPool
             if (Work.BaseAsyncWorkID != null)
             {
                 _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true);
+
+                if (_powerPool._tcsDict.TryRemove(Work.RealWorkID, out ITaskCompletionSource tcs))
+                {
+                    tcs.SetCanceled();
+                }
             }
 
             ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
@@ -775,6 +798,11 @@ namespace PowerThreadPool
                 if (work.BaseAsyncWorkID != null)
                 {
                     _powerPool.TryRemoveAsyncWork(id, false);
+
+                    if (_powerPool._tcsDict.TryRemove(work.RealWorkID, out ITaskCompletionSource tcs))
+                    {
+                        tcs.SetCanceled();
+                    }
                 }
 
                 ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);

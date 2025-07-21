@@ -1031,6 +1031,121 @@ namespace UnitTest
             Assert.Empty(powerPool.GetGroupMemberList("AAA"));
         }
 
+        [Fact]
+        public async void TestTaskAwaitDoneeWithResult()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                await Task.Delay(500);
+                return "100";
+            },
+            out Task<ExecuteResult<string>> task);
+            ExecuteResult<string> res = await task;
+
+            Assert.Equal("100", res.Result);
+        }
+
+        [Fact]
+        public async void TestTaskAwaitDoneWithoutResult()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int res = 0;
+
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(500);
+                res = 100;
+            },
+            out Task task);
+            await task;
+
+            Assert.Equal(100, res);
+        }
+
+        [Fact]
+        public async void TestTaskAwaitStop()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                await Task.Delay(500);
+                powerPool.StopIfRequested();
+                return "100";
+            },
+            out Task<ExecuteResult<string>> task);
+            powerPool.Stop();
+
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => { await task; });
+        }
+
+        [Fact]
+        public async void TestTaskAwaitForceStop()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                await Task.Delay(500);
+                powerPool.StopIfRequested();
+                return "100";
+            },
+            out Task<ExecuteResult<string>> task);
+            powerPool.Stop(true);
+
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => { await task; });
+        }
+
+        [Fact]
+        public async void TestTaskAwaitCancel()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1 });
+            string fid = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(100);
+                    powerPool.StopIfRequested();
+                }
+            });
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                await Task.Delay(500);
+                powerPool.StopIfRequested();
+                return "100";
+            },
+            out Task<ExecuteResult<string>> task);
+            powerPool.Cancel(id);
+            powerPool.Stop(fid);
+
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => { await task; });
+        }
+
+        [Fact]
+        public async void TestTaskAwaitError()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                await Task.Delay(500);
+                throw new AbandonedMutexException("AAAA");
+            },
+            out Task<ExecuteResult<string>> task);
+
+            await Assert.ThrowsAsync<AggregateException>(async () => { await task; });
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();

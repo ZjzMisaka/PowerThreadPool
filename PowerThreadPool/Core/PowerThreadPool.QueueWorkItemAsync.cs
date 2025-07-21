@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using PowerThreadPool.Collections;
+using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using PowerThreadPool.Utils;
@@ -62,8 +63,7 @@ namespace PowerThreadPool
         /// <returns></returns>
         public string QueueWorkItemAsync(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
         {
-            WorkOption workOption = new WorkOption { Callback = callBack };
-            return QueueWorkItemAsync(asyncFunc, workOption);
+            return QueueWorkItemAsync(asyncFunc, out _, callBack);
         }
 
         /// <summary>
@@ -74,20 +74,7 @@ namespace PowerThreadPool
         /// <returns></returns>
         public string QueueWorkItemAsync(Func<Task> asyncFunc, WorkOption option)
         {
-            PrepareAsyncWork(option);
-
-            return QueueWorkItem(() =>
-            {
-                SynchronizationContext prevCtx = SynchronizationContext.Current;
-                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, option);
-                SynchronizationContext.SetSynchronizationContext(ctx);
-
-                Task task = asyncFunc();
-                ThrowInnerIfNeeded(task);
-
-                ctx.SetTask(task);
-                RegisterCompletion(task, prevCtx, option.BaseAsyncWorkID);
-            }, option);
+            return QueueWorkItemAsync(asyncFunc, out _, option);
         }
 
         /// <summary>
@@ -99,8 +86,7 @@ namespace PowerThreadPool
         /// <returns></returns>
         public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
         {
-            WorkOption<TResult> workOption = new WorkOption<TResult> { Callback = callBack };
-            return QueueWorkItemAsync(asyncFunc, workOption);
+            return QueueWorkItemAsync<TResult>(asyncFunc, out _, callBack);
         }
 
         /// <summary>
@@ -113,22 +99,101 @@ namespace PowerThreadPool
         public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc,
                                                   WorkOption<TResult> option)
         {
+            return QueueWorkItemAsync<TResult>(asyncFunc, out _, option);
+        }
+
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <param name="asyncFunc"></param>
+        /// <param name="task"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
+        public string QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, Action<ExecuteResult<object>> callBack = null)
+        {
+            WorkOption workOption = new WorkOption { Callback = callBack };
+            return QueueWorkItemAsync(asyncFunc, out task, workOption);
+        }
+
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <param name="asyncFunc"></param>
+        /// <param name="task"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        public string QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, WorkOption option)
+        {
+            TaskCompletionSourceBox<ExecuteResult<object>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<object>>();
+            task = taskCompletionSource.Task;
+
             PrepareAsyncWork(option);
 
-            return QueueWorkItem(() =>
+            string id = QueueWorkItem(() =>
+            {
+                SynchronizationContext prevCtx = SynchronizationContext.Current;
+                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, option);
+                SynchronizationContext.SetSynchronizationContext(ctx);
+
+                Task taskFunc = asyncFunc();
+                ThrowInnerIfNeeded(taskFunc);
+
+                ctx.SetTask(taskFunc);
+                RegisterCompletion(taskFunc, prevCtx, option.BaseAsyncWorkID);
+            }, option);
+
+            _tcsDict[id] = taskCompletionSource;
+
+            return id;
+        }
+
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="task"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
+        public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, Action<ExecuteResult<TResult>> callBack = null)
+        {
+            WorkOption<TResult> workOption = new WorkOption<TResult> { Callback = callBack };
+            return QueueWorkItemAsync(asyncFunc, out task, workOption);
+        }
+
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="task"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, WorkOption<TResult> option)
+        {
+            TaskCompletionSourceBox<ExecuteResult<TResult>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<TResult>>();
+            task = taskCompletionSource.TypedTask;
+
+            PrepareAsyncWork(option);
+
+            string id = QueueWorkItem(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
                 PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, option);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
-                Task<TResult> task = asyncFunc();
-                ThrowInnerIfNeeded(task);
+                Task<TResult> taskFunc = asyncFunc();
+                ThrowInnerIfNeeded(taskFunc);
 
-                ctx.SetTask(task);
-                RegisterCompletion(task, prevCtx, option.BaseAsyncWorkID);
+                ctx.SetTask(taskFunc);
+                RegisterCompletion(taskFunc, prevCtx, option.BaseAsyncWorkID);
 
                 return default;
             }, option);
+
+            _tcsDict[id] = taskCompletionSource;
+
+            return id;
         }
     }
 }
