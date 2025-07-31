@@ -7592,5 +7592,21 @@ namespace UnitTest
 
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
+
+        [Fact]
+        public void TestRejectDiscardOldestPolicyDiscardAsyncWork6()
+        {
+            int count = 0;
+            while (true)
+            {
+                TestRejectDiscardOldestPolicyDiscardAsyncWork1();
+                TestRejectDiscardOldestPolicyDiscardAsyncWork2();
+                TestRejectDiscardOldestPolicyDiscardAsyncWork3();
+                TestRejectDiscardOldestPolicyDiscardAsyncWork4();
+                TestRejectDiscardOldestPolicyDiscardAsyncWork5();
+
+                Console.WriteLine(++count);
+            }
+        }
     }
 }
