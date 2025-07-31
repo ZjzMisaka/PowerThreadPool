@@ -232,8 +232,9 @@ namespace PowerThreadPool.Collections
             internal Operator(Node node1, Node node2, Node node3, out bool res)
             {
                 res = true;
-                
+
                 int loopCount = 0;
+
                 while (true)
                 {
                     if (node1 == null || node1._state.TrySet(DequeState.Updating, DequeState.Normal))
@@ -244,6 +245,7 @@ namespace PowerThreadPool.Collections
                     if (loopCount == 3)
                     {
                         res = false;
+                        Dispose();
                         return;
                     }
                 }
@@ -260,6 +262,7 @@ namespace PowerThreadPool.Collections
                     if (loopCount == 3)
                     {
                         res = false;
+                        Dispose();
                         return;
                     }
                 }
@@ -276,6 +279,7 @@ namespace PowerThreadPool.Collections
                     if (loopCount == 3)
                     {
                         res = false;
+                        Dispose();
                         return;
                     }
                 }
@@ -284,15 +288,15 @@ namespace PowerThreadPool.Collections
 
             public bool Check(Node node1, Node node2, Node node3)
             {
-                if (node1 != null && node1 != _node1)
+                if (node1 != null && (node1 != _node1 || (node1.Value != null && !node1.Value.Equals(_node1.Value))))
                 {
                     return false;
                 }
-                if (node2 != null && node2 != _node2)
+                if (node2 != null && (node2 != _node2 || (node2.Value != null && !node2.Value.Equals(_node2.Value))))
                 {
                     return false;
                 }
-                if (node3 != null && node3 != _node3)
+                if (node3 != null && (node3 != _node3 || (node3.Value != null && !node3.Value.Equals(_node3.Value))))
                 {
                     return false;
                 }
