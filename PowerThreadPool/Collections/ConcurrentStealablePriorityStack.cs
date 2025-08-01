@@ -129,9 +129,9 @@ namespace PowerThreadPool.Collections
         {
             var newNode = new Node(item);
         retry:
-            using (Operator op = new Operator(_tail, newNode, null, out bool res))
+            using (Operator op = new Operator(_tail, newNode, null))
             {
-                if (!res || !op.Check(_tail, newNode, null))
+                if (!op.Check(_tail, newNode, null))
                 {
                     goto retry;
                 }
@@ -146,9 +146,9 @@ namespace PowerThreadPool.Collections
         {
             item = default;
         retry:
-            using (Operator op = new Operator(_tail, _tail.Prev, null, out bool res))
+            using (Operator op = new Operator(_tail, _tail.Prev, null))
             {
-                if (!res || !op.Check(_tail, _tail.Prev, null))
+                if (!op.Check(_tail, _tail.Prev, null))
                 {
                     goto retry;
                 }
@@ -173,9 +173,9 @@ namespace PowerThreadPool.Collections
         {
             item = default;
         retry:
-            using (Operator op = new Operator(_head, _head.Next, _head.Next?.Next, out bool res))
+            using (Operator op = new Operator(_head, _head.Next, _head.Next?.Next))
             {
-                if (!res || !op.Check(_head, _head.Next, _head.Next?.Next))
+                if (!op.Check(_head, _head.Next, _head.Next?.Next))
                 {
                     goto retry;
                 }
@@ -229,61 +229,34 @@ namespace PowerThreadPool.Collections
             private Node _node1;
             private Node _node2;
             private Node _node3;
-            internal Operator(Node node1, Node node2, Node node3, out bool res)
+            internal Operator(Node node1, Node node2, Node node3)
             {
-                res = true;
-
-                int loopCount = 0;
-
-                while (true)
-                {
-                    if (node1 == null || node1._state.TrySet(DequeState.Updating, DequeState.Normal))
-                    {
-                        break;
-                    }
-                    ++loopCount;
-                    if (loopCount == 3)
-                    {
-                        res = false;
-                        Dispose();
-                        return;
-                    }
-                }
                 _node1 = node1;
-
-                loopCount = 0;
-                while (true)
-                {
-                    if (node2 == null || node2._state.TrySet(DequeState.Updating, DequeState.Normal))
-                    {
-                        break;
-                    }
-                    ++loopCount;
-                    if (loopCount == 3)
-                    {
-                        res = false;
-                        Dispose();
-                        return;
-                    }
-                }
                 _node2 = node2;
+                _node3 = node3;
 
-                loopCount = 0;
-                while (true)
+                var nodesToLock = new List<Node>();
+                if (node1 != null)
                 {
-                    if (node3 == null || node3._state.TrySet(DequeState.Updating, DequeState.Normal))
+                    nodesToLock.Add(node1);
+                }
+                if (node2 != null)
+                {
+                    nodesToLock.Add(node2);
+                }
+                if (node3 != null)
+                {
+                    nodesToLock.Add(node3);
+                }
+
+                nodesToLock.Sort((a, b) => a.GetHashCode().CompareTo(b.GetHashCode()));
+
+                foreach (var node in nodesToLock)
+                {
+                    while (!node._state.TrySet(DequeState.Updating, DequeState.Normal))
                     {
-                        break;
-                    }
-                    ++loopCount;
-                    if (loopCount == 3)
-                    {
-                        res = false;
-                        Dispose();
-                        return;
                     }
                 }
-                _node3 = node3;
             }
 
             public bool Check(Node node1, Node node2, Node node3)
