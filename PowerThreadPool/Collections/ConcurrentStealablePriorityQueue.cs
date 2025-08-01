@@ -7,19 +7,19 @@ namespace PowerThreadPool.Collections
 {
     internal class ConcurrentStealablePriorityQueue<T> : IStealablePriorityCollection<T>
     {
-        private readonly ConcurrentDictionary<int, LockFreeDeque<T>> _queueDic;
+        private readonly ConcurrentDictionary<int, ConcurrentDeque<T>> _queueDic;
         private List<int> _sortedPriorityList;
         private InterlockedFlag<CanInsertPriority> _canInsertPriority = CanInsertPriority.Allowed;
 
         internal ConcurrentStealablePriorityQueue()
         {
-            _queueDic = new ConcurrentDictionary<int, LockFreeDeque<T>>();
+            _queueDic = new ConcurrentDictionary<int, ConcurrentDeque<T>>();
             _sortedPriorityList = new List<int>();
         }
 
         public void Set(T item, int priority)
         {
-            LockFreeDeque<T> deque = _queueDic.GetOrAdd(priority, _ =>
+            ConcurrentDeque<T> deque = _queueDic.GetOrAdd(priority, _ =>
             {
 #if DEBUG
                 Spinner.Start(() => _canInsertPriority.TrySet(CanInsertPriority.NotAllowed, CanInsertPriority.Allowed));
@@ -48,7 +48,7 @@ namespace PowerThreadPool.Collections
                     _sortedPriorityList.Add(priority);
                 }
                 _canInsertPriority = CanInsertPriority.Allowed;
-                return new LockFreeDeque<T>();
+                return new ConcurrentDeque<T>();
             });
 
             deque.PushRight(item);
@@ -61,7 +61,7 @@ namespace PowerThreadPool.Collections
             for (int i = 0; i < _sortedPriorityList.Count; ++i)
             {
                 int priority = _sortedPriorityList[i];
-                if (_queueDic.TryGetValue(priority, out LockFreeDeque<T> deque))
+                if (_queueDic.TryGetValue(priority, out ConcurrentDeque<T> deque))
                 {
                     if (deque.TryPopLeft(out item))
                     {
@@ -81,7 +81,7 @@ namespace PowerThreadPool.Collections
             for (int i = 0; i < _sortedPriorityList.Count; ++i)
             {
                 int priority = _sortedPriorityList[i];
-                if (_queueDic.TryGetValue(priority, out LockFreeDeque<T> deque))
+                if (_queueDic.TryGetValue(priority, out ConcurrentDeque<T> deque))
                 {
                     if (deque.TryPopRight(out item))
                     {
@@ -100,7 +100,7 @@ namespace PowerThreadPool.Collections
             for (int i = _sortedPriorityList.Count - 1; i >= 0; --i)
             {
                 int priority = _sortedPriorityList[i];
-                if (_queueDic.TryGetValue(priority, out LockFreeDeque<T> deque))
+                if (_queueDic.TryGetValue(priority, out ConcurrentDeque<T> deque))
                 {
                     if (deque.TryPopLeft(out item))
                     {
