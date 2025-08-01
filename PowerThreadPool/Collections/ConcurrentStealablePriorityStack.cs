@@ -145,6 +145,12 @@ namespace PowerThreadPool.Collections
         public bool TryPopRight(out T item)
         {
             item = default;
+
+            if (_tail == _head)
+            {
+                return false;
+            }
+
         retry:
             using (Operator op = new Operator(_tail, _tail.Prev, null))
             {
@@ -156,12 +162,6 @@ namespace PowerThreadPool.Collections
                 item = currentTail.Value;
 
                 _tail = currentTail.Prev;
-
-                if (_tail == null) // 只剩哨兵节点
-                {
-                    _tail = currentTail;
-                    return false;
-                }
 
                 _tail.Next = null;
 
