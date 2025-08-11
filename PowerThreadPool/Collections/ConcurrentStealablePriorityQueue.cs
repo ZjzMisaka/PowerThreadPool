@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers.LockFree;
 
@@ -7,15 +8,12 @@ namespace PowerThreadPool.Collections
 {
     internal class ConcurrentStealablePriorityQueue<T> : IStealablePriorityCollection<T>
     {
-        private readonly ConcurrentDictionary<int, ConcurrentQueue<T>> _queueDic;
-        private List<int> _sortedPriorityList;
-        private InterlockedFlag<CanInsertPriority> _canInsertPriority = CanInsertPriority.Allowed;
+        private readonly ConcurrentDictionary<int, ConcurrentQueue<T>> _queueDic
+            = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
 
-        internal ConcurrentStealablePriorityQueue()
-        {
-            _queueDic = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
-            _sortedPriorityList = new List<int>();
-        }
+        private volatile List<int> _sortedPriorityList = new List<int>();
+
+        private InterlockedFlag<CanInsertPriority> _canInsertPriority = CanInsertPriority.Allowed;
 
         public void Set(T item, int priority)
         {
@@ -30,25 +28,38 @@ namespace PowerThreadPool.Collections
                     {
                         break;
                     }
+                    Thread.Yield();
                 }
 #endif
-                bool inserted = false;
-                for (int i = 0; i < _sortedPriorityList.Count; ++i)
+                try
                 {
-                    int p = _sortedPriorityList[i];
-                    if (priority > p)
+                    List<int> oldList = _sortedPriorityList;
+                    List<int> newList = new List<int>(oldList.Count + 1);
+
+                    bool inserted = false;
+                    for (int i = 0; i < oldList.Count; ++i)
                     {
-                        _sortedPriorityList.Insert(i, priority);
-                        inserted = true;
-                        break;
+                        int p = oldList[i];
+                        if (!inserted && priority > p)
+                        {
+                            newList.Add(priority);
+                            inserted = true;
+                        }
+                        newList.Add(p);
                     }
+                    if (!inserted)
+                    {
+                        newList.Add(priority);
+                    }
+
+                    Interlocked.Exchange(ref _sortedPriorityList, newList);
+
+                    return new ConcurrentQueue<T>();
                 }
-                if (!inserted)
+                finally
                 {
-                    _sortedPriorityList.Add(priority);
+                    _canInsertPriority.InterlockedValue = CanInsertPriority.Allowed;
                 }
-                _canInsertPriority = CanInsertPriority.Allowed;
-                return new ConcurrentQueue<T>();
             });
 
             queue.Enqueue(item);
@@ -58,18 +69,15 @@ namespace PowerThreadPool.Collections
         {
             T item = default;
 
-            for (int i = 0; i < _sortedPriorityList.Count; ++i)
+            List<int> priorities = _sortedPriorityList;
+            for (int i = 0; i < priorities.Count; ++i)
             {
-                int priority = _sortedPriorityList[i];
-                if (_queueDic.TryGetValue(priority, out ConcurrentQueue<T> queue))
+                int pr = priorities[i];
+                if (_queueDic.TryGetValue(pr, out ConcurrentQueue<T> q) && q.TryDequeue(out item))
                 {
-                    if (queue.TryDequeue(out item))
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
-
             return item;
         }
 
@@ -79,15 +87,13 @@ namespace PowerThreadPool.Collections
         {
             T item = default;
 
-            for (int i = _sortedPriorityList.Count - 1; i >= 0; --i)
+            List<int> priorities = _sortedPriorityList;
+            for (int i = priorities.Count - 1; i >= 0; --i)
             {
-                int priority = _sortedPriorityList[i];
-                if (_queueDic.TryGetValue(priority, out ConcurrentQueue<T> queue))
+                int pr = priorities[i];
+                if (_queueDic.TryGetValue(pr, out ConcurrentQueue<T> q) && q.TryDequeue(out item))
                 {
-                    if (queue.TryDequeue(out item))
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
             return item;
