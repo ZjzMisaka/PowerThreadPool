@@ -76,10 +76,8 @@ namespace PowerThreadPool
                 {
                     _powerPoolOption.PowerPoolList.Remove(this);
                 }
-                else
-                {
-                    value.PowerPoolList.Add(this);
-                }
+
+                value.PowerPoolList.Add(this);
 
                 _powerPoolOption = value;
                 FillWorkerQueue();
