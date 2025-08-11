@@ -802,7 +802,6 @@ namespace PowerThreadPool
                 res = work.Cancel(true);
                 if (res && _aliveWorkDic.TryRemove(id, out _))
                 {
-                    Interlocked.Decrement(ref _aliveWorkerCount);
                     work.Dispose();
                 }
             }
