@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using PowerThreadPool.Collections;
+using PowerThreadPool.Constants;
 using PowerThreadPool.Exceptions;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;
@@ -46,7 +47,7 @@ namespace PowerThreadPool.Helpers.Dependency
                 {
                     if (PrecedingWorkNotSuccessfullyCompleted(dependedId))
                     {
-                        work.DependencyFailed = true;
+                        work._dependencyStatus.InterlockedValue = DependencyStatus.Failed;
                         _workDict.TryRemove(work.ID, out _);
                         _powerPool.WorkCallbackEnd(work, Status.Failed);
                         _powerPool.CheckPoolIdle();
@@ -126,27 +127,60 @@ namespace PowerThreadPool.Helpers.Dependency
 
         private void OnCallbackEnd(WorkBase endWork, Status status)
         {
-            foreach (WorkBase work in _workDict.Values)
-            {
-                string id = endWork.RealWorkID;
-                if (work.Dependents.Contains(id))
-                {
-                    if (status == Status.Failed || status == Status.Canceled)
-                    {
-                        work.DependencyFailed = true;
-                        Interlocked.Decrement(ref _powerPool._waitingWorkCount);
-                        _powerPool.CheckPoolIdle();
-                        return;
-                    }
+            string id = endWork.RealWorkID;
 
-                    if (work.Dependents.Remove(id))
+            if (status == Status.Failed || status == Status.Canceled)
+            {
+                Stack<string> stack = new Stack<string>();
+                HashSet<string> visited = new HashSet<string>();
+                List<WorkBase> newlyFailed = new List<WorkBase>();
+
+                stack.Push(id);
+                visited.Add(id);
+
+                while (stack.Count > 0)
+                {
+                    string failedId = stack.Pop();
+
+                    foreach (WorkBase work in _workDict.Values)
                     {
-                        if (work.Dependents.Count == 0)
+                        if (work._dependencyStatus.InterlockedValue == DependencyStatus.Normal &&
+                            work.Dependents.Contains(failedId))
                         {
-                            _powerPool.SetWork(work);
+                            if (work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
+                            {
+                                Interlocked.Decrement(ref _powerPool._waitingWorkCount);
+                                newlyFailed.Add(work);
+
+                                if (visited.Add(work.RealWorkID))
+                                {
+                                    stack.Push(work.RealWorkID);
+                                }
+                            }
                         }
                     }
                 }
+
+                _powerPool.CheckPoolIdle();
+                return;
+            }
+
+            List<WorkBase> readyList = new List<WorkBase>();
+            foreach (WorkBase work in _workDict.Values)
+            {
+                if (work.Dependents.Remove(id))
+                {
+                    if (work.Dependents.Count == 0 &&
+                        work._dependencyStatus.InterlockedValue == DependencyStatus.Normal)
+                    {
+                        readyList.Add(work);
+                    }
+                }
+            }
+
+            foreach (WorkBase work in readyList)
+            {
+                _powerPool.SetWork(work);
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using PowerThreadPool.Collections;
+using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
@@ -398,7 +399,7 @@ namespace PowerThreadPool
             Work<TResult> work = new Work<TResult>(this, workID, function, option);
 
             _workDependencyController.Register(work, option.Dependents);
-            if (work.DependencyFailed)
+            if (work._dependencyStatus.InterlockedValue == DependencyStatus.Failed)
             {
                 return workID;
             }
