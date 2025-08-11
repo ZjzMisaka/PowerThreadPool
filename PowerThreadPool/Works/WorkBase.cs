@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading;
 using PowerThreadPool.Collections;
+using PowerThreadPool.Constants;
+using PowerThreadPool.Helpers.LockFree;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 
@@ -35,10 +37,10 @@ namespace PowerThreadPool.Works
             get => _isPausing;
             set => _isPausing = value;
         }
+        internal InterlockedFlag<DependencyStatus> _dependencyStatus = DependencyStatus.Normal;
         internal Status Status { get; set; }
         internal AutoResetEvent WaitSignal { get; set; }
         internal bool ShouldStop { get; set; }
-        internal bool DependencyFailed { get; set; }
         internal ManualResetEvent PauseSignal { get; set; }
         /// <summary>
         /// Queue datetime (UTC).

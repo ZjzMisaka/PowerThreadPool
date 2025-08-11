@@ -7592,5 +7592,39 @@ namespace UnitTest
 
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
+
+        [Fact]
+        public void TestNestedDependenciesFailed()
+        {
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 2,
+                DestroyThreadOption = new DestroyThreadOption
+                {
+                    MinThreads = 1,
+                    KeepAliveTime = 0
+                }
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            string aID = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+                throw new InvalidOperationException("Fail A");
+            });
+
+            ConcurrentSet<string> deps1 = new ConcurrentSet<string>(); deps1.Add(aID);
+            ConcurrentSet<string> deps2 = new ConcurrentSet<string>(); deps2.Add(aID);
+
+            string b1ID = powerPool.QueueWorkItem(() => { },
+                new WorkOption { Dependents = deps1 });
+
+            string b2ID = powerPool.QueueWorkItem(() => { },
+                new WorkOption { Dependents = deps2 });
+
+            powerPool.Wait();
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
     }
 }
