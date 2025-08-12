@@ -345,10 +345,21 @@ namespace PowerThreadPool
             while (true)
             {
                 bool rejected = PowerPoolOption.RejectOption != null;
+                Worker currentWorker = null;
 
-                if ((worker = GetWorker(work.LongRunning, ref rejected)) != null)
+                if (work.WorkPlacementPolicy == WorkPlacementPolicy.PreferLocalWorker && _aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
+                {
+                    worker = currentWorker;
+                }
+
+                if ((worker == null) && (worker = GetWorker(work.LongRunning, work.WorkPlacementPolicy, ref rejected)) != null)
                 {
                     break;
+                }
+
+                if ((worker == null) && work.WorkPlacementPolicy == WorkPlacementPolicy.PreferIdleThenLocal && _aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
+                {
+                    worker = currentWorker;
                 }
 
                 if (rejected)
@@ -441,7 +452,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="longRunning"></param>
         /// <returns></returns>
-        private Worker GetWorker(bool longRunning, ref bool rejected)
+        private Worker GetWorker(bool longRunning, WorkPlacementPolicy workPlacementPolicy, ref bool rejected)
         {
             Worker worker = TryDequeueIdleWorker(longRunning);
             if (worker != null)
@@ -456,7 +467,7 @@ namespace PowerThreadPool
                 return worker;
             }
 
-            if (!longRunning)
+            if (workPlacementPolicy == WorkPlacementPolicy.PreferIdleThenLeastLoaded && !longRunning)
             {
                 worker = TrySelectExistingWorker(ref rejected);
             }

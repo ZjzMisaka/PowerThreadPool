@@ -124,6 +124,11 @@ namespace PowerThreadPool.Options
         /// </summary>
         public RejectOption RejectOption { get; set; } = null;
 
+        /// <summary>
+        /// If true, the thread pool will only steal one work at a time.
+        /// </summary>
+        public bool StealOneWorkOnly { get; set; } = false;
+
         internal void OnThreadCountSettingChanged()
         {
             foreach (PowerPool powerPool in PowerPoolList)

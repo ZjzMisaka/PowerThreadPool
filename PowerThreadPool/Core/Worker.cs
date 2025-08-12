@@ -583,7 +583,7 @@ namespace PowerThreadPool
             _powerPool._aliveWorkerListLoopIndex = loopIndex;
             if (worker != null)
             {
-                int count = max == 1 ? 1 : max / 2;
+                int count = _powerPool.PowerPoolOption.StealOneWorkOnly ? 1 : (max == 1 ? 1 : max / 2);
                 List<WorkBase> stolenWorkList = null;
                 if (count > 0)
                 {

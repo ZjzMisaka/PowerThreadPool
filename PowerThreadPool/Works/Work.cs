@@ -39,6 +39,7 @@ namespace PowerThreadPool.Works
         internal override RetryOption RetryOption => _workOption.RetryOption;
         internal override bool LongRunning => _workOption.LongRunning;
         internal override bool ShouldStoreResult => _workOption.ShouldStoreResult;
+        internal override WorkPlacementPolicy WorkPlacementPolicy => _workOption.WorkPlacementPolicy;
         internal override ConcurrentSet<string> Dependents => _workOption.Dependents;
         internal override bool AllowEventsAndCallback
         {
