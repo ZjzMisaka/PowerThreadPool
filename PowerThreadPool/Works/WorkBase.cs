@@ -48,8 +48,8 @@ namespace PowerThreadPool.Works
         internal DateTime QueueDateTime { get; set; }
         internal abstract object Execute();
         internal abstract bool Stop(bool forceStop);
-        internal abstract bool Wait();
-        internal abstract ExecuteResult<T> Fetch<T>();
+        internal abstract bool Wait(bool helpWhileWaiting = false);
+        internal abstract ExecuteResult<T> Fetch<T>(bool helpWhileWaiting = false);
         internal abstract bool Pause();
         internal abstract bool Resume();
         internal abstract bool Cancel(bool needFreeze);

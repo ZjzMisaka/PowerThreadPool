@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
@@ -103,8 +104,13 @@ namespace PowerThreadPool.Works
             return res;
         }
 
-        internal override bool Wait()
+        internal override bool Wait(bool helpWhileWaiting = false)
         {
+            while (!IsDone && helpWhileWaiting)
+            {
+                PowerPool.HelpWhileWaiting();
+            }
+
             if (WaitSignal == null)
             {
                 WaitSignal = new AutoResetEvent(false);
@@ -118,9 +124,9 @@ namespace PowerThreadPool.Works
             return true;
         }
 
-        internal override ExecuteResult<T> Fetch<T>()
+        internal override ExecuteResult<T> Fetch<T>(bool helpWhileWaiting = false)
         {
-            Wait();
+            Wait(helpWhileWaiting);
 
             if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<string> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
             {
