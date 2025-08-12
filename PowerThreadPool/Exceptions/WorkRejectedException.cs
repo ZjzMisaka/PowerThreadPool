@@ -1,6 +1,6 @@
 ﻿namespace PowerThreadPool.Exceptions
 {
-    internal class WorkRejectedException : WorkExceptionBase
+    public class WorkRejectedException : WorkExceptionBase
     {
         public WorkRejectedException() { }
     }
