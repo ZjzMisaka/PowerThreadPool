@@ -54,7 +54,34 @@ namespace PowerThreadPool.Helpers.Dependency
                         return;
                     }
                 }
+
+                List<string> toRemove = new List<string>();
+                foreach (string depId in dependents)
+                {
+                    if (IsSucceeded(depId))
+                    {
+                        toRemove.Add(depId);
+                    }
+                }
+                foreach (var depId in toRemove)
+                {
+                    dependents.Remove(depId);
+                }
+
+                if (dependents.Count == 0 && work._dependencyStatus.InterlockedValue == DependencyStatus.Normal)
+                {
+                    _powerPool.SetWork(work);
+                }
             }
+        }
+
+        private bool IsSucceeded(string id)
+        {
+            if (_powerPool._resultDic.TryGetValue(id, out ExecuteResultBase res))
+            {
+                return res.Status == Status.Succeed;
+            }
+            return false;
         }
 
         internal void Cancel()

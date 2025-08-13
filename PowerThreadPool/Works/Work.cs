@@ -108,7 +108,10 @@ namespace PowerThreadPool.Works
         {
             while (!IsDone && helpWhileWaiting)
             {
-                PowerPool.HelpWhileWaiting();
+                if (!PowerPool.HelpWhileWaiting())
+                {
+                    break;
+                }
             }
 
             if (WaitSignal == null)

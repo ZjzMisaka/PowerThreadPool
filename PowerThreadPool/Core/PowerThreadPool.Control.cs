@@ -186,7 +186,13 @@ namespace PowerThreadPool
 
             if (helpWhileWaiting)
             {
-                HelpWhileWaiting();
+                while (true)
+                {
+                    if (!HelpWhileWaiting())
+                    {
+                        return;
+                    }
+                }
             }
             else
             {
@@ -866,23 +872,39 @@ namespace PowerThreadPool
             CheckPoolIdle();
         }
 
-        internal void HelpWhileWaiting()
+        internal bool HelpWhileWaiting()
         {
             List<WorkBase> works = null;
             Worker worker = null;
-            foreach (var kv in _aliveWorkerDic)
+            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out worker))
             {
-                worker = kv.Value;
-                if (worker.WaitingWorkCount >= 1
-                    && worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed))
+                if (worker.WaitingWorkCount >= 1)
                 {
                     works = worker.Steal(1);
-                    if (works.Count > 0)
-                    {
-                        break;
-                    }
+                }
+            }
 
-                    worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
+            if (works == null || works.Count == 0)
+            {
+                foreach (var kv in _aliveWorkerDic)
+                {
+                    worker = kv.Value;
+                    if (worker.WaitingWorkCount >= 1
+                        && worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed))
+                    {
+                        try
+                        {
+                            works = worker.Steal(1);
+                            if (works.Count > 0)
+                            {
+                                break;
+                            }
+                        }
+                        finally
+                        {
+                            worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
+                        }
+                    }
                 }
             }
 
@@ -890,16 +912,23 @@ namespace PowerThreadPool
             {
                 WorkBase work = works[0];
 
-                worker.ExecuteWork(work);
+                Worker newWorker = new Worker(this, work);
+                Interlocked.Increment(ref _runningWorkerCount);
+                newWorker.ExecuteWork();
 
                 if (work.LongRunning)
                 {
                     Interlocked.Decrement(ref _longRunningWorkerCount);
                 }
+
+                Interlocked.Decrement(ref _runningWorkerCount);
+                newWorker.Dispose();
+
+                return true;
             }
             else
             {
-                Thread.Yield();
+                return false;
             }
         }
     }

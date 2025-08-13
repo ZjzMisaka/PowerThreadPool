@@ -103,6 +103,7 @@ namespace PowerThreadPool
         internal Worker(PowerPool powerPool, WorkBase work)
         {
             _powerPool = powerPool;
+            work.Worker = this;
             Interlocked.Decrement(ref _powerPool._waitingWorkCount);
             SetWorkToRun(work);
             _timeoutTimer = new DeferredActionTimer();
@@ -125,16 +126,16 @@ namespace PowerThreadPool
             }
         }
 
-        internal void ExecuteWork(WorkBase work)
+        internal void ExecuteWork()
         {
-            _powerPool.OnWorkStarted(work.ID);
+            _powerPool.OnWorkStarted(Work.ID);
 
             ExecuteResultBase executeResult;
             do
             {
                 executeResult = ExecuteMain();
 
-                if (work.AllowEventsAndCallback)
+                if (Work.AllowEventsAndCallback)
                 {
                     if (executeResult.Status == Status.Stopped)
                     {
@@ -144,9 +145,9 @@ namespace PowerThreadPool
                     {
                         _powerPool.InvokeWorkEndedEvent(executeResult);
                     }
-                    if (work.BaseAsyncWorkID != null)
+                    if (Work.BaseAsyncWorkID != null)
                     {
-                        if (_powerPool._tcsDict.TryRemove(work.RealWorkID, out ITaskCompletionSource tcs))
+                        if (_powerPool._tcsDict.TryRemove(Work.RealWorkID, out ITaskCompletionSource tcs))
                         {
                             if (executeResult.Status == Status.Stopped)
                             {
@@ -162,48 +163,43 @@ namespace PowerThreadPool
                             }
                         }
                     }
-                    work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
+                    Work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
                 }
-            } while (work.ShouldImmediateRetry(executeResult));
+            } while (Work.ShouldImmediateRetry(executeResult));
 
-            if (work.ShouldRequeue(executeResult))
+            if (Work.ShouldRequeue(executeResult))
             {
                 Interlocked.Increment(ref _powerPool._waitingWorkCount);
-                _powerPool.SetWork(work);
+                _powerPool.SetWork(Work);
             }
             else
             {
-                if (work.AllowEventsAndCallback)
+                if (Work.AllowEventsAndCallback)
                 {
-                    _powerPool.WorkCallbackEnd(work, executeResult.Status);
-                    work.AsyncDone = true;
+                    _powerPool.WorkCallbackEnd(Work, executeResult.Status);
+                    Work.AsyncDone = true;
                 }
 
-                work.IsDone = true;
+                Work.IsDone = true;
 
-                if (work.WaitSignal != null && work.BaseAsyncWorkID == null)
+                if (Work.WaitSignal != null && Work.BaseAsyncWorkID == null)
                 {
-                    work.WaitSignal.Set();
+                    Work.WaitSignal.Set();
                 }
 
-                if (work.AllowEventsAndCallback && work.BaseAsyncWorkID != null)
+                if (Work.AllowEventsAndCallback && Work.BaseAsyncWorkID != null)
                 {
-                    if (_powerPool._aliveWorkDic.TryGetValue(work.BaseAsyncWorkID, out WorkBase asyncBaseWork) && !asyncBaseWork.ShouldStoreResult)
+                    if (_powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork) && !asyncBaseWork.ShouldStoreResult)
                     {
                         if (asyncBaseWork.WaitSignal != null)
                         {
                             asyncBaseWork.WaitSignal.Set();
                             asyncBaseWork.Dispose();
                         }
-                        _powerPool.TryRemoveAsyncWork(work.BaseAsyncWorkID, true);
+                        _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true);
                     }
                 }
             }
-        }
-
-        internal void ExecuteWork()
-        {
-            ExecuteWork(Work);
         }
 
         private void ThreadInterrupted(ThreadInterruptedException ex)

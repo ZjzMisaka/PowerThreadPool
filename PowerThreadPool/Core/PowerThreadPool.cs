@@ -350,6 +350,7 @@ namespace PowerThreadPool
                 if (work.WorkPlacementPolicy == WorkPlacementPolicy.PreferLocalWorker && _aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
                 {
                     worker = currentWorker;
+                    break;
                 }
 
                 if ((worker == null) && (worker = GetWorker(work.LongRunning, work.WorkPlacementPolicy, ref rejected)) != null)
@@ -360,6 +361,7 @@ namespace PowerThreadPool
                 if ((worker == null) && work.WorkPlacementPolicy == WorkPlacementPolicy.PreferIdleThenLocal && _aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
                 {
                     worker = currentWorker;
+                    break;
                 }
 
                 if (rejected)
@@ -389,7 +391,9 @@ namespace PowerThreadPool
                     else if (rejectType == RejectType.CallerRunsPolicy)
                     {
                         worker = new Worker(this, work);
+                        Interlocked.Increment(ref _runningWorkerCount);
                         worker.ExecuteWork();
+                        Interlocked.Decrement(ref _runningWorkerCount);
                         worker.Dispose();
                         return;
                     }
