@@ -398,7 +398,7 @@ namespace PowerThreadPool
 
             Work<TResult> work = new Work<TResult>(this, workID, function, option);
 
-            _workDependencyController.Register(work, option.Dependents);
+            bool registeredDependents = _workDependencyController.Register(work, option.Dependents);
             if (work._dependencyStatus.InterlockedValue == DependencyStatus.Failed)
             {
                 return workID;
@@ -434,7 +434,7 @@ namespace PowerThreadPool
             }
             else
             {
-                if (option.Dependents == null || option.Dependents.Count == 0)
+                if (!registeredDependents)
                 {
                     SetWork(work);
                 }

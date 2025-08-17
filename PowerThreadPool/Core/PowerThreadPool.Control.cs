@@ -190,7 +190,13 @@ namespace PowerThreadPool
                 {
                     if (!HelpWhileWaiting())
                     {
-                        return;
+                        if (RunningWorkerCount == 0 &&
+                            WaitingWorkCount == 0 &&
+                            AsyncWorkCount == 0)
+                        {
+                            return;
+                        }
+                        Thread.Yield();
                     }
                 }
             }

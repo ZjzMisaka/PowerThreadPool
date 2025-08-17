@@ -341,27 +341,35 @@ namespace PowerThreadPool
 
             Worker worker = null;
 
+            WorkPlacementPolicy workPlacementPolicy = work.WorkPlacementPolicy;
             // In most cases, the loop will not iterate more than once.
             while (true)
             {
                 bool rejected = PowerPoolOption.RejectOption != null;
                 Worker currentWorker = null;
 
-                if (work.WorkPlacementPolicy == WorkPlacementPolicy.PreferLocalWorker && _aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
+                if (workPlacementPolicy == WorkPlacementPolicy.PreferLocalWorker && _aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
                 {
                     worker = currentWorker;
                     break;
                 }
 
-                if ((worker == null) && (worker = GetWorker(work.LongRunning, work.WorkPlacementPolicy, ref rejected)) != null)
+                if ((worker == null) && (worker = GetWorker(work.LongRunning, workPlacementPolicy, ref rejected)) != null)
                 {
                     break;
                 }
 
-                if ((worker == null) && work.WorkPlacementPolicy == WorkPlacementPolicy.PreferIdleThenLocal && _aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
+                if ((worker == null) && workPlacementPolicy == WorkPlacementPolicy.PreferIdleThenLocal)
                 {
-                    worker = currentWorker;
-                    break;
+                    if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
+                    {
+                        worker = currentWorker;
+                        break;
+                    }
+                    else
+                    {
+                        workPlacementPolicy = WorkPlacementPolicy.PreferIdleThenLeastLoaded;
+                    }
                 }
 
                 if (rejected)
