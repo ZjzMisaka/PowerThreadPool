@@ -7681,7 +7681,6 @@ namespace UnitTest
             Assert.Equal(10000000, res);
         }
 
-
         public static class DivideAndConquerDemoHelpInWorkWait
         {
             public static string ParallelSum(
@@ -7753,7 +7752,7 @@ namespace UnitTest
 
                 powerPool.Wait(true);
 
-                ExecuteResult<long> result = powerPool.Fetch<long>(rootId,  false, true);
+                ExecuteResult<long> result = powerPool.Fetch<long>(rootId, false, true);
                 return result.Result;
             }
         }
