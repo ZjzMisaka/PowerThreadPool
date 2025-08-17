@@ -912,8 +912,8 @@ namespace PowerThreadPool
             {
                 WorkBase work = works[0];
 
-                Worker newWorker = new Worker(this, work);
                 Interlocked.Increment(ref _runningWorkerCount);
+                Worker newWorker = new Worker(this, work);
                 newWorker.ExecuteWork();
 
                 if (work.LongRunning)
@@ -923,6 +923,8 @@ namespace PowerThreadPool
 
                 Interlocked.Decrement(ref _runningWorkerCount);
                 newWorker.Dispose();
+
+                CheckPoolIdle();
 
                 return true;
             }

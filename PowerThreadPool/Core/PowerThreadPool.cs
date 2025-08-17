@@ -395,12 +395,18 @@ namespace PowerThreadPool
                         worker.ExecuteWork();
                         Interlocked.Decrement(ref _runningWorkerCount);
                         worker.Dispose();
+
+                        CheckPoolIdle();
+
                         return;
                     }
                     else if (rejectType == RejectType.DiscardPolicy)
                     {
                         Interlocked.Decrement(ref _waitingWorkCount);
                         OnWorkDiscarded(work, rejectType);
+
+                        CheckPoolIdle();
+
                         return;
                     }
                     else if (rejectType == RejectType.DiscardOldestPolicy)
