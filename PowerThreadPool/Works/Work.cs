@@ -106,11 +106,16 @@ namespace PowerThreadPool.Works
 
         internal override bool Wait(bool helpWhileWaiting = false)
         {
+            var spinner = new SpinWait();
             while (!IsDone && helpWhileWaiting)
             {
                 if (!PowerPool.HelpWhileWaiting())
                 {
-                    break;
+                    spinner.SpinOnce();
+                }
+                else
+                {
+                    spinner.Reset();
                 }
             }
 
