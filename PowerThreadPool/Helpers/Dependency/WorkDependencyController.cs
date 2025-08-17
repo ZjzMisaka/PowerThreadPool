@@ -23,7 +23,7 @@ namespace PowerThreadPool.Helpers.Dependency
             _powerPool = powerPool;
         }
 
-        internal void Register(WorkBase work, ConcurrentSet<string> dependents)
+        internal bool Register(WorkBase work, ConcurrentSet<string> dependents)
         {
             if (dependents != null && dependents.Count != 0)
             {
@@ -51,7 +51,7 @@ namespace PowerThreadPool.Helpers.Dependency
                         _workDict.TryRemove(work.ID, out _);
                         _powerPool.WorkCallbackEnd(work, Status.Failed);
                         _powerPool.CheckPoolIdle();
-                        return;
+                        return true;
                     }
                 }
 
@@ -68,11 +68,15 @@ namespace PowerThreadPool.Helpers.Dependency
                     dependents.Remove(depId);
                 }
 
-                if (dependents.Count == 0 && work._dependencyStatus.InterlockedValue == DependencyStatus.Normal)
+                if (dependents.Count == 0 && work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
                 {
                     _powerPool.SetWork(work);
                 }
+
+                return true;
             }
+
+            return false;
         }
 
         private bool IsSucceeded(string id)
@@ -198,7 +202,7 @@ namespace PowerThreadPool.Helpers.Dependency
                 if (work.Dependents.Remove(id))
                 {
                     if (work.Dependents.Count == 0 &&
-                        work._dependencyStatus.InterlockedValue == DependencyStatus.Normal)
+                        work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
                     {
                         readyList.Add(work);
                     }
