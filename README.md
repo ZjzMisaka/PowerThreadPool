@@ -38,6 +38,7 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
     - [Wait](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#wait)
     - [Fetch](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#fetch)
     - [Cancel](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Work-Control#cancel)
+- [Divide And Conquer](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Divide-And-Conquer)
 - [Thread Pool Sizing](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing)
     - [Idle Thread Scheduled Destruction](https://github.com/ZjzMisaka/PowerThreadPool/wiki/DestroyThreadOption)
     - [Thread Starvation Countermeasures (Long-running Work Support)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Thread-Pool-Sizing#thread-starvation)
