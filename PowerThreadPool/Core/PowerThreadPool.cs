@@ -354,12 +354,12 @@ namespace PowerThreadPool
                     break;
                 }
 
-                if ((worker == null) && (worker = GetWorker(work.LongRunning, workPlacementPolicy, ref rejected)) != null)
+                if ((worker = GetWorker(work.LongRunning, workPlacementPolicy, ref rejected)) != null)
                 {
                     break;
                 }
 
-                if ((worker == null) && workPlacementPolicy == WorkPlacementPolicy.PreferIdleThenLocal)
+                if (workPlacementPolicy == WorkPlacementPolicy.PreferIdleThenLocal)
                 {
                     if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
                     {
