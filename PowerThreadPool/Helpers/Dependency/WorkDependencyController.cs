@@ -23,8 +23,10 @@ namespace PowerThreadPool.Helpers.Dependency
             _powerPool = powerPool;
         }
 
-        internal bool Register(WorkBase work, ConcurrentSet<string> dependents)
+        internal bool Register(WorkBase work, ConcurrentSet<string> dependents, out bool workNotSuccessfullyCompleted)
         {
+            workNotSuccessfullyCompleted = false;
+
             if (dependents != null && dependents.Count != 0)
             {
                 if (CheckHasCycle(work.ID, dependents))
@@ -51,6 +53,7 @@ namespace PowerThreadPool.Helpers.Dependency
                         _workDict.TryRemove(work.ID, out _);
                         _powerPool.WorkCallbackEnd(work, Status.Failed);
                         _powerPool.CheckPoolIdle();
+                        workNotSuccessfullyCompleted = true;
                         return true;
                     }
                 }
