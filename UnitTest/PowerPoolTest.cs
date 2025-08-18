@@ -7709,25 +7709,44 @@ namespace UnitTest
 
                 int mid = (l + r) >> 1;
 
-                string leftId = ParallelSum(powerPool, arr, l, mid, threshold, workPlacementPolicy, groupName);
+                long leftSum = ParallelSumDirect(powerPool, arr, l, mid, threshold, workPlacementPolicy, groupName);
+
                 string rightId = ParallelSum(powerPool, arr, mid + 1, r, threshold, workPlacementPolicy, groupName);
 
-                ConcurrentSet<string> deps = new ConcurrentSet<string> { leftId, rightId };
+                long rightSum = powerPool.Fetch<long>(rightId, false, true).Result;
 
-                string mergeId = powerPool.QueueWorkItem<long>(() =>
-                {
-                    long left = powerPool.Fetch<long>(leftId, false, false).Result;
-                    long right = powerPool.Fetch<long>(rightId, false, false).Result;
-                    return left + right;
-                }, new WorkOption<long>
+                return powerPool.QueueWorkItem<long>(() => leftSum + rightSum, new WorkOption<long>
                 {
                     Group = groupName,
-                    Dependents = deps,
                     ShouldStoreResult = true,
-                    WorkPlacementPolicy = WorkPlacementPolicy.PreferIdleThenLocal
+                    WorkPlacementPolicy = workPlacementPolicy
                 });
+            }
 
-                return mergeId;
+            private static long ParallelSumDirect(
+                PowerPool powerPool,
+                int[] arr, int l, int r,
+                int threshold,
+                WorkPlacementPolicy workPlacementPolicy,
+                string groupName)
+            {
+                int len = r - l + 1;
+
+                if (len <= threshold)
+                {
+                    long sum = 0;
+                    for (int i = l; i <= r; i++) sum += arr[i];
+                    return sum;
+                }
+
+                int mid = (l + r) >> 1;
+
+                long leftSum = ParallelSumDirect(powerPool, arr, l, mid, threshold, workPlacementPolicy, groupName);
+
+                string rightId = ParallelSum(powerPool, arr, mid + 1, r, threshold, workPlacementPolicy, groupName);
+                long rightSum = powerPool.Fetch<long>(rightId, false, true).Result;
+
+                return leftSum + rightSum;
             }
 
             public static long Run(int[] arr, WorkPlacementPolicy workPlacementPolicy)
@@ -7750,7 +7769,7 @@ namespace UnitTest
 
                 string rootId = ParallelSum(powerPool, arr, 0, arr.Length - 1, 10_000, workPlacementPolicy, groupName);
 
-                powerPool.Wait(true);
+                powerPool.Wait(helpWhileWaiting: true);
 
                 ExecuteResult<long> result = powerPool.Fetch<long>(rootId, false, true);
                 return result.Result;
