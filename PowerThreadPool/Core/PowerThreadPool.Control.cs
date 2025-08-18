@@ -892,24 +892,16 @@ namespace PowerThreadPool
 
             if (works == null || works.Count == 0)
             {
-                foreach (var kv in _aliveWorkerDic)
+                foreach (KeyValuePair<int, Worker> kv in _aliveWorkerDic)
                 {
                     worker = kv.Value;
                     if (worker.WaitingWorkCount >= 1
                         && worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed))
                     {
-                        try
-                        {
-                            works = worker.Steal(1);
-                            if (works.Count > 0)
-                            {
-                                break;
-                            }
-                        }
-                        finally
-                        {
-                            worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
-                        }
+                        works = worker.Steal(1);
+                        worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
+                        if (works.Count > 0)
+                            break;
                     }
                 }
             }
