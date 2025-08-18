@@ -555,6 +555,52 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestDependentsSucceeded()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int doneCount = 0;
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+            };
+
+            string id0 = "";
+
+            powerPool.EnablePoolIdleCheck = false;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+
+                if (e.ID == id0)
+                {
+                    powerPool.QueueWorkItem(() =>
+                    {
+                        powerPool.EnablePoolIdleCheck = true;
+                    }, new WorkOption
+                    {
+                        ShouldStoreResult = true,
+                        Dependents = new ConcurrentSet<string> { id0 }
+                    });
+                }
+            };
+
+            id0 = powerPool.QueueWorkItem(() =>
+            {
+            }, new WorkOption
+            {
+                ShouldStoreResult = true
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(2, doneCount);
+        }
+
+        [Fact]
         public void TestDependentsFailedHoldFailtureRecord()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
