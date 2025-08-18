@@ -13,7 +13,7 @@ namespace PowerThreadPool.Helpers.Dependency
 {
     internal class WorkDependencyController
     {
-        private ConcurrentDictionary<string, WorkBase> _workDict = new ConcurrentDictionary<string, WorkBase>();
+        internal ConcurrentDictionary<string, WorkBase> _workDict = new ConcurrentDictionary<string, WorkBase>();
         private CallbackEndEventHandler _callbackEndHandler;
         private PowerPool _powerPool;
         private int _firstRegister = 0;
