@@ -7693,8 +7693,6 @@ namespace UnitTest
         [Fact]
         public void TestDivideAndConquerDemoHelpInPoolWaitPreferIdleThenLocal()
         {
-            int max = 100000;
-            int[] data = Enumerable.Range(0, max).ToArray();
             int n = 10_000_000;
             long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferIdleThenLocal);
             Assert.Equal(10000000, res);
@@ -7720,8 +7718,6 @@ namespace UnitTest
         [Fact]
         public void TestDivideAndConquerDemoHelpInPoolWaitPreferLocalWorker()
         {
-            int max = 100000;
-            int[] data = Enumerable.Range(0, max).ToArray();
             int n = 10_000_000;
             long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferLocalWorker);
             Assert.Equal(10000000, res);
@@ -7838,7 +7834,7 @@ namespace UnitTest
 
                 WorkOption<long> opt = new WorkOption<long>
                 {
-                    WorkPlacementPolicy = WorkPlacementPolicy.PreferLocalWorker,
+                    WorkPlacementPolicy = workPlacementPolicy,
                     ShouldStoreResult = true,
                 };
                 string rightId = powerPool.QueueWorkItem(() => ParallelSum(powerPool, a, m + 1, r, workPlacementPolicy, cutoff), opt);
