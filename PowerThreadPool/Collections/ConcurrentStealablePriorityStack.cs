@@ -73,12 +73,9 @@ namespace PowerThreadPool.Collections
             for (int i = 0; i < priorities.Count; ++i)
             {
                 int pr = priorities[i];
-                if (_queueDic.TryGetValue(pr, out ConcurrentStack<T> s))
+                if (_queueDic.TryGetValue(pr, out ConcurrentStack<T> s) && s.TryPop(out item))
                 {
-                    if (s.TryPop(out item))
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
             return item;
@@ -94,12 +91,9 @@ namespace PowerThreadPool.Collections
             for (int i = priorities.Count - 1; i >= 0; --i)
             {
                 int pr = priorities[i];
-                if (_queueDic.TryGetValue(pr, out ConcurrentStack<T> s))
+                if (_queueDic.TryGetValue(pr, out ConcurrentStack<T> s) && s.TryPop(out item))
                 {
-                    if (s.TryPop(out item))
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
             return item;
