@@ -881,20 +881,18 @@ namespace PowerThreadPool
         internal bool HelpWhileWaiting()
         {
             List<WorkBase> works = null;
-            Worker worker = null;
-            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out worker))
+            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker workerCurrentThread))
             {
-                if (worker.WaitingWorkCount >= 1)
+                if (workerCurrentThread.WaitingWorkCount >= 1)
                 {
-                    works = worker.Steal(1);
+                    works = workerCurrentThread.Steal(1);
                 }
             }
 
             if (works == null || works.Count == 0)
             {
-                foreach (KeyValuePair<int, Worker> kv in _aliveWorkerDic)
+                foreach (Worker worker in _aliveWorkerDic.Values)
                 {
-                    worker = kv.Value;
                     if (worker.WaitingWorkCount >= 1
                         && worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed))
                     {
