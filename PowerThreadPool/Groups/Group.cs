@@ -47,9 +47,9 @@ namespace PowerThreadPool.Groups
         /// <summary>
         /// Wait until all the work belonging to the group is done.
         /// </summary>
-        public void Wait()
+        public void Wait(bool helpWhileWaiting = false)
         {
-            _powerPool.Wait(_powerPool.GetGroupMemberList(Name));
+            _powerPool.Wait(_powerPool.GetGroupMemberList(Name), helpWhileWaiting);
         }
 
         /// <summary>
@@ -57,19 +57,19 @@ namespace PowerThreadPool.Groups
         /// </summary>
         /// <returns></returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task WaitAsync()
+        public async Task WaitAsync(bool helpWhileWaiting = false)
         {
             await Task.Run(() =>
             {
-                Wait();
+                Wait(helpWhileWaiting);
             });
         }
 #else
-        public Task WaitAsync()
+        public Task WaitAsync(bool helpWhileWaiting = false)
         {
             return Task.Factory.StartNew(() =>
             {
-                Wait();
+                Wait(helpWhileWaiting);
             });
         }
 #endif
@@ -79,9 +79,9 @@ namespace PowerThreadPool.Groups
         /// </summary>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
-        public List<ExecuteResult<TResult>> Fetch<TResult>(bool removeAfterFetch = false)
+        public List<ExecuteResult<TResult>> Fetch<TResult>(bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
-            return _powerPool.Fetch<TResult>(_powerPool.GetGroupMemberList(Name), removeAfterFetch);
+            return _powerPool.Fetch<TResult>(_powerPool.GetGroupMemberList(Name), removeAfterFetch, helpWhileWaiting);
         }
 
         /// <summary>
@@ -89,9 +89,9 @@ namespace PowerThreadPool.Groups
         /// </summary>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
-        public List<ExecuteResult<object>> Fetch(bool removeAfterFetch = false)
+        public List<ExecuteResult<object>> Fetch(bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
-            return _powerPool.Fetch<object>(_powerPool.GetGroupMemberList(Name), removeAfterFetch);
+            return _powerPool.Fetch<object>(_powerPool.GetGroupMemberList(Name), removeAfterFetch, helpWhileWaiting);
         }
 
         /// <summary>
@@ -100,11 +100,11 @@ namespace PowerThreadPool.Groups
         /// <param name="predicate">a function to test each source element for a condition; the second parameter of the function represents the index of the source element</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
-        public List<ExecuteResult<TResult>> Fetch<TResult>(Func<ExecuteResult<TResult>, bool> predicate, bool removeAfterFetch = false)
+        public List<ExecuteResult<TResult>> Fetch<TResult>(Func<ExecuteResult<TResult>, bool> predicate, bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
             ConcurrentSet<string> idList = (ConcurrentSet<string>)_powerPool.GetGroupMemberList(Name);
             Func<ExecuteResult<TResult>, bool> predicateID = e => idList.Contains(e.ID);
-            return _powerPool.Fetch(predicate, predicateID, removeAfterFetch);
+            return _powerPool.Fetch(predicate, predicateID, removeAfterFetch, helpWhileWaiting);
         }
 
         /// <summary>
@@ -113,19 +113,19 @@ namespace PowerThreadPool.Groups
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false)
+        public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
             return await Task.Run(() =>
             {
-                return Fetch<TResult>(removeAfterFetch);
+                return Fetch<TResult>(removeAfterFetch, helpWhileWaiting);
             });
         }
 #else
-        public Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false)
+        public Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
             return Task.Factory.StartNew(() =>
             {
-                return Fetch<TResult>(removeAfterFetch);
+                return Fetch<TResult>(removeAfterFetch, helpWhileWaiting);
             });
         }
 #endif
@@ -136,19 +136,19 @@ namespace PowerThreadPool.Groups
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <returns>Return a list of work result</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false)
+        public async Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
             return await Task.Run(() =>
             {
-                return Fetch(removeAfterFetch);
+                return Fetch(removeAfterFetch, helpWhileWaiting);
             });
         }
 #else
-        public Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false)
+        public Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
             return Task.Factory.StartNew(() =>
             {
-                return Fetch(removeAfterFetch);
+                return Fetch(removeAfterFetch, helpWhileWaiting);
             });
         }
 #endif

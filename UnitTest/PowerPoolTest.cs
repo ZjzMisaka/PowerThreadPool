@@ -1236,12 +1236,12 @@ namespace UnitTest
             foreach (var i in new[] { false, true, false, true, false })
             {
                 powerPool.QueueWorkItem(value =>
-                                        {
-                                            if (Thread.CurrentThread.IsBackground != value)
-                                            {
-                                                allSame = false;
-                                            }
-                                        }, i,
+                {
+                    if (Thread.CurrentThread.IsBackground != value)
+                    {
+                        allSame = false;
+                    }
+                }, i,
                                         new WorkOption()
                                         {
                                             IsBackground = i
@@ -7625,6 +7625,208 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestDivideAndConquerDemoHelpInWorkWaitPreferIdleThenLocal()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                QueueType = QueueType.LIFO,
+                StealOneWorkOnly = true,
+            });
+
+            int max = 100000;
+            int[] data = Enumerable.Range(0, max).ToArray();
+
+            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferIdleThenLocal);
+
+            Assert.Equal(4999950000, result);
+        }
+
+        [Fact]
+        public void TestDivideAndConquerDemoHelpInPoolWaitPreferIdleThenLocal()
+        {
+            int max = 100000;
+            int[] data = Enumerable.Range(0, max).ToArray();
+            int n = 10_000_000;
+            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferIdleThenLocal);
+            Assert.Equal(10000000, res);
+        }
+
+        [Fact]
+        public void TestDivideAndConquerDemoHelpInWorkWaitPreferLocalWorker()
+        {
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                QueueType = QueueType.LIFO,
+                StealOneWorkOnly = true,
+            });
+
+            int max = 100000;
+            int[] data = Enumerable.Range(0, max).ToArray();
+
+            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferLocalWorker);
+
+            Assert.Equal(4999950000, result);
+        }
+
+        [Fact]
+        public void TestDivideAndConquerDemoHelpInPoolWaitPreferLocalWorker()
+        {
+            int max = 100000;
+            int[] data = Enumerable.Range(0, max).ToArray();
+            int n = 10_000_000;
+            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferLocalWorker);
+            Assert.Equal(10000000, res);
+        }
+
+        public static class DivideAndConquerDemoHelpInWorkWait
+        {
+            public static string ParallelSum(
+                PowerPool powerPool,
+                int[] arr, int l, int r,
+                int threshold,
+                WorkPlacementPolicy workPlacementPolicy,
+                string groupName = null)
+            {
+                int len = r - l + 1;
+
+                if (len <= threshold)
+                {
+                    return powerPool.QueueWorkItem<long>(() =>
+                    {
+                        long sum = 0;
+                        for (int i = l; i <= r; i++) sum += arr[i];
+                        return sum;
+                    }, new WorkOption<long>
+                    {
+                        Group = groupName,
+                        ShouldStoreResult = true,
+                        WorkPlacementPolicy = workPlacementPolicy
+                    });
+                }
+
+                int mid = (l + r) >> 1;
+
+                long leftSum = ParallelSumDirect(powerPool, arr, l, mid, threshold, workPlacementPolicy, groupName);
+
+                string rightId = ParallelSum(powerPool, arr, mid + 1, r, threshold, workPlacementPolicy, groupName);
+
+                long rightSum = powerPool.Fetch<long>(rightId, false, true).Result;
+
+                return powerPool.QueueWorkItem<long>(() => leftSum + rightSum, new WorkOption<long>
+                {
+                    Group = groupName,
+                    ShouldStoreResult = true,
+                    WorkPlacementPolicy = workPlacementPolicy
+                });
+            }
+
+            private static long ParallelSumDirect(
+                PowerPool powerPool,
+                int[] arr, int l, int r,
+                int threshold,
+                WorkPlacementPolicy workPlacementPolicy,
+                string groupName)
+            {
+                int len = r - l + 1;
+
+                if (len <= threshold)
+                {
+                    long sum = 0;
+                    for (int i = l; i <= r; i++) sum += arr[i];
+                    return sum;
+                }
+
+                int mid = (l + r) >> 1;
+
+                long leftSum = ParallelSumDirect(powerPool, arr, l, mid, threshold, workPlacementPolicy, groupName);
+
+                string rightId = ParallelSum(powerPool, arr, mid + 1, r, threshold, workPlacementPolicy, groupName);
+                long rightSum = powerPool.Fetch<long>(rightId, false, true).Result;
+
+                return leftSum + rightSum;
+            }
+
+            public static long Run(int[] arr, WorkPlacementPolicy workPlacementPolicy)
+            {
+                PowerPoolOption options = new PowerPoolOption
+                {
+                    MaxThreads = Environment.ProcessorCount,
+                    QueueType = QueueType.LIFO,
+                    StealOneWorkOnly = true,
+                    DestroyThreadOption = new DestroyThreadOption
+                    {
+                        MinThreads = Environment.ProcessorCount,
+                        KeepAliveTime = 10_000
+                    },
+                };
+
+                using PowerPool powerPool = new PowerPool(options);
+                string groupName = "ParallelSum";
+                Group group = powerPool.GetGroup(groupName);
+
+                string rootId = ParallelSum(powerPool, arr, 0, arr.Length - 1, 10_000, workPlacementPolicy, groupName);
+
+                powerPool.Wait(helpWhileWaiting: true);
+
+                ExecuteResult<long> result = powerPool.Fetch<long>(rootId, false, true);
+                return result.Result;
+            }
+        }
+
+        class DivideAndConquerDemoHelpInPoolWait
+        {
+            static long ParallelSum(PowerPool powerPool, int[] a, int l, int r, WorkPlacementPolicy workPlacementPolicy, int cutoff = 10_000)
+            {
+                int n = r - l + 1;
+                if (n <= cutoff)
+                {
+                    long s = 0;
+                    for (int i = l; i <= r; i++) s += a[i];
+                    return s;
+                }
+
+                int m = (l + r) >> 1;
+
+                WorkOption<long> opt = new WorkOption<long>
+                {
+                    WorkPlacementPolicy = WorkPlacementPolicy.PreferLocalWorker,
+                    ShouldStoreResult = true,
+                };
+                string rightId = powerPool.QueueWorkItem(() => ParallelSum(powerPool, a, m + 1, r, workPlacementPolicy, cutoff), opt);
+
+                long left = ParallelSum(powerPool, a, l, m, workPlacementPolicy, cutoff);
+
+                ExecuteResult<long> rightRes = powerPool.Fetch<long>(rightId, removeAfterFetch: false, helpWhileWaiting: true);
+                return left + rightRes.Result;
+            }
+
+            public static long Run(int n, WorkPlacementPolicy workPlacementPolicy)
+            {
+                PowerPoolOption option = new PowerPoolOption
+                {
+                    MaxThreads = Environment.ProcessorCount,
+                    QueueType = QueueType.LIFO,
+                    StealOneWorkOnly = true,
+                    DestroyThreadOption = new DestroyThreadOption
+                    {
+                        MinThreads = Environment.ProcessorCount,
+                        KeepAliveTime = 10_000
+                    }
+                };
+
+                PowerPool powerPool = new PowerPool(option);
+
+                int[] arr = new int[n];
+                Array.Fill(arr, 1);
+
+                string id = powerPool.QueueWorkItem(() => ParallelSum(powerPool, arr, 0, n - 1, workPlacementPolicy));
+                long sum = powerPool.Fetch<long>(id, removeAfterFetch: false, helpWhileWaiting: true).Result;
+
+                return sum;
+            }
         }
     }
 }

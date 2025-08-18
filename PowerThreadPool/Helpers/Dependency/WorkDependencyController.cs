@@ -13,7 +13,7 @@ namespace PowerThreadPool.Helpers.Dependency
 {
     internal class WorkDependencyController
     {
-        private ConcurrentDictionary<string, WorkBase> _workDict = new ConcurrentDictionary<string, WorkBase>();
+        internal ConcurrentDictionary<string, WorkBase> _workDict = new ConcurrentDictionary<string, WorkBase>();
         private CallbackEndEventHandler _callbackEndHandler;
         private PowerPool _powerPool;
         private int _firstRegister = 0;
@@ -23,8 +23,10 @@ namespace PowerThreadPool.Helpers.Dependency
             _powerPool = powerPool;
         }
 
-        internal void Register(WorkBase work, ConcurrentSet<string> dependents)
+        internal bool Register(WorkBase work, ConcurrentSet<string> dependents, out bool workNotSuccessfullyCompleted)
         {
+            workNotSuccessfullyCompleted = false;
+
             if (dependents != null && dependents.Count != 0)
             {
                 if (CheckHasCycle(work.ID, dependents))
@@ -51,10 +53,42 @@ namespace PowerThreadPool.Helpers.Dependency
                         _workDict.TryRemove(work.ID, out _);
                         _powerPool.WorkCallbackEnd(work, Status.Failed);
                         _powerPool.CheckPoolIdle();
-                        return;
+                        workNotSuccessfullyCompleted = true;
+                        return true;
                     }
                 }
+
+                List<string> toRemove = new List<string>();
+                foreach (string depId in dependents)
+                {
+                    if (IsSucceeded(depId))
+                    {
+                        toRemove.Add(depId);
+                    }
+                }
+                foreach (var depId in toRemove)
+                {
+                    dependents.Remove(depId);
+                }
+
+                if (dependents.Count == 0 && work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
+                {
+                    _powerPool.SetWork(work);
+                }
+
+                return true;
             }
+
+            return false;
+        }
+
+        private bool IsSucceeded(string id)
+        {
+            if (_powerPool._resultDic.TryGetValue(id, out ExecuteResultBase res))
+            {
+                return res.Status == Status.Succeed;
+            }
+            return false;
         }
 
         internal void Cancel()
@@ -171,7 +205,7 @@ namespace PowerThreadPool.Helpers.Dependency
                 if (work.Dependents.Remove(id))
                 {
                     if (work.Dependents.Count == 0 &&
-                        work._dependencyStatus.InterlockedValue == DependencyStatus.Normal)
+                        work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
                     {
                         readyList.Add(work);
                     }

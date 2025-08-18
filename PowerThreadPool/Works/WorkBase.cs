@@ -48,8 +48,8 @@ namespace PowerThreadPool.Works
         internal DateTime QueueDateTime { get; set; }
         internal abstract object Execute();
         internal abstract bool Stop(bool forceStop);
-        internal abstract bool Wait();
-        internal abstract ExecuteResult<T> Fetch<T>();
+        internal abstract bool Wait(bool helpWhileWaiting = false);
+        internal abstract ExecuteResult<T> Fetch<T>(bool helpWhileWaiting = false);
         internal abstract bool Pause();
         internal abstract bool Resume();
         internal abstract bool Cancel(bool needFreeze);
@@ -67,6 +67,7 @@ namespace PowerThreadPool.Works
         internal abstract RetryOption RetryOption { get; }
         internal abstract bool LongRunning { get; }
         internal abstract bool ShouldStoreResult { get; }
+        internal abstract WorkPlacementPolicy WorkPlacementPolicy { get; }
         internal abstract ConcurrentSet<string> Dependents { get; }
         internal abstract bool AllowEventsAndCallback { get; set; }
         internal abstract string AsyncWorkID { get; }

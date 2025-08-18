@@ -5,6 +5,13 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Options
 {
+    public enum WorkPlacementPolicy
+    {
+        PreferLocalWorker,
+        PreferIdleThenLocal,
+        PreferIdleThenLeastLoaded,
+    }
+
     public class WorkOption<TResult>
     {
         internal static WorkOption<TResult> DefaultInstance { get; set; } = new WorkOption<TResult>
@@ -75,5 +82,10 @@ namespace PowerThreadPool.Options
         /// Should store the work result.
         /// </summary>
         public bool ShouldStoreResult { get; set; } = false;
+
+        /// <summary>
+        /// Indicates whether the work should be placed in the local worker's queue if possible.
+        /// </summary>
+        public WorkPlacementPolicy WorkPlacementPolicy { get; set; } = WorkPlacementPolicy.PreferIdleThenLeastLoaded;
     }
 }

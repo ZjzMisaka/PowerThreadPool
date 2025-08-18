@@ -39,6 +39,7 @@ namespace PowerThreadPool.Works
         internal override RetryOption RetryOption => _workOption.RetryOption;
         internal override bool LongRunning => _workOption.LongRunning;
         internal override bool ShouldStoreResult => _workOption.ShouldStoreResult;
+        internal override WorkPlacementPolicy WorkPlacementPolicy => _workOption.WorkPlacementPolicy;
         internal override ConcurrentSet<string> Dependents => _workOption.Dependents;
         internal override bool AllowEventsAndCallback
         {
@@ -102,8 +103,21 @@ namespace PowerThreadPool.Works
             return res;
         }
 
-        internal override bool Wait()
+        internal override bool Wait(bool helpWhileWaiting = false)
         {
+            var spinner = new SpinWait();
+            while (!IsDone && helpWhileWaiting)
+            {
+                if (!PowerPool.HelpWhileWaiting())
+                {
+                    spinner.SpinOnce();
+                }
+                else
+                {
+                    spinner.Reset();
+                }
+            }
+
             if (WaitSignal == null)
             {
                 WaitSignal = new AutoResetEvent(false);
@@ -117,9 +131,9 @@ namespace PowerThreadPool.Works
             return true;
         }
 
-        internal override ExecuteResult<T> Fetch<T>()
+        internal override ExecuteResult<T> Fetch<T>(bool helpWhileWaiting = false)
         {
-            Wait();
+            Wait(helpWhileWaiting);
 
             if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<string> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
             {

@@ -3,6 +3,7 @@
     internal enum DependencyStatus
     {
         Normal = 0,
-        Failed = 1,
+        Solved = 1,
+        Failed = 2,
     }
 }

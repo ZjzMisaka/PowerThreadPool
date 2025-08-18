@@ -341,14 +341,35 @@ namespace PowerThreadPool
 
             Worker worker = null;
 
+            WorkPlacementPolicy workPlacementPolicy = work.WorkPlacementPolicy;
             // In most cases, the loop will not iterate more than once.
             while (true)
             {
                 bool rejected = PowerPoolOption.RejectOption != null;
+                Worker currentWorker = null;
 
-                if ((worker = GetWorker(work.LongRunning, ref rejected)) != null)
+                if (workPlacementPolicy == WorkPlacementPolicy.PreferLocalWorker && _aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
+                {
+                    worker = currentWorker;
+                    break;
+                }
+
+                if ((worker == null) && (worker = GetWorker(work.LongRunning, workPlacementPolicy, ref rejected)) != null)
                 {
                     break;
+                }
+
+                if ((worker == null) && workPlacementPolicy == WorkPlacementPolicy.PreferIdleThenLocal)
+                {
+                    if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
+                    {
+                        worker = currentWorker;
+                        break;
+                    }
+                    else
+                    {
+                        workPlacementPolicy = WorkPlacementPolicy.PreferIdleThenLeastLoaded;
+                    }
                 }
 
                 if (rejected)
@@ -378,14 +399,22 @@ namespace PowerThreadPool
                     else if (rejectType == RejectType.CallerRunsPolicy)
                     {
                         worker = new Worker(this, work);
+                        Interlocked.Increment(ref _runningWorkerCount);
                         worker.ExecuteWork();
+                        Interlocked.Decrement(ref _runningWorkerCount);
                         worker.Dispose();
+
+                        CheckPoolIdle();
+
                         return;
                     }
                     else if (rejectType == RejectType.DiscardPolicy)
                     {
                         Interlocked.Decrement(ref _waitingWorkCount);
                         OnWorkDiscarded(work, rejectType);
+
+                        CheckPoolIdle();
+
                         return;
                     }
                     else if (rejectType == RejectType.DiscardOldestPolicy)
@@ -441,7 +470,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="longRunning"></param>
         /// <returns></returns>
-        private Worker GetWorker(bool longRunning, ref bool rejected)
+        private Worker GetWorker(bool longRunning, WorkPlacementPolicy workPlacementPolicy, ref bool rejected)
         {
             Worker worker = TryDequeueIdleWorker(longRunning);
             if (worker != null)
@@ -456,7 +485,7 @@ namespace PowerThreadPool
                 return worker;
             }
 
-            if (!longRunning)
+            if (workPlacementPolicy == WorkPlacementPolicy.PreferIdleThenLeastLoaded && !longRunning)
             {
                 worker = TrySelectExistingWorker(ref rejected);
             }
