@@ -922,11 +922,6 @@ namespace PowerThreadPool
                 Worker newWorker = new Worker(this, work);
                 newWorker.ExecuteWork();
 
-                if (work.LongRunning)
-                {
-                    Interlocked.Decrement(ref _longRunningWorkerCount);
-                }
-
                 Interlocked.Decrement(ref _runningWorkerCount);
                 newWorker.Dispose();
 
