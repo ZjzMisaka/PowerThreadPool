@@ -34,7 +34,7 @@ jobs:
           $ref = $env:GITHUB_REF
           $version = $ref -replace 'refs/tags/v',''
           $projFile = "PowerThreadPool/PowerThreadPool.csproj"
-          dotnet pack $projFile -c Release /p:Version=$version
+          dotnet pack $projFile -c Release /p:Version=$version /p:DelaySign=false /p:AssemblyOriginatorKeyFile=PowerThreadPool.snk
         shell: pwsh
 
       - name: Publish NuGet Package (.nupkg)
