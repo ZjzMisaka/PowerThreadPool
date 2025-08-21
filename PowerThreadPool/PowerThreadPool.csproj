@@ -22,7 +22,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\PowerThreadPool.publickey.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\PowerThreadPool.publickey</AssemblyOriginatorKeyFile>
     <DelaySign>true</DelaySign>
   </PropertyGroup>
 
