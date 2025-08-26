@@ -18,6 +18,7 @@ public class ConcurrentObservableCollection<T>
     internal EventHandler<WorkStoppedEventArgs> _watchStoppedHandler;
     internal EventHandler<WorkEndedEventArgs> _watchEndedHandler;
 
+    internal EventHandler _collectionChangedHandler;
     public event EventHandler CollectionChanged;
 
     public ConcurrentObservableCollection(IProducerConsumerCollection<T> collection)
@@ -118,6 +119,7 @@ public class ConcurrentObservableCollection<T>
         bool res = false;
         if (_watchState.TrySet(WatchStates.Watching, WatchStates.Idle))
         {
+            _collectionChangedHandler = handler;
             CollectionChanged += handler;
             res = true;
         }
@@ -136,7 +138,8 @@ public class ConcurrentObservableCollection<T>
             return;
         }
 
-        CollectionChanged = null;
+        CollectionChanged -= _collectionChangedHandler;
+        _collectionChangedHandler = null;
         _watchState.InterlockedValue = WatchStates.Idle;
 
         if (!keepRunning)
