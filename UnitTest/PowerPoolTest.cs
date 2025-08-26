@@ -548,8 +548,8 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal(2, doneCount);
-            Assert.Equal(1, powerPool.FailedWorkCount);
+            Assert.Equal(3, doneCount);
+            Assert.Equal(2, powerPool.FailedWorkCount);
             Assert.Equal(id0, powerPool.FailedWorkList.First());
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
@@ -643,7 +643,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal(2, doneCount);
+            Assert.Equal(3, doneCount);
             Assert.Equal(2, powerPool.FailedWorkCount);
             Assert.Equal(id0, powerPool.FailedWorkList.First());
             Assert.Equal(0, powerPool.WaitingWorkCount);
@@ -699,7 +699,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal(3, doneCount);
+            Assert.Equal(4, doneCount);
             Assert.Equal(2, powerPool.FailedWorkCount);
             Assert.Equal(id1, powerPool.FailedWorkList.First());
             Assert.Equal(0, powerPool.WaitingWorkCount);

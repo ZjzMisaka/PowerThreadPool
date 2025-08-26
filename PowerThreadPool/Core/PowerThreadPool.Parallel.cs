@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using PowerThreadPool.Constants;
+using PowerThreadPool.EventArguments;
 using PowerThreadPool.Groups;
 using PowerThreadPool.Options;
 
@@ -169,39 +170,46 @@ namespace PowerThreadPool
 
             ConcurrentDictionary<string, TSource> idDict = new ConcurrentDictionary<string, TSource>();
 
+            EventHandler<WorkCanceledEventArgs> onCanceled = null;
+            EventHandler<WorkStoppedEventArgs> onStopped = null;
+            EventHandler<WorkEndedEventArgs> onEnded = null;
+
             if (addBackWhenWorkCanceled)
             {
-                WorkCanceled += (sWorkCanceled, eWorkCanceled) =>
+                onCanceled = (s, e) =>
                 {
-                    if (idDict.TryRemove(eWorkCanceled.ID, out TSource item))
+                    if (idDict.TryRemove(e.ID, out TSource item))
                     {
                         source.TryAdd(item);
                     }
                 };
+                WorkCanceled += onCanceled;
+                source._watchCanceledHandler = onCanceled;
             }
             if (addBackWhenWorkStopped)
             {
-                WorkStopped += (sWorkStopped, eWorkStopped) =>
+                onStopped = (s, e) =>
                 {
-                    if (idDict.TryRemove(eWorkStopped.ID, out TSource item))
+                    if (idDict.TryRemove(e.ID, out TSource item))
                     {
                         source.TryAdd(item);
                     }
                 };
+                WorkStopped += onStopped;
+                source._watchStoppedHandler = onStopped;
             }
             if (addBackWhenWorkFailed)
             {
-                WorkEnded += (sWorkEnded, eWorkEnded) =>
+                onEnded = (s, e) =>
                 {
-                    if (eWorkEnded.Succeed)
-                    {
-                        return;
-                    }
-                    if (idDict.TryRemove(eWorkEnded.ID, out TSource item))
+                    if (e.Succeed) return;
+                    if (idDict.TryRemove(e.ID, out TSource item))
                     {
                         source.TryAdd(item);
                     }
                 };
+                WorkEnded += onEnded;
+                source._watchEndedHandler = onEnded;
             }
 
             void OnCollectionChanged(object sender, EventArgs e)
@@ -211,10 +219,7 @@ namespace PowerThreadPool
                 {
                     while (source.TryTake(out TSource item))
                     {
-                        string id = QueueWorkItem(() =>
-                        {
-                            body(item);
-                        }, workOption);
+                        string id = QueueWorkItem(() => { body(item); }, workOption);
                         idDict[id] = item;
                     }
                     source._canWatch.InterlockedValue = CanWatch.Allowed;
@@ -248,6 +253,27 @@ namespace PowerThreadPool
         public void StopWatching<TSource>(ConcurrentObservableCollection<TSource> source, bool keepRunning = false, bool forceStop = false)
         {
             source.StopWatching(keepRunning, forceStop);
+
+            if (!keepRunning && source._group != null)
+            {
+                source._group.Wait(true);
+            }
+
+            if (source._watchCanceledHandler != null)
+            {
+                WorkCanceled -= source._watchCanceledHandler;
+                source._watchCanceledHandler = null;
+            }
+            if (source._watchStoppedHandler != null)
+            {
+                WorkStopped -= source._watchStoppedHandler;
+                source._watchStoppedHandler = null;
+            }
+            if (source._watchEndedHandler != null)
+            {
+                WorkEnded -= source._watchEndedHandler;
+                source._watchEndedHandler = null;
+            }
         }
     }
 }
