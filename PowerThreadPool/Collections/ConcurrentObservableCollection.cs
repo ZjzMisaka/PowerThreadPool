@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using PowerThreadPool.Constants;
+using PowerThreadPool.EventArguments;
 using PowerThreadPool.Groups;
 using PowerThreadPool.Helpers.LockFree;
 
@@ -12,6 +13,10 @@ public class ConcurrentObservableCollection<T>
     private readonly IProducerConsumerCollection<T> _innerProducerConsumerCollection;
     private readonly BlockingCollection<T> _innerBlockingCollection;
     internal Group _group = null;
+
+    internal EventHandler<WorkCanceledEventArgs> _watchCanceledHandler;
+    internal EventHandler<WorkStoppedEventArgs> _watchStoppedHandler;
+    internal EventHandler<WorkEndedEventArgs> _watchEndedHandler;
 
     public event EventHandler CollectionChanged;
 

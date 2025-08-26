@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -51,7 +52,21 @@ namespace PowerThreadPool.Helpers.Dependency
                     {
                         work._dependencyStatus.InterlockedValue = DependencyStatus.Failed;
                         _workDict.TryRemove(work.ID, out _);
+
+                        work.QueueDateTime = DateTime.UtcNow;
+
+                        InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{dependedId}' did not complete successfully.");
+                        ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
+                        executeResult.ID = work.ID;
+
+                        _powerPool._resultDic[work.ID] = executeResult;
+
+                        _powerPool.InvokeWorkEndedEvent(executeResult);
+
+                        work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
+
                         _powerPool.WorkCallbackEnd(work, Status.Failed);
+
                         _powerPool.CheckPoolIdle();
                         workNotSuccessfullyCompleted = true;
                         return true;
@@ -66,7 +81,7 @@ namespace PowerThreadPool.Helpers.Dependency
                         toRemove.Add(depId);
                     }
                 }
-                foreach (var depId in toRemove)
+                foreach (string depId in toRemove)
                 {
                     dependents.Remove(depId);
                 }
@@ -201,11 +216,28 @@ namespace PowerThreadPool.Helpers.Dependency
                     }
                 }
 
+                foreach (WorkBase work in newlyFailed)
+                {
+                    if (work.QueueDateTime == default)
+                    {
+                        work.QueueDateTime = DateTime.UtcNow;
+                    }
+
+                    InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{id}' did not complete successfully.");
+                    ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
+                    executeResult.ID = work.ID;
+
+                    _powerPool._resultDic[work.ID] = executeResult;
+
+                    _powerPool.InvokeWorkEndedEvent(executeResult);
+                    work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
+                    _powerPool.WorkCallbackEnd(work, Status.Failed);
+                }
+
                 _powerPool.CheckPoolIdle();
                 return;
             }
 
-            List<WorkBase> readyList = new List<WorkBase>();
             foreach (WorkBase work in _workDict.Values)
             {
                 if (work.Dependents.Remove(id))
