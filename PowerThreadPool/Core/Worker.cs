@@ -103,11 +103,24 @@ namespace PowerThreadPool
         internal Worker(PowerPool powerPool, WorkBase work)
         {
             _powerPool = powerPool;
+            _powerPool.InvokeRunningWorkerCountChangedEvent(true);
+            Worker worker = null;
+            WorkerState.InterlockedValue = WorkerStates.Running;
+            _powerPool._aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out worker);
+            _powerPool._aliveWorkerDic[Thread.CurrentThread.ManagedThreadId] = this;
             work.Worker = this;
             Interlocked.Decrement(ref _powerPool._waitingWorkCount);
-            SetWorkToRun(work);
             _timeoutTimer = new DeferredActionTimer();
+            SetWorkToRun(work);
             _waitingWorkIDPriorityCollection = QueueFactory();
+            ExecuteWork();
+
+            _powerPool._aliveWorkerDic.TryRemove(Thread.CurrentThread.ManagedThreadId, out _);
+            if (worker != null)
+            {
+                _powerPool._aliveWorkerDic[Thread.CurrentThread.ManagedThreadId] = worker;
+            }
+            _powerPool.InvokeRunningWorkerCountChangedEvent(false);
         }
 
         private IStealablePriorityCollection<string> QueueFactory()
@@ -388,7 +401,7 @@ namespace PowerThreadPool
                 {
                     Cancel();
                 }
-                _thread.Interrupt();
+                _thread?.Interrupt();
             }
             else
             {
@@ -423,7 +436,10 @@ namespace PowerThreadPool
             Interlocked.Increment(ref _waitingWorkCount);
             WorkerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
 
-            _killTimer.Cancel();
+            if (_killTimer != null)
+            {
+                _killTimer.Cancel();
+            }
 
             if (!reset)
             {

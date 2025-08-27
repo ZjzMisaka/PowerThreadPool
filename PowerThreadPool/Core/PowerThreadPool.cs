@@ -398,9 +398,8 @@ namespace PowerThreadPool
                     }
                     else if (rejectType == RejectType.CallerRunsPolicy)
                     {
-                        worker = new Worker(this, work);
                         Interlocked.Increment(ref _runningWorkerCount);
-                        worker.ExecuteWork();
+                        worker = new Worker(this, work);
                         Interlocked.Decrement(ref _runningWorkerCount);
                         worker.Dispose();
 
