@@ -926,8 +926,6 @@ namespace PowerThreadPool
 
                 Interlocked.Increment(ref _runningWorkerCount);
                 Worker newWorker = new Worker(this, work);
-                newWorker.ExecuteWork();
-
                 Interlocked.Decrement(ref _runningWorkerCount);
                 newWorker.Dispose();
 
