@@ -897,7 +897,7 @@ namespace PowerThreadPool
         internal bool HelpWhileWaiting()
         {
             List<WorkBase> works = null;
-            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker workerCurrentThread))
+            if (GetCurrentThreadBaseWork(out Worker workerCurrentThread))
             {
                 if (workerCurrentThread.WaitingWorkCount >= 1)
                 {
@@ -925,9 +925,14 @@ namespace PowerThreadPool
                 WorkBase work = works[0];
 
                 Interlocked.Increment(ref _runningWorkerCount);
-                Worker newWorker = new Worker(this, work);
+                Worker newWorker = null;
+                if (!_helperWorkerQueue.TryDequeue(out newWorker))
+                {
+                    newWorker = new Worker();
+                }
+                newWorker.RunHelp(this, work);
+                _helperWorkerQueue.Enqueue(newWorker);
                 Interlocked.Decrement(ref _runningWorkerCount);
-                newWorker.Dispose();
 
                 CheckPoolIdle();
 
