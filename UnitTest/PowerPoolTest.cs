@@ -7674,6 +7674,18 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestDivideAndConquer10Times()
+        {
+            for (int i = 0; i < 10; ++i)
+            {
+                TestDivideAndConquerDemoHelpInWorkWaitPreferIdleThenLocal();
+                TestDivideAndConquerDemoHelpInPoolWaitPreferIdleThenLocal();
+                TestDivideAndConquerDemoHelpInWorkWaitPreferLocalWorker();
+                TestDivideAndConquerDemoHelpInPoolWaitPreferLocalWorker();
+            }
+        }
+
+        [Fact]
         public void TestDivideAndConquerDemoHelpInWorkWaitPreferIdleThenLocal()
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption
