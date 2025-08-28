@@ -459,30 +459,36 @@ namespace PowerThreadPool
                 {
                     _baseHelpingWorker.SetWork(work, reset);
                 }
-                return;
+                else
+                {
+                    _powerPool.SetWork(work);
+                }
             }
-            _waitingWorkDic[work.ID] = work;
-            _powerPool.SetWorkOwner(work);
-            _waitingWorkIDPriorityCollection.Set(work.ID, work.WorkPriority);
-            work.Worker = this;
-            Interlocked.Increment(ref _waitingWorkCount);
-            WorkerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
-
-            if (_killTimer != null)
+            else
             {
-                _killTimer.Cancel();
-            }
+                _waitingWorkDic[work.ID] = work;
+                _powerPool.SetWorkOwner(work);
+                _waitingWorkIDPriorityCollection.Set(work.ID, work.WorkPriority);
+                work.Worker = this;
+                Interlocked.Increment(ref _waitingWorkCount);
+                WorkerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
 
-            if (!reset)
-            {
-                CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
-            }
+                if (_killTimer != null)
+                {
+                    _killTimer.Cancel();
+                }
 
-            if (originalWorkerState == WorkerStates.Idle)
-            {
-                Interlocked.Increment(ref _powerPool._runningWorkerCount);
-                _powerPool.InvokeRunningWorkerCountChangedEvent(true);
-                AssignWork();
+                if (!reset)
+                {
+                    CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
+                }
+
+                if (originalWorkerState == WorkerStates.Idle)
+                {
+                    Interlocked.Increment(ref _powerPool._runningWorkerCount);
+                    _powerPool.InvokeRunningWorkerCountChangedEvent(true);
+                    AssignWork();
+                }
             }
         }
 

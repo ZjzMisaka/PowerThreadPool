@@ -337,9 +337,16 @@ namespace PowerThreadPool
         {
             if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
             {
-                if (currentWorker._isHelper && currentWorker._baseHelpingWorker != null)
+                if (currentWorker._isHelper)
                 {
-                    currentWorker = currentWorker._baseHelpingWorker;
+                    if (currentWorker._baseHelpingWorker != null)
+                    {
+                        currentWorker = currentWorker._baseHelpingWorker;
+                    }
+                    else
+                    {
+                        currentWorker = null;
+                    }
                 }
             }
             return currentWorker != null;
