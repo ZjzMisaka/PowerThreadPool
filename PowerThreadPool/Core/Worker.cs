@@ -107,6 +107,7 @@ namespace PowerThreadPool
         internal Worker()
         {
             _isHelper = true;
+            _timeoutTimer = new DeferredActionTimer();
         }
 
         internal void RunHelp(PowerPool powerPool, WorkBase work)
@@ -130,12 +131,10 @@ namespace PowerThreadPool
             _powerPool._aliveWorkerDic[ID] = this;
             work.Worker = this;
             Interlocked.Decrement(ref _powerPool._waitingWorkCount);
-            _timeoutTimer = new DeferredActionTimer();
             SetWorkToRun(work);
             Work = work;
             ExecuteWork();
 
-            _timeoutTimer.Dispose();
             _powerPool._aliveWorkerDic.TryRemove(ID, out _);
             if (_helpingWorker != null)
             {
