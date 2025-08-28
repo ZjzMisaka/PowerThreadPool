@@ -55,6 +55,8 @@ namespace PowerThreadPool
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _asyncWorkIDDict = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<string, ITaskCompletionSource> _tcsDict = new ConcurrentDictionary<string, ITaskCompletionSource>();
 
+        internal ConcurrentQueue<Worker> _helperWorkerQueue = new ConcurrentQueue<Worker>();
+
         internal long _startCount = 0;
         internal long _endCount = 0;
         internal long _queueTime = 0;
@@ -331,6 +333,18 @@ namespace PowerThreadPool
             }
         }
 
+        private bool GetCurrentThreadBaseWork(out Worker currentWorker)
+        {
+            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
+            {
+                if (currentWorker._isHelper && currentWorker._baseHelpingWorker != null)
+                {
+                    currentWorker = currentWorker._baseHelpingWorker;
+                }
+            }
+            return currentWorker != null;
+        }
+
         /// <summary>
         /// Set a work into a worker's work queue.
         /// </summary>
@@ -348,7 +362,7 @@ namespace PowerThreadPool
                 bool rejected = PowerPoolOption.RejectOption != null;
                 Worker currentWorker = null;
 
-                if (workPlacementPolicy == WorkPlacementPolicy.PreferLocalWorker && _aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
+                if (workPlacementPolicy == WorkPlacementPolicy.PreferLocalWorker && GetCurrentThreadBaseWork(out currentWorker))
                 {
                     worker = currentWorker;
                     break;
@@ -361,7 +375,7 @@ namespace PowerThreadPool
 
                 if (workPlacementPolicy == WorkPlacementPolicy.PreferIdleThenLocal)
                 {
-                    if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
+                    if (GetCurrentThreadBaseWork(out currentWorker))
                     {
                         worker = currentWorker;
                         break;
@@ -399,9 +413,14 @@ namespace PowerThreadPool
                     else if (rejectType == RejectType.CallerRunsPolicy)
                     {
                         Interlocked.Increment(ref _runningWorkerCount);
-                        worker = new Worker(this, work);
+                        Worker newWorker = null;
+                        if (!_helperWorkerQueue.TryDequeue(out newWorker))
+                        {
+                            newWorker = new Worker();
+                        }
+                        newWorker.RunHelp(this, work);
+                        _helperWorkerQueue.Enqueue(newWorker);
                         Interlocked.Decrement(ref _runningWorkerCount);
-                        worker.Dispose();
 
                         CheckPoolIdle();
 

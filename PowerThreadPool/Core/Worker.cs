@@ -43,6 +43,10 @@ namespace PowerThreadPool
 
         private bool _killFlag = false;
 
+        internal bool _isHelper = false;
+        internal Worker _helpingWorker;
+        internal Worker _baseHelpingWorker;
+
         private PowerPool _powerPool;
 
         internal bool LongRunning { get; set; } = true;
@@ -100,25 +104,42 @@ namespace PowerThreadPool
             _thread.Start();
         }
 
-        internal Worker(PowerPool powerPool, WorkBase work)
+        internal Worker()
+        {
+            _isHelper = true;
+        }
+
+        internal void RunHelp(PowerPool powerPool, WorkBase work)
         {
             _powerPool = powerPool;
+            ID = Thread.CurrentThread.ManagedThreadId;
             _powerPool.InvokeRunningWorkerCountChangedEvent(true);
-            Worker worker = null;
+            _helpingWorker = null;
             WorkerState.InterlockedValue = WorkerStates.Running;
-            _powerPool._aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out worker);
-            _powerPool._aliveWorkerDic[Thread.CurrentThread.ManagedThreadId] = this;
+            if (_powerPool._aliveWorkerDic.TryGetValue(ID, out _helpingWorker))
+            {
+                if (_helpingWorker._isHelper)
+                {
+                    _baseHelpingWorker = _helpingWorker._baseHelpingWorker;
+                }
+                else
+                {
+                    _baseHelpingWorker = _helpingWorker;
+                }
+            }
+            _powerPool._aliveWorkerDic[ID] = this;
             work.Worker = this;
             Interlocked.Decrement(ref _powerPool._waitingWorkCount);
             _timeoutTimer = new DeferredActionTimer();
             SetWorkToRun(work);
-            _waitingWorkIDPriorityCollection = QueueFactory();
+            Work = work;
             ExecuteWork();
 
-            _powerPool._aliveWorkerDic.TryRemove(Thread.CurrentThread.ManagedThreadId, out _);
-            if (worker != null)
+            _timeoutTimer.Dispose();
+            _powerPool._aliveWorkerDic.TryRemove(ID, out _);
+            if (_helpingWorker != null)
             {
-                _powerPool._aliveWorkerDic[Thread.CurrentThread.ManagedThreadId] = worker;
+                _powerPool._aliveWorkerDic[ID] = _helpingWorker;
             }
             _powerPool.InvokeRunningWorkerCountChangedEvent(false);
         }
@@ -401,7 +422,10 @@ namespace PowerThreadPool
                 {
                     Cancel();
                 }
-                _thread?.Interrupt();
+                if (_thread != null)
+                {
+                    _thread.Interrupt();
+                }
             }
             else
             {
@@ -429,6 +453,14 @@ namespace PowerThreadPool
 
         internal void SetWork(WorkBase work, bool reset)
         {
+            if (_isHelper)
+            {
+                if (_baseHelpingWorker != null)
+                {
+                    _baseHelpingWorker.SetWork(work, reset);
+                }
+                return;
+            }
             _waitingWorkDic[work.ID] = work;
             _powerPool.SetWorkOwner(work);
             _waitingWorkIDPriorityCollection.Set(work.ID, work.WorkPriority);
