@@ -914,7 +914,7 @@ namespace PowerThreadPool
                     {
                         works = worker.Steal(1);
                         worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
-                        if (works.Count > 0)
+                        if (works != null && works.Count > 0)
                             break;
                     }
                 }
