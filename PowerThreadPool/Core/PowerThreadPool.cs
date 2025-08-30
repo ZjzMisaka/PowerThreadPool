@@ -881,6 +881,30 @@ namespace PowerThreadPool
 #endif
         }
 
+        private void StopAndDisposeWorkerAndHelpingWorkers(Worker worker)
+        {
+            StopAndDisposeWorker(worker);
+
+            while (worker._helpingWorker != null)
+            {
+                worker = worker._helpingWorker;
+                StopAndDisposeWorker(worker);
+            }
+        }
+
+        private void StopAndDisposeWorker(Worker worker)
+        {
+            worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed, out CanForceStop origCanForceStop);
+            if (worker.CanForceStop == CanForceStop.NotAllowed)
+            {
+                if (origCanForceStop == CanForceStop.Allowed)
+                {
+                    worker.ForceStop(true);
+                }
+                worker.DisposeWithJoin();
+            }
+        }
+
         /// <summary>
         /// Will try stop, force stop and kill all of the workers. 
         /// </summary>
@@ -906,21 +930,18 @@ namespace PowerThreadPool
                     {
                         foreach (Worker worker in _aliveWorkerDic.Values)
                         {
-                            worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed, out CanForceStop origCanForceStop);
-                            if (worker.CanForceStop == CanForceStop.NotAllowed)
-                            {
-                                if (origCanForceStop == CanForceStop.Allowed)
-                                {
-                                    worker.ForceStop(true);
-                                }
-                                worker.DisposeWithJoin();
-                            }
+                            StopAndDisposeWorkerAndHelpingWorkers(worker);
                         }
                         Thread.Yield();
+                    }
+                    while (_helperWorkerQueue.TryDequeue(out Worker worker))
+                    {
+                        StopAndDisposeWorkerAndHelpingWorkers(worker);
                     }
                     _runningWorkerCount = 0;
                     _cancellationTokenSource.Dispose();
                     _pauseSignal.Dispose();
+                    _waitAllSignal.Set();
                     _waitAllSignal.Dispose();
                     _runningTimer.Dispose();
                     _timeoutTimer.Dispose();
