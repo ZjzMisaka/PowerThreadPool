@@ -59,9 +59,6 @@ namespace PowerThreadPool
         {
             _powerPool = powerPool;
 
-            _killTimer = new DeferredActionTimer(() => { TryDisposeSelf(true); });
-            _timeoutTimer = new DeferredActionTimer();
-
             _waitingWorkIDPriorityCollection = QueueFactory();
 
             _thread = new Thread(() =>
@@ -107,7 +104,6 @@ namespace PowerThreadPool
         internal Worker()
         {
             _isHelper = true;
-            _timeoutTimer = new DeferredActionTimer();
         }
 
         internal void RunHelp(PowerPool powerPool, WorkBase work)
@@ -357,9 +353,13 @@ namespace PowerThreadPool
 
             if (destroyThreadOption != null && destroyThreadOption.KeepAliveTime != 0)
             {
+                if (_killTimer == null)
+                {
+                    _killTimer = new DeferredActionTimer(() => { TryDisposeSelf(true); });
+                }
                 _killTimer.Set(destroyThreadOption.KeepAliveTime);
             }
-            else if (destroyThreadOption == null)
+            else if (destroyThreadOption == null && _killTimer != null)
             {
                 _killTimer.Cancel();
             }
@@ -565,7 +565,10 @@ namespace PowerThreadPool
                     continue;
                 }
 
-                _killTimer.Cancel();
+                if (_killTimer != null)
+                {
+                    _killTimer.Cancel();
+                }
 
                 Interlocked.Decrement(ref _powerPool._waitingWorkCount);
 
@@ -747,6 +750,10 @@ namespace PowerThreadPool
 
             if (workTimeoutOption != null)
             {
+                if (_timeoutTimer == null)
+                {
+                    _timeoutTimer = new DeferredActionTimer();
+                }
                 _timeoutTimer.Set(workTimeoutOption.Duration, () =>
                 {
                     _powerPool.OnWorkTimedOut(_powerPool, new WorkTimedOutEventArgs() { ID = WorkID });
@@ -830,12 +837,18 @@ namespace PowerThreadPool
 
         internal void PauseTimer()
         {
-            _timeoutTimer.Pause();
+            if (_timeoutTimer != null)
+            {
+                _timeoutTimer.Pause();
+            }
         }
 
         internal void ResumeTimer()
         {
-            _timeoutTimer.Resume();
+            if (_timeoutTimer != null)
+            {
+                _timeoutTimer.Resume();
+            }
         }
 
         internal void Cancel()
@@ -953,7 +966,10 @@ namespace PowerThreadPool
                 }
 
                 _runSignal.Dispose();
-                _timeoutTimer.Dispose();
+                if (_timeoutTimer != null)
+                {
+                    _timeoutTimer.Dispose();
+                }
                 if (_killTimer != null)
                 {
                     _killTimer.Dispose();
