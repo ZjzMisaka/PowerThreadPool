@@ -41,7 +41,7 @@ namespace PowerThreadPool.Works
         internal Status Status { get; set; }
         internal AutoResetEvent WaitSignal { get; set; }
         internal bool ShouldStop { get; set; }
-        internal ManualResetEvent PauseSignal { get; set; }
+        internal ManualResetEventSlim PauseSignal { get; set; }
         /// <summary>
         /// Queue datetime (UTC).
         /// </summary>
