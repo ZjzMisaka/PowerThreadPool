@@ -9,7 +9,8 @@
     <IsTestProject>true</IsTestProject>
     
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\PowerThreadPool.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\PowerThreadPool.publickey</AssemblyOriginatorKeyFile>
+    <DelaySign>true</DelaySign>
   </PropertyGroup>
 
   <ItemGroup>
