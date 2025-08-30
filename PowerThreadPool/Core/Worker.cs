@@ -379,7 +379,10 @@ namespace PowerThreadPool
             }
             catch (ThreadInterruptedException ex)
             {
-                ex.Data.Add("ThrowedWhenExecuting", true);
+                if (!ex.Data.Contains("ThrowedWhenExecuting"))
+                {
+                    ex.Data.Add("ThrowedWhenExecuting", true);
+                }
                 throw;
             }
             catch (WorkStopException ex)
@@ -962,7 +965,10 @@ namespace PowerThreadPool
                 if (join)
                 {
                     Kill();
-                    _thread.Join();
+                    if (_thread != null)
+                    {
+                        _thread.Join();
+                    }
                 }
 
                 _runSignal.Dispose();

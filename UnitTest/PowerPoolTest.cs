@@ -6037,6 +6037,8 @@ namespace UnitTest
         [Fact]
         public void TestDisposeSelfShouldSetCanGetWorkToAllowedWhenStateTransitionFails()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 2,
@@ -6072,6 +6074,8 @@ namespace UnitTest
         [Fact]
         public void TestDisposeSelfSetDestroyThreadOptionAsNull()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 2,
@@ -6109,6 +6113,8 @@ namespace UnitTest
         [Fact]
         public async Task TestWorkGuardFreezeLoopAsync()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption());
             WorkOption<string> workOption = new WorkOption<string>();
             Work<string> work = new Work<string>(powerPool, "", () => { return ""; }, workOption);
@@ -6158,6 +6164,8 @@ namespace UnitTest
         [Fact]
         public void TestWorkIDType()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption { WorkIDType = WorkIDType.LongIncrement };
             PowerPool powerPool = new PowerPool(powerPoolOption);
             string longID = powerPool.QueueWorkItem(() => { });
@@ -6174,6 +6182,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectAbortPolicy()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -6273,6 +6283,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectCallerRunsPolicy()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -6366,6 +6378,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectDiscardPolicy()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -6459,6 +6473,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectDiscardPolicyWorkDiscardedEvent()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -6563,6 +6579,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectDiscardOldestPolicy()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -6626,6 +6644,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectDiscardOldestPolicyDiscardOneWorkFail()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -6684,6 +6704,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectEvent()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -6785,6 +6807,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectEventError()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -6884,6 +6908,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectNormalRun()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -7058,6 +7084,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectLIFO()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -7152,6 +7180,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectDiscardOldestPolicyGetPriorityLoop()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -7216,6 +7246,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectDiscardOldestPolicyGetPriorityLoopLIFO()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -7281,6 +7313,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectDiscardOldestPolicyWithDependents()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 4,
@@ -7387,6 +7421,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectDiscardOldestPolicyDiscardAsyncWork1()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 1,
@@ -7438,6 +7474,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectDiscardOldestPolicyDiscardAsyncWork2()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 1,
@@ -7489,6 +7527,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectDiscardOldestPolicyDiscardAsyncWork3()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 1,
@@ -7540,6 +7580,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectDiscardOldestPolicyDiscardAsyncWork4()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 1,
@@ -7591,6 +7633,8 @@ namespace UnitTest
         [Fact]
         public void TestRejectDiscardOldestPolicyDiscardAsyncWork5()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 1,
@@ -7642,6 +7686,8 @@ namespace UnitTest
         [Fact]
         public void TestNestedDependenciesFailed()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPoolOption powerPoolOption = new PowerPoolOption
             {
                 MaxThreads = 2,
@@ -7674,8 +7720,46 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestDisposeWhenHelping()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 2,
+            };
+
+            string id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                powerPool.Wait(id, true);
+                Thread.Sleep(100000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000000);
+            });
+            Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                powerPool.Dispose();
+            });
+            powerPool.Wait();
+        }
+
+        [Fact]
         public void TestDivideAndConquer10Times()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             for (int i = 0; i < 10; ++i)
             {
                 TestDivideAndConquerDemoHelpInWorkWaitPreferIdleThenLocal();
@@ -7688,6 +7772,8 @@ namespace UnitTest
         [Fact]
         public void TestDivideAndConquerDemoHelpInWorkWaitPreferIdleThenLocal()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption
             {
                 QueueType = QueueType.LIFO,
@@ -7705,6 +7791,8 @@ namespace UnitTest
         [Fact]
         public void TestDivideAndConquerDemoHelpInPoolWaitPreferIdleThenLocal()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             int n = 10_000_000;
             long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferIdleThenLocal);
             Assert.Equal(10000000, res);
@@ -7713,6 +7801,8 @@ namespace UnitTest
         [Fact]
         public void TestDivideAndConquerDemoHelpInWorkWaitPreferLocalWorker()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPool powerPool = new PowerPool(new PowerPoolOption
             {
                 QueueType = QueueType.LIFO,
@@ -7730,6 +7820,8 @@ namespace UnitTest
         [Fact]
         public void TestDivideAndConquerDemoHelpInPoolWaitPreferLocalWorker()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             int n = 10_000_000;
             long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferLocalWorker);
             Assert.Equal(10000000, res);
