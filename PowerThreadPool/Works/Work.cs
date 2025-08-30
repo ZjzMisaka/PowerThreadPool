@@ -151,7 +151,7 @@ namespace PowerThreadPool.Works
         {
             if (PauseSignal == null)
             {
-                PauseSignal = new ManualResetEvent(true);
+                PauseSignal = new ManualResetEventSlim(true);
             }
 
             IsPausing = true;
