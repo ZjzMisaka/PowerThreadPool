@@ -493,10 +493,10 @@ namespace PowerThreadPool
 
         internal List<WorkBase> Steal(int count)
         {
-            List<WorkBase> stolenList = new List<WorkBase>();
+            List<WorkBase> stolenList = null;
 
             bool isContinue = true;
-            while (stolenList.Count < count && isContinue)
+            while ((stolenList == null || stolenList.Count < count) && isContinue)
             {
                 isContinue = false;
 
@@ -509,6 +509,10 @@ namespace PowerThreadPool
                     {
                         Interlocked.Decrement(ref _waitingWorkCount);
                         stolenWork.Worker = null;
+                        if (stolenList == null)
+                        {
+                            stolenList = new List<WorkBase>();
+                        }
                         stolenList.Add(stolenWork);
 
                         isContinue = true;
