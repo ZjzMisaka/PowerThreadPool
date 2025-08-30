@@ -21,7 +21,7 @@ namespace PowerThreadPool
         /// </summary>
         public void PauseIfRequested()
         {
-            _pauseSignal.Wait();
+            _pauseSignal.WaitOne();
 
             // Directly retrieve the worker from the dictionary since the key is guaranteed to exist
             // If not, just let Work execute failed
@@ -39,7 +39,7 @@ namespace PowerThreadPool
             if (pauseWork != null)
             {
                 worker.PauseTimer();
-                pauseWork.PauseSignal.Wait();
+                pauseWork.PauseSignal.WaitOne();
                 worker.ResumeTimer();
             }
         }
@@ -203,7 +203,7 @@ namespace PowerThreadPool
             }
             else
             {
-                _waitAllSignal.Wait();
+                _waitAllSignal.WaitOne();
             }
         }
 
