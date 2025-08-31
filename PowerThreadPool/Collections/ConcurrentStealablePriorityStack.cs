@@ -15,8 +15,34 @@ namespace PowerThreadPool.Collections
 
         private InterlockedFlag<CanInsertPriority> _canInsertPriority = CanInsertPriority.Allowed;
 
+        private readonly ConcurrentStack<T> _zeroStack = new ConcurrentStack<T>();
+
+        public ConcurrentStealablePriorityStack()
+        {
+            _sortedPriorityList.Add(0);
+        }
+
+        private bool TryGetStack(int priority, out ConcurrentStack<T> stack)
+        {
+            if (priority == 0)
+            {
+                stack = _zeroStack;
+                return true;
+            }
+            else
+            {
+                return _queueDic.TryGetValue(priority, out stack);
+            }
+        }
+
         public void Set(T item, int priority)
         {
+            if (priority == 0)
+            {
+                _zeroStack.Push(item);
+                return;
+            }
+
             ConcurrentStack<T> stack = _queueDic.GetOrAdd(priority, _ =>
             {
 #if DEBUG
@@ -70,10 +96,17 @@ namespace PowerThreadPool.Collections
             T item = default;
 
             List<int> priorities = _sortedPriorityList;
+
+            if (priorities.Count == 1)
+            {
+                _zeroStack.TryPop(out item);
+                return item;
+            }
+
             for (int i = 0; i < priorities.Count; ++i)
             {
                 int pr = priorities[i];
-                if (_queueDic.TryGetValue(pr, out ConcurrentStack<T> s) && s.TryPop(out item))
+                if (TryGetStack(pr, out ConcurrentStack<T> s) && s.TryPop(out item))
                 {
                     break;
                 }
@@ -88,10 +121,17 @@ namespace PowerThreadPool.Collections
             T item = default;
 
             List<int> priorities = _sortedPriorityList;
+
+            if (priorities.Count == 1)
+            {
+                _zeroStack.TryPop(out item);
+                return item;
+            }
+
             for (int i = priorities.Count - 1; i >= 0; --i)
             {
                 int pr = priorities[i];
-                if (_queueDic.TryGetValue(pr, out ConcurrentStack<T> s) && s.TryPop(out item))
+                if (TryGetStack(pr, out ConcurrentStack<T> s) && s.TryPop(out item))
                 {
                     break;
                 }

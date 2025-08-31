@@ -15,8 +15,34 @@ namespace PowerThreadPool.Collections
 
         private InterlockedFlag<CanInsertPriority> _canInsertPriority = CanInsertPriority.Allowed;
 
+        private readonly ConcurrentQueue<T> _zeroQueue = new ConcurrentQueue<T>();
+
+        public ConcurrentStealablePriorityQueue()
+        {
+            _sortedPriorityList.Add(0);
+        }
+
+        private bool TryGetQueue(int priority, out ConcurrentQueue<T> queue)
+        {
+            if (priority == 0)
+            {
+                queue = _zeroQueue;
+                return true;
+            }
+            else
+            {
+                return _queueDic.TryGetValue(priority, out queue);
+            }
+        }
+
         public void Set(T item, int priority)
         {
+            if (priority == 0)
+            {
+                _zeroQueue.Enqueue(item);
+                return;
+            }
+
             ConcurrentQueue<T> queue = _queueDic.GetOrAdd(priority, _ =>
             {
 #if DEBUG
@@ -70,10 +96,17 @@ namespace PowerThreadPool.Collections
             T item = default;
 
             List<int> priorities = _sortedPriorityList;
+
+            if (priorities.Count == 1)
+            {
+                _zeroQueue.TryDequeue(out item);
+                return item;
+            }
+
             for (int i = 0; i < priorities.Count; ++i)
             {
                 int pr = priorities[i];
-                if (_queueDic.TryGetValue(pr, out ConcurrentQueue<T> q) && q.TryDequeue(out item))
+                if (TryGetQueue(pr, out ConcurrentQueue<T> q) && q.TryDequeue(out item))
                 {
                     break;
                 }
@@ -88,10 +121,17 @@ namespace PowerThreadPool.Collections
             T item = default;
 
             List<int> priorities = _sortedPriorityList;
+
+            if (priorities.Count == 1)
+            {
+                _zeroQueue.TryDequeue(out item);
+                return item;
+            }
+
             for (int i = priorities.Count - 1; i >= 0; --i)
             {
                 int pr = priorities[i];
-                if (_queueDic.TryGetValue(pr, out ConcurrentQueue<T> q) && q.TryDequeue(out item))
+                if (TryGetQueue(pr, out ConcurrentQueue<T> q) && q.TryDequeue(out item))
                 {
                     break;
                 }
