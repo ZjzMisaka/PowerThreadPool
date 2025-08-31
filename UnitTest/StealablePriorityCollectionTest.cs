@@ -65,5 +65,37 @@ namespace UnitTest
             Assert.Equal(12, queue.Get());
             Assert.Equal(11, queue.Get());
         }
+
+        [Fact]
+        public void TestConcurrentStealablePriorityQueueDiscard()
+        {
+            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
+            queue.Set(1, 0);
+            Assert.Equal(1, queue.Discard());
+        }
+
+        [Fact]
+        public void TestConcurrentStealablePriorityStackDiscard()
+        {
+            ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>();
+            queue.Set(1, 0);
+            Assert.Equal(1, queue.Discard());
+        }
+
+        [Fact]
+        public void TestConcurrentStealablePriorityQueueNotInserted()
+        {
+            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
+            queue.Set(1, -1);
+            Assert.Equal(1, queue.Discard());
+        }
+
+        [Fact]
+        public void TestConcurrentStealablePriorityStackNotInserted()
+        {
+            ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>();
+            queue.Set(1, -1);
+            Assert.Equal(1, queue.Discard());
+        }
     }
 }
