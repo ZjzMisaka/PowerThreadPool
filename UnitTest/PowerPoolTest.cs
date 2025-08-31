@@ -7756,11 +7756,11 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestDivideAndConquer10Times()
+        public void TestDivideAndConquer50Times()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            for (int i = 0; i < 10; ++i)
+            for (int i = 0; i < 50; ++i)
             {
                 TestDivideAndConquerDemoHelpInWorkWaitPreferIdleThenLocal();
                 TestDivideAndConquerDemoHelpInPoolWaitPreferIdleThenLocal();
