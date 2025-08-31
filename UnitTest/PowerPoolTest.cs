@@ -7786,6 +7786,8 @@ namespace UnitTest
             long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferIdleThenLocal);
 
             Assert.Equal(4999950000, result);
+
+            powerPool.Dispose();
         }
 
         [Fact]
@@ -7815,6 +7817,8 @@ namespace UnitTest
             long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferLocalWorker);
 
             Assert.Equal(4999950000, result);
+
+            powerPool.Dispose();
         }
 
         [Fact]
@@ -7970,6 +7974,8 @@ namespace UnitTest
 
                 string id = powerPool.QueueWorkItem(() => ParallelSum(powerPool, arr, 0, n - 1, workPlacementPolicy));
                 long sum = powerPool.Fetch<long>(id, removeAfterFetch: false, helpWhileWaiting: true).Result;
+
+                powerPool.Dispose();
 
                 return sum;
             }
