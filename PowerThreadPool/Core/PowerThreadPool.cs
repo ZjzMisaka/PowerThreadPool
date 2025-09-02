@@ -364,10 +364,6 @@ namespace PowerThreadPool
         internal bool GetCurrentThreadWorker(out Worker currentWorker)
         {
             currentWorker = WorkerContext.s_current;
-            if (currentWorker == null)
-            {
-                _aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker);
-            }
             return currentWorker != null;
         }
 
