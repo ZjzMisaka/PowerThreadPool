@@ -119,7 +119,17 @@ namespace PowerThreadPool
             _powerPool.InvokeRunningWorkerCountChangedEvent(true);
             _helpingWorker = null;
             WorkerState.InterlockedValue = WorkerStates.Running;
-            _powerPool.GetCurrentThreadBaseWorker(out _baseHelpingWorker);
+            if (_powerPool.GetCurrentThreadWorker(out _helpingWorker))
+            {
+                if (_helpingWorker._isHelper)
+                {
+                    _baseHelpingWorker = _helpingWorker._baseHelpingWorker;
+                }
+                else
+                {
+                    _baseHelpingWorker = _helpingWorker;
+                }
+            }
 
             Worker workerTemp = WorkerContext.s_current;
             WorkerContext.s_current = this;
@@ -449,42 +459,28 @@ namespace PowerThreadPool
 
         internal void SetWork(WorkBase work, bool reset)
         {
-            if (_isHelper)
+            _waitingWorkDic[work.ID] = work;
+            _powerPool.SetWorkOwner(work);
+            _waitingWorkIDPriorityCollection.Set(work.ID, work.WorkPriority);
+            work.Worker = this;
+            Interlocked.Increment(ref _waitingWorkCount);
+            WorkerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
+
+            if (_killTimer != null)
             {
-                if (_baseHelpingWorker != null)
-                {
-                    _baseHelpingWorker.SetWork(work, reset);
-                }
-                else
-                {
-                    _powerPool.SetWork(work);
-                }
+                _killTimer.Cancel();
             }
-            else
+
+            if (!reset)
             {
-                _waitingWorkDic[work.ID] = work;
-                _powerPool.SetWorkOwner(work);
-                _waitingWorkIDPriorityCollection.Set(work.ID, work.WorkPriority);
-                work.Worker = this;
-                Interlocked.Increment(ref _waitingWorkCount);
-                WorkerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
+                CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
+            }
 
-                if (_killTimer != null)
-                {
-                    _killTimer.Cancel();
-                }
-
-                if (!reset)
-                {
-                    CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
-                }
-
-                if (originalWorkerState == WorkerStates.Idle)
-                {
-                    Interlocked.Increment(ref _powerPool._runningWorkerCount);
-                    _powerPool.InvokeRunningWorkerCountChangedEvent(true);
-                    AssignWork();
-                }
+            if (originalWorkerState == WorkerStates.Idle)
+            {
+                Interlocked.Increment(ref _powerPool._runningWorkerCount);
+                _powerPool.InvokeRunningWorkerCountChangedEvent(true);
+                AssignWork();
             }
         }
 
