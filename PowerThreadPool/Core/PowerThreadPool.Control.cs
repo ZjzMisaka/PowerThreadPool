@@ -25,7 +25,7 @@ namespace PowerThreadPool
 
             // Directly retrieve the worker from the dictionary since the key is guaranteed to exist
             // If not, just let Work execute failed
-            Worker worker = _aliveWorkerDic[Thread.CurrentThread.ManagedThreadId];
+            GetCurrentThreadWorker(out Worker worker);
             WorkBase pauseWork = null;
             if (worker.Work.IsPausing)
             {
@@ -64,7 +64,7 @@ namespace PowerThreadPool
 
             if (work == null)
             {
-                if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker))
+                if (GetCurrentThreadWorker(out Worker worker))
                 {
                     worker.Work.AllowEventsAndCallback = true;
                 }
@@ -133,7 +133,7 @@ namespace PowerThreadPool
 
             // Directly retrieve the worker from the dictionary since the key is guaranteed to exist
             // If not, just let Work execute failed
-            Worker worker = _aliveWorkerDic[Thread.CurrentThread.ManagedThreadId];
+            GetCurrentThreadWorker(out Worker worker);
             if (worker.IsCancellationRequested())
             {
                 return true;
@@ -157,7 +157,7 @@ namespace PowerThreadPool
                 return true;
             }
 
-            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out Worker worker) && worker.WorkerState == WorkerStates.Running)
+            if (GetCurrentThreadWorker(out Worker worker) && worker.WorkerState == WorkerStates.Running)
             {
                 if (worker.IsCancellationRequested())
                 {
@@ -897,7 +897,7 @@ namespace PowerThreadPool
         internal bool HelpWhileWaiting()
         {
             List<WorkBase> works = null;
-            if (GetCurrentThreadBaseWork(out Worker workerCurrentThread))
+            if (GetCurrentThreadBaseWorker(out Worker workerCurrentThread))
             {
                 if (workerCurrentThread.WaitingWorkCount >= 1)
                 {

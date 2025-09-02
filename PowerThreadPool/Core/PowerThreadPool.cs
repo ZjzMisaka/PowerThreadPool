@@ -2,6 +2,9 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+using System.Runtime.CompilerServices;
+#endif
 using System.Threading;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
@@ -333,9 +336,12 @@ namespace PowerThreadPool
             }
         }
 
-        private bool GetCurrentThreadBaseWork(out Worker currentWorker)
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        internal bool GetCurrentThreadBaseWorker(out Worker currentWorker)
         {
-            if (_aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker))
+            if (GetCurrentThreadWorker(out currentWorker))
             {
                 if (currentWorker._isHelper)
                 {
@@ -348,6 +354,19 @@ namespace PowerThreadPool
                         currentWorker = null;
                     }
                 }
+            }
+            return currentWorker != null;
+        }
+
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
+        internal bool GetCurrentThreadWorker(out Worker currentWorker)
+        {
+            currentWorker = WorkerContext.s_current;
+            if (currentWorker == null)
+            {
+                _aliveWorkerDic.TryGetValue(Thread.CurrentThread.ManagedThreadId, out currentWorker);
             }
             return currentWorker != null;
         }
@@ -369,7 +388,7 @@ namespace PowerThreadPool
                 bool rejected = PowerPoolOption.RejectOption != null;
                 Worker currentWorker = null;
 
-                if (workPlacementPolicy == WorkPlacementPolicy.PreferLocalWorker && GetCurrentThreadBaseWork(out currentWorker))
+                if (workPlacementPolicy == WorkPlacementPolicy.PreferLocalWorker && GetCurrentThreadBaseWorker(out currentWorker))
                 {
                     worker = currentWorker;
                     break;
@@ -382,7 +401,7 @@ namespace PowerThreadPool
 
                 if (workPlacementPolicy == WorkPlacementPolicy.PreferIdleThenLocal)
                 {
-                    if (GetCurrentThreadBaseWork(out currentWorker))
+                    if (GetCurrentThreadBaseWorker(out currentWorker))
                     {
                         worker = currentWorker;
                         break;

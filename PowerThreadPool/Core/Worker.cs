@@ -63,6 +63,8 @@ namespace PowerThreadPool
 
             _thread = new Thread(() =>
             {
+                WorkerContext.s_current = this;
+
                 try
                 {
                     while (true)
@@ -96,6 +98,10 @@ namespace PowerThreadPool
                 {
                     ThreadInterrupted(ex);
                 }
+                finally
+                {
+                    WorkerContext.s_current = null;
+                }
             });
             ID = _thread.ManagedThreadId;
             _thread.Start();
@@ -113,29 +119,17 @@ namespace PowerThreadPool
             _powerPool.InvokeRunningWorkerCountChangedEvent(true);
             _helpingWorker = null;
             WorkerState.InterlockedValue = WorkerStates.Running;
-            if (_powerPool._aliveWorkerDic.TryGetValue(ID, out _helpingWorker))
-            {
-                if (_helpingWorker._isHelper)
-                {
-                    _baseHelpingWorker = _helpingWorker._baseHelpingWorker;
-                }
-                else
-                {
-                    _baseHelpingWorker = _helpingWorker;
-                }
-            }
-            _powerPool._aliveWorkerDic[ID] = this;
+            _powerPool.GetCurrentThreadBaseWorker(out _baseHelpingWorker);
+
+            Worker workerTemp = WorkerContext.s_current;
+            WorkerContext.s_current = this;
             work.Worker = this;
             Interlocked.Decrement(ref _powerPool._waitingWorkCount);
             SetWorkToRun(work);
             Work = work;
             ExecuteWork();
+            WorkerContext.s_current = workerTemp;
 
-            _powerPool._aliveWorkerDic.TryRemove(ID, out _);
-            if (_helpingWorker != null)
-            {
-                _powerPool._aliveWorkerDic[ID] = _helpingWorker;
-            }
             _powerPool.InvokeRunningWorkerCountChangedEvent(false);
         }
 
