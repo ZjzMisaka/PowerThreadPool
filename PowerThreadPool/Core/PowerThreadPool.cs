@@ -925,26 +925,38 @@ namespace PowerThreadPool
                 if (disposing)
                 {
                     _disposing = true;
-                    Stop();
-                    while (AliveWorkerCount > 0 || IdleWorkerCount > 0)
+                    try
                     {
-                        foreach (Worker worker in _aliveWorkerDic.Values)
+                        Stop();
+                        while (AliveWorkerCount > 0)
+                        {
+                            foreach (Worker worker in _idleWorkerDic.Values)
+                            {
+                                StopAndDisposeWorkerAndHelpingWorkers(worker);
+                            }
+                            foreach (Worker worker in _aliveWorkerDic.Values)
+                            {
+                                StopAndDisposeWorkerAndHelpingWorkers(worker);
+                            }
+                            Thread.Yield();
+                        }
+                        while (_helperWorkerQueue.TryDequeue(out Worker worker))
                         {
                             StopAndDisposeWorkerAndHelpingWorkers(worker);
                         }
-                        Thread.Yield();
                     }
-                    while (_helperWorkerQueue.TryDequeue(out Worker worker))
+                    finally
                     {
-                        StopAndDisposeWorkerAndHelpingWorkers(worker);
+                        _aliveWorkerDic.Clear();
+                        _idleWorkerDic.Clear();
+                        _runningWorkerCount = 0;
+                        _cancellationTokenSource.Dispose();
+                        _pauseSignal.Dispose();
+                        _waitAllSignal.Set();
+                        _waitAllSignal.Dispose();
+                        _runningTimer.Dispose();
+                        _timeoutTimer.Dispose();
                     }
-                    _runningWorkerCount = 0;
-                    _cancellationTokenSource.Dispose();
-                    _pauseSignal.Dispose();
-                    _waitAllSignal.Set();
-                    _waitAllSignal.Dispose();
-                    _runningTimer.Dispose();
-                    _timeoutTimer.Dispose();
                 }
 
                 _disposed = true;
