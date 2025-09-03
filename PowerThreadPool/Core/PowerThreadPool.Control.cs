@@ -23,7 +23,7 @@ namespace PowerThreadPool
         {
             _pauseSignal.WaitOne();
 
-            // Directly retrieve the worker from the dictionary since the key is guaranteed to exist
+            // Directly get current thread worker since it is guaranteed to exist
             // If not, just let Work execute failed
             GetCurrentThreadWorker(out Worker worker);
             WorkBase pauseWork = null;
@@ -131,7 +131,7 @@ namespace PowerThreadPool
                 return true;
             }
 
-            // Directly retrieve the worker from the dictionary since the key is guaranteed to exist
+            // Directly get current thread worker since it is guaranteed to exist
             // If not, just let Work execute failed
             GetCurrentThreadWorker(out Worker worker);
             if (worker.IsCancellationRequested())
@@ -700,6 +700,7 @@ namespace PowerThreadPool
             }
             if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
+                _pausingWorkSet.Add(work);
                 return work.Pause();
             }
             else
@@ -738,12 +739,9 @@ namespace PowerThreadPool
             _pauseSignal.Set();
             if (resumeWorkPausedByID)
             {
-                foreach (Worker worker in _aliveWorkerDic.Values)
+                foreach (WorkBase work in _pausingWorkSet)
                 {
-                    if (worker.WorkerState == WorkerStates.Running)
-                    {
-                        worker.Resume();
-                    }
+                    work.Resume();
                 }
             }
         }
@@ -762,6 +760,7 @@ namespace PowerThreadPool
             }
             else if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
+                _pausingWorkSet.Remove(work);
                 res = work.Resume();
             }
             return res;
@@ -925,6 +924,7 @@ namespace PowerThreadPool
                 WorkBase work = works[0];
 
                 Interlocked.Increment(ref _runningWorkerCount);
+                InvokeRunningWorkerCountChangedEvent(true);
                 Worker newWorker = null;
                 if (!_helperWorkerQueue.TryDequeue(out newWorker))
                 {
@@ -933,6 +933,7 @@ namespace PowerThreadPool
                 newWorker.RunHelp(this, work);
                 _helperWorkerQueue.Enqueue(newWorker);
                 Interlocked.Decrement(ref _runningWorkerCount);
+                InvokeRunningWorkerCountChangedEvent(false);
 
                 CheckPoolIdle();
 
