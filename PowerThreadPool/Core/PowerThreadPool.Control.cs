@@ -25,7 +25,10 @@ namespace PowerThreadPool
 
             // Directly get current thread worker since it is guaranteed to exist
             // If not, just let Work execute failed
-            GetCurrentThreadWorker(out Worker worker);
+            if (!GetCurrentThreadWorker(out Worker worker))
+            {
+                throw new InvalidOperationException("PauseIfRequested must be called on a PowerPool worker thread.");
+            }
             WorkBase pauseWork = null;
             if (worker.Work.IsPausing)
             {
@@ -133,7 +136,10 @@ namespace PowerThreadPool
 
             // Directly get current thread worker since it is guaranteed to exist
             // If not, just let Work execute failed
-            GetCurrentThreadWorker(out Worker worker);
+            if (!GetCurrentThreadWorker(out Worker worker))
+            {
+                throw new InvalidOperationException("PauseIfRequested must be called on a PowerPool worker thread.");
+            }
             if (worker.IsCancellationRequested())
             {
                 return true;

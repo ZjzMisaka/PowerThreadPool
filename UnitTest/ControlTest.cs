@@ -3110,5 +3110,25 @@ namespace UnitTest
             Assert.Empty(powerPool.GetGroupMemberList("AAA"));
             Assert.Empty(powerPool.GetGroupMemberList("BBB"));
         }
+
+        [Fact]
+        public void TestCallPauseIfRequestedNotOnPowerPoolWorkerThread()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            Assert.Throws<InvalidOperationException>(() => powerPool.PauseIfRequested());
+        }
+
+        [Fact]
+        public void TestCallCheckIfRequestedStopNotOnPowerPoolWorkerThread()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            Assert.Throws<InvalidOperationException>(() => powerPool.CheckIfRequestedStop());
+        }
     }
 }
