@@ -150,6 +150,7 @@ namespace PowerThreadPool
             if (_baseHelpingWorker != null)
             {
                 _baseHelpingWorker._helperWorker = null;
+                _baseHelpingWorker = null;
             }
             _helpingWorker = null;
         }
