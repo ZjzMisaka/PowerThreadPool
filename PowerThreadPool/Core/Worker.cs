@@ -116,7 +116,6 @@ namespace PowerThreadPool
         {
             _powerPool = powerPool;
             ID = Thread.CurrentThread.ManagedThreadId;
-            _powerPool.InvokeRunningWorkerCountChangedEvent(true);
             _helpingWorker = null;
             WorkerState.InterlockedValue = WorkerStates.Running;
             if (_powerPool.GetCurrentThreadWorker(out _helpingWorker))
@@ -140,7 +139,9 @@ namespace PowerThreadPool
             ExecuteWork();
             WorkerContext.s_current = workerTemp;
 
-            _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+            WorkerState.InterlockedValue = WorkerStates.Idle;
+
+            _helpingWorker = null;
         }
 
         private IStealablePriorityCollection<string> QueueFactory()

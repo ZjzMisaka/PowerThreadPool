@@ -53,6 +53,8 @@ namespace PowerThreadPool
         internal ConcurrentQueue<string> _stopSuspendedWorkQueue = new ConcurrentQueue<string>();
         internal ConcurrentDictionary<string, WorkBase> _stopSuspendedWork = new ConcurrentDictionary<string, WorkBase>();
 
+        private ConcurrentSet<WorkBase> _pausingWorkSet = new ConcurrentSet<WorkBase>();
+
         internal ConcurrentDictionary<string, ExecuteResultBase> _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
 
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _asyncWorkIDDict = new ConcurrentDictionary<string, ConcurrentSet<string>>();
@@ -435,6 +437,7 @@ namespace PowerThreadPool
                     else if (rejectType == RejectType.CallerRunsPolicy)
                     {
                         Interlocked.Increment(ref _runningWorkerCount);
+                        InvokeRunningWorkerCountChangedEvent(true);
                         Worker newWorker = null;
                         if (!_helperWorkerQueue.TryDequeue(out newWorker))
                         {
@@ -443,6 +446,7 @@ namespace PowerThreadPool
                         newWorker.RunHelp(this, work);
                         _helperWorkerQueue.Enqueue(newWorker);
                         Interlocked.Decrement(ref _runningWorkerCount);
+                        InvokeRunningWorkerCountChangedEvent(false);
 
                         CheckPoolIdle();
 
@@ -964,6 +968,7 @@ namespace PowerThreadPool
                     {
                         _aliveWorkerDic.Clear();
                         _idleWorkerDic.Clear();
+                        _pausingWorkSet.Clear();
                         _runningWorkerCount = 0;
                         _cancellationTokenSource.Dispose();
                         _pauseSignal.Dispose();
