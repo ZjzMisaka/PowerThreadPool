@@ -45,6 +45,7 @@ namespace PowerThreadPool
 
         internal bool _isHelper = false;
         internal Worker _helpingWorker;
+        internal Worker _helperWorker;
         internal Worker _baseHelpingWorker;
 
         private PowerPool _powerPool;
@@ -130,6 +131,11 @@ namespace PowerThreadPool
                 }
             }
 
+            if (_baseHelpingWorker != null)
+            {
+                _baseHelpingWorker._helperWorker = this;
+            }
+
             Worker workerTemp = WorkerContext.s_current;
             WorkerContext.s_current = this;
             work.Worker = this;
@@ -141,6 +147,10 @@ namespace PowerThreadPool
 
             WorkerState.InterlockedValue = WorkerStates.Idle;
 
+            if (_baseHelpingWorker != null)
+            {
+                _baseHelpingWorker._helperWorker = null;
+            }
             _helpingWorker = null;
         }
 
@@ -437,24 +447,6 @@ namespace PowerThreadPool
             else
             {
                 CanForceStop.InterlockedValue = Constants.CanForceStop.Allowed;
-            }
-        }
-
-        internal void Resume()
-        {
-            IEnumerable<WorkBase> waitingWorkList = _waitingWorkDic.Values;
-            foreach (WorkBase workToResume in waitingWorkList)
-            {
-                if (workToResume.IsPausing)
-                {
-                    workToResume.IsPausing = false;
-                    workToResume.PauseSignal.Set();
-                }
-            }
-            if (Work.IsPausing)
-            {
-                Work.IsPausing = false;
-                Work.PauseSignal.Set();
             }
         }
 
