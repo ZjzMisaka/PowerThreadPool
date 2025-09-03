@@ -904,9 +904,9 @@ namespace PowerThreadPool
         {
             StopAndDisposeWorker(worker);
 
-            while (worker._helpingWorker != null)
+            while (worker._helperWorker != null)
             {
-                worker = worker._helpingWorker;
+                worker = worker._helperWorker;
                 StopAndDisposeWorker(worker);
             }
         }
