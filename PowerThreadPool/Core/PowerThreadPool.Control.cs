@@ -138,7 +138,7 @@ namespace PowerThreadPool
             // If not, just let Work execute failed
             if (!GetCurrentThreadWorker(out Worker worker))
             {
-                throw new InvalidOperationException("PauseIfRequested must be called on a PowerPool worker thread.");
+                throw new InvalidOperationException("CheckIfRequestedStop must be called on a PowerPool worker thread.");
             }
             if (worker.IsCancellationRequested())
             {
