@@ -737,12 +737,14 @@ namespace PowerThreadPool
         {
             _timeoutTimer.Resume();
             _pauseSignal.Set();
+
             if (resumeWorkPausedByID)
             {
                 foreach (WorkBase work in _pausingWorkSet)
                 {
                     work.Resume();
                 }
+                _pausingWorkSet.Clear();
             }
         }
 

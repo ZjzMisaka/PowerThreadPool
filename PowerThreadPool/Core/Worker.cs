@@ -139,6 +139,8 @@ namespace PowerThreadPool
             ExecuteWork();
             WorkerContext.s_current = workerTemp;
 
+            WorkerState.InterlockedValue = WorkerStates.Idle;
+
             _helpingWorker = null;
         }
 
