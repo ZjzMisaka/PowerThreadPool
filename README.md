@@ -15,6 +15,8 @@
 
 A comprehensive and efficient lock-free thread pool with granular work control, flexible concurrency, robust error handling, and easy work management for both sync and async workloads.  
 
+**Help wanted:** [Let’s Build a Vibrant Community Around PowerThreadPool](https://github.com/ZjzMisaka/PowerThreadPool/discussions/258)  
+
 ## Documentation
 Access the Wiki in [English](https://github.com/ZjzMisaka/PowerThreadPool/wiki) | [中文](https://github.com/ZjzMisaka/PowerThreadPool.zh-CN.Wiki/wiki) | [日本語](https://github.com/ZjzMisaka/PowerThreadPool.ja-JP.Wiki/wiki).  
 Visit the [DeepWiki](https://deepwiki.com/ZjzMisaka/PowerThreadPool) for more information.  
