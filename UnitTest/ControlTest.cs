@@ -2504,7 +2504,10 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool();
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                ClearResultStorageWhenPoolStart = false
+            });
             string id1 = powerPool.QueueWorkItem(() =>
             {
                 return 1;
@@ -2538,19 +2541,19 @@ namespace UnitTest
 
             List<ExecuteResult<int>> resList = powerPool.Fetch<int>(x => x.Result >= 3);
 
-            Assert.True(resList.Count == 2);
+            Assert.Equal(2, resList.Count);
             Assert.True(resList[0].ID == id3 || resList[0].ID == id4);
             Assert.True(resList[1].ID == id3 || resList[1].ID == id4);
 
             resList = powerPool.Fetch<int>(x => x.Result >= 3, true);
 
-            Assert.True(resList.Count == 2);
+            Assert.Equal(2, resList.Count);
             Assert.True(resList[0].ID == id3 || resList[0].ID == id4);
             Assert.True(resList[1].ID == id3 || resList[1].ID == id4);
 
             resList = powerPool.Fetch<int>(x => x.Result >= 3, true);
 
-            Assert.True(resList.Count == 0);
+            Assert.Empty(resList);
         }
 
         [Fact]

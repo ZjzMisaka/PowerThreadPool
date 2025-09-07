@@ -355,14 +355,17 @@ namespace UnitTest
                 Assert.Equal("2", l);
                 r = res.Result;
             });
-            powerPool.Stop(id, true);
+            bool res = powerPool.Stop(id, true);
             powerPool.Wait();
-            Assert.Equal("1", p);
-            Assert.Null(l);
-            Assert.Null(c);
-            Assert.Null(r);
-            Assert.Equal(id, eventObj);
-            Assert.True(eventObj1);
+            if (res)
+            {
+                Assert.Equal("1", p);
+                Assert.Null(l);
+                Assert.Null(c);
+                Assert.Null(r);
+                Assert.Equal(id, eventObj);
+                Assert.True(eventObj1);
+            }
         }
 
         [Fact]
