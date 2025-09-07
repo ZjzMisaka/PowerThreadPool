@@ -217,7 +217,8 @@ namespace PowerThreadPool
                 source.CollectionChanged -= OnCollectionChanged;
                 if (source._canWatch.TrySet(CanWatch.NotAllowed, CanWatch.Allowed))
                 {
-                    while (source.TryTake(out TSource item))
+                    while (source._watchState.InterlockedValue == WatchStates.Watching
+                        && source.TryTake(out TSource item))
                     {
                         string id = QueueWorkItem(() => { body(item); }, workOption);
                         idDict[id] = item;
