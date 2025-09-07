@@ -86,9 +86,15 @@ namespace PowerThreadPool.Helpers.Dependency
                     dependents.Remove(depId);
                 }
 
-                SetWorkIfDependencySolved(dependents, work);
-
-                return true;
+                if (dependents.Count == 0 &&
+                    work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
             }
 
             return false;
