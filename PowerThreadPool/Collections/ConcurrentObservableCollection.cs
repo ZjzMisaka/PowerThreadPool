@@ -142,6 +142,8 @@ public class ConcurrentObservableCollection<T>
         _collectionChangedHandler = null;
         _watchState.InterlockedValue = WatchStates.Idle;
 
+        Spinner.Start(() => _canWatch.InterlockedValue == CanWatch.Allowed);
+
         if (!keepRunning)
         {
             _group.Stop(forceStop);
