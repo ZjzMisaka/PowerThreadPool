@@ -15,8 +15,6 @@
 
 A comprehensive and efficient lock-free thread pool with granular work control, flexible concurrency, robust error handling, and easy work management for both sync and async workloads.  
 
-**Help wanted:** [Let’s Build a Vibrant Community Around PowerThreadPool](https://github.com/ZjzMisaka/PowerThreadPool/discussions/258)  
-
 ## Documentation
 Access the Wiki in [English](https://github.com/ZjzMisaka/PowerThreadPool/wiki) | [中文](https://github.com/ZjzMisaka/PowerThreadPool.zh-CN.Wiki/wiki) | [日本語](https://github.com/ZjzMisaka/PowerThreadPool.ja-JP.Wiki/wiki).  
 Visit the [DeepWiki](https://deepwiki.com/ZjzMisaka/PowerThreadPool) for more information.  
@@ -66,18 +64,27 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
 - [Lock-Free](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
 
 ## Getting started
-### Simple example: run a work
+### Out-of-the-box: Run a simple work
+PowerThreadPool is designed to be out-of-the-box. For simple works, you can get started without any complex configuration.  
 ```csharp
 PowerPool powerPool = new PowerPool();
+// Sync
 powerPool.QueueWorkItem(() => 
 {
     // Do something
+});
+// Async
+powerPool.QueueWorkItemAsync(async () =>
+{
+    // Do something
+    // await ...;
 });
 ```
 
 ### With callback
 ```csharp
 PowerPool powerPool = new PowerPool(new PowerPoolOption() { /* Some options */ });
+// Sync
 powerPool.QueueWorkItem(() => 
 {
     // Do something
@@ -86,15 +93,34 @@ powerPool.QueueWorkItem(() =>
 {
     // Callback of the work
 });
+// Async
+powerPool.QueueWorkItemAsync(async () =>
+{
+    // Do something
+    // await ...;
+}, (res) =>
+{
+    // Callback of the work
+});
 ```
 
 ### With option
 ```csharp
 PowerPool powerPool = new PowerPool(new PowerPoolOption() { /* Some options */ });
+// Sync
 powerPool.QueueWorkItem(() => 
 {
     // Do something
     return result;
+}, new WorkOption()
+{
+    // Some options
+});
+// Async
+powerPool.QueueWorkItemAsync(async () =>
+{
+    // Do something
+    // await ...;
 }, new WorkOption()
 {
     // Some options
@@ -109,12 +135,17 @@ string QueueWorkItem(Action<object[]> action, object[] param, *);
 string QueueWorkItem<T1, ..., TResult>(Func<T1, ..., TResult> function, T1 param1, ..., *);
 string QueueWorkItem<TResult>(Func<TResult> function, *);
 string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, *);
+string QueueWorkItemAsync(Func<Task> asyncFunc, *);
+string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, *);
+string QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, *);
+string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, *);
 ```
 - Asterisk (*) denotes an optional parameter, either a WorkOption or a delegate (`Action<ExecuteResult<object>>` or `Action<ExecuteResult<TResult>>`), depending on whether the first parameter is an Action or a Func. 
 - In places where you see ellipses (...), you can provide up to five generic type parameters.
 
 ## More
-[Testing And Performance Analysis](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Testing-And-Performance-Analysis) | [Feature Comparison](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Feature-Comparison)
+[Testing And Performance Analysis](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Testing-And-Performance-Analysis) | [Feature Comparison](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Feature-Comparison)  
+**Get involved**: [Join our growing community](https://github.com/ZjzMisaka/PowerThreadPool/discussions/258)  
 
 ## Contributors ✨
 
