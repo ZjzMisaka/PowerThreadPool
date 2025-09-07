@@ -580,6 +580,7 @@ namespace UnitTest
                     powerPool.QueueWorkItem(() =>
                     {
                         powerPool.EnablePoolIdleCheck = true;
+                        Thread.Sleep(100);
                     }, new WorkOption
                     {
                         ShouldStoreResult = true,
