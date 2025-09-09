@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
 using PowerThreadPool.Groups;
+using PowerThreadPool.Helpers.LockFree;
 using PowerThreadPool.Options;
 
 namespace PowerThreadPool
@@ -178,10 +179,7 @@ namespace PowerThreadPool
             {
                 onCanceled = (s, e) =>
                 {
-                    if (idDict.TryRemove(e.ID, out TSource item))
-                    {
-                        source.TryAdd(item);
-                    }
+                    TryAddBack(e.ID);
                 };
                 WorkCanceled += onCanceled;
                 source._watchCanceledHandler = onCanceled;
@@ -190,10 +188,7 @@ namespace PowerThreadPool
             {
                 onStopped = (s, e) =>
                 {
-                    if (idDict.TryRemove(e.ID, out TSource item))
-                    {
-                        source.TryAdd(item);
-                    }
+                    TryAddBack(e.ID);
                 };
                 WorkStopped += onStopped;
                 source._watchStoppedHandler = onStopped;
@@ -203,10 +198,7 @@ namespace PowerThreadPool
                 onEnded = (s, e) =>
                 {
                     if (e.Succeed) return;
-                    if (idDict.TryRemove(e.ID, out TSource item))
-                    {
-                        source.TryAdd(item);
-                    }
+                    TryAddBack(e.ID);
                 };
                 WorkEnded += onEnded;
                 source._watchEndedHandler = onEnded;
@@ -220,6 +212,8 @@ namespace PowerThreadPool
                     while (source._watchState.InterlockedValue == WatchStates.Watching
                         && source.TryTake(out TSource item))
                     {
+                        // Because task is added to the dictionary only after being enqueued, a very short race window may occur.
+                        // Therefore, use a spinner for brief spinning in TryAddBack.
                         string id = QueueWorkItem(() => { body(item); }, workOption);
                         idDict[id] = item;
                     }
@@ -229,6 +223,18 @@ namespace PowerThreadPool
                         source.CollectionChanged += OnCollectionChanged;
                     }
                 }
+            }
+
+            void TryAddBack(string id)
+            {
+                TSource item = default;
+                if (idDict.TryRemove(id, out item))
+                {
+                    source.TryAdd(item);
+                    return;
+                }
+
+                Spinner.Start(() => (idDict.TryRemove(id, out item) && source.TryAdd(item)) || source._watchState == WatchStates.Idle);
             }
 
             if (!source.StartWatching(OnCollectionChanged))
