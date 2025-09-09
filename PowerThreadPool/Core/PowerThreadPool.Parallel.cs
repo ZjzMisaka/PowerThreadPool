@@ -212,7 +212,7 @@ namespace PowerThreadPool
                     while (source._watchState.InterlockedValue == WatchStates.Watching
                         && source.TryTake(out TSource item))
                     {
-                        // Because task is added to the dictionary only after being enqueued, a very short race window may occur.
+                        // Because work is added to the dictionary only after being enqueued, a very short race window may occur.
                         // Therefore, use a spinner for brief spinning in TryAddBack.
                         string id = QueueWorkItem(() => { body(item); }, workOption);
                         idDict[id] = item;
