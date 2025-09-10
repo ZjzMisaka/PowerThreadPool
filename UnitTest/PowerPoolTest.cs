@@ -575,7 +575,7 @@ namespace UnitTest
             {
                 Interlocked.Increment(ref doneCount);
 
-                if (e.ID == id0)
+                if (doneCount == 1)
                 {
                     powerPool.QueueWorkItem(() =>
                     {
@@ -584,7 +584,7 @@ namespace UnitTest
                     }, new WorkOption
                     {
                         ShouldStoreResult = true,
-                        Dependents = new ConcurrentSet<string> { id0 }
+                        Dependents = new ConcurrentSet<string> { e.ID }
                     });
                 }
             };
