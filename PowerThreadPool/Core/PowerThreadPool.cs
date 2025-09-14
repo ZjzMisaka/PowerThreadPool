@@ -21,7 +21,7 @@ using PowerThreadPool.Works;
 namespace PowerThreadPool
 {
     /// <summary>
-    /// A comprehensive and efficient low-contention thread pool with granular work control, flexible concurrency, robust error handling, and easy work management for both sync and async workloads.
+    /// A comprehensive and efficient low-contention thread pool for easily managing both sync and async workloads. It provides granular work control, flexible concurrency, and robust error handling.
     /// </summary>
     public partial class PowerPool : IDisposable
     {

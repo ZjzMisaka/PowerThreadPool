@@ -13,7 +13,7 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-A comprehensive and efficient low-contention thread pool with granular work control, flexible concurrency, robust error handling, and easy work management for both sync and async workloads.  
+A comprehensive and efficient low-contention thread pool for easily managing both sync and async workloads. It provides granular work control, flexible concurrency, and robust error handling.  
 
 ## Documentation
 Access the Wiki in [English](https://github.com/ZjzMisaka/PowerThreadPool/wiki) | [中文](https://github.com/ZjzMisaka/PowerThreadPool.zh-CN.Wiki/wiki) | [日本語](https://github.com/ZjzMisaka/PowerThreadPool.ja-JP.Wiki/wiki).  
@@ -65,7 +65,7 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
 
 ## Getting started
 ### Out-of-the-box: Run a simple work
-PowerThreadPool is designed to be out-of-the-box. For simple works, you can get started without any complex configuration.  
+PTP is designed to be out-of-the-box. For simple works, you can get started without any complex configuration.  
 ```csharp
 PowerPool powerPool = new PowerPool();
 // Sync
