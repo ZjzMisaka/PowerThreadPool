@@ -906,9 +906,11 @@ namespace PowerThreadPool
             List<WorkBase> works = null;
             if (GetCurrentThreadBaseWorker(out Worker workerCurrentThread))
             {
-                if (workerCurrentThread.WaitingWorkCount >= 1)
+                if (workerCurrentThread.WaitingWorkCount >= 1
+                    && workerCurrentThread.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed))
                 {
                     works = workerCurrentThread.Steal(1);
+                    workerCurrentThread.WorkStealability.InterlockedValue = WorkStealability.Allowed;
                 }
             }
 
