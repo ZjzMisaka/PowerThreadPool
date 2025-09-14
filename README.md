@@ -13,7 +13,7 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
-A comprehensive and efficient lock-free thread pool with granular work control, flexible concurrency, robust error handling, and easy work management for both sync and async workloads.  
+A comprehensive and efficient low-contention thread pool with granular work control, flexible concurrency, robust error handling, and easy work management for both sync and async workloads.  
 
 ## Documentation
 Access the Wiki in [English](https://github.com/ZjzMisaka/PowerThreadPool/wiki) | [中文](https://github.com/ZjzMisaka/PowerThreadPool.zh-CN.Wiki/wiki) | [日本語](https://github.com/ZjzMisaka/PowerThreadPool.ja-JP.Wiki/wiki).  
@@ -61,7 +61,7 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
 - [Running Timer](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Running-Timer)
 - [Queue Type (FIFO | LIFO | Custom)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Queue-Type)
 - [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
-- [Lock-Free](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
+- [Low-Contention Design](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
 
 ## Getting started
 ### Out-of-the-box: Run a simple work
