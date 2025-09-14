@@ -7,7 +7,7 @@
     <ImplicitUsings>disable</ImplicitUsings>
 
     <PackageId>PowerThreadPool</PackageId>
-    <Description>A comprehensive and efficient lock-free thread pool with granular work control, flexible concurrency, robust error handling, and easy work management for both sync and async workloads.</Description>
+    <Description>A comprehensive and efficient low-contention thread pool with granular work control, flexible concurrency, robust error handling, and easy work management for both sync and async workloads.</Description>
     <PackageTags>csharp;thread;thread-pool;threadpool;coroutine;task;async;dotnet;.net;lockfree;lock-free;</PackageTags>
     <Authors>ZjzMisaka</Authors>
     <RepositoryUrl>https://github.com/ZjzMisaka/PowerThreadPool</RepositoryUrl>
