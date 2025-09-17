@@ -33,6 +33,11 @@ namespace PowerThreadPool
 
         private void RegisterCompletion(Task task, SynchronizationContext prevCtx, string baseAsyncWorkId)
         {
+            if (task.IsCompleted && _aliveWorkDic.TryGetValue(baseAsyncWorkId, out WorkBase workDone))
+            {
+                workDone.AllowEventsAndCallback = true;
+            }
+
             task.ContinueWith(_ =>
             {
                 SynchronizationContext.SetSynchronizationContext(prevCtx);
