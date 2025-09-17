@@ -84,6 +84,39 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestNoAwait()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int a = 0;
+            int b = 0;
+            int c = 0;
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.WorkEnded += (s, e) =>
+            {
+                c = 3;
+            };
+            string id = powerPool.QueueWorkItemAsync(async () =>
+            {
+                if (a == 100)
+                {
+                    await Task.Delay(100);
+                }
+                a = 1;
+            }, (res) =>
+            {
+                b = 2;
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(1, a);
+            Assert.Equal(2, b);
+            Assert.Equal(3, c);
+        }
+
+        [Fact]
         public void TestNestingAwaitError()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
