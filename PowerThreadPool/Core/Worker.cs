@@ -406,11 +406,17 @@ namespace PowerThreadPool
             }
             catch (WorkStopException ex)
             {
+                // If the incoming asynchronous work doesn't execute await,
+                // and is stopped mid-execution,
+                // then AllowEventsAndCallback may not be set to true.
                 Work.AllowEventsAndCallback = true;
                 executeResult = Work.SetExecuteResult(null, ex, Status.Stopped);
             }
             catch (Exception ex)
             {
+                // If the incoming asynchronous work doesn't execute await,
+                // and terminates by throwing an exception during execution,
+                // then AllowEventsAndCallback may not be set to true
                 Work.AllowEventsAndCallback = true;
                 executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
                 executeResult.ID = Work.RealWorkID;
