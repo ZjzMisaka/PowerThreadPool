@@ -51,39 +51,6 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestNestingAwait()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            Exception e = null;
-            object r = null;
-
-            PowerPool powerPool = new PowerPool();
-            object eventObj = null;
-            object eventObj1 = null;
-            powerPool.WorkEnded += (s, e) =>
-            {
-                eventObj = e.Result;
-                eventObj1 = e.ID;
-            };
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
-            {
-                return await OuterAsync();
-            }, (res) =>
-            {
-                e = res.Exception;
-                r = res.Result;
-            });
-
-            powerPool.Wait();
-
-            Assert.Null(e);
-            Assert.Equal("123", r);
-            Assert.Equal("123", eventObj);
-            Assert.Equal(id, eventObj1);
-        }
-
-        [Fact]
         public void TestNoAwait()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -343,6 +310,39 @@ namespace UnitTest
                 Assert.Equal(id, eventObj);
                 Assert.True(eventObj1);
             }
+        }
+
+        [Fact]
+        public void TestNestingAwait()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            Exception e = null;
+            object r = null;
+
+            PowerPool powerPool = new PowerPool();
+            object eventObj = null;
+            object eventObj1 = null;
+            powerPool.WorkEnded += (s, e) =>
+            {
+                eventObj = e.Result;
+                eventObj1 = e.ID;
+            };
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                return await OuterAsync();
+            }, (res) =>
+            {
+                e = res.Exception;
+                r = res.Result;
+            });
+
+            powerPool.Wait();
+
+            Assert.Null(e);
+            Assert.Equal("123", r);
+            Assert.Equal("123", eventObj);
+            Assert.Equal(id, eventObj1);
         }
 
         [Fact]
