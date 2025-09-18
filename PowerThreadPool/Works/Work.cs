@@ -199,6 +199,10 @@ namespace PowerThreadPool.Works
 
         internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status)
         {
+            if (status != Status.ForceStopped && ExecuteResult != null)
+            {
+                return ExecuteResult;
+            }
             Status = status;
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
             executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, ExecuteCount);
@@ -228,12 +232,22 @@ namespace PowerThreadPool.Works
 
         internal override bool ShouldImmediateRetry(ExecuteResultBase executeResult)
         {
-            return ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry;
+            bool res = ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry;
+            if (res)
+            {
+                ExecuteResult = null;
+            }
+            return res;
         }
 
         internal override bool ShouldRequeue(ExecuteResultBase executeResult)
         {
-            return ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.Requeue;
+            bool res = ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.Requeue;
+            if (res)
+            {
+                ExecuteResult = null;
+            }
+            return res;
         }
 
         public override void Dispose()

@@ -31,11 +31,23 @@ namespace PowerThreadPool
             }
         }
 
-        private void RegisterCompletion(Task task, SynchronizationContext prevCtx, string baseAsyncWorkId)
+        private void RegisterCompletionWithResult<TResult>(Task<TResult> task, SynchronizationContext prevCtx, string baseAsyncWorkId)
         {
             if (task.IsCompleted && _aliveWorkDic.TryGetValue(baseAsyncWorkId, out WorkBase workDone))
             {
                 workDone.AllowEventsAndCallback = true;
+                workDone.SetExecuteResult(task.Result, task.Exception, Status.Succeed);
+            }
+
+            RegisterCompletion(task, prevCtx, baseAsyncWorkId, true);
+        }
+
+        private void RegisterCompletion(Task task, SynchronizationContext prevCtx, string baseAsyncWorkId, bool hasRes = false)
+        {
+            if (!hasRes && task.IsCompleted && _aliveWorkDic.TryGetValue(baseAsyncWorkId, out WorkBase workDone))
+            {
+                workDone.AllowEventsAndCallback = true;
+                workDone.SetExecuteResult(null, task.Exception, Status.Succeed);
             }
 
             task.ContinueWith(_ =>
@@ -190,7 +202,7 @@ namespace PowerThreadPool
                 ThrowInnerIfNeeded(taskFunc);
 
                 ctx.SetTask(taskFunc);
-                RegisterCompletion(taskFunc, prevCtx, option.BaseAsyncWorkID);
+                RegisterCompletionWithResult(taskFunc, prevCtx, option.BaseAsyncWorkID);
 
                 return default;
             }, option);

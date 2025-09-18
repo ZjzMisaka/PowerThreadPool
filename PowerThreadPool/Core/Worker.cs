@@ -383,15 +383,18 @@ namespace PowerThreadPool
 
         private ExecuteResultBase ExecuteMain()
         {
-            ExecuteResultBase executeResult;
+            ExecuteResultBase executeResult = null;
             DateTime runDateTime = DateTime.UtcNow;
             try
             {
                 Interlocked.Increment(ref _powerPool._startCount);
                 Interlocked.Add(ref _powerPool._queueTime, (long)(runDateTime - Work.QueueDateTime).TotalMilliseconds);
                 object result = Work.Execute();
-                executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
-                executeResult.StartDateTime = runDateTime;
+                if (Work.AllowEventsAndCallback)
+                {
+                    executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
+                    executeResult.StartDateTime = runDateTime;
+                }
             }
             catch (ThreadInterruptedException ex)
             {
@@ -403,10 +406,12 @@ namespace PowerThreadPool
             }
             catch (WorkStopException ex)
             {
+                Work.AllowEventsAndCallback = true;
                 executeResult = Work.SetExecuteResult(null, ex, Status.Stopped);
             }
             catch (Exception ex)
             {
+                Work.AllowEventsAndCallback = true;
                 executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
                 executeResult.ID = Work.RealWorkID;
                 _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
@@ -423,7 +428,10 @@ namespace PowerThreadPool
             }
 #endif
             Work.Worker = null;
-            executeResult.ID = Work.RealWorkID;
+            if (Work.AllowEventsAndCallback)
+            {
+                executeResult.ID = Work.RealWorkID;
+            }
 
             return executeResult;
         }

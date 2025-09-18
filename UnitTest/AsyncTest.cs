@@ -117,6 +117,235 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestNoAwaitHasRes()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int a = 0;
+            int b = 0;
+            int c = 0;
+            int r = 0;
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.WorkEnded += (s, e) =>
+            {
+                c = 3;
+            };
+            string id = powerPool.QueueWorkItemAsync(async () =>
+            {
+                if (a == 100)
+                {
+                    await Task.Delay(100);
+                }
+                a = 1;
+                return 5;
+            }, (res) =>
+            {
+                b = 2;
+                r = res.Result;
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(1, a);
+            Assert.Equal(2, b);
+            Assert.Equal(3, c);
+            Assert.Equal(5, r);
+        }
+
+        [Fact]
+        public void TestNoAwaitError()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            Exception e = null;
+            object r = null;
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                throw new Exception("1");
+                return await OuterAsyncE();
+            }, (res) =>
+            {
+                e = res.Exception;
+                r = res.Result;
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal("1", e.Message);
+        }
+
+        [Fact]
+        public void TestNoAwaitStop()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            object eventObj = null;
+            powerPool.WorkStopped += (s, e) =>
+            {
+                eventObj = e.ID;
+            };
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                Task.Delay(1000).Wait();
+                l = "2";
+                powerPool.StopIfRequested();
+                Task.Delay(100).Wait();
+                c = "3";
+                return "100";
+            }, (res) =>
+            {
+                Assert.Equal("2", l);
+                r = res.Result;
+            });
+            powerPool.Stop();
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+            Assert.Null(c);
+            Assert.Null(r);
+            Assert.Equal(id, eventObj);
+        }
+
+        [Fact]
+        public void TestNoAwaitStopByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            object eventObj = null;
+            powerPool.WorkStopped += (s, e) =>
+            {
+                eventObj = e.ID;
+            };
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                Task.Delay(1000).Wait();
+                l = "2";
+                powerPool.StopIfRequested();
+                Task.Delay(100).Wait();
+                c = "3";
+                return "100";
+            }, (res) =>
+            {
+                Assert.Equal("2", l);
+                r = res.Result;
+            });
+            powerPool.Stop(id);
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+            Assert.Null(c);
+            Assert.Null(r);
+            Assert.Equal(id, eventObj);
+        }
+
+        [Fact]
+        public void TestNoAwaitForceStop()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            object eventObj = null;
+            bool eventObj1 = false;
+            powerPool.WorkStopped += (s, e) =>
+            {
+                eventObj = e.ID;
+                eventObj1 = e.ForceStop;
+            };
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                Task.Delay(1000).Wait();
+                Thread.Sleep(200);
+                l = "2";
+                powerPool.StopIfRequested();
+                Task.Delay(100).Wait();
+                Thread.Sleep(200);
+                c = "3";
+                return "100";
+            }, (res) =>
+            {
+                Assert.Equal("2", l);
+                r = res.Result;
+            });
+            bool res = powerPool.Stop(true);
+            powerPool.Wait();
+            if (res)
+            {
+                Assert.Equal("1", p);
+                Assert.Null(l);
+                Assert.Null(c);
+                Assert.Null(r);
+                Assert.Equal(id, eventObj);
+                Assert.True(eventObj1);
+            }
+        }
+
+        [Fact]
+        public void TestNoAwaitForceStopByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            object eventObj = null;
+            bool eventObj1 = false;
+            powerPool.WorkStopped += (s, e) =>
+            {
+                eventObj = e.ID;
+                eventObj1 = e.ForceStop;
+            };
+            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                Task.Delay(1000).Wait();
+                Thread.Sleep(200);
+                l = "2";
+                powerPool.StopIfRequested();
+                Task.Delay(100).Wait();
+                Thread.Sleep(200);
+                c = "3";
+                return "100";
+            }, (res) =>
+            {
+                Assert.Equal("2", l);
+                r = res.Result;
+            });
+            bool res = powerPool.Stop(id, true);
+            powerPool.Wait();
+            if (res)
+            {
+                Assert.Equal("1", p);
+                Assert.Null(l);
+                Assert.Null(c);
+                Assert.Null(r);
+                Assert.Equal(id, eventObj);
+                Assert.True(eventObj1);
+            }
+        }
+
+        [Fact]
         public void TestNestingAwaitError()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
