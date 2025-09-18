@@ -1,4 +1,5 @@
-﻿using PowerThreadPool.Collections;
+﻿using System.Reflection;
+using PowerThreadPool.Collections;
 
 namespace UnitTest
 {
@@ -96,6 +97,69 @@ namespace UnitTest
             ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>();
             queue.Set(1, -1);
             Assert.Equal(1, queue.Discard());
+        }
+
+        [Fact]
+        public void TestGetQueueReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
+        {
+            var q = new ConcurrentStealablePriorityQueue<int>();
+
+            var type = typeof(ConcurrentStealablePriorityQueue<int>);
+            var sortedField = type.GetField("_sortedPriorityList", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(sortedField);
+
+            var newList = new List<int> { 0, 1 };
+            sortedField!.SetValue(q, newList);
+
+            var result = q.Get();
+
+            Assert.Equal(default, result);
+
+            q.Set(42, 2);
+            var got = q.Get();
+            Assert.Equal(42, got);
+        }
+
+        [Fact]
+        public void TestGetStackReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
+        {
+            ConcurrentStealablePriorityQueue<int> q = new ConcurrentStealablePriorityQueue<int>();
+
+            Type type = typeof(ConcurrentStealablePriorityQueue<int>);
+            FieldInfo sortedField = type.GetField("_sortedPriorityList", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(sortedField);
+
+            List<int> newList = new List<int> { 0, 1 };
+            sortedField!.SetValue(q, newList);
+
+            int result = q.Get();
+
+            Assert.Equal(default, result);
+
+            q.Set(42, 2);
+            int got = q.Get();
+            Assert.Equal(42, got);
+        }
+
+        [Fact]
+        public void TryGetStackReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
+        {
+            ConcurrentStealablePriorityStack<int> s = new ConcurrentStealablePriorityStack<int>();
+
+            Type type = typeof(ConcurrentStealablePriorityStack<int>);
+            FieldInfo sortedField = type.GetField("_sortedPriorityList", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(sortedField);
+
+            List<int> newList = new List<int> { 0, 1 };
+            sortedField!.SetValue(s, newList);
+
+            int result = s.Get();
+
+            Assert.Equal(default, result);
+
+            s.Set(99, 2);
+            int got = s.Get();
+            Assert.Equal(99, got);
         }
     }
 }

@@ -106,7 +106,7 @@ namespace PowerThreadPool.Collections
             for (int i = 0; i < priorities.Count; ++i)
             {
                 int pr = priorities[i];
-                if (TryGetQueue(pr, out ConcurrentQueue<T> q) && q.TryDequeue(out item))
+                if (TryGetItem(pr, out item))
                 {
                     break;
                 }
@@ -131,12 +131,18 @@ namespace PowerThreadPool.Collections
             for (int i = priorities.Count - 1; i >= 0; --i)
             {
                 int pr = priorities[i];
-                if (TryGetQueue(pr, out ConcurrentQueue<T> q) && q.TryDequeue(out item))
+                if (TryGetItem(pr, out item))
                 {
                     break;
                 }
             }
             return item;
+        }
+
+        private bool TryGetItem(int priority, out T item)
+        {
+            item = default;
+            return TryGetQueue(priority, out ConcurrentQueue<T> q) && q.TryDequeue(out item);
         }
     }
 }
