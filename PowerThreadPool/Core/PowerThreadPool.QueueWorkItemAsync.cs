@@ -54,7 +54,11 @@ namespace PowerThreadPool
                 workDone.SetExecuteResult(null, task.Exception, Status.Succeed);
             }
 
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+            task.GetAwaiter().OnCompleted(() =>
+#else
             task.ContinueWith(_ =>
+#endif
             {
                 SynchronizationContext.SetSynchronizationContext(prevCtx);
 
