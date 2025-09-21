@@ -35,7 +35,8 @@ namespace PowerThreadPool
         {
             if (task.IsCompleted && _aliveWorkDic.TryGetValue(baseAsyncWorkId, out WorkBase workDone))
             {
-                // If the incoming asynchronous work doesn't execute await, this branch will be entered.
+                // If the incoming asynchronous work doesn't execute await,
+                // and successfully completes without failure or being stopped, this branch will be entered.
                 // Requires direct setting of AllowEventsAndCallback and ExecuteResult.
                 workDone.AllowEventsAndCallback = true;
                 workDone.SetExecuteResult(task.Result, task.Exception, Status.Succeed);
@@ -48,7 +49,8 @@ namespace PowerThreadPool
         {
             if (!hasRes && task.IsCompleted && _aliveWorkDic.TryGetValue(baseAsyncWorkId, out WorkBase workDone))
             {
-                // If the incoming asynchronous work doesn't execute await, this branch will be entered.
+                // If the incoming asynchronous work doesn't execute await,
+                // and successfully completes without failure or being stopped, this branch will be entered.
                 // Requires direct setting of AllowEventsAndCallback and ExecuteResult.
                 workDone.AllowEventsAndCallback = true;
                 workDone.SetExecuteResult(null, task.Exception, Status.Succeed);

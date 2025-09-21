@@ -410,6 +410,7 @@ namespace PowerThreadPool
                 // and is stopped mid-execution,
                 // then AllowEventsAndCallback may not be set to true.
                 Work.AllowEventsAndCallback = true;
+
                 executeResult = Work.SetExecuteResult(null, ex, Status.Stopped);
             }
             catch (Exception ex)
@@ -418,6 +419,7 @@ namespace PowerThreadPool
                 // and terminates by throwing an exception during execution,
                 // then AllowEventsAndCallback may not be set to true
                 Work.AllowEventsAndCallback = true;
+
                 executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
                 executeResult.ID = Work.RealWorkID;
                 _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
