@@ -651,7 +651,7 @@ namespace PowerThreadPool
                 foreach (WorkBase stolenWork in stolenWorkList)
                 {
                     res = true;
-                    if (!newWorker && work == null)
+                    if (!newWorker && work == null && stolenWork._canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed))
                     {
                         work = stolenWork;
                         work.Worker = this;
