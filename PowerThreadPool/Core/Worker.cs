@@ -29,7 +29,7 @@ namespace PowerThreadPool
         internal InterlockedFlag<WorkHeldStates> WorkHeldState { get; } = WorkHeldStates.NotHeld;
         internal InterlockedFlag<WorkStealability> WorkStealability { get; } = Constants.WorkStealability.Allowed;
 
-        private IStealablePriorityCollection<WorkBase> _waitingWorkIDPriorityCollection;
+        private IStealablePriorityCollection<WorkBase> _waitingWorkPriorityCollection;
 
         private DeferredActionTimer _timeoutTimer;
         private DeferredActionTimer _killTimer;
@@ -59,7 +59,7 @@ namespace PowerThreadPool
         {
             _powerPool = powerPool;
 
-            _waitingWorkIDPriorityCollection = QueueFactory();
+            _waitingWorkPriorityCollection = QueueFactory();
 
             _thread = new Thread(() =>
             {
@@ -463,7 +463,7 @@ namespace PowerThreadPool
         internal void SetWork(WorkBase work, bool reset)
         {
             _powerPool.SetWorkOwner(work);
-            _waitingWorkIDPriorityCollection.Set(work, work.WorkPriority);
+            _waitingWorkPriorityCollection.Set(work, work.WorkPriority);
             work.Worker = this;
             Interlocked.Increment(ref _waitingWorkCount);
             WorkerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
@@ -858,40 +858,40 @@ namespace PowerThreadPool
 
         private WorkBase Get()
         {
-            WorkBase waitingWork = _waitingWorkIDPriorityCollection.Get();
+            WorkBase waitingWork = _waitingWorkPriorityCollection.Get();
             while (waitingWork != null && !waitingWork._canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed))
             {
-                waitingWork = _waitingWorkIDPriorityCollection.Get();
+                waitingWork = _waitingWorkPriorityCollection.Get();
             }
             return waitingWork;
         }
 
         private WorkBase GetNotCanceledWork()
         {
-            WorkBase waitingWork = _waitingWorkIDPriorityCollection.Get();
+            WorkBase waitingWork = _waitingWorkPriorityCollection.Get();
             while (waitingWork != null && waitingWork._canCancel.InterlockedValue == CanCancel.NotAllowed)
             {
-                waitingWork = _waitingWorkIDPriorityCollection.Get();
+                waitingWork = _waitingWorkPriorityCollection.Get();
             }
             return waitingWork;
         }
 
         private WorkBase Steal()
         {
-            WorkBase waitingWork = _waitingWorkIDPriorityCollection.Steal();
+            WorkBase waitingWork = _waitingWorkPriorityCollection.Steal();
             while (waitingWork != null && waitingWork._canCancel.InterlockedValue == CanCancel.NotAllowed)
             {
-                waitingWork = _waitingWorkIDPriorityCollection.Steal();
+                waitingWork = _waitingWorkPriorityCollection.Steal();
             }
             return waitingWork;
         }
 
         private WorkBase Discard()
         {
-            WorkBase waitingWork = _waitingWorkIDPriorityCollection.Steal();
+            WorkBase waitingWork = _waitingWorkPriorityCollection.Steal();
             while (waitingWork != null && waitingWork._canCancel.InterlockedValue == CanCancel.NotAllowed)
             {
-                waitingWork = _waitingWorkIDPriorityCollection.Steal();
+                waitingWork = _waitingWorkPriorityCollection.Steal();
             }
             return waitingWork;
         }
