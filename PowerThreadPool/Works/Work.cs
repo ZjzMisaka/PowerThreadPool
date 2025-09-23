@@ -106,25 +106,30 @@ namespace PowerThreadPool.Works
 
         internal override bool Cancel(bool needFreeze)
         {
+            if(_canCancel.InterlockedValue == CanCancel.NotAllowed)
+            {
+                return false;
+            }
+
+            if (BaseAsyncWorkID != null && BaseAsyncWorkID != ID)
+            {
+                return false;
+            }
+
+            if (BaseAsyncWorkID != null)
+            {
+                PowerPool.TryRemoveAsyncWork(ID, false);
+
+                if (PowerPool._tcsDict.TryRemove(RealWorkID, out ITaskCompletionSource tcs))
+                {
+                    tcs.SetCanceled();
+                }
+            }
+
             bool res = false;
 
             using (new WorkGuard(this, needFreeze))
             {
-                if (BaseAsyncWorkID != null && BaseAsyncWorkID != ID)
-                {
-                    return false;
-                }
-
-                if (BaseAsyncWorkID != null)
-                {
-                    PowerPool.TryRemoveAsyncWork(ID, false);
-
-                    if (PowerPool._tcsDict.TryRemove(RealWorkID, out ITaskCompletionSource tcs))
-                    {
-                        tcs.SetCanceled();
-                    }
-                }
-
                 res = _canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed);
 
                 if (res)
