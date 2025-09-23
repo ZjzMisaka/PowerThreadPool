@@ -663,8 +663,8 @@ namespace PowerThreadPool
         {
             if (CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed))
             {
-                WorkBase waitingWork = Get();
-                if (waitingWork != null)
+                work = Get();
+                if (work != null)
                 {
                     Interlocked.Decrement(ref _waitingWorkCount);
 
