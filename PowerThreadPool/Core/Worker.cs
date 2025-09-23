@@ -29,8 +29,7 @@ namespace PowerThreadPool
         internal InterlockedFlag<WorkHeldStates> WorkHeldState { get; } = WorkHeldStates.NotHeld;
         internal InterlockedFlag<WorkStealability> WorkStealability { get; } = Constants.WorkStealability.Allowed;
 
-        private IStealablePriorityCollection<string> _waitingWorkIDPriorityCollection;
-        private ConcurrentDictionary<string, WorkBase> _waitingWorkDic = new ConcurrentDictionary<string, WorkBase>();
+        private IStealablePriorityCollection<WorkBase> _waitingWorkIDPriorityCollection;
 
         private DeferredActionTimer _timeoutTimer;
         private DeferredActionTimer _killTimer;
@@ -155,7 +154,7 @@ namespace PowerThreadPool
             _helpingWorker = null;
         }
 
-        private IStealablePriorityCollection<string> QueueFactory()
+        private IStealablePriorityCollection<WorkBase> QueueFactory()
         {
             if (_powerPool.PowerPoolOption.CustomQueueFactory != null)
             {
@@ -163,11 +162,11 @@ namespace PowerThreadPool
             }
             else if (_powerPool.PowerPoolOption.QueueType == QueueType.FIFO)
             {
-                return new ConcurrentStealablePriorityQueue<string>();
+                return new ConcurrentStealablePriorityQueue<WorkBase>();
             }
             else
             {
-                return new ConcurrentStealablePriorityStack<string>();
+                return new ConcurrentStealablePriorityStack<WorkBase>();
             }
         }
 
@@ -351,14 +350,11 @@ namespace PowerThreadPool
         private bool RequeueAllWaitingWork()
         {
             bool hasWaitingWork = false;
-            string workID;
-            while ((workID = _waitingWorkIDPriorityCollection.Get()) != null)
+            WorkBase workBase;
+            while ((workBase = _waitingWorkIDPriorityCollection.Get()) != null)
             {
-                if (_waitingWorkDic.TryRemove(workID, out WorkBase work))
-                {
-                    _powerPool.SetWork(work);
-                    hasWaitingWork = true;
-                }
+                _powerPool.SetWork(workBase);
+                hasWaitingWork = true;
             }
             return hasWaitingWork;
         }
@@ -469,9 +465,8 @@ namespace PowerThreadPool
 
         internal void SetWork(WorkBase work, bool reset)
         {
-            _waitingWorkDic[work.ID] = work;
             _powerPool.SetWorkOwner(work);
-            _waitingWorkIDPriorityCollection.Set(work.ID, work.WorkPriority);
+            _waitingWorkIDPriorityCollection.Set(work, work.WorkPriority);
             work.Worker = this;
             Interlocked.Increment(ref _waitingWorkCount);
             WorkerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
@@ -503,23 +498,19 @@ namespace PowerThreadPool
             {
                 isContinue = false;
 
-                string stolenWorkID;
-                stolenWorkID = _waitingWorkIDPriorityCollection.Steal();
+                WorkBase stolenWork = _waitingWorkIDPriorityCollection.Steal();
 
-                if (stolenWorkID != null)
+                if (stolenWork != null)
                 {
-                    if (_waitingWorkDic.TryRemove(stolenWorkID, out WorkBase stolenWork))
+                    Interlocked.Decrement(ref _waitingWorkCount);
+                    stolenWork.Worker = null;
+                    if (stolenList == null)
                     {
-                        Interlocked.Decrement(ref _waitingWorkCount);
-                        stolenWork.Worker = null;
-                        if (stolenList == null)
-                        {
-                            stolenList = new List<WorkBase>();
-                        }
-                        stolenList.Add(stolenWork);
-
-                        isContinue = true;
+                        stolenList = new List<WorkBase>();
                     }
+                    stolenList.Add(stolenWork);
+
+                    isContinue = true;
                 }
             }
 
@@ -540,26 +531,18 @@ namespace PowerThreadPool
                     return;
                 }
 
-                string waitingWorkID = _waitingWorkIDPriorityCollection.Get();
-                if (waitingWorkID == null && _powerPool.AliveWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
+                WorkBase waitingWork = _waitingWorkIDPriorityCollection.Get();
+                if (waitingWork == null && _powerPool.AliveWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
                 {
                     List<WorkBase> stolenWorkList = StealWorksFromOtherWorker();
-                    SetStolenWorkList(ref waitingWorkID, ref work, stolenWorkList, false);
+                    SetStolenWorkList(ref work, stolenWorkList, false);
                 }
 
-                if (waitingWorkID == null)
+                if (work == null)
                 {
-                    if (TurnToIdle(ref waitingWorkID, ref work))
+                    if (TurnToIdle(ref work))
                     {
                         return;
-                    }
-                }
-
-                if (work == null && waitingWorkID != null)
-                {
-                    if (_waitingWorkDic.TryRemove(waitingWorkID, out work))
-                    {
-                        Interlocked.Decrement(ref _waitingWorkCount);
                     }
                 }
 
@@ -584,11 +567,10 @@ namespace PowerThreadPool
 
         internal bool TryAssignWorkForNewWorker()
         {
-            string waitingWorkID = null;
             WorkBase work = null;
 
             List<WorkBase> stolenWorkList = StealWorksFromOtherWorker();
-            return SetStolenWorkList(ref waitingWorkID, ref work, stolenWorkList, true);
+            return SetStolenWorkList(ref work, stolenWorkList, true);
         }
 
         private List<WorkBase> StealWorksFromOtherWorker()
@@ -659,7 +641,7 @@ namespace PowerThreadPool
             return null;
         }
 
-        private bool SetStolenWorkList(ref string waitingWorkID, ref WorkBase work, List<WorkBase> stolenWorkList, bool newWorker)
+        private bool SetStolenWorkList(ref WorkBase work, List<WorkBase> stolenWorkList, bool newWorker)
         {
             bool res = false;
             if (stolenWorkList != null)
@@ -667,9 +649,8 @@ namespace PowerThreadPool
                 foreach (WorkBase stolenWork in stolenWorkList)
                 {
                     res = true;
-                    if (!newWorker && waitingWorkID == null)
+                    if (!newWorker && work == null)
                     {
-                        waitingWorkID = stolenWork.ID;
                         work = stolenWork;
                         work.Worker = this;
                     }
@@ -682,17 +663,14 @@ namespace PowerThreadPool
             return res;
         }
 
-        private bool TurnToIdle(ref string waitingWorkID, ref WorkBase work)
+        private bool TurnToIdle(ref WorkBase work)
         {
             if (CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed))
             {
-                waitingWorkID = _waitingWorkIDPriorityCollection.Get();
-                if (waitingWorkID != null)
+                WorkBase waitingWork = _waitingWorkIDPriorityCollection.Get();
+                if (waitingWork != null)
                 {
-                    if (_waitingWorkDic.TryRemove(waitingWorkID, out work))
-                    {
-                        Interlocked.Decrement(ref _waitingWorkCount);
-                    }
+                    Interlocked.Decrement(ref _waitingWorkCount);
 
                     CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
@@ -911,8 +889,8 @@ namespace PowerThreadPool
         {
             discardWork = null;
             bool res = false;
-            string workID = _waitingWorkIDPriorityCollection.Discard();
-            if (workID != null && _waitingWorkDic.TryRemove(workID, out WorkBase work))
+            WorkBase work = _waitingWorkIDPriorityCollection.Discard();
+            if (work != null)
             {
                 Interlocked.Decrement(ref _waitingWorkCount);
                 if (work.BaseAsyncWorkID != work.AsyncWorkID)
