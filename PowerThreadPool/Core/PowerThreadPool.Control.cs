@@ -802,7 +802,7 @@ namespace PowerThreadPool
         {
             foreach (WorkBase work in _aliveWorkDic.Values)
             {
-                work.Cancel();
+                work.Cancel(true);
             }
 
             _workDependencyController.Cancel();
@@ -843,7 +843,7 @@ namespace PowerThreadPool
             }
             else if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
             {
-                res = work.Cancel();
+                res = work.Cancel(true);
                 if (res && _aliveWorkDic.TryRemove(id, out _))
                 {
                     work.Dispose();

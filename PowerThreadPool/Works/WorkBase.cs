@@ -49,7 +49,7 @@ namespace PowerThreadPool.Works
         internal DateTime QueueDateTime { get; set; }
         internal abstract object Execute();
         internal abstract bool Stop(bool forceStop);
-        internal abstract bool Cancel();
+        internal abstract bool Cancel(bool needFreeze);
         internal abstract bool Wait(bool helpWhileWaiting = false);
         internal abstract ExecuteResult<T> Fetch<T>(bool helpWhileWaiting = false);
         internal abstract bool Pause();
