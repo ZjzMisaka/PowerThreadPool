@@ -111,9 +111,9 @@ namespace PowerThreadPool.Options
 
         /// <summary>
         /// A factory function that creates instances of 
-        /// <see cref="IStealablePriorityCollection{T}"/> of type <see cref="WorkBase"/>.
+        /// <see cref="IStealablePriorityCollection{T}"/> of type <see cref="WorkItemBase"/>.
         /// </summary>
-        public Func<IStealablePriorityCollection<WorkBase>> CustomQueueFactory { get; set; }
+        public Func<IStealablePriorityCollection<WorkItemBase>> CustomQueueFactory { get; set; }
 
         /// <summary>
         /// The type of work ID to be used.

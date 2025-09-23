@@ -8,9 +8,8 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Works
 {
-    public abstract class WorkBase : IDisposable
+    internal abstract class WorkBase : WorkItemBase, IDisposable
     {
-        internal string ID { get; set; }
         internal Worker Worker { get; set; }
         internal PowerPool PowerPool { get; set; }
         internal volatile int _executeCount;
