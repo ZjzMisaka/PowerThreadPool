@@ -865,7 +865,7 @@ namespace PowerThreadPool
             WorkBase waitingWork = _waitingWorkIDPriorityCollection.Steal();
             while (waitingWork != null && waitingWork._canCancel.InterlockedValue == CanCancel.NotAllowed)
             {
-                waitingWork = _waitingWorkIDPriorityCollection.Get();
+                waitingWork = _waitingWorkIDPriorityCollection.Steal();
             }
             return waitingWork;
         }
