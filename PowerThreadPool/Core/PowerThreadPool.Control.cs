@@ -611,11 +611,12 @@ namespace PowerThreadPool
             if (forceStop)
             {
                 _workGroupDic.Clear();
+                Cancel();
                 foreach (Worker worker in _aliveWorkerDic.Values)
                 {
                     if (worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed))
                     {
-                        worker.ForceStop(true);
+                        worker.ForceStop();
                     }
                 }
             }
@@ -799,9 +800,9 @@ namespace PowerThreadPool
         /// </summary>
         public void Cancel()
         {
-            foreach (Worker worker in _aliveWorkerDic.Values)
+            foreach (WorkBase work in _aliveWorkDic.Values)
             {
-                worker.Cancel();
+                work.Cancel(true);
             }
 
             _workDependencyController.Cancel();

@@ -918,7 +918,7 @@ namespace PowerThreadPool
             {
                 if (origCanForceStop == CanForceStop.Allowed)
                 {
-                    worker.ForceStop(true);
+                    worker.ForceStop();
                 }
                 worker.DisposeWithJoin();
             }
@@ -949,6 +949,7 @@ namespace PowerThreadPool
                         Stop();
                         while (AliveWorkerCount > 0)
                         {
+                            Cancel();
                             foreach (Worker worker in _idleWorkerDic.Values)
                             {
                                 StopAndDisposeWorkerAndHelpingWorkers(worker);

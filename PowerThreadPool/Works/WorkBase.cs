@@ -8,9 +8,8 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Works
 {
-    internal abstract class WorkBase : IDisposable
+    internal abstract class WorkBase : WorkItemBase, IDisposable
     {
-        internal string ID { get; set; }
         internal Worker Worker { get; set; }
         internal PowerPool PowerPool { get; set; }
         internal volatile int _executeCount;
@@ -41,6 +40,7 @@ namespace PowerThreadPool.Works
         internal Status Status { get; set; }
         internal AutoResetEvent WaitSignal { get; set; }
         internal bool ShouldStop { get; set; }
+        internal InterlockedFlag<CanCancel> _canCancel = CanCancel.Allowed;
         internal ManualResetEvent PauseSignal { get; set; }
         /// <summary>
         /// Queue datetime (UTC).
@@ -48,11 +48,11 @@ namespace PowerThreadPool.Works
         internal DateTime QueueDateTime { get; set; }
         internal abstract object Execute();
         internal abstract bool Stop(bool forceStop);
+        internal abstract bool Cancel(bool needFreeze);
         internal abstract bool Wait(bool helpWhileWaiting = false);
         internal abstract ExecuteResult<T> Fetch<T>(bool helpWhileWaiting = false);
         internal abstract bool Pause();
         internal abstract bool Resume();
-        internal abstract bool Cancel(bool needFreeze);
         internal abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
         internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
         internal abstract bool ShouldRetry(ExecuteResultBase executeResult);
