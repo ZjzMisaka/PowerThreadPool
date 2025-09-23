@@ -51,7 +51,7 @@ namespace PowerThreadPool
 
         internal bool LongRunning { get; set; } = true;
 
-        private int _waitingWorkCount = 0;
+        internal int _waitingWorkCount = 0;
 
         internal int WaitingWorkCount => _waitingWorkCount;
 
@@ -494,7 +494,7 @@ namespace PowerThreadPool
             {
                 isContinue = false;
 
-                WorkBase stolenWork = _waitingWorkIDPriorityCollection.Steal();
+                WorkBase stolenWork = Steal();
 
                 if (stolenWork != null)
                 {
@@ -527,8 +527,8 @@ namespace PowerThreadPool
                     return;
                 }
 
-                WorkBase waitingWork = Get();
-                if (waitingWork == null && _powerPool.AliveWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
+                work = Get();
+                if (work == null && _powerPool.AliveWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
                 {
                     List<WorkBase> stolenWorkList = StealWorksFromOtherWorker();
                     SetStolenWorkList(ref work, stolenWorkList, false);
@@ -828,59 +828,6 @@ namespace PowerThreadPool
             }
         }
 
-        //internal void Cancel()
-        //{
-        //    IEnumerable<string> waitingWorkIDList = _waitingWorkDic.Keys;
-        //    foreach (string id in waitingWorkIDList)
-        //    {
-        //        Cancel(id);
-        //    }
-        //}
-
-        //internal bool Cancel(string id)
-        //{
-        //    if (_waitingWorkDic.TryGetValue(id, out WorkBase getWork) && getWork.BaseAsyncWorkID != null && getWork.BaseAsyncWorkID != id)
-        //    {
-        //        return false;
-        //    }
-        //    if (_waitingWorkDic.TryRemove(id, out WorkBase work))
-        //    {
-        //        if (work.BaseAsyncWorkID != null)
-        //        {
-        //            _powerPool.TryRemoveAsyncWork(id, false);
-
-        //            if (_powerPool._tcsDict.TryRemove(work.RealWorkID, out ITaskCompletionSource tcs))
-        //            {
-        //                tcs.SetCanceled();
-        //            }
-        //        }
-
-        //        ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
-        //        executeResult.ID = id;
-
-        //        _powerPool.InvokeWorkCanceledEvent(executeResult);
-        //        work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
-        //        _powerPool.WorkCallbackEnd(work, Status.Canceled);
-
-        //        Interlocked.Decrement(ref _waitingWorkCount);
-        //        int waitingWorkCount = Interlocked.Decrement(ref _powerPool._waitingWorkCount);
-
-        //        if (waitingWorkCount == 0)
-        //        {
-        //            // The Cancel function decreases the count of _powerPool.PowerPoolOption before execution. 
-        //            // Although in most cases, an Idle check will be performed after the currently running work completes, 
-        //            // if the Worker has already completed its Idle check when the count is decreased, 
-        //            // it may cause the thread pool to remain in a running state indefinitely. 
-        //            // Therefore, an additional check is required here to ensure that an Idle check is performed 
-        //            // after reducing the count of _powerPool.PowerPoolOption.
-        //            _powerPool.CheckPoolIdle();
-        //        }
-
-        //        return true;
-        //    }
-        //    return false;
-        //}
-
         internal bool DiscardOneWork(out WorkBase discardWork)
         {
             discardWork = null;
@@ -907,6 +854,16 @@ namespace PowerThreadPool
         {
             WorkBase waitingWork = _waitingWorkIDPriorityCollection.Get();
             while (waitingWork != null && !waitingWork._canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed))
+            {
+                waitingWork = _waitingWorkIDPriorityCollection.Get();
+            }
+            return waitingWork;
+        }
+
+        private WorkBase Steal()
+        {
+            WorkBase waitingWork = _waitingWorkIDPriorityCollection.Steal();
+            while (waitingWork != null && waitingWork._canCancel.InterlockedValue == CanCancel.NotAllowed)
             {
                 waitingWork = _waitingWorkIDPriorityCollection.Get();
             }

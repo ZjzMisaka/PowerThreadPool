@@ -2,6 +2,7 @@
 using System.Threading;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
+using PowerThreadPool.Helpers.Asynchronous;
 using PowerThreadPool.Helpers.LockFree;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
@@ -105,7 +106,48 @@ namespace PowerThreadPool.Works
 
         internal override bool Cancel()
         {
-            return _canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed);
+            if (BaseAsyncWorkID != null && BaseAsyncWorkID != ID)
+            {
+                return false;
+            }
+
+            if (BaseAsyncWorkID != null)
+            {
+                PowerPool.TryRemoveAsyncWork(ID, false);
+
+                if (PowerPool._tcsDict.TryRemove(RealWorkID, out ITaskCompletionSource tcs))
+                {
+                    tcs.SetCanceled();
+                }
+            }
+
+            bool res = _canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed);
+
+            if (res)
+            {
+                ExecuteResultBase executeResult = SetExecuteResult(null, null, Status.Canceled);
+                executeResult.ID = ID;
+
+                PowerPool.InvokeWorkCanceledEvent(executeResult);
+                InvokeCallback(executeResult, PowerPool.PowerPoolOption);
+                PowerPool.WorkCallbackEnd(this, Status.Canceled);
+
+                Interlocked.Decrement(ref Worker._waitingWorkCount);
+                int waitingWorkCount = Interlocked.Decrement(ref PowerPool._waitingWorkCount);
+
+                if (waitingWorkCount == 0)
+                {
+                    // The Cancel function decreases the count of _powerPool.PowerPoolOption before execution. 
+                    // Although in most cases, an Idle check will be performed after the currently running work completes, 
+                    // if the Worker has already completed its Idle check when the count is decreased, 
+                    // it may cause the thread pool to remain in a running state indefinitely. 
+                    // Therefore, an additional check is required here to ensure that an Idle check is performed 
+                    // after reducing the count of _powerPool.PowerPoolOption.
+                    PowerPool.CheckPoolIdle();
+                }
+            }
+
+            return res;
         }
 
         internal override bool Wait(bool helpWhileWaiting = false)
