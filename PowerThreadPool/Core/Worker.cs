@@ -867,32 +867,40 @@ namespace PowerThreadPool
 
         private WorkBase GetNotCanceledWork()
         {
-            WorkBase waitingWork = _waitingWorkPriorityCollection.Get() as WorkBase;
-            while (waitingWork != null && waitingWork._canCancel.InterlockedValue == CanCancel.NotAllowed)
+            WorkBase waitingWork;
+            do
             {
                 waitingWork = _waitingWorkPriorityCollection.Get() as WorkBase;
             }
+            while (WorkCancelNotAllowed(waitingWork));
             return waitingWork;
         }
 
         private WorkBase Steal()
         {
-            WorkBase waitingWork = _waitingWorkPriorityCollection.Steal() as WorkBase;
-            while (waitingWork != null && waitingWork._canCancel.InterlockedValue == CanCancel.NotAllowed)
+            WorkBase waitingWork;
+            do
             {
                 waitingWork = _waitingWorkPriorityCollection.Steal() as WorkBase;
             }
+            while (WorkCancelNotAllowed(waitingWork));
             return waitingWork;
         }
 
         private WorkBase Discard()
         {
-            WorkBase waitingWork = _waitingWorkPriorityCollection.Steal() as WorkBase;
-            while (waitingWork != null && waitingWork._canCancel.InterlockedValue == CanCancel.NotAllowed)
+            WorkBase waitingWork;
+            do
             {
                 waitingWork = _waitingWorkPriorityCollection.Steal() as WorkBase;
             }
+            while (WorkCancelNotAllowed(waitingWork));
             return waitingWork;
+        }
+
+        private bool WorkCancelNotAllowed(WorkBase waitingWork)
+        {
+            return waitingWork != null && waitingWork._canCancel.InterlockedValue == CanCancel.NotAllowed;
         }
 
         internal bool IsCancellationRequested()
