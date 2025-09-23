@@ -106,7 +106,7 @@ namespace PowerThreadPool.Works
 
         internal override bool Cancel(bool needFreeze)
         {
-            if(_canCancel.InterlockedValue == CanCancel.NotAllowed)
+            if (_canCancel.InterlockedValue == CanCancel.NotAllowed)
             {
                 return false;
             }

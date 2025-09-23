@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using PowerThreadPool.Collections;
@@ -533,7 +532,7 @@ namespace PowerThreadPool
                 {
                     Interlocked.Decrement(ref _waitingWorkCount);
                 }
-                
+
                 if (work == null && _powerPool.AliveWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
                 {
                     List<WorkBase> stolenWorkList = StealWorksFromOtherWorker();
