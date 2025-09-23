@@ -82,13 +82,13 @@ namespace PowerThreadPool.Works
                         {
                             if (Worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed))
                             {
-                                Worker.ForceStop(false);
+                                Worker.ForceStop();
                             }
                             res = true;
                         }
                         else
                         {
-                            res = Cancel(false);
+                            res = Cancel();
                         }
                     }
                 }
@@ -96,11 +96,16 @@ namespace PowerThreadPool.Works
             else
             {
                 ShouldStop = true;
-                Cancel(true);
+                Cancel();
                 res = true;
             }
 
             return res;
+        }
+
+        internal override bool Cancel()
+        {
+            return _canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed);
         }
 
         internal override bool Wait(bool helpWhileWaiting = false)
@@ -169,20 +174,6 @@ namespace PowerThreadPool.Works
                 res = true;
             }
             return res;
-        }
-
-        internal override bool Cancel(bool needFreeze)
-        {
-            // Ensure that the target Work is not stolen during the operation of the Worker
-            using (new WorkGuard(this, needFreeze))
-            {
-                bool res = false;
-                if (Worker != null)
-                {
-                    res = Worker.Cancel(ID);
-                }
-                return res;
-            }
         }
 
         internal override void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
