@@ -999,7 +999,7 @@ namespace UnitTest
                 }
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("2") }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(2) }
             });
             powerPool.QueueWorkItem<object>(() =>
             {
@@ -1010,7 +1010,7 @@ namespace UnitTest
                 }
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("8") }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(8) }
             });
 
             powerPool.Stop();
@@ -1064,7 +1064,7 @@ namespace UnitTest
                 Interlocked.Increment(ref done);
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("2") }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(2) }
             });
 
             powerPool.Stop(id);
@@ -1092,7 +1092,7 @@ namespace UnitTest
                 Interlocked.Increment(ref done);
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("2") }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(2) }
             });
 
             powerPool.Cancel(id);
