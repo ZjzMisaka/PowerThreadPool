@@ -161,5 +161,49 @@ namespace UnitTest
             int got = s.Get();
             Assert.Equal(99, got);
         }
+
+        [Fact]
+        public void ConcurrentStealablePriorityQueueDiscardShouldIterateAllPrioritiesAndReturnDefaultWhenAllQueuesEmpty()
+        {
+            ConcurrentStealablePriorityQueue<object> q = new ConcurrentStealablePriorityQueue<object>();
+
+            object marker = new object();
+            q.Set(marker, priority: 10);
+
+            object got = q.Get();
+            Assert.Same(marker, got);
+
+            object zero = q.Discard();
+            for (int i = 0; i < 3; i++)
+            {
+                _ = q.Discard();
+            }
+
+            object result = q.Discard();
+
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void ConcurrentStealablePriorityStackDiscardShouldIterateAllPrioritiesAndReturnDefaultWhenAllQueuesEmpty()
+        {
+            ConcurrentStealablePriorityStack<object> q = new ConcurrentStealablePriorityStack<object>();
+
+            object marker = new object();
+            q.Set(marker, priority: 10);
+
+            object got = q.Get();
+            Assert.Same(marker, got);
+
+            object zero = q.Discard();
+            for (int i = 0; i < 3; i++)
+            {
+                _ = q.Discard();
+            }
+
+            object result = q.Discard();
+
+            Assert.Null(result);
+        }
     }
 }
