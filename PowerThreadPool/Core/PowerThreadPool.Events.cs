@@ -159,7 +159,7 @@ namespace PowerThreadPool
             }
             if (work.Group != null && !work.ShouldStoreResult)
             {
-                if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<string> idSet))
+                if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<WorkID> idSet))
                 {
                     idSet.Remove(work.RealWorkID);
                 }
@@ -183,7 +183,7 @@ namespace PowerThreadPool
         /// Invoke WorkStarted event
         /// </summary>
         /// <param name="workID"></param>
-        internal void OnWorkStarted(string workID)
+        internal void OnWorkStarted(WorkID workID)
         {
             if (WorkStarted != null)
             {

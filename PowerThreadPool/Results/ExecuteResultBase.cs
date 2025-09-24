@@ -1,16 +1,24 @@
 ﻿using System;
 using PowerThreadPool.Options;
+using PowerThreadPool.Works;
 
 namespace PowerThreadPool.Results
 {
-    public enum Status { Succeed, Failed, Canceled, Stopped, ForceStopped }
+    public enum Status
+    {
+        Succeed,
+        Failed,
+        Canceled,
+        Stopped,
+        ForceStopped
+    }
 
     public abstract class ExecuteResultBase
     {
         /// <summary>
         /// Work id.
         /// </summary>
-        public string ID { get; internal set; }
+        public WorkID ID { get; internal set; }
 
         /// <summary>
         /// Status of the work.

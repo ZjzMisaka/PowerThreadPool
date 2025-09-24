@@ -2,6 +2,7 @@
 using PowerThreadPool;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
+using PowerThreadPool.Works;
 using Xunit.Abstractions;
 
 namespace UnitTest
@@ -32,7 +33,7 @@ namespace UnitTest
                 eventObj = e.Exception;
                 eventObj1 = e.ID;
             };
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 await Task.Delay(100);
                 int a = 0 / z;
@@ -64,7 +65,7 @@ namespace UnitTest
             {
                 c = 3;
             };
-            string id = powerPool.QueueWorkItemAsync(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync(async () =>
             {
                 if (a == 100)
                 {
@@ -98,7 +99,7 @@ namespace UnitTest
             {
                 c = 3;
             };
-            string id = powerPool.QueueWorkItemAsync(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync(async () =>
             {
                 if (a == 100)
                 {
@@ -159,7 +160,7 @@ namespace UnitTest
             {
                 eventObj = e.ID;
             };
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 Task.Delay(1000).Wait();
@@ -197,7 +198,7 @@ namespace UnitTest
             {
                 eventObj = e.ID;
             };
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 Task.Delay(1000).Wait();
@@ -237,7 +238,7 @@ namespace UnitTest
                 eventObj = e.ID;
                 eventObj1 = e.ForceStop;
             };
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 Task.Delay(1000).Wait();
@@ -283,7 +284,7 @@ namespace UnitTest
                 eventObj = e.ID;
                 eventObj1 = e.ForceStop;
             };
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 Task.Delay(1000).Wait();
@@ -328,7 +329,7 @@ namespace UnitTest
                 eventObj = e.Result;
                 eventObj1 = e.ID;
             };
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 return await OuterAsync();
             }, (res) =>
@@ -383,7 +384,7 @@ namespace UnitTest
             {
                 eventObj = e.ID;
             };
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(1000);
@@ -450,7 +451,7 @@ namespace UnitTest
             object c = null;
             object r = null;
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(1000);
@@ -482,7 +483,7 @@ namespace UnitTest
             object c = null;
             object r = null;
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(1000);
@@ -510,8 +511,8 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1 });
-            string stoppedID = null;
-            string nsID = null;
+            WorkID stoppedID = default;
+            WorkID nsID = default;
             powerPool.WorkStopped += (s, e) =>
             {
                 if (nsID == e.ID)
@@ -520,7 +521,7 @@ namespace UnitTest
                 }
                 stoppedID = e.ID;
             };
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 await Task.Delay(1);
                 await Task.Delay(1);
@@ -564,7 +565,7 @@ namespace UnitTest
             object c = null;
             object r = null;
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItemAsync(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync(async () =>
             {
                 p = "1";
                 await Task.Delay(1000);
@@ -601,7 +602,7 @@ namespace UnitTest
                 eventObj = e.ID;
                 eventObj1 = e.ForceStop;
             };
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(1000);
@@ -640,7 +641,7 @@ namespace UnitTest
             object r = null;
             Status s = Status.Succeed;
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(50);
@@ -735,7 +736,7 @@ namespace UnitTest
             object c = null;
             object r = null;
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(50);
@@ -771,7 +772,7 @@ namespace UnitTest
             object r = null;
             Status s = Status.Succeed;
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(50);
@@ -810,7 +811,7 @@ namespace UnitTest
             object r = null;
             Status s = Status.Succeed;
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -855,7 +856,7 @@ namespace UnitTest
             {
                 Thread.Sleep(1000);
             });
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(10);
@@ -885,7 +886,7 @@ namespace UnitTest
             {
                 Thread.Sleep(1000);
             });
-            string id = powerPool.QueueWorkItemAsync(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync(async () =>
             {
                 p = "1";
                 await Task.Delay(10);
@@ -908,7 +909,7 @@ namespace UnitTest
             object c = null;
 
             PowerPool powerPool = new PowerPool { PowerPoolOption = new PowerPoolOption { MaxThreads = 1 } };
-            string id = powerPool.QueueWorkItemAsync(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync(async () =>
             {
                 p = "1";
                 await Task.Delay(200);
@@ -951,7 +952,7 @@ namespace UnitTest
                 doneCount = 0;
                 for (int i = 0; i < runCount; ++i)
                 {
-                    string id = powerPool.QueueWorkItemAsync(async () =>
+                    WorkID id = powerPool.QueueWorkItemAsync(async () =>
                     {
                         await Task.Delay(200);
                         await Task.Delay(200);
@@ -1011,7 +1012,7 @@ namespace UnitTest
                 doneCount = 0;
                 for (int i = 0; i < runCount; ++i)
                 {
-                    string id = powerPool.QueueWorkItemAsync(async () =>
+                    WorkID id = powerPool.QueueWorkItemAsync(async () =>
                     {
                         Thread.Sleep(200);
                         await Task.Delay(200);
@@ -1063,7 +1064,7 @@ namespace UnitTest
             {
                 Thread.Sleep(1000);
             });
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(10);
@@ -1093,7 +1094,7 @@ namespace UnitTest
             {
                 Thread.Sleep(1000);
             });
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(10);
@@ -1102,7 +1103,7 @@ namespace UnitTest
                 c = "2";
                 return "100";
             }, new WorkOption<string> { ShouldStoreResult = true });
-            var res = powerPool.Fetch<string>(new List<string> { id }, true);
+            var res = powerPool.Fetch<string>(new List<WorkID> { id }, true);
             powerPool.Wait();
 
             Assert.Equal("1", p);
@@ -1156,7 +1157,7 @@ namespace UnitTest
             {
                 Thread.Sleep(1000);
             });
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(1000);
@@ -1185,7 +1186,7 @@ namespace UnitTest
 
             List<string> log = new List<string>();
 
-            string id = powerPool.QueueWorkItemAsync(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync(async () =>
             {
                 log.Add("0");
                 await Task.Delay(100);
@@ -1216,7 +1217,7 @@ namespace UnitTest
                 return "200";
             }, new WorkOption<string>
             {
-                Dependents = new PowerThreadPool.Collections.ConcurrentSet<string> { id },
+                Dependents = new PowerThreadPool.Collections.ConcurrentSet<WorkID> { id },
                 Callback = (res) =>
                 {
                     r2 = res.Result;
@@ -1310,7 +1311,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 await Task.Delay(500);
                 return "100";
@@ -1329,7 +1330,7 @@ namespace UnitTest
             int res = 0;
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItemAsync(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync(async () =>
             {
                 await Task.Delay(500);
                 res = 100;
@@ -1346,7 +1347,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 await Task.Delay(500);
                 powerPool.StopIfRequested();
@@ -1364,7 +1365,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 Thread.Sleep(100);
                 await Task.Delay(100);
@@ -1388,7 +1389,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1 });
-            string fid = powerPool.QueueWorkItem(() =>
+            WorkID fid = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -1396,7 +1397,7 @@ namespace UnitTest
                     powerPool.StopIfRequested();
                 }
             });
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 await Task.Delay(500);
                 powerPool.StopIfRequested();
@@ -1415,7 +1416,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItemAsync<string>(async () =>
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 await Task.Delay(500);
                 throw new AbandonedMutexException("AAAA");

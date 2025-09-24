@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using PowerThreadPool;
 using PowerThreadPool.Options;
+using PowerThreadPool.Works;
 using Xunit.Abstractions;
 
 namespace UnitTest
@@ -411,8 +412,8 @@ namespace UnitTest
         public void testSugar1()
         {
             PowerPool powerPool = new PowerPool();
-            string id = powerPool + (() => { });
-            Assert.NotEmpty(id);
+            WorkID id = powerPool + (() => { });
+            Assert.False(id == null);
         }
 
         [Fact]

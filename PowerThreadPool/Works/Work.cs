@@ -41,17 +41,17 @@ namespace PowerThreadPool.Works
         internal override bool LongRunning => _workOption.LongRunning;
         internal override bool ShouldStoreResult => _workOption.ShouldStoreResult;
         internal override WorkPlacementPolicy WorkPlacementPolicy => _workOption.WorkPlacementPolicy;
-        internal override ConcurrentSet<string> Dependents => _workOption.Dependents;
+        internal override ConcurrentSet<WorkID> Dependents => _workOption.Dependents;
         internal override bool AllowEventsAndCallback
         {
             get => _workOption.AllowEventsAndCallback;
             set => _workOption.AllowEventsAndCallback = value;
         }
-        internal override string AsyncWorkID => _workOption.AsyncWorkID;
-        internal override string BaseAsyncWorkID => _workOption.BaseAsyncWorkID;
-        internal override string RealWorkID => _workOption.BaseAsyncWorkID == null ? ID : _workOption.BaseAsyncWorkID;
+        internal override WorkID AsyncWorkID => _workOption.AsyncWorkID;
+        internal override WorkID BaseAsyncWorkID => _workOption.BaseAsyncWorkID;
+        internal override WorkID RealWorkID => _workOption.BaseAsyncWorkID == null ? ID : _workOption.BaseAsyncWorkID;
 
-        internal Work(PowerPool powerPool, string id, Func<TResult> function, WorkOption<TResult> option)
+        internal Work(PowerPool powerPool, WorkID id, Func<TResult> function, WorkOption<TResult> option)
         {
             PowerPool = powerPool;
             ID = id;
@@ -192,7 +192,7 @@ namespace PowerThreadPool.Works
         {
             Wait(helpWhileWaiting);
 
-            if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<string> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
+            if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
             {
                 Work<T> lastWorkT = lastWork as Work<T>;
                 Spinner.Start(() => lastWorkT.ExecuteResult != null);

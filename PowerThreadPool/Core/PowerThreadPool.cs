@@ -34,31 +34,31 @@ namespace PowerThreadPool
         private readonly ManualResetEvent _pauseSignal = new ManualResetEvent(true);
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
-        internal ConcurrentSet<string> _failedWorkSet = new ConcurrentSet<string>();
-        internal ConcurrentSet<string> _canceledWorkSet = new ConcurrentSet<string>();
+        internal ConcurrentSet<WorkID> _failedWorkSet = new ConcurrentSet<WorkID>();
+        internal ConcurrentSet<WorkID> _canceledWorkSet = new ConcurrentSet<WorkID>();
 
         internal ConcurrentDictionary<int, Worker> _idleWorkerDic = new ConcurrentDictionary<int, Worker>();
         internal ConcurrentQueue<int> _idleWorkerQueue = new ConcurrentQueue<int>();
 
-        internal ConcurrentDictionary<string, WorkBase> _aliveWorkDic = new ConcurrentDictionary<string, WorkBase>();
-        internal ConcurrentDictionary<string, ConcurrentSet<string>> _workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
+        internal ConcurrentDictionary<WorkID, WorkBase> _aliveWorkDic = new ConcurrentDictionary<WorkID, WorkBase>();
+        internal ConcurrentDictionary<string, ConcurrentSet<WorkID>> _workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<WorkID>>();
         internal ConcurrentDictionary<string, ConcurrentSet<string>> _groupRelationDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
         internal ConcurrentDictionary<int, Worker> _aliveWorkerDic = new ConcurrentDictionary<int, Worker>();
         internal volatile bool _aliveWorkerDicChanged = false;
         internal Worker[] _aliveWorkerList = new List<Worker>().ToArray();
         internal int _aliveWorkerListLoopIndex = 0;
 
-        internal ConcurrentQueue<string> _suspendedWorkQueue = new ConcurrentQueue<string>();
-        internal ConcurrentDictionary<string, WorkBase> _suspendedWork = new ConcurrentDictionary<string, WorkBase>();
-        internal ConcurrentQueue<string> _stopSuspendedWorkQueue = new ConcurrentQueue<string>();
-        internal ConcurrentDictionary<string, WorkBase> _stopSuspendedWork = new ConcurrentDictionary<string, WorkBase>();
+        internal ConcurrentQueue<WorkID> _suspendedWorkQueue = new ConcurrentQueue<WorkID>();
+        internal ConcurrentDictionary<WorkID, WorkBase> _suspendedWork = new ConcurrentDictionary<WorkID, WorkBase>();
+        internal ConcurrentQueue<WorkID> _stopSuspendedWorkQueue = new ConcurrentQueue<WorkID>();
+        internal ConcurrentDictionary<WorkID, WorkBase> _stopSuspendedWork = new ConcurrentDictionary<WorkID, WorkBase>();
 
         private ConcurrentSet<WorkBase> _pausingWorkSet = new ConcurrentSet<WorkBase>();
 
-        internal ConcurrentDictionary<string, ExecuteResultBase> _resultDic = new ConcurrentDictionary<string, ExecuteResultBase>();
+        internal ConcurrentDictionary<WorkID, ExecuteResultBase> _resultDic = new ConcurrentDictionary<WorkID, ExecuteResultBase>();
 
-        internal ConcurrentDictionary<string, ConcurrentSet<string>> _asyncWorkIDDict = new ConcurrentDictionary<string, ConcurrentSet<string>>();
-        internal ConcurrentDictionary<string, ITaskCompletionSource> _tcsDict = new ConcurrentDictionary<string, ITaskCompletionSource>();
+        internal ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>> _asyncWorkIDDict = new ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>>();
+        internal ConcurrentDictionary<WorkID, ITaskCompletionSource> _tcsDict = new ConcurrentDictionary<WorkID, ITaskCompletionSource>();
 
         internal ConcurrentQueue<Worker> _helperWorkerQueue = new ConcurrentQueue<Worker>();
 
@@ -124,11 +124,11 @@ namespace PowerThreadPool
         internal int _waitingWorkCount = 0;
         public int WaitingWorkCount => _waitingWorkCount;
 
-        public IEnumerable<string> WaitingWorkList
+        public IEnumerable<WorkID> WaitingWorkList
         {
             get
             {
-                List<string> list = _aliveWorkDic.Values
+                List<WorkID> list = _aliveWorkDic.Values
                     .Where(x => x.ExecuteCount == 0)
                     .Select(x => x.ID).ToList();
                 return list;
@@ -145,7 +145,7 @@ namespace PowerThreadPool
         /// ID list of failed works
         /// Will be cleared when the thread pool starts again
         /// </summary>
-        public IEnumerable<string> FailedWorkList => _failedWorkSet;
+        public IEnumerable<WorkID> FailedWorkList => _failedWorkSet;
         internal int _asyncWorkCount = 0;
         public int AsyncWorkCount => _asyncWorkCount;
 
@@ -277,11 +277,11 @@ namespace PowerThreadPool
         {
             CheckDisposed();
 
-            while (_suspendedWorkQueue.TryDequeue(out string key))
+            while (_suspendedWorkQueue.TryDequeue(out WorkID key))
             {
                 if (_suspendedWork.TryGetValue(key, out WorkBase work))
                 {
-                    ConcurrentSet<string> dependents = work.Dependents;
+                    ConcurrentSet<WorkID> dependents = work.Dependents;
                     if (dependents == null || dependents.Count == 0)
                     {
                         if (PoolStopping)
@@ -301,7 +301,7 @@ namespace PowerThreadPool
 #if NET5_0_OR_GREATER
             _suspendedWorkQueue.Clear();
 #else
-            _suspendedWorkQueue = new ConcurrentQueue<string>();
+            _suspendedWorkQueue = new ConcurrentQueue<WorkID>();
 #endif
         }
 
@@ -414,7 +414,7 @@ namespace PowerThreadPool
                 {
                     RejectType rejectType = PowerPoolOption.RejectOption.RejectType;
 
-                    string rejectID = work.RealWorkID;
+                    WorkID rejectID = work.RealWorkID;
 
                     if (WorkRejected != null)
                     {
@@ -494,7 +494,7 @@ namespace PowerThreadPool
         private void OnWorkDiscarded(WorkBase work, RejectType rejectType)
         {
             ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
-            string idErr = work.ID;
+            WorkID idErr = work.ID;
             executeResult.ID = idErr;
 
             WorkCallbackEnd(work, executeResult.Status);
@@ -790,7 +790,7 @@ namespace PowerThreadPool
             {
                 _poolStopping = false;
 
-                while (_stopSuspendedWorkQueue.TryDequeue(out string key))
+                while (_stopSuspendedWorkQueue.TryDequeue(out WorkID key))
                 {
                     if (_stopSuspendedWork.TryGetValue(key, out WorkBase work))
                     {
@@ -835,7 +835,7 @@ namespace PowerThreadPool
         /// Clear result storage
         /// </summary>
         /// <param name="workID">work ID</param>
-        public void ClearResultStorage(string workID)
+        public void ClearResultStorage(WorkID workID)
         {
             _resultDic.TryRemove(workID, out _);
         }
@@ -844,9 +844,9 @@ namespace PowerThreadPool
         /// Clear result storage
         /// </summary>
         /// <param name="workIDList">work ID list</param>
-        public void ClearResultStorage(IEnumerable<string> workIDList)
+        public void ClearResultStorage(IEnumerable<WorkID> workIDList)
         {
-            foreach (string workID in workIDList)
+            foreach (WorkID workID in workIDList)
             {
                 _resultDic.TryRemove(workID, out _);
             }
@@ -866,9 +866,9 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="baseID"></param>
         /// <param name="started"></param>
-        internal void TryRemoveAsyncWork(string baseID, bool started)
+        internal void TryRemoveAsyncWork(WorkID baseID, bool started)
         {
-            if (_asyncWorkIDDict.TryRemove(baseID, out ConcurrentSet<string> asyncIDList))
+            if (_asyncWorkIDDict.TryRemove(baseID, out ConcurrentSet<WorkID> asyncIDList))
             {
                 Interlocked.Decrement(ref _asyncWorkCount);
                 if (_aliveWorkDic.TryRemove(baseID, out WorkBase baseWork))
@@ -877,7 +877,7 @@ namespace PowerThreadPool
                 }
                 if (started)
                 {
-                    foreach (string asyncID in asyncIDList)
+                    foreach (WorkID asyncID in asyncIDList)
                     {
                         if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
                         {

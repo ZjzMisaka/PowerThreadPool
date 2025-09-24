@@ -2,6 +2,7 @@
 using System.Threading;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Results;
+using PowerThreadPool.Works;
 
 namespace PowerThreadPool.Options
 {
@@ -26,9 +27,9 @@ namespace PowerThreadPool.Options
         /// </summary>
         public string CustomWorkID { get; set; } = null;
 
-        internal string AsyncWorkID { get; set; } = null;
+        internal WorkID AsyncWorkID { get; set; }
 
-        internal string BaseAsyncWorkID { get; set; } = null;
+        internal WorkID BaseAsyncWorkID { get; set; }
 
         internal bool AllowEventsAndCallback { get; set; } = true;
 
@@ -66,7 +67,7 @@ namespace PowerThreadPool.Options
         /// A set of works that this work depends on.
         /// This work will not start until all dependent works have completed execution.
         /// </summary>
-        public ConcurrentSet<string> Dependents { get; set; } = null;
+        public ConcurrentSet<WorkID> Dependents { get; set; } = null;
 
         /// <summary>
         /// Is long running work.

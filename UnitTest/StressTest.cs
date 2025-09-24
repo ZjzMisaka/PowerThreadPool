@@ -3,6 +3,7 @@ using System.Reflection;
 using PowerThreadPool;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
+using PowerThreadPool.Works;
 using Xunit.Abstractions;
 
 namespace UnitTest
@@ -37,7 +38,7 @@ namespace UnitTest
                     Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
                         Task.Run(() =>
                         {
-                            string workId = powerPool.QueueWorkItem(() =>
+                            WorkID workId = powerPool.QueueWorkItem(() =>
                             {
                             }, (res) =>
                             {
@@ -47,7 +48,7 @@ namespace UnitTest
                                 }
                                 Interlocked.Increment(ref doneCount);
                             });
-                            Assert.NotNull(workId);
+                            Assert.False(workId == null);
                         })
                     ).ToArray();
 
@@ -120,7 +121,7 @@ namespace UnitTest
                         int r = random.Next(0, 101);
                         if (r == 100)
                         {
-                            string id = powerPool.QueueWorkItem(() => { throw new Exception(); });
+                            WorkID id = powerPool.QueueWorkItem(() => { throw new Exception(); });
                             if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
@@ -128,7 +129,7 @@ namespace UnitTest
                         }
                         else if (r >= 95 && r <= 99)
                         {
-                            string id = powerPool.QueueWorkItem(() =>
+                            WorkID id = powerPool.QueueWorkItem(() =>
                             {
                                 Sleep(10000, powerPool);
                                 int r1 = random.Next(0, 101);
@@ -144,7 +145,7 @@ namespace UnitTest
                         }
                         else if (r >= 94 && r <= 94)
                         {
-                            string id = powerPool.QueueWorkItem(() =>
+                            WorkID id = powerPool.QueueWorkItem(() =>
                             {
                                 Sleep(30000, powerPool);
                                 int r1 = random.Next(0, 101);
@@ -160,7 +161,7 @@ namespace UnitTest
                         }
                         else if (r >= 70 && r <= 93)
                         {
-                            string id = powerPool.QueueWorkItemAsync(async () =>
+                            WorkID id = powerPool.QueueWorkItemAsync(async () =>
                             {
                                 await Task.Delay(random.Next(200, 600));
                                 int r1 = random.Next(0, 101);
@@ -178,7 +179,7 @@ namespace UnitTest
                         }
                         else
                         {
-                            string id = powerPool.QueueWorkItem(() =>
+                            WorkID id = powerPool.QueueWorkItem(() =>
                             {
                                 Sleep(random.Next(500, 1000), powerPool);
                                 int r1 = random.Next(0, 101);
@@ -327,7 +328,7 @@ namespace UnitTest
                         int r = random.Next(0, 101);
                         if (r == 100)
                         {
-                            string id = powerPool.QueueWorkItem(() => { throw new Exception(); });
+                            WorkID id = powerPool.QueueWorkItem(() => { throw new Exception(); });
                             if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
@@ -335,7 +336,7 @@ namespace UnitTest
                         }
                         else if (r >= 95 && r <= 99)
                         {
-                            string id = powerPool.QueueWorkItem(() =>
+                            WorkID id = powerPool.QueueWorkItem(() =>
                             {
                                 Sleep(10000, powerPool);
                                 int r1 = random.Next(0, 101);
@@ -351,7 +352,7 @@ namespace UnitTest
                         }
                         else if (r >= 94 && r <= 94)
                         {
-                            string id = powerPool.QueueWorkItem(() =>
+                            WorkID id = powerPool.QueueWorkItem(() =>
                             {
                                 Sleep(30000, powerPool);
                                 int r1 = random.Next(0, 101);
@@ -367,7 +368,7 @@ namespace UnitTest
                         }
                         else if (r >= 70 && r <= 93)
                         {
-                            string id = powerPool.QueueWorkItemAsync(async () =>
+                            WorkID id = powerPool.QueueWorkItemAsync(async () =>
                             {
                                 await Task.Delay(random.Next(200, 600));
                                 int r1 = random.Next(0, 101);
@@ -385,7 +386,7 @@ namespace UnitTest
                         }
                         else
                         {
-                            string id = powerPool.QueueWorkItem(() =>
+                            WorkID id = powerPool.QueueWorkItem(() =>
                             {
                                 Sleep(random.Next(500, 1000), powerPool);
                                 int r1 = random.Next(0, 101);

@@ -6,6 +6,7 @@ using PowerThreadPool.EventArguments;
 using PowerThreadPool.Groups;
 using PowerThreadPool.Helpers.LockFree;
 using PowerThreadPool.Options;
+using PowerThreadPool.Works;
 
 namespace PowerThreadPool
 {
@@ -169,7 +170,7 @@ namespace PowerThreadPool
                 Group = groupID,
             };
 
-            ConcurrentDictionary<string, TSource> idDict = new ConcurrentDictionary<string, TSource>();
+            ConcurrentDictionary<WorkID, TSource> idDict = new ConcurrentDictionary<WorkID, TSource>();
 
             EventHandler<WorkCanceledEventArgs> onCanceled = null;
             EventHandler<WorkStoppedEventArgs> onStopped = null;
@@ -214,7 +215,7 @@ namespace PowerThreadPool
                     {
                         // Because work is added to the dictionary only after being enqueued, a very short race window may occur.
                         // Therefore, use a spinner for brief spinning in TryAddBack.
-                        string id = QueueWorkItem(() => { body(item); }, workOption);
+                        WorkID id = QueueWorkItem(() => { body(item); }, workOption);
                         idDict[id] = item;
                     }
                     source._canWatch.InterlockedValue = CanWatch.Allowed;
@@ -225,7 +226,7 @@ namespace PowerThreadPool
                 }
             }
 
-            void TryAddBack(string id)
+            void TryAddBack(WorkID id)
             {
                 TSource item = default;
                 if (idDict.TryRemove(id, out item))

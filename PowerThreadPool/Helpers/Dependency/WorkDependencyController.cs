@@ -14,7 +14,7 @@ namespace PowerThreadPool.Helpers.Dependency
 {
     internal class WorkDependencyController
     {
-        internal ConcurrentDictionary<string, WorkBase> _workDict = new ConcurrentDictionary<string, WorkBase>();
+        internal ConcurrentDictionary<WorkID, WorkBase> _workDict = new ConcurrentDictionary<WorkID, WorkBase>();
         private CallbackEndEventHandler _callbackEndHandler;
         private PowerPool _powerPool;
         private int _firstRegister = 0;
@@ -24,7 +24,7 @@ namespace PowerThreadPool.Helpers.Dependency
             _powerPool = powerPool;
         }
 
-        internal bool Register(WorkBase work, ConcurrentSet<string> dependents, out bool workNotSuccessfullyCompleted)
+        internal bool Register(WorkBase work, ConcurrentSet<WorkID> dependents, out bool workNotSuccessfullyCompleted)
         {
             workNotSuccessfullyCompleted = false;
 
@@ -46,7 +46,7 @@ namespace PowerThreadPool.Helpers.Dependency
 
                 _workDict[work.ID] = work;
 
-                foreach (string dependedId in dependents)
+                foreach (WorkID dependedId in dependents)
                 {
                     if (PrecedingWorkNotSuccessfullyCompleted(dependedId))
                     {
@@ -73,15 +73,15 @@ namespace PowerThreadPool.Helpers.Dependency
                     }
                 }
 
-                List<string> toRemove = new List<string>();
-                foreach (string depId in dependents)
+                List<WorkID> toRemove = new List<WorkID>();
+                foreach (WorkID depId in dependents)
                 {
                     if (IsSucceeded(depId))
                     {
                         toRemove.Add(depId);
                     }
                 }
-                foreach (string depId in toRemove)
+                foreach (WorkID depId in toRemove)
                 {
                     dependents.Remove(depId);
                 }
@@ -100,7 +100,7 @@ namespace PowerThreadPool.Helpers.Dependency
             return false;
         }
 
-        private void SetWorkIfDependencySolved(ConcurrentSet<string> dependents, WorkBase work)
+        private void SetWorkIfDependencySolved(ConcurrentSet<WorkID> dependents, WorkBase work)
         {
             if (dependents.Count == 0 &&
                 work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
@@ -109,7 +109,7 @@ namespace PowerThreadPool.Helpers.Dependency
             }
         }
 
-        private bool IsSucceeded(string id)
+        private bool IsSucceeded(WorkID id)
         {
             if (_powerPool._resultDic.TryGetValue(id, out ExecuteResultBase res))
             {
@@ -120,8 +120,8 @@ namespace PowerThreadPool.Helpers.Dependency
 
         internal void Cancel()
         {
-            List<string> idList = _workDict.Keys.ToList();
-            foreach (string id in idList)
+            List<WorkID> idList = _workDict.Keys.ToList();
+            foreach (WorkID id in idList)
             {
                 if (_workDict.TryRemove(id, out _))
                 {
@@ -131,7 +131,7 @@ namespace PowerThreadPool.Helpers.Dependency
             _powerPool.CheckPoolIdle();
         }
 
-        internal bool Cancel(string id)
+        internal bool Cancel(WorkID id)
         {
             bool res = false;
             if (_workDict.TryRemove(id, out _))
@@ -143,23 +143,23 @@ namespace PowerThreadPool.Helpers.Dependency
             return res;
         }
 
-        private bool CheckHasCycle(string id, ConcurrentSet<string> dependents)
+        private bool CheckHasCycle(WorkID id, ConcurrentSet<WorkID> dependents)
         {
-            Dictionary<string, HashSet<string>> dependencyGraph = new Dictionary<string, HashSet<string>>();
-            dependencyGraph[id] = new HashSet<string>(dependents);
+            Dictionary<WorkID, HashSet<WorkID>> dependencyGraph = new Dictionary<WorkID, HashSet<WorkID>>();
+            dependencyGraph[id] = new HashSet<WorkID>(dependents);
 
-            foreach (KeyValuePair<string, WorkBase> kvp in _workDict)
+            foreach (KeyValuePair<WorkID, WorkBase> kvp in _workDict)
             {
-                dependencyGraph[kvp.Key] = new HashSet<string>(kvp.Value.Dependents);
+                dependencyGraph[kvp.Key] = new HashSet<WorkID>(kvp.Value.Dependents);
             }
 
-            HashSet<string> visited = new HashSet<string>();
-            HashSet<string> recursionStack = new HashSet<string>();
+            HashSet<WorkID> visited = new HashSet<WorkID>();
+            HashSet<WorkID> recursionStack = new HashSet<WorkID>();
 
             return DetectCycleDFS(id, dependencyGraph, visited, recursionStack);
         }
 
-        private bool DetectCycleDFS(string current, Dictionary<string, HashSet<string>> graph, HashSet<string> visited, HashSet<string> recursionStack)
+        private bool DetectCycleDFS(WorkID current, Dictionary<WorkID, HashSet<WorkID>> graph, HashSet<WorkID> visited, HashSet<WorkID> recursionStack)
         {
             if (!graph.ContainsKey(current))
             {
@@ -169,7 +169,7 @@ namespace PowerThreadPool.Helpers.Dependency
             visited.Add(current);
             recursionStack.Add(current);
 
-            foreach (string dependent in graph[current])
+            foreach (WorkID dependent in graph[current])
             {
                 if (recursionStack.Contains(dependent))
                 {
@@ -188,12 +188,12 @@ namespace PowerThreadPool.Helpers.Dependency
 
         private void OnCallbackEnd(WorkBase endWork, Status status)
         {
-            string id = endWork.RealWorkID;
+            WorkID id = endWork.RealWorkID;
 
             if (status == Status.Failed || status == Status.Canceled)
             {
-                Stack<string> stack = new Stack<string>();
-                HashSet<string> visited = new HashSet<string>();
+                Stack<WorkID> stack = new Stack<WorkID>();
+                HashSet<WorkID> visited = new HashSet<WorkID>();
                 List<WorkBase> newlyFailed = new List<WorkBase>();
 
                 stack.Push(id);
@@ -201,7 +201,7 @@ namespace PowerThreadPool.Helpers.Dependency
 
                 while (stack.Count > 0)
                 {
-                    string failedId = stack.Pop();
+                    WorkID failedId = stack.Pop();
 
                     foreach (WorkBase work in _workDict.Values)
                     {
@@ -253,7 +253,7 @@ namespace PowerThreadPool.Helpers.Dependency
             }
         }
 
-        private bool PrecedingWorkNotSuccessfullyCompleted(string dependedId)
+        private bool PrecedingWorkNotSuccessfullyCompleted(WorkID dependedId)
         {
             return _powerPool._failedWorkSet.Contains(dependedId) || _powerPool._canceledWorkSet.Contains(dependedId);
         }

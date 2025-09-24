@@ -35,7 +35,7 @@ namespace PowerThreadPool
 
         private ManualResetEvent _runSignal = new ManualResetEvent(false);
 
-        internal string WorkID => Work.ID;
+        internal WorkID WorkID => Work.ID;
 
         internal WorkBase Work { get; set; }
 

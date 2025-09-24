@@ -1,4 +1,5 @@
 ﻿using System;
+using PowerThreadPool.Works;
 
 namespace PowerThreadPool.Exceptions
 {
@@ -9,6 +10,6 @@ namespace PowerThreadPool.Exceptions
         /// <summary>
         /// work id
         /// </summary>
-        public string ID { get; internal set; }
+        public WorkID ID { get; internal set; }
     }
 }

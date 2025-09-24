@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Options;
+using PowerThreadPool.Works;
 
 namespace PowerThreadPool.Helpers.Asynchronous
 {
@@ -25,7 +26,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
 
         public override void Post(SendOrPostCallback d, object state)
         {
-            if (_powerPool._asyncWorkIDDict.TryGetValue(_workOption.BaseAsyncWorkID, out ConcurrentSet<string> idSet))
+            if (_powerPool._asyncWorkIDDict.TryGetValue(_workOption.BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet))
             {
                 _workOption.AsyncWorkID = _powerPool.CreateID<object>();
                 idSet.Add(_workOption.AsyncWorkID);
