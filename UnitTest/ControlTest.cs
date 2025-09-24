@@ -983,6 +983,41 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestForceStopByIDList()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            List<long> logList = new List<long>();
+
+            object lockObj = new object();
+
+            WorkID id = default;
+            WorkID resID = default;
+            powerPool.WorkStarted += (s, e) =>
+            {
+                powerPool.ForceStop(new List<WorkID>() { e.ID });
+            };
+
+            id = powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                while (true)
+                {
+                    Thread.Sleep(1);
+                }
+            }, (res) =>
+            {
+                resID = res.ID;
+            });
+
+            await powerPool.WaitAsync(new List<WorkID>() { id });
+            await powerPool.WaitAsync();
+
+            Assert.Equal(id, resID);
+        }
+
+        [Fact]
         public async void TestStopByGroup()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1046,6 +1081,46 @@ namespace UnitTest
                 while (true)
                 {
                     powerPool.StopIfRequested();
+                    Thread.Sleep(1);
+                }
+            }, new WorkOption<object>()
+            {
+                Callback = (res) =>
+                {
+                    resID = res.ID;
+                }
+                ,
+                Group = "A"
+            });
+
+            await powerPool.GetGroup("A").WaitAsync();
+            await powerPool.WaitAsync();
+
+            Assert.Equal(id, resID);
+        }
+
+        [Fact]
+        public async void TestForceStopByGroupObject()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            List<long> logList = new List<long>();
+
+            object lockObj = new object();
+
+            WorkID id = default;
+            WorkID resID = default;
+            powerPool.WorkStarted += (s, e) =>
+            {
+                powerPool.GetGroup("A").ForceStop();
+            };
+
+            id = powerPool.QueueWorkItem(() =>
+            {
+                long start = GetNowSs();
+                while (true)
+                {
                     Thread.Sleep(1);
                 }
             }, new WorkOption<object>()
