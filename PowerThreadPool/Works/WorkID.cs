@@ -4,10 +4,9 @@ namespace PowerThreadPool.Works
 {
     public enum WorkIdKind : byte
     {
-        None = 0,
-        Long = 1,
-        Guid = 2,
-        String = 3,
+        Long = 0,
+        Guid = 1,
+        String = 2,
     }
 
     public abstract class WorkID :
@@ -72,66 +71,57 @@ namespace PowerThreadPool.Works
 
         public bool TryGetLong(out long value)
         {
-            if (Kind == WorkIdKind.Long)
-            {
-                value = Long;
-                return true;
-            }
-            value = default(long);
-            return false;
+            value = Long;
+            return IsLong;
         }
 
         public bool TryGetGuid(out Guid value)
         {
-            if (Kind == WorkIdKind.Guid)
-            {
-                value = Guid;
-                return true;
-            }
-            value = default(Guid);
-            return false;
+            value = Guid;
+            return IsGuid;
         }
 
         public bool TryGetString(out string value)
         {
-            if (Kind == WorkIdKind.String)
-            {
-                value = String;
-                return true;
-            }
-            value = null;
-            return false;
+            value = String;
+            return IsString;
         }
 
         public override string ToString()
         {
-            switch (Kind)
+            string res = null;
+            if (Kind == WorkIdKind.Long)
             {
-                case WorkIdKind.Long:
-                    return Long.ToString();
-                case WorkIdKind.Guid:
-                    return Guid.ToString("D");
-                case WorkIdKind.String:
-                    return String;
-                default:
-                    return string.Empty;
+                res = Long.ToString();
             }
+            else if (Kind == WorkIdKind.Guid)
+            {
+                res = Guid.ToString("D");
+            }
+            else if (Kind == WorkIdKind.String)
+            {
+                res = String;
+            }
+            return res;
         }
 
         public string ToString(string format, IFormatProvider formatProvider)
         {
-            switch (Kind)
+            string res = null;
+            if (Kind == WorkIdKind.Long)
             {
-                case WorkIdKind.Long:
-                    return Long.ToString(format, formatProvider);
-                case WorkIdKind.Guid:
-                    string f = string.IsNullOrEmpty(format) ? "D" : format;
-                    return Guid.ToString(f, formatProvider);
-                case WorkIdKind.String:
-                    return String;
-                default:
-                    return string.Empty;
+                res = Long.ToString(format, formatProvider);
             }
+            else if (Kind == WorkIdKind.Guid)
+            {
+                string f = string.IsNullOrEmpty(format) ? "D" : format;
+                res = Guid.ToString(f, formatProvider);
+            }
+            else if (Kind == WorkIdKind.String)
+            {
+                res = String;
+            }
+            return res;
         }
 
 #if NET6_0_OR_GREATER
@@ -141,60 +131,67 @@ namespace PowerThreadPool.Works
             ReadOnlySpan<char> format,
             IFormatProvider provider)
         {
-            switch (Kind)
+            bool res = true;
+            charsWritten = default;
+            if (Kind == WorkIdKind.Long)
             {
-                case WorkIdKind.Long:
-                    return Long.TryFormat(destination, out charsWritten, format, provider);
-
-                case WorkIdKind.Guid:
-                    // Guid.TryFormat 不使用 provider；format 为空等价于 "D"
-                    if (format.Length == 0)
-                    {
-                        return Guid.TryFormat(destination, out charsWritten, "D");
-                    }
-                    return Guid.TryFormat(destination, out charsWritten, format);
-
-                case WorkIdKind.String:
-                    {
-                        ReadOnlySpan<char> s = String.AsSpan();
-                        if (s.Length <= destination.Length)
-                        {
-                            s.CopyTo(destination);
-                            charsWritten = s.Length;
-                            return true;
-                        }
-                        charsWritten = 0;
-                        return false;
-                    }
-
-                default:
-                    charsWritten = 0;
-                    return true;
+                res = Long.TryFormat(destination, out charsWritten, format, provider);
             }
+            else if (Kind == WorkIdKind.Guid)
+            {
+                if (format.Length == 0)
+                {
+                    res = Guid.TryFormat(destination, out charsWritten, "D");
+                }
+                else
+                {
+                    res = Guid.TryFormat(destination, out charsWritten, format);
+                }
+            }
+            else if (Kind == WorkIdKind.String)
+            {
+                ReadOnlySpan<char> s = String.AsSpan();
+                if (s.Length <= destination.Length)
+                {
+                    s.CopyTo(destination);
+                    charsWritten = s.Length;
+                    res = true;
+                }
+                else
+                {
+                    charsWritten = 0;
+                    res = false;
+                }
+            }
+            return res;
         }
 #endif
 
         public bool Equals(WorkID other)
         {
-            if (ReferenceEquals(this, other)) return true;
-            if ((object)other == null) return false;
+            if (ReferenceEquals(this, other))
+                return true;
 
-            if (Kind != other.Kind) return false;
+            if ((object)other == null)
+                return false;
 
-            switch (Kind)
+            if (Kind != other.Kind)
+                return false;
+
+            bool res = false;
+            if (Kind == WorkIdKind.Long)
             {
-                case WorkIdKind.Long:
-                    return Long == other.Long;
-
-                case WorkIdKind.Guid:
-                    return Guid.Equals(other.Guid);
-
-                case WorkIdKind.String:
-                    return string.Equals(String, other.String, StringComparison.Ordinal);
-
-                default:
-                    return true;
+                res = Long == other.Long;
             }
+            else if (Kind == WorkIdKind.Guid)
+            {
+                res = Guid.Equals(other.Guid);
+            }
+            else if (Kind == WorkIdKind.String)
+            {
+                res = string.Equals(String, other.String, StringComparison.Ordinal);
+            }
+            return res;
         }
 
         public override bool Equals(object obj)
@@ -238,7 +235,7 @@ namespace PowerThreadPool.Works
                         break;
 
                     case WorkIdKind.String:
-                        h = h * 31 + (s == null ? 0 : StringComparer.Ordinal.GetHashCode(s));
+                        h = h * 31 + StringComparer.Ordinal.GetHashCode(s);
                         break;
                 }
 
