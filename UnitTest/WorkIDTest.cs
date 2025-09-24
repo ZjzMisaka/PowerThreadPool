@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using System.Reflection;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
 using PowerThreadPool.Works;
 using Xunit.Abstractions;
 
