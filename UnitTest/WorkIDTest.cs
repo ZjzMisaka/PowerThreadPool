@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Reflection;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using PowerThreadPool.Works;
 using Xunit.Abstractions;
 
@@ -16,56 +15,51 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestEmptyDefaultState()
+        public void TestNullRepresentsNoneStateAndSafeUsages()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
 
-            WorkID empty = WorkID.Empty;
-            Assert.Equal(WorkIdKind.None, empty.Kind);
-            Assert.True(empty.IsEmpty);
-            Assert.False(empty.IsLong);
-            Assert.False(empty.IsGuid);
-            Assert.False(empty.IsString);
+            WorkID none = null;
 
-            Assert.False(empty.TryGetLong(out _));
-            Assert.False(empty.TryGetGuid(out _));
-            Assert.False(empty.TryGetString(out _));
+            Assert.True(none == null);
+            Assert.False(none != null);
 
-            Assert.Equal(string.Empty, empty.ToString());
-            Assert.Equal(string.Empty, empty.ToString(null, CultureInfo.InvariantCulture));
+            Assert.True(WorkIDEqualityToNull(none));
+            Assert.False(WorkIDEqualityToInstance(none, WorkID.FromLong(1)));
 
-            Assert.True(empty.Equals(WorkID.Empty));
-            Assert.True(empty == WorkID.Empty);
-            Assert.False(empty != WorkID.Empty);
-
-            _ = empty.GetHashCode();
+            Assert.Throws<InvalidCastException>(() => { long _ = (long)none; });
+            Assert.Throws<InvalidCastException>(() => { Guid _ = (Guid)none; });
         }
 
-        [Fact]
-        public void TestFromLongBasicAndImplicitAndExplicit()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+        private static bool WorkIDEqualityToNull(WorkID n) => (n == null) && !(n != null);
+        private static bool WorkIDEqualityToInstance(WorkID n, WorkID other) => (n == other);
 
-            long v = 1234567890123456789;
+        [Fact]
+        public void TestFromLongBasicImplicitExplicitFormattingEquality()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            long v = 1234567890123456789L;
             WorkID a = WorkID.FromLong(v);
             WorkID b = v;
 
             Assert.Equal(WorkIdKind.Long, a.Kind);
-            Assert.False(a.IsEmpty);
             Assert.True(a.IsLong);
             Assert.False(a.IsGuid);
             Assert.False(a.IsString);
 
             Assert.True(a.TryGetLong(out long got));
             Assert.Equal(v, got);
+            Assert.False(a.TryGetGuid(out _));
+            Assert.False(a.TryGetString(out _));
 
+            // ToString
             Assert.Equal(v.ToString(), a.ToString());
             Assert.Equal(v.ToString("N0", CultureInfo.InvariantCulture), a.ToString("N0", CultureInfo.InvariantCulture));
 
             Span<char> buf = stackalloc char[64];
             Assert.True(a.TryFormat(buf, out int written, default, CultureInfo.InvariantCulture));
             Assert.Equal(v.ToString(), new string(buf[..written]));
-
             Assert.True(a.Equals(b));
             Assert.True(a == b);
             Assert.False(a != b);
@@ -80,27 +74,28 @@ namespace UnitTest
             WorkID s = WorkID.FromString("x");
             Assert.Throws<InvalidCastException>(() => { long _ = (long)s; });
 
-            WorkID none = WorkID.Empty;
+            WorkID none = null;
             Assert.Throws<InvalidCastException>(() => { long _ = (long)none; });
         }
 
         [Fact]
-        public void TestFromGuidBasicAndImplicitAndExplicit()
+        public void TestFromGuidBasicImplicitExplicitFormattingEquality()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
 
             Guid id = Guid.Parse("00112233-4455-6677-8899-aabbccddeeff");
             WorkID a = WorkID.FromGuid(id);
             WorkID b = id;
 
             Assert.Equal(WorkIdKind.Guid, a.Kind);
-            Assert.False(a.IsEmpty);
             Assert.True(a.IsGuid);
             Assert.False(a.IsLong);
             Assert.False(a.IsString);
 
             Assert.True(a.TryGetGuid(out Guid got));
             Assert.Equal(id, got);
+            Assert.False(a.TryGetLong(out _));
+            Assert.False(a.TryGetString(out _));
 
             Assert.Equal(id.ToString("D"), a.ToString());
             Assert.Equal(id.ToString("D", CultureInfo.InvariantCulture), a.ToString(null, CultureInfo.InvariantCulture));
@@ -108,11 +103,16 @@ namespace UnitTest
             Assert.Equal(id.ToString("N", CultureInfo.InvariantCulture), a.ToString("N", CultureInfo.InvariantCulture));
 
             Span<char> buf = stackalloc char[64];
+
             Assert.True(a.TryFormat(buf, out int wD, "D".AsSpan(), CultureInfo.InvariantCulture));
             Assert.Equal(id.ToString("D"), new string(buf[..wD]));
 
             Assert.True(a.TryFormat(buf, out int wN, "N".AsSpan(), CultureInfo.InvariantCulture));
             Assert.Equal(id.ToString("N"), new string(buf[..wN]));
+
+            ReadOnlySpan<char> empty = default;
+            Assert.True(a.TryFormat(buf, out int wEmpty, empty, CultureInfo.InvariantCulture));
+            Assert.Equal(id.ToString("D"), new string(buf[..wEmpty]));
 
             Assert.True(a.Equals(b));
             Assert.True(a == b);
@@ -126,26 +126,27 @@ namespace UnitTest
             Assert.Throws<InvalidCastException>(() => { Guid _ = (Guid)l; });
             WorkID s = WorkID.FromString("x");
             Assert.Throws<InvalidCastException>(() => { Guid _ = (Guid)s; });
-            WorkID none = WorkID.Empty;
+            WorkID none = null;
             Assert.Throws<InvalidCastException>(() => { Guid _ = (Guid)none; });
         }
 
         [Fact]
-        public void TestFromStringBasicAndNullThrows()
+        public void TestFromStringBasicTryGetToStringTryFormat()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
 
             string txt = "hello";
             WorkID a = WorkID.FromString(txt);
 
             Assert.Equal(WorkIdKind.String, a.Kind);
-            Assert.False(a.IsEmpty);
             Assert.True(a.IsString);
             Assert.False(a.IsLong);
             Assert.False(a.IsGuid);
 
             Assert.True(a.TryGetString(out string got));
             Assert.Same(txt, got);
+            Assert.False(a.TryGetLong(out _));
+            Assert.False(a.TryGetGuid(out _));
 
             Assert.Equal(txt, a.ToString());
             Assert.Equal(txt, a.ToString(null, CultureInfo.InvariantCulture));
@@ -164,9 +165,9 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestTryGetFailurePathsForOtherKinds()
+        public void TestTryGetFailurPathsForOtherKinds()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
 
             WorkID l = WorkID.FromLong(7);
             Assert.False(l.TryGetGuid(out _));
@@ -182,9 +183,9 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestEqualityMatrixAndOperators()
+        public void TestEqualityMatrixAndOperatorsAndHashCodes()
         {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
 
             WorkID l1 = WorkID.FromLong(42);
             WorkID l2 = WorkID.FromLong(42);
@@ -198,7 +199,7 @@ namespace UnitTest
             WorkID s2 = WorkID.FromString("abc");
             WorkID s3 = WorkID.FromString("ABC");
 
-            WorkID n = WorkID.Empty;
+            WorkID n = null;
 
             Assert.True(l1.Equals(l2));
             Assert.True(g1.Equals(g2));
@@ -219,10 +220,11 @@ namespace UnitTest
             Assert.True(l1 != g1);
             Assert.True(s1 != g1);
 
-            Assert.True(n.Equals(WorkID.Empty));
-            Assert.False(n.Equals(l1));
-            Assert.True(n == WorkID.Empty);
+            Assert.False(l1.Equals(null));
+            Assert.True(n == null);
             Assert.True(n != l1);
+            Assert.True(l1 != n);
+            Assert.False(l1 == n);
 
             object o = l2;
             Assert.True(l1.Equals((object)l2));
@@ -232,18 +234,6 @@ namespace UnitTest
             Assert.Equal(l1.GetHashCode(), l2.GetHashCode());
             Assert.Equal(g1.GetHashCode(), g2.GetHashCode());
             Assert.Equal(s1.GetHashCode(), s2.GetHashCode());
-        }
-
-        [Fact]
-        public void TestTryFormatDefaultCaseForNone()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            WorkID n = WorkID.Empty;
-            Span<char> buf = stackalloc char[1];
-            bool ok = n.TryFormat(buf, out int written, default, CultureInfo.InvariantCulture);
-            Assert.True(ok);
-            Assert.Equal(0, written);
         }
     }
 }

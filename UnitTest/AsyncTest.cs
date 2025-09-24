@@ -961,7 +961,7 @@ namespace UnitTest
                         await Task.Delay(200);
                         await Task.Delay(200);
                     });
-                    if (id.IsEmpty)
+                    if (id == null)
                     {
                         Assert.Fail("PoolStopping");
                     }
@@ -1027,7 +1027,7 @@ namespace UnitTest
                         Thread.Sleep(200);
                         await Task.Delay(200);
                     });
-                    if (id.IsEmpty)
+                    if (id == null)
                     {
                         Assert.Fail("PoolStopping");
                     }

@@ -1766,17 +1766,18 @@ namespace UnitTest
                 Thread.Sleep(1000);
             });
 
-            Assert.False(powerPool.Wait(WorkID.Empty));
-            Assert.False(powerPool.Pause(WorkID.Empty));
-            Assert.False(powerPool.Resume(WorkID.Empty));
-            Assert.False(powerPool.Stop(WorkID.Empty));
-            Assert.False(powerPool.Cancel(WorkID.Empty));
-            Assert.Equal(WorkID.Empty, powerPool.Wait(new List<WorkID>() { WorkID.Empty }).First());
-            Assert.Equal(WorkID.Empty, powerPool.Pause(new List<WorkID>() { WorkID.Empty }).First());
-            Assert.Equal(WorkID.Empty, powerPool.Resume(new List<WorkID>() { WorkID.Empty }).First());
-            Assert.Equal(WorkID.Empty, powerPool.Stop(new List<WorkID>() { WorkID.Empty }).First());
-            Assert.Equal(WorkID.Empty, powerPool.Cancel(new List<WorkID>() { WorkID.Empty }).First());
-            Assert.Equal(WorkID.Empty, (await powerPool.WaitAsync(new List<WorkID>() { WorkID.Empty })).First());
+            WorkID workID = null;
+            Assert.False(powerPool.Wait(workID));
+            Assert.False(powerPool.Pause(workID));
+            Assert.False(powerPool.Resume(workID));
+            Assert.False(powerPool.Stop(workID));
+            Assert.False(powerPool.Cancel(workID));
+            Assert.Null(powerPool.Wait(new List<WorkID>() { workID }).First());
+            Assert.Null(powerPool.Pause(new List<WorkID>() { workID }).First());
+            Assert.Null(powerPool.Resume(new List<WorkID>() { workID }).First());
+            Assert.Null(powerPool.Stop(new List<WorkID>() { workID }).First());
+            Assert.Null(powerPool.Cancel(new List<WorkID>() { workID }).First());
+            Assert.Null((await powerPool.WaitAsync(new List<WorkID>() { workID })).First());
         }
 
         [Fact]
@@ -2208,7 +2209,8 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            ExecuteResult<object> res = powerPool.Fetch(WorkID.Empty);
+            WorkID workID = null;
+            ExecuteResult<object> res = powerPool.Fetch(workID);
 
             Assert.Null(res);
         }

@@ -34,7 +34,7 @@ namespace PowerThreadPool
             {
                 pauseWork = worker.Work;
             }
-            else if (!worker.Work.BaseAsyncWorkID.IsEmpty && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase work) && work.IsPausing)
+            else if (worker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase work) && work.IsPausing)
             {
                 pauseWork = work;
             }
@@ -90,7 +90,7 @@ namespace PowerThreadPool
                 // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
                 if (work.Group == null || !work.ShouldStoreResult)
                 {
-                    if (work.BaseAsyncWorkID.IsEmpty)
+                    if (work.BaseAsyncWorkID == null)
                     {
                         _aliveWorkDic.TryRemove(work.ID, out _);
                         work.Dispose();
@@ -170,7 +170,7 @@ namespace PowerThreadPool
                     work = worker.Work;
                     return true;
                 }
-                else if (!worker.Work.BaseAsyncWorkID.IsEmpty && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase baseAsyncWork) && baseAsyncWork.ShouldStop)
+                else if (worker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase baseAsyncWork) && baseAsyncWork.ShouldStop)
                 {
                     work = worker.Work;
                     return true;
@@ -221,7 +221,7 @@ namespace PowerThreadPool
         /// <returns>Return false if the work isn't running</returns>
         public bool Wait(WorkID id, bool helpWhileWaiting = false)
         {
-            if (id.IsEmpty)
+            if (id == null)
             {
                 return false;
             }
@@ -358,7 +358,7 @@ namespace PowerThreadPool
         /// <returns>Work result</returns>
         public ExecuteResult<TResult> Fetch<TResult>(WorkID id, bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
-            if (id.IsEmpty)
+            if (id == null)
             {
                 return null;
             }
@@ -639,7 +639,7 @@ namespace PowerThreadPool
         /// <returns>Return false if the work does not exist or has been done</returns>
         public bool Stop(WorkID id, bool forceStop = false)
         {
-            if (id.IsEmpty)
+            if (id == null)
             {
                 return false;
             }
@@ -701,7 +701,7 @@ namespace PowerThreadPool
         /// <returns>If the work id exists</returns>
         public bool Pause(WorkID id)
         {
-            if (id.IsEmpty)
+            if (id == null)
             {
                 return false;
             }
@@ -763,7 +763,7 @@ namespace PowerThreadPool
         public bool Resume(WorkID id)
         {
             bool res = false;
-            if (id.IsEmpty)
+            if (id == null)
             {
                 res = false;
             }
@@ -822,7 +822,7 @@ namespace PowerThreadPool
         /// <returns>is succeed</returns>
         public bool Cancel(WorkID id)
         {
-            if (id.IsEmpty)
+            if (id == null)
             {
                 return false;
             }
@@ -884,7 +884,7 @@ namespace PowerThreadPool
 
         private void RemoveAfterFetch(WorkBase work)
         {
-            if (!work.BaseAsyncWorkID.IsEmpty)
+            if (work.BaseAsyncWorkID != null)
             {
                 TryRemoveAsyncWork(work.ID, true);
             }

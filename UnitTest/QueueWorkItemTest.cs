@@ -413,7 +413,7 @@ namespace UnitTest
         {
             PowerPool powerPool = new PowerPool();
             WorkID id = powerPool + (() => { });
-            Assert.False(id.IsEmpty);
+            Assert.False(id == null);
         }
 
         [Fact]

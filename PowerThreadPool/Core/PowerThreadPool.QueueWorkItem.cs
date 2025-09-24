@@ -387,7 +387,7 @@ namespace PowerThreadPool
 
             CheckPowerPoolOption();
 
-            if (!option.AsyncWorkID.IsEmpty)
+            if (option.AsyncWorkID != null)
             {
                 workID = option.AsyncWorkID;
             }
@@ -406,19 +406,19 @@ namespace PowerThreadPool
 
             if (work.Group != null)
             {
-                if (work.BaseAsyncWorkID.IsEmpty || work.BaseAsyncWorkID == workID)
+                if (work.BaseAsyncWorkID == null || work.BaseAsyncWorkID == workID)
                 {
                     _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<WorkID>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
                 }
             }
 
             bool startSuspended = PowerPoolOption.StartSuspended;
-            if (!option.BaseAsyncWorkID.IsEmpty && option.BaseAsyncWorkID != option.AsyncWorkID)
+            if (option.BaseAsyncWorkID != null && option.BaseAsyncWorkID != option.AsyncWorkID)
             {
                 startSuspended = false;
             }
 
-            if (!startSuspended && PoolStopping && work.BaseAsyncWorkID.IsEmpty)
+            if (!startSuspended && PoolStopping && work.BaseAsyncWorkID == null)
             {
                 _stopSuspendedWork[workID] = work;
                 _stopSuspendedWorkQueue.Enqueue(workID);

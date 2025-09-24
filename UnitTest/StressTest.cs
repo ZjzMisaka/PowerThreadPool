@@ -48,7 +48,7 @@ namespace UnitTest
                                 }
                                 Interlocked.Increment(ref doneCount);
                             });
-                            Assert.False(workId.IsEmpty);
+                            Assert.False(workId == null);
                         })
                     ).ToArray();
 
@@ -122,7 +122,7 @@ namespace UnitTest
                         if (r == 100)
                         {
                             WorkID id = powerPool.QueueWorkItem(() => { throw new Exception(); });
-                            if (id.IsEmpty)
+                            if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
                             }
@@ -138,7 +138,7 @@ namespace UnitTest
                                     Thread.Sleep(1);
                                 }
                             });
-                            if (id.IsEmpty)
+                            if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
                             }
@@ -154,7 +154,7 @@ namespace UnitTest
                                     Thread.Sleep(1);
                                 }
                             });
-                            if (id.IsEmpty)
+                            if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
                             }
@@ -172,7 +172,7 @@ namespace UnitTest
                                 await Task.Delay(random.Next(200, 600));
                                 await Task.Delay(random.Next(200, 600));
                             });
-                            if (id.IsEmpty)
+                            if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
                             }
@@ -188,7 +188,7 @@ namespace UnitTest
                                     Thread.Sleep(1);
                                 }
                             });
-                            if (id.IsEmpty)
+                            if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
                             }
@@ -329,7 +329,7 @@ namespace UnitTest
                         if (r == 100)
                         {
                             WorkID id = powerPool.QueueWorkItem(() => { throw new Exception(); });
-                            if (id.IsEmpty)
+                            if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
                             }
@@ -345,7 +345,7 @@ namespace UnitTest
                                     Thread.Sleep(1);
                                 }
                             });
-                            if (id.IsEmpty)
+                            if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
                             }
@@ -361,7 +361,7 @@ namespace UnitTest
                                     Thread.Sleep(1);
                                 }
                             });
-                            if (id.IsEmpty)
+                            if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
                             }
@@ -379,7 +379,7 @@ namespace UnitTest
                                 await Task.Delay(random.Next(200, 600));
                                 await Task.Delay(random.Next(200, 600));
                             });
-                            if (id.IsEmpty)
+                            if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
                             }
@@ -395,7 +395,7 @@ namespace UnitTest
                                     Thread.Sleep(1);
                                 }
                             });
-                            if (id.IsEmpty)
+                            if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
                             }

@@ -49,7 +49,7 @@ namespace PowerThreadPool.Works
         }
         internal override WorkID AsyncWorkID => _workOption.AsyncWorkID;
         internal override WorkID BaseAsyncWorkID => _workOption.BaseAsyncWorkID;
-        internal override WorkID RealWorkID => _workOption.BaseAsyncWorkID.IsEmpty ? ID : _workOption.BaseAsyncWorkID;
+        internal override WorkID RealWorkID => _workOption.BaseAsyncWorkID == null ? ID : _workOption.BaseAsyncWorkID;
 
         internal Work(PowerPool powerPool, WorkID id, Func<TResult> function, WorkOption<TResult> option)
         {
@@ -111,12 +111,12 @@ namespace PowerThreadPool.Works
                 return false;
             }
 
-            if (!BaseAsyncWorkID.IsEmpty && BaseAsyncWorkID != ID)
+            if (BaseAsyncWorkID != null && BaseAsyncWorkID != ID)
             {
                 return false;
             }
 
-            if (!BaseAsyncWorkID.IsEmpty)
+            if (BaseAsyncWorkID != null)
             {
                 PowerPool.TryRemoveAsyncWork(ID, false);
 
@@ -180,7 +180,7 @@ namespace PowerThreadPool.Works
                 WaitSignal = new AutoResetEvent(false);
             }
 
-            if (!IsDone || (!BaseAsyncWorkID.IsEmpty && !AsyncDone))
+            if (!IsDone || (BaseAsyncWorkID != null && !AsyncDone))
             {
                 WaitSignal.WaitOne();
             }
@@ -192,7 +192,7 @@ namespace PowerThreadPool.Works
         {
             Wait(helpWhileWaiting);
 
-            if (!BaseAsyncWorkID.IsEmpty && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet) && !idSet.Last.IsEmpty && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
+            if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
             {
                 Work<T> lastWorkT = lastWork as Work<T>;
                 Spinner.Start(() => lastWorkT.ExecuteResult != null);

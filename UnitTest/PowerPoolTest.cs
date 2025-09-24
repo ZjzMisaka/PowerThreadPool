@@ -119,7 +119,7 @@ namespace UnitTest
                 Assert.True(res.StartDateTime < res.EndDateTime);
             });
             powerPool.Wait();
-            Assert.NotEqual(WorkID.Empty, id);
+            Assert.NotEqual(null, id);
             Assert.Equal(id, resId);
         }
 
@@ -1673,7 +1673,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.False(id.IsEmpty);
+            Assert.False(id == null);
 
             await Task.Delay(100);
 
@@ -1726,7 +1726,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.False(id.IsEmpty);
+            Assert.False(id == null);
 
             await Task.Delay(100);
 
@@ -1779,7 +1779,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.False(id.IsEmpty);
+            Assert.False(id == null);
 
             await Task.Delay(100);
 
@@ -1834,7 +1834,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.False(id.IsEmpty);
+            Assert.False(id == null);
 
             await Task.Delay(100);
 
@@ -1891,7 +1891,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.False(id.IsEmpty);
+            Assert.False(id == null);
 
             await Task.Delay(100);
 
@@ -1948,7 +1948,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.False(id.IsEmpty);
+            Assert.False(id == null);
 
             await Task.Delay(100);
 
@@ -6117,7 +6117,7 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool(new PowerPoolOption());
             WorkOption<string> workOption = new WorkOption<string>();
-            Work<string> work = new Work<string>(powerPool, WorkID.Empty, () => { return ""; }, workOption);
+            Work<string> work = new Work<string>(powerPool, null, () => { return ""; }, workOption);
             work.IsDone = false;
             Worker worker = new Worker(powerPool);
             worker.WorkStealability.InterlockedValue = WorkStealability.NotAllowed;
@@ -6152,7 +6152,7 @@ namespace UnitTest
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption());
             WorkOption<string> workOption = new WorkOption<string>();
-            Work<string> work = new Work<string>(powerPool, WorkID.Empty, () => { return ""; }, workOption);
+            Work<string> work = new Work<string>(powerPool, null, () => { return ""; }, workOption);
             work.IsDone = false;
             Worker worker = new Worker(powerPool);
             worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
@@ -6275,7 +6275,7 @@ namespace UnitTest
             });
             Assert.NotNull(exception);
             Assert.IsType<WorkRejectedException>(exception);
-            Assert.False(((WorkRejectedException)exception).ID.IsEmpty);
+            Assert.False(((WorkRejectedException)exception).ID == null);
 
             powerPool.Stop();
         }
@@ -6800,7 +6800,7 @@ namespace UnitTest
             powerPool.Stop();
 
             Assert.True(workRejected);
-            Assert.False(id.IsEmpty);
+            Assert.False(id == null);
             Assembly.Equals(RejectType.DiscardPolicy, rejectType);
         }
 
