@@ -388,7 +388,7 @@ namespace UnitTest
 
             powerPool.WorkStarted += (s, e) =>
             {
-                powerPool.Stop(true);
+                powerPool.ForceStop();
             };
             powerPool.PoolIdled += (s, e) =>
             {
@@ -425,7 +425,7 @@ namespace UnitTest
             };
             powerPool.WorkEnded += (s, e) =>
             {
-                powerPool.Stop(true);
+                powerPool.ForceStop();
             };
             powerPool.QueueWorkItem(() =>
             {
@@ -1658,7 +1658,7 @@ namespace UnitTest
                 Interlocked.Increment(ref doneCount);
             });
 
-            powerPool.Stop(false);
+            powerPool.Stop();
 
             await Task.Delay(100);
 
@@ -1709,7 +1709,7 @@ namespace UnitTest
                 Interlocked.Increment(ref doneCount);
             });
 
-            powerPool.Stop(false);
+            powerPool.Stop();
 
             await Task.Delay(100);
 
@@ -1762,7 +1762,7 @@ namespace UnitTest
                 Interlocked.Increment(ref doneCount);
             });
 
-            powerPool.Stop(false);
+            powerPool.Stop();
 
             await Task.Delay(100);
 
@@ -1817,7 +1817,7 @@ namespace UnitTest
 
             powerPool.Start();
 
-            powerPool.Stop(false);
+            powerPool.Stop();
 
             await Task.Delay(100);
 
@@ -1872,7 +1872,7 @@ namespace UnitTest
 
             powerPool.Start();
 
-            powerPool.Stop(false);
+            powerPool.Stop();
 
             await Task.Delay(100);
 
@@ -1929,7 +1929,7 @@ namespace UnitTest
 
             powerPool.Start();
 
-            powerPool.Stop(false);
+            powerPool.Stop();
 
             await Task.Delay(100);
 
@@ -1974,7 +1974,7 @@ namespace UnitTest
             {
                 if (e.ID == id3)
                 {
-                    powerPool.Stop(id3, true);
+                    powerPool.ForceStop(id3);
                 }
             };
 
@@ -2515,7 +2515,7 @@ namespace UnitTest
             Assert.Equal(2, powerPool.RunningWorkerCount);
             Assert.Equal(2, powerPool.LongRunningWorkerCount);
 
-            powerPool.Stop(true);
+            powerPool.ForceStop();
 
             Thread.Sleep(1000);
 

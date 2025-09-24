@@ -254,7 +254,7 @@ namespace UnitTest
                 Assert.Equal("2", l);
                 r = res.Result;
             });
-            bool res = powerPool.Stop(true);
+            bool res = powerPool.ForceStop();
             powerPool.Wait();
             if (res)
             {
@@ -300,7 +300,7 @@ namespace UnitTest
                 Assert.Equal("2", l);
                 r = res.Result;
             });
-            bool res = powerPool.Stop(id, true);
+            bool res = powerPool.ForceStop(id);
             powerPool.Wait();
             if (res)
             {
@@ -618,7 +618,7 @@ namespace UnitTest
                 Assert.Equal("2", l);
                 r = res.Result;
             });
-            bool res = powerPool.Stop(id, true);
+            bool res = powerPool.ForceStop(id);
             powerPool.Wait();
             if (res)
             {
@@ -1042,7 +1042,7 @@ namespace UnitTest
 
                 powerPool.Start();
 
-                powerPool.Stop(true);
+                powerPool.ForceStop();
                 await powerPool.WaitAsync();
                 if (powerPool.RunningWorkerCount != 0 || powerPool.WaitingWorkCount != 0 || powerPool.AsyncWorkCount != 0)
                 {
@@ -1378,7 +1378,7 @@ namespace UnitTest
                 return "100";
             },
             out Task<ExecuteResult<string>> task);
-            powerPool.Stop(true);
+            powerPool.ForceStop();
 
             await Assert.ThrowsAsync<TaskCanceledException>(async () => { await task; });
         }

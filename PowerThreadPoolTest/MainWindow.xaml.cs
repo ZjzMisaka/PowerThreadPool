@@ -130,7 +130,7 @@ namespace PowerThreadPoolTest
                 else if (r1 >= 61 && r1 <= 80)
                 {
                     OutputMsg("Force Stopping...");
-                    _powerPool.Stop(true);
+                    _powerPool.ForceStop();
                     await _powerPool.WaitAsync();
                     OutputMsg("AliveWorkerCount: " + _powerPool.AliveWorkerCount + " | RunningWorkerCount: " + _powerPool.RunningWorkerCount);
                     OutputMsg("IdleWorkerCount: " + _powerPool.IdleWorkerCount);
@@ -194,12 +194,8 @@ namespace PowerThreadPoolTest
         private void stop_Click(object sender, RoutedEventArgs e)
         {
             _run = false;
-            _powerPool.Stop(true);
+            _powerPool.ForceStop();
         }
-
-
-
-
 
         private void Sleep(int ms)
         {

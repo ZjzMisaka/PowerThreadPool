@@ -164,9 +164,30 @@ namespace PowerThreadPool.Groups
         /// <summary>
         /// Stop all the work belonging to the group.
         /// </summary>
+        /// <returns>Return false if no thread running</returns>
+        public List<WorkID> Stop()
+        {
+            return Stop(false);
+        }
+
+        /// <summary>
+        /// Call Thread.Interrupt() and force stop all the work belonging to the group.
+        /// Although this approach is safer than Thread.Abort, from the perspective of the business logic,
+        /// it can still potentially lead to unpredictable results and cannot guarantee the time consumption of exiting the thread,
+        /// therefore you should avoid using force stop as much as possible.
+        /// </summary>
+        /// <returns>Return false if no thread running</returns>
+        public List<WorkID> ForceStop()
+        {
+            return Stop(true);
+        }
+
+        /// <summary>
+        /// Stop all the work belonging to the group.
+        /// </summary>
         /// <param name="forceStop">Call Thread.Interrupt() for force stop</param>
         /// <returns>Return false if no thread running</returns>
-        public List<WorkID> Stop(bool forceStop = false)
+        internal List<WorkID> Stop(bool forceStop)
         {
             return _powerPool.Stop(_powerPool.GetGroupMemberList(Name), forceStop);
         }
