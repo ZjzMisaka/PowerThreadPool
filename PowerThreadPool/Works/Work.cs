@@ -116,16 +116,6 @@ namespace PowerThreadPool.Works
                 return false;
             }
 
-            if (BaseAsyncWorkID != null)
-            {
-                PowerPool.TryRemoveAsyncWork(ID, false);
-
-                if (PowerPool._tcsDict.TryRemove(RealWorkID, out ITaskCompletionSource tcs))
-                {
-                    tcs.SetCanceled();
-                }
-            }
-
             bool res = false;
 
             using (new WorkGuard(this, needFreeze))
@@ -134,6 +124,16 @@ namespace PowerThreadPool.Works
 
                 if (res)
                 {
+                    if (BaseAsyncWorkID != null)
+                    {
+                        PowerPool.TryRemoveAsyncWork(ID, false);
+
+                        if (PowerPool._tcsDict.TryRemove(RealWorkID, out ITaskCompletionSource tcs))
+                        {
+                            tcs.SetCanceled();
+                        }
+                    }
+
                     ExecuteResultBase executeResult = SetExecuteResult(null, null, Status.Canceled);
                     executeResult.ID = ID;
 
