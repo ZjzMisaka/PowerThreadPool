@@ -27,6 +27,7 @@ namespace PowerThreadPool.Works
         public bool IsLong => _kind == WorkIdKind.Long;
         public bool IsGuid => _kind == WorkIdKind.Guid;
         public bool IsString => _kind == WorkIdKind.String;
+        public bool IsEmpty => _kind == WorkIdKind.None;
 
         public static WorkID Empty => default;
 

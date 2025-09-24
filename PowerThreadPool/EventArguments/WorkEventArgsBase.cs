@@ -1,4 +1,5 @@
 ﻿using System;
+using PowerThreadPool.Works;
 
 namespace PowerThreadPool.EventArguments
 {
@@ -9,7 +10,7 @@ namespace PowerThreadPool.EventArguments
         /// <summary>
         /// work id
         /// </summary>
-        public string ID { get; internal set; }
+        public WorkID ID { get; internal set; }
 
         private DateTime _queueDateTime;
         /// <summary>

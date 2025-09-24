@@ -152,14 +152,14 @@ namespace PowerThreadPool
 
             // If the result needs to be stored, there is a possibility of fetching the result through Group.
             // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-            if ((work.Group == null || !work.ShouldStoreResult) && work.BaseAsyncWorkID == null)
+            if ((work.Group == null || !work.ShouldStoreResult) && work.BaseAsyncWorkID.IsEmpty)
             {
                 _aliveWorkDic.TryRemove(work.ID, out _);
                 work.Dispose();
             }
             if (work.Group != null && !work.ShouldStoreResult)
             {
-                if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<string> idSet))
+                if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<WorkID> idSet))
                 {
                     idSet.Remove(work.RealWorkID);
                 }
@@ -183,7 +183,7 @@ namespace PowerThreadPool
         /// Invoke WorkStarted event
         /// </summary>
         /// <param name="workID"></param>
-        internal void OnWorkStarted(string workID)
+        internal void OnWorkStarted(WorkID workID)
         {
             if (WorkStarted != null)
             {

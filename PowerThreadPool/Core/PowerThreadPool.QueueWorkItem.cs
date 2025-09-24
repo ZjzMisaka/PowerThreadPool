@@ -21,7 +21,7 @@ namespace PowerThreadPool
         /// <param name="param1"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1>(Action<T1> action, T1 param1, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItem<T1>(Action<T1> action, T1 param1, Action<ExecuteResult<object>> callBack = null)
             => QueueWorkItem(action, param1, GetOption(callBack));
 
         /// <summary>
@@ -32,7 +32,7 @@ namespace PowerThreadPool
         /// <param name="param1"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1>(Action<T1> action, T1 param1, WorkOption option)
+        public WorkID QueueWorkItem<T1>(Action<T1> action, T1 param1, WorkOption option)
             => QueueWorkItem<object>(DelegateHelper.ToNormalFunc<T1, object>(action, param1), option);
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace PowerThreadPool
         /// <param name="param2"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, Action<ExecuteResult<object>> callBack = null)
             => QueueWorkItem(action, param1, param2, GetOption(callBack));
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace PowerThreadPool
         /// <param name="param2"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, WorkOption option)
+        public WorkID QueueWorkItem<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2, WorkOption option)
             => QueueWorkItem<object>(DelegateHelper.ToNormalFunc<T1, T2, object>(action, param1, param2), option);
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace PowerThreadPool
         /// <param name="param3"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<object>> callBack = null)
             => QueueWorkItem(action, param1, param2, param3, GetOption(callBack));
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace PowerThreadPool
         /// <param name="param3"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, WorkOption option)
+        public WorkID QueueWorkItem<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3, WorkOption option)
             => QueueWorkItem<object>(DelegateHelper.ToNormalFunc<T1, T2, T3, object>(action, param1, param2, param3), option);
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace PowerThreadPool
         /// <param name="param4"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<object>> callBack = null)
             => QueueWorkItem(action, param1, param2, param3, param4, GetOption(callBack));
 
         /// <summary>
@@ -122,7 +122,7 @@ namespace PowerThreadPool
         /// <param name="param4"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption option)
+        public WorkID QueueWorkItem<T1, T2, T3, T4>(Action<T1, T2, T3, T4> action, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption option)
             => QueueWorkItem<object>(DelegateHelper.ToNormalFunc<T1, T2, T3, T4, object>(action, param1, param2, param3, param4), option);
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace PowerThreadPool
         /// <param name="param5"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<object>> callBack = null)
             => QueueWorkItem(action, param1, param2, param3, param4, param5, GetOption(callBack));
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace PowerThreadPool
         /// <param name="param5"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption option)
+        public WorkID QueueWorkItem<T1, T2, T3, T4, T5>(Action<T1, T2, T3, T4, T5> action, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption option)
             => QueueWorkItem<object>(DelegateHelper.ToNormalFunc<T1, T2, T3, T4, T5, object>(action, param1, param2, param3, param4, param5), option);
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace PowerThreadPool
         /// <param name="action"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem(Action action, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItem(Action action, Action<ExecuteResult<object>> callBack = null)
             => QueueWorkItem(action, GetOption(callBack));
 
         /// <summary>
@@ -178,7 +178,7 @@ namespace PowerThreadPool
         /// <param name="action"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem(Action action, WorkOption option)
+        public WorkID QueueWorkItem(Action action, WorkOption option)
             => QueueWorkItem<object>(DelegateHelper.ToNormalFunc<object>(action), option);
 
         /// <summary>
@@ -188,7 +188,7 @@ namespace PowerThreadPool
         /// <param name="param"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem(Action<object[]> action, object[] param, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItem(Action<object[]> action, object[] param, Action<ExecuteResult<object>> callBack = null)
             => QueueWorkItem(action, param, GetOption(callBack));
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace PowerThreadPool
         /// <param name="param"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem(Action<object[]> action, object[] param, WorkOption option)
+        public WorkID QueueWorkItem(Action<object[]> action, object[] param, WorkOption option)
             => QueueWorkItem<object>(DelegateHelper.ToNormalFunc<object[]>(action, param), option);
 
         /// <summary>
@@ -210,7 +210,7 @@ namespace PowerThreadPool
         /// <param name="param1"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem<T1, TResult>(function, param1, GetOption(callBack));
 
         /// <summary>
@@ -222,7 +222,7 @@ namespace PowerThreadPool
         /// <param name="param1"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, WorkOption<TResult> option)
+        public WorkID QueueWorkItem<T1, TResult>(Func<T1, TResult> function, T1 param1, WorkOption<TResult> option)
             => QueueWorkItem<TResult>(DelegateHelper.ToNormalFunc<T1, TResult>(function, param1), option);
 
         /// <summary>
@@ -236,7 +236,7 @@ namespace PowerThreadPool
         /// <param name="param2"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem<T1, T2, TResult>(function, param1, param2, GetOption(callBack));
 
         /// <summary>
@@ -250,7 +250,7 @@ namespace PowerThreadPool
         /// <param name="param2"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, WorkOption<TResult> option)
+        public WorkID QueueWorkItem<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2, WorkOption<TResult> option)
             => QueueWorkItem<TResult>(DelegateHelper.ToNormalFunc<T1, T2, TResult>(function, param1, param2), option);
 
         /// <summary>
@@ -266,7 +266,7 @@ namespace PowerThreadPool
         /// <param name="param3"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem<T1, T2, T3, TResult>(function, param1, param2, param3, GetOption(callBack));
 
         /// <summary>
@@ -282,7 +282,7 @@ namespace PowerThreadPool
         /// <param name="param3"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, WorkOption<TResult> option)
+        public WorkID QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3, WorkOption<TResult> option)
             => QueueWorkItem<TResult>(DelegateHelper.ToNormalFunc<T1, T2, T3, TResult>(function, param1, param2, param3), option);
 
         /// <summary>
@@ -300,7 +300,7 @@ namespace PowerThreadPool
         /// <param name="param4"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem<T1, T2, T3, T4, TResult>(function, param1, param2, param3, param4, GetOption(callBack));
 
         /// <summary>
@@ -318,7 +318,7 @@ namespace PowerThreadPool
         /// <param name="param4"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption<TResult> option)
+        public WorkID QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption<TResult> option)
             => QueueWorkItem<TResult>(DelegateHelper.ToNormalFunc<T1, T2, T3, T4, TResult>(function, param1, param2, param3, param4), option);
 
         /// <summary>
@@ -338,7 +338,7 @@ namespace PowerThreadPool
         /// <param name="param5"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem<T1, T2, T3, T4, T5, TResult>(function, param1, param2, param3, param4, param5, GetOption(callBack));
 
         /// <summary>
@@ -358,7 +358,7 @@ namespace PowerThreadPool
         /// <param name="param5"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption<TResult> option)
+        public WorkID QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption<TResult> option)
             => QueueWorkItem<TResult>(DelegateHelper.ToNormalFunc<T1, T2, T3, T4, T5, TResult>(function, param1, param2, param3, param4, param5), option);
 
 
@@ -369,7 +369,7 @@ namespace PowerThreadPool
         /// <param name="function"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<TResult>(Func<TResult> function, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItem<TResult>(Func<TResult> function, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem<TResult>(function, GetOption(callBack));
 
         /// <summary>
@@ -379,15 +379,15 @@ namespace PowerThreadPool
         /// <param name="function"></param>
         /// <param name="option"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<TResult>(Func<TResult> function, WorkOption<TResult> option)
+        public WorkID QueueWorkItem<TResult>(Func<TResult> function, WorkOption<TResult> option)
         {
             CheckDisposed();
 
-            string workID;
+            WorkID workID;
 
             CheckPowerPoolOption();
 
-            if (option.AsyncWorkID != null)
+            if (!option.AsyncWorkID.IsEmpty)
             {
                 workID = option.AsyncWorkID;
             }
@@ -406,19 +406,19 @@ namespace PowerThreadPool
 
             if (work.Group != null)
             {
-                if (work.BaseAsyncWorkID == null || work.BaseAsyncWorkID == workID)
+                if (work.BaseAsyncWorkID.IsEmpty || work.BaseAsyncWorkID == workID)
                 {
-                    _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<string>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
+                    _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<WorkID>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
                 }
             }
 
             bool startSuspended = PowerPoolOption.StartSuspended;
-            if (option.BaseAsyncWorkID != null && option.BaseAsyncWorkID != option.AsyncWorkID)
+            if (!option.BaseAsyncWorkID.IsEmpty && option.BaseAsyncWorkID != option.AsyncWorkID)
             {
                 startSuspended = false;
             }
 
-            if (!startSuspended && PoolStopping && work.BaseAsyncWorkID == null)
+            if (!startSuspended && PoolStopping && work.BaseAsyncWorkID.IsEmpty)
             {
                 _stopSuspendedWork[workID] = work;
                 _stopSuspendedWorkQueue.Enqueue(workID);
@@ -454,7 +454,7 @@ namespace PowerThreadPool
         /// <param name="param"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem<TResult>(function, param, GetOption(callBack));
 
         /// <summary>
@@ -465,30 +465,30 @@ namespace PowerThreadPool
         /// <param name="param"></param>
         /// <param name="callBack"></param>
         /// <returns>work id</returns>
-        public string QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
+        public WorkID QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
             => QueueWorkItem<TResult>(DelegateHelper.ToNormalFunc<TResult>(function, param), option);
 
-        internal string CreateID<TResult>(WorkOption<TResult> option = null)
+        internal WorkID CreateID<TResult>(WorkOption<TResult> option = null)
         {
-            string workID;
+            WorkID workID;
 
             if (option != null && option.CustomWorkID != null)
             {
-                if (_suspendedWork.ContainsKey(option.CustomWorkID) || _aliveWorkDic.ContainsKey(option.CustomWorkID))
+                if (_suspendedWork.ContainsKey(WorkID.FromString(option.CustomWorkID)) || _aliveWorkDic.ContainsKey(WorkID.FromString(option.CustomWorkID)))
                 {
                     throw new InvalidOperationException($"The work ID '{option.CustomWorkID}' already exists.");
                 }
-                workID = option.CustomWorkID;
+                workID = WorkID.FromString(option.CustomWorkID);
             }
             else
             {
                 if (PowerPoolOption.WorkIDType == WorkIDType.LongIncrement)
                 {
-                    workID = Interlocked.Increment(ref _workIDIncrement).ToString();
+                    workID = WorkID.FromLong(Interlocked.Increment(ref _workIDIncrement));
                 }
                 else
                 {
-                    workID = Guid.NewGuid().ToString();
+                    workID = WorkID.FromGuid(Guid.NewGuid());
                 }
             }
 
@@ -510,7 +510,7 @@ namespace PowerThreadPool
         /// <param name="powerPool"></param>
         /// <param name="action"></param>
         /// <returns></returns>
-        public static string operator +(PowerPool powerPool, Action action)
+        public static WorkID operator +(PowerPool powerPool, Action action)
             => powerPool.QueueWorkItem(action);
 
         /// <summary>

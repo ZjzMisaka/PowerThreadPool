@@ -3,6 +3,7 @@ using System.Reflection;
 using PowerThreadPool;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
+using PowerThreadPool.Works;
 using Xunit.Abstractions;
 
 namespace UnitTest
@@ -37,7 +38,7 @@ namespace UnitTest
                     Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
                         Task.Run(() =>
                         {
-                            string workId = powerPool.QueueWorkItem(() =>
+                            WorkID workId = powerPool.QueueWorkItem(() =>
                             {
                             }, (res) =>
                             {
@@ -47,7 +48,7 @@ namespace UnitTest
                                 }
                                 Interlocked.Increment(ref doneCount);
                             });
-                            Assert.NotNull(workId);
+                            Assert.False(workId.IsEmpty);
                         })
                     ).ToArray();
 
@@ -120,15 +121,15 @@ namespace UnitTest
                         int r = random.Next(0, 101);
                         if (r == 100)
                         {
-                            string id = powerPool.QueueWorkItem(() => { throw new Exception(); });
-                            if (id == null)
+                            WorkID id = powerPool.QueueWorkItem(() => { throw new Exception(); });
+                            if (id.IsEmpty)
                             {
                                 Assert.Fail("PoolStopping");
                             }
                         }
                         else if (r >= 95 && r <= 99)
                         {
-                            string id = powerPool.QueueWorkItem(() =>
+                            WorkID id = powerPool.QueueWorkItem(() =>
                             {
                                 Sleep(10000, powerPool);
                                 int r1 = random.Next(0, 101);
@@ -137,14 +138,14 @@ namespace UnitTest
                                     Thread.Sleep(1);
                                 }
                             });
-                            if (id == null)
+                            if (id.IsEmpty)
                             {
                                 Assert.Fail("PoolStopping");
                             }
                         }
                         else if (r >= 94 && r <= 94)
                         {
-                            string id = powerPool.QueueWorkItem(() =>
+                            WorkID id = powerPool.QueueWorkItem(() =>
                             {
                                 Sleep(30000, powerPool);
                                 int r1 = random.Next(0, 101);
@@ -153,14 +154,14 @@ namespace UnitTest
                                     Thread.Sleep(1);
                                 }
                             });
-                            if (id == null)
+                            if (id.IsEmpty)
                             {
                                 Assert.Fail("PoolStopping");
                             }
                         }
                         else if (r >= 70 && r <= 93)
                         {
-                            string id = powerPool.QueueWorkItemAsync(async () =>
+                            WorkID id = powerPool.QueueWorkItemAsync(async () =>
                             {
                                 await Task.Delay(random.Next(200, 600));
                                 int r1 = random.Next(0, 101);
@@ -171,14 +172,14 @@ namespace UnitTest
                                 await Task.Delay(random.Next(200, 600));
                                 await Task.Delay(random.Next(200, 600));
                             });
-                            if (id == null)
+                            if (id.IsEmpty)
                             {
                                 Assert.Fail("PoolStopping");
                             }
                         }
                         else
                         {
-                            string id = powerPool.QueueWorkItem(() =>
+                            WorkID id = powerPool.QueueWorkItem(() =>
                             {
                                 Sleep(random.Next(500, 1000), powerPool);
                                 int r1 = random.Next(0, 101);
@@ -187,7 +188,7 @@ namespace UnitTest
                                     Thread.Sleep(1);
                                 }
                             });
-                            if (id == null)
+                            if (id.IsEmpty)
                             {
                                 Assert.Fail("PoolStopping");
                             }
@@ -327,15 +328,15 @@ namespace UnitTest
                         int r = random.Next(0, 101);
                         if (r == 100)
                         {
-                            string id = powerPool.QueueWorkItem(() => { throw new Exception(); });
-                            if (id == null)
+                            WorkID id = powerPool.QueueWorkItem(() => { throw new Exception(); });
+                            if (id.IsEmpty)
                             {
                                 Assert.Fail("PoolStopping");
                             }
                         }
                         else if (r >= 95 && r <= 99)
                         {
-                            string id = powerPool.QueueWorkItem(() =>
+                            WorkID id = powerPool.QueueWorkItem(() =>
                             {
                                 Sleep(10000, powerPool);
                                 int r1 = random.Next(0, 101);
@@ -344,14 +345,14 @@ namespace UnitTest
                                     Thread.Sleep(1);
                                 }
                             });
-                            if (id == null)
+                            if (id.IsEmpty)
                             {
                                 Assert.Fail("PoolStopping");
                             }
                         }
                         else if (r >= 94 && r <= 94)
                         {
-                            string id = powerPool.QueueWorkItem(() =>
+                            WorkID id = powerPool.QueueWorkItem(() =>
                             {
                                 Sleep(30000, powerPool);
                                 int r1 = random.Next(0, 101);
@@ -360,14 +361,14 @@ namespace UnitTest
                                     Thread.Sleep(1);
                                 }
                             });
-                            if (id == null)
+                            if (id.IsEmpty)
                             {
                                 Assert.Fail("PoolStopping");
                             }
                         }
                         else if (r >= 70 && r <= 93)
                         {
-                            string id = powerPool.QueueWorkItemAsync(async () =>
+                            WorkID id = powerPool.QueueWorkItemAsync(async () =>
                             {
                                 await Task.Delay(random.Next(200, 600));
                                 int r1 = random.Next(0, 101);
@@ -378,14 +379,14 @@ namespace UnitTest
                                 await Task.Delay(random.Next(200, 600));
                                 await Task.Delay(random.Next(200, 600));
                             });
-                            if (id == null)
+                            if (id.IsEmpty)
                             {
                                 Assert.Fail("PoolStopping");
                             }
                         }
                         else
                         {
-                            string id = powerPool.QueueWorkItem(() =>
+                            WorkID id = powerPool.QueueWorkItem(() =>
                             {
                                 Sleep(random.Next(500, 1000), powerPool);
                                 int r1 = random.Next(0, 101);
@@ -394,7 +395,7 @@ namespace UnitTest
                                     Thread.Sleep(1);
                                 }
                             });
-                            if (id == null)
+                            if (id.IsEmpty)
                             {
                                 Assert.Fail("PoolStopping");
                             }

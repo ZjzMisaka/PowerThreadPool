@@ -20,7 +20,7 @@ namespace PowerThreadPool
             option.AllowEventsAndCallback = false;
 
             Interlocked.Increment(ref _asyncWorkCount);
-            _asyncWorkIDDict[option.AsyncWorkID] = new ConcurrentSet<string>();
+            _asyncWorkIDDict[option.AsyncWorkID] = new ConcurrentSet<WorkID>();
         }
 
         private static void ThrowInnerIfNeeded(Task task)
@@ -31,7 +31,7 @@ namespace PowerThreadPool
             }
         }
 
-        private void RegisterCompletionWithResult<TResult>(Task<TResult> task, SynchronizationContext prevCtx, string baseAsyncWorkId)
+        private void RegisterCompletionWithResult<TResult>(Task<TResult> task, SynchronizationContext prevCtx, WorkID baseAsyncWorkId)
         {
             if (task.IsCompleted && _aliveWorkDic.TryGetValue(baseAsyncWorkId, out WorkBase workDone))
             {
@@ -45,7 +45,7 @@ namespace PowerThreadPool
             RegisterCompletion(task, prevCtx, baseAsyncWorkId, true);
         }
 
-        private void RegisterCompletion(Task task, SynchronizationContext prevCtx, string baseAsyncWorkId, bool hasRes = false)
+        private void RegisterCompletion(Task task, SynchronizationContext prevCtx, WorkID baseAsyncWorkId, bool hasRes = false)
         {
             if (!hasRes && task.IsCompleted && _aliveWorkDic.TryGetValue(baseAsyncWorkId, out WorkBase workDone))
             {
@@ -87,7 +87,7 @@ namespace PowerThreadPool
         /// <param name="asyncFunc"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public string QueueWorkItemAsync(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
         {
             return QueueWorkItemAsync(asyncFunc, out _, callBack);
         }
@@ -98,7 +98,7 @@ namespace PowerThreadPool
         /// <param name="asyncFunc"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public string QueueWorkItemAsync(Func<Task> asyncFunc, WorkOption option)
+        public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, WorkOption option)
         {
             return QueueWorkItemAsync(asyncFunc, out _, option);
         }
@@ -110,7 +110,7 @@ namespace PowerThreadPool
         /// <param name="asyncFunc"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
         {
             return QueueWorkItemAsync<TResult>(asyncFunc, out _, callBack);
         }
@@ -122,7 +122,7 @@ namespace PowerThreadPool
         /// <param name="asyncFunc"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc,
+        public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc,
                                                   WorkOption<TResult> option)
         {
             return QueueWorkItemAsync<TResult>(asyncFunc, out _, option);
@@ -135,7 +135,7 @@ namespace PowerThreadPool
         /// <param name="task"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public string QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, Action<ExecuteResult<object>> callBack = null)
         {
             WorkOption workOption = new WorkOption { Callback = callBack };
             return QueueWorkItemAsync(asyncFunc, out task, workOption);
@@ -148,14 +148,14 @@ namespace PowerThreadPool
         /// <param name="task"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public string QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, WorkOption option)
+        public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, WorkOption option)
         {
             TaskCompletionSourceBox<ExecuteResult<object>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<object>>();
             task = taskCompletionSource.Task;
 
             PrepareAsyncWork(option);
 
-            string id = QueueWorkItem(() =>
+            WorkID id = QueueWorkItem(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
                 PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, option);
@@ -181,7 +181,7 @@ namespace PowerThreadPool
         /// <param name="task"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, Action<ExecuteResult<TResult>> callBack = null)
         {
             WorkOption<TResult> workOption = new WorkOption<TResult> { Callback = callBack };
             return QueueWorkItemAsync(asyncFunc, out task, workOption);
@@ -195,14 +195,14 @@ namespace PowerThreadPool
         /// <param name="task"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public string QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, WorkOption<TResult> option)
+        public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, WorkOption<TResult> option)
         {
             TaskCompletionSourceBox<ExecuteResult<TResult>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<TResult>>();
             task = taskCompletionSource.TypedTask;
 
             PrepareAsyncWork(option);
 
-            string id = QueueWorkItem(() =>
+            WorkID id = QueueWorkItem(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
                 PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, option);

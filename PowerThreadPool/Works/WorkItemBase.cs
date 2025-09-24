@@ -2,6 +2,6 @@
 {
     public abstract class WorkItemBase
     {
-        internal string ID { get; set; }
+        internal WorkID ID { get; set; }
     }
 }

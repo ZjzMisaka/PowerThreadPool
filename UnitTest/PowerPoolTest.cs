@@ -105,8 +105,8 @@ namespace UnitTest
                 DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 3000, ForceStop = false },
             };
 
-            string id = "";
-            string resId = "";
+            WorkID id = default;
+            WorkID resId = default;
             id = powerPool.QueueWorkItem(() =>
             {
                 return 1024;
@@ -119,7 +119,7 @@ namespace UnitTest
                 Assert.True(res.StartDateTime < res.EndDateTime);
             });
             powerPool.Wait();
-            Assert.NotEqual("", id);
+            Assert.NotEqual(WorkID.Empty, id);
             Assert.Equal(id, resId);
         }
 
@@ -194,7 +194,7 @@ namespace UnitTest
                 logList.Add("PoolTimeout");
             };
 
-            string id;
+            WorkID id = default;
             for (int j = 0; j < 50; ++j)
             {
                 id = powerPool.QueueWorkItem(() =>
@@ -247,7 +247,7 @@ namespace UnitTest
                 logList.Add("PoolTimeout");
             };
 
-            string id;
+            WorkID id = default;
             for (int j = 0; j < 50; ++j)
             {
                 id = powerPool.QueueWorkItem(() =>
@@ -468,7 +468,7 @@ namespace UnitTest
                 logList.Add("Work3 callback END");
             });
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
                 logList.Add("Work0 END");
@@ -478,7 +478,7 @@ namespace UnitTest
                 logList.Add("Work0 callback END");
             });
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1500);
                 logList.Add("Work1 END");
@@ -490,7 +490,7 @@ namespace UnitTest
             },
             new WorkOption()
             {
-                Dependents = new ConcurrentSet<string>() { id0, id1 }
+                Dependents = new ConcurrentSet<WorkID>() { id0, id1 }
             }
             );
 
@@ -527,13 +527,13 @@ namespace UnitTest
                 Interlocked.Increment(ref doneCount);
             };
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
                 throw new Exception();
             });
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             });
@@ -543,7 +543,7 @@ namespace UnitTest
             },
            new WorkOption()
            {
-               Dependents = new ConcurrentSet<string>() { id0, id1 }
+               Dependents = new ConcurrentSet<WorkID>() { id0, id1 }
            });
 
             powerPool.Wait();
@@ -567,7 +567,7 @@ namespace UnitTest
                 MaxThreads = 1,
             };
 
-            string id0 = "";
+            WorkID id0 = default;
 
             powerPool.EnablePoolIdleCheck = false;
 
@@ -583,7 +583,7 @@ namespace UnitTest
                     }, new WorkOption
                     {
                         ShouldStoreResult = true,
-                        Dependents = new ConcurrentSet<string> { e.ID }
+                        Dependents = new ConcurrentSet<WorkID> { e.ID }
                     });
                 }
             };
@@ -620,7 +620,7 @@ namespace UnitTest
                 Interlocked.Increment(ref doneCount);
             };
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(10);
                 throw new Exception();
@@ -628,7 +628,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(10);
             });
@@ -638,7 +638,7 @@ namespace UnitTest
             },
            new WorkOption()
            {
-               Dependents = new ConcurrentSet<string>() { id0, id1 }
+               Dependents = new ConcurrentSet<WorkID>() { id0, id1 }
            });
 
             powerPool.Wait();
@@ -669,18 +669,18 @@ namespace UnitTest
                 Interlocked.Increment(ref doneCount);
             };
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
             });
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
             });
 
             Thread.Sleep(2000);
 
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             });
@@ -692,7 +692,7 @@ namespace UnitTest
             },
            new WorkOption()
            {
-               Dependents = new ConcurrentSet<string>() { id0, id1, id2 }
+               Dependents = new ConcurrentSet<WorkID>() { id0, id1, id2 }
            });
 
             powerPool.EnablePoolIdleCheck = true;
@@ -725,11 +725,11 @@ namespace UnitTest
                 Interlocked.Increment(ref doneCount);
             };
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
             });
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
             });
 
@@ -740,7 +740,7 @@ namespace UnitTest
             },
            new WorkOption()
            {
-               Dependents = new ConcurrentSet<string>() { id0, id1 }
+               Dependents = new ConcurrentSet<WorkID>() { id0, id1 }
            });
 
             powerPool.EnablePoolIdleCheck = true;
@@ -766,7 +766,7 @@ namespace UnitTest
                 MaxThreads = 8,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
             };
-            string id = powerPool.QueueWorkItem<object>(() =>
+            WorkID id = powerPool.QueueWorkItem<object>(() =>
             {
                 while (true)
                 {
@@ -775,7 +775,7 @@ namespace UnitTest
                 }
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { "2" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(2) }
             });
             Assert.Throws<CycleDetectedException>(() =>
             {
@@ -788,7 +788,7 @@ namespace UnitTest
                     }
                 }, new WorkOption
                 {
-                    Dependents = new ConcurrentSet<string> { "1" }
+                    Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(1) }
                 });
             });
 
@@ -816,7 +816,7 @@ namespace UnitTest
                 }
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { "3" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(3) }
             });
             powerPool.QueueWorkItem<object>(() =>
             {
@@ -827,7 +827,7 @@ namespace UnitTest
                 }
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { "1" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(1) }
             });
             Assert.Throws<CycleDetectedException>(() =>
             {
@@ -840,7 +840,7 @@ namespace UnitTest
                     }
                 }, new WorkOption
                 {
-                    Dependents = new ConcurrentSet<string> { "2" }
+                    Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(2) }
                 });
             });
 
@@ -876,7 +876,7 @@ namespace UnitTest
                 }
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { "1" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(1) }
             });
             powerPool.QueueWorkItem<object>(() =>
             {
@@ -887,7 +887,7 @@ namespace UnitTest
                 }
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { "2" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(2) }
             });
             powerPool.QueueWorkItem<object>(() =>
             {
@@ -898,7 +898,7 @@ namespace UnitTest
                 }
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { "1" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(1) }
             });
             powerPool.QueueWorkItem<object>(() =>
             {
@@ -909,7 +909,7 @@ namespace UnitTest
                 }
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { "3", "4" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(3), WorkID.FromLong(4) }
             });
 
             powerPool.Stop();
@@ -948,7 +948,7 @@ namespace UnitTest
             }, new WorkOption
             {
                 CustomWorkID = "2",
-                Dependents = new ConcurrentSet<string> { "3" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("3") }
             });
             powerPool.QueueWorkItem<object>(() =>//d
             {
@@ -960,7 +960,7 @@ namespace UnitTest
             }, new WorkOption
             {
                 CustomWorkID = "4",
-                Dependents = new ConcurrentSet<string> { "2" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("2") }
             });
             powerPool.QueueWorkItem<object>(() =>//a
             {
@@ -972,7 +972,7 @@ namespace UnitTest
             }, new WorkOption
             {
                 CustomWorkID = "1",
-                Dependents = new ConcurrentSet<string> { "2", "4" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("2"), WorkID.FromString("4") }
             });
 
             powerPool.Stop();
@@ -990,7 +990,7 @@ namespace UnitTest
                 MaxThreads = 8,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
             };
-            string id = powerPool.QueueWorkItem<object>(() =>
+            WorkID id = powerPool.QueueWorkItem<object>(() =>
             {
                 while (true)
                 {
@@ -999,7 +999,7 @@ namespace UnitTest
                 }
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { "2" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("2") }
             });
             powerPool.QueueWorkItem<object>(() =>
             {
@@ -1010,7 +1010,7 @@ namespace UnitTest
                 }
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { "8" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("8") }
             });
 
             powerPool.Stop();
@@ -1029,12 +1029,12 @@ namespace UnitTest
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
             };
             int done = 0;
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 Interlocked.Increment(ref done);
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { "2" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromLong(2) }
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -1059,12 +1059,12 @@ namespace UnitTest
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
             };
             int done = 0;
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 Interlocked.Increment(ref done);
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { "2" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("2") }
             });
 
             powerPool.Stop(id);
@@ -1087,12 +1087,12 @@ namespace UnitTest
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
             };
             int done = 0;
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 Interlocked.Increment(ref done);
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { "2" }
+                Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("2") }
             });
 
             powerPool.Cancel(id);
@@ -1329,7 +1329,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             },
@@ -1340,9 +1340,9 @@ namespace UnitTest
 
             powerPool.WorkEnded += (s, e) =>
             {
-                Assert.Equal("1024", e.ID);
+                Assert.Equal(WorkID.FromString("1024"), e.ID);
             };
-            Assert.Equal("1024", id);
+            Assert.Equal(WorkID.FromString("1024"), id);
         }
 
         [Fact]
@@ -1351,7 +1351,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             },
@@ -1362,7 +1362,7 @@ namespace UnitTest
             InvalidOperationException ex = null;
             try
             {
-                string id1 = powerPool.QueueWorkItem(() =>
+                WorkID id1 = powerPool.QueueWorkItem(() =>
                 {
                     Thread.Sleep(1000);
                 },
@@ -1385,7 +1385,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             },
@@ -1396,7 +1396,7 @@ namespace UnitTest
             InvalidOperationException ex = null;
             try
             {
-                string id1 = powerPool.QueueWorkItem(() =>
+                WorkID id1 = powerPool.QueueWorkItem(() =>
                 {
                     Thread.Sleep(1000);
                 },
@@ -1424,7 +1424,7 @@ namespace UnitTest
             try
             {
                 PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 10, DestroyThreadOption = new DestroyThreadOption() { MinThreads = 100 } });
-                string id = powerPool.QueueWorkItem(() =>
+                WorkID id = powerPool.QueueWorkItem(() =>
                 {
                     Thread.Sleep(1000);
                 });
@@ -1447,7 +1447,7 @@ namespace UnitTest
             {
                 PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 10, DestroyThreadOption = new DestroyThreadOption() { MinThreads = 5 } });
                 powerPool.PowerPoolOption.MaxThreads = 1;
-                string id = powerPool.QueueWorkItem(() =>
+                WorkID id = powerPool.QueueWorkItem(() =>
                 {
                     Thread.Sleep(1000);
                 });
@@ -1470,7 +1470,7 @@ namespace UnitTest
             {
                 PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 10, DestroyThreadOption = new DestroyThreadOption() { MinThreads = 5 } });
                 powerPool.PowerPoolOption.DestroyThreadOption.MinThreads = 10000;
-                string id = powerPool.QueueWorkItem(() =>
+                WorkID id = powerPool.QueueWorkItem(() =>
                 {
                     Thread.Sleep(1000);
                 });
@@ -1493,7 +1493,7 @@ namespace UnitTest
             {
                 PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 10, DestroyThreadOption = new DestroyThreadOption() { MinThreads = 5 } });
                 powerPool.PowerPoolOption.MaxThreads = 20;
-                string id = powerPool.QueueWorkItem(() =>
+                WorkID id = powerPool.QueueWorkItem(() =>
                 {
                     Thread.Sleep(1000);
                 });
@@ -1515,7 +1515,7 @@ namespace UnitTest
             {
                 PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 10, DestroyThreadOption = new DestroyThreadOption() { MinThreads = 5 } });
                 powerPool.PowerPoolOption.DestroyThreadOption.MinThreads = 8;
-                string id = powerPool.QueueWorkItem(() =>
+                WorkID id = powerPool.QueueWorkItem(() =>
                 {
                     Thread.Sleep(1000);
                 });
@@ -1533,7 +1533,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -1546,7 +1546,7 @@ namespace UnitTest
             }, new WorkOption()
             {
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
             }, new WorkOption()
             {
@@ -1567,7 +1567,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -1580,7 +1580,7 @@ namespace UnitTest
             }, new WorkOption()
             {
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
             }, new WorkOption()
             {
@@ -1601,7 +1601,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -1614,7 +1614,7 @@ namespace UnitTest
             }, new WorkOption()
             {
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
             }, new WorkOption()
             {
@@ -1662,7 +1662,7 @@ namespace UnitTest
 
             await Task.Delay(100);
 
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
             }, (e) =>
             {
@@ -1673,7 +1673,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.NotNull(id);
+            Assert.False(id.IsEmpty);
 
             await Task.Delay(100);
 
@@ -1713,7 +1713,7 @@ namespace UnitTest
 
             await Task.Delay(100);
 
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
             }, (e) =>
             {
@@ -1726,7 +1726,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.NotNull(id);
+            Assert.False(id.IsEmpty);
 
             await Task.Delay(100);
 
@@ -1766,7 +1766,7 @@ namespace UnitTest
 
             await Task.Delay(100);
 
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
             }, (e) =>
             {
@@ -1779,7 +1779,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.NotNull(id);
+            Assert.False(id.IsEmpty);
 
             await Task.Delay(100);
 
@@ -1821,7 +1821,7 @@ namespace UnitTest
 
             await Task.Delay(100);
 
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
             }, (e) =>
             {
@@ -1834,7 +1834,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.NotNull(id);
+            Assert.False(id.IsEmpty);
 
             await Task.Delay(100);
 
@@ -1876,7 +1876,7 @@ namespace UnitTest
 
             await Task.Delay(100);
 
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
             }, (e) =>
             {
@@ -1891,7 +1891,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.NotNull(id);
+            Assert.False(id.IsEmpty);
 
             await Task.Delay(100);
 
@@ -1933,7 +1933,7 @@ namespace UnitTest
 
             await Task.Delay(100);
 
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
             }, (e) =>
             {
@@ -1948,7 +1948,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.NotNull(id);
+            Assert.False(id.IsEmpty);
 
             await Task.Delay(100);
 
@@ -1969,7 +1969,7 @@ namespace UnitTest
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 2, KeepAliveTime = 30000 }
             };
 
-            string id3 = null;
+            WorkID id3 = default;
             powerPool.WorkStarted += (s, e) =>
             {
                 if (e.ID == id3)
@@ -1978,7 +1978,7 @@ namespace UnitTest
                 }
             };
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
@@ -1989,7 +1989,7 @@ namespace UnitTest
                 }
             });
 
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
@@ -2014,7 +2014,7 @@ namespace UnitTest
                 }
             });
 
-            string id4 = powerPool.QueueWorkItem(() =>
+            WorkID id4 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
@@ -2025,7 +2025,7 @@ namespace UnitTest
                 }
             });
 
-            string id5 = powerPool.QueueWorkItem(() =>
+            WorkID id5 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
@@ -2036,7 +2036,7 @@ namespace UnitTest
                 }
             });
 
-            string id6 = powerPool.QueueWorkItem(() =>
+            WorkID id6 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
@@ -2071,7 +2071,7 @@ namespace UnitTest
             {
                 res0 = res.Exception;
             });
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -2124,7 +2124,7 @@ namespace UnitTest
             {
                 res0 = res.Exception;
             });
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -2170,7 +2170,7 @@ namespace UnitTest
             {
                 res0 = res.Exception;
             });
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -2537,28 +2537,28 @@ namespace UnitTest
                 QueueType = QueueType.LIFO,
             };
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
             {
                 logList.Add("1");
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
             {
                 logList.Add("2");
             });
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
             {
                 logList.Add("3");
             });
-            string id4 = powerPool.QueueWorkItem(() =>
+            WorkID id4 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
@@ -2590,28 +2590,28 @@ namespace UnitTest
                 QueueType = QueueType.FIFO,
             };
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
             {
                 logList.Add("1");
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
             {
                 logList.Add("2");
             });
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
             {
                 logList.Add("3");
             });
-            string id4 = powerPool.QueueWorkItem(() =>
+            WorkID id4 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
@@ -2643,28 +2643,28 @@ namespace UnitTest
                 CustomQueueFactory = () => new ConcurrentStealablePriorityStack<WorkItemBase>(),
             };
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
             {
                 logList.Add("1");
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
             {
                 logList.Add("2");
             });
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
             {
                 logList.Add("3");
             });
-            string id4 = powerPool.QueueWorkItem(() =>
+            WorkID id4 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
@@ -2696,28 +2696,28 @@ namespace UnitTest
                 CustomQueueFactory = () => new ConcurrentStealablePriorityQueue<WorkItemBase>(),
             };
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
             {
                 logList.Add("1");
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
             {
                 logList.Add("2");
             });
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
             {
                 logList.Add("3");
             });
-            string id4 = powerPool.QueueWorkItem(() =>
+            WorkID id4 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
             }, (res) =>
@@ -3435,7 +3435,7 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
             });
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
             });
@@ -3496,7 +3496,7 @@ namespace UnitTest
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
             };
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
             });
@@ -3523,7 +3523,7 @@ namespace UnitTest
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
             };
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 return "0";
             }, new WorkOption()
@@ -3556,14 +3556,14 @@ namespace UnitTest
 
             powerPool.EnablePoolIdleCheck = false;
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 return "0";
             }, new WorkOption()
             {
                 ShouldStoreResult = true
             });
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 return "1";
             }, new WorkOption()
@@ -3601,14 +3601,14 @@ namespace UnitTest
 
             powerPool.EnablePoolIdleCheck = false;
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 return "0";
             }, new WorkOption()
             {
                 ShouldStoreResult = true,
             });
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 return "1";
             }, new WorkOption()
@@ -3625,7 +3625,7 @@ namespace UnitTest
             ExecuteResult<string> res1 = powerPool.Fetch<string>(id1);
             Assert.Equal("1", res1.Result);
 
-            powerPool.ClearResultStorage(new List<string> { id0 });
+            powerPool.ClearResultStorage(new List<WorkID> { id0 });
             res0 = powerPool.Fetch<string>(id0);
             res1 = powerPool.Fetch<string>(id1);
             Assert.Null(res0.Result);
@@ -3639,7 +3639,7 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3650,7 +3650,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3661,7 +3661,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3672,7 +3672,7 @@ namespace UnitTest
             {
                 Group = "B"
             });
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3699,7 +3699,7 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3710,7 +3710,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3721,7 +3721,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3732,7 +3732,7 @@ namespace UnitTest
             {
                 Group = "B"
             });
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3764,7 +3764,7 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3775,7 +3775,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3786,7 +3786,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3797,7 +3797,7 @@ namespace UnitTest
             {
                 Group = "B"
             });
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3828,7 +3828,7 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3839,7 +3839,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3850,7 +3850,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3861,7 +3861,7 @@ namespace UnitTest
             {
                 Group = "B"
             });
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3891,7 +3891,7 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3902,7 +3902,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3913,7 +3913,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3924,7 +3924,7 @@ namespace UnitTest
             {
                 Group = "B"
             });
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3953,7 +3953,7 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3964,7 +3964,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3975,7 +3975,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -3986,7 +3986,7 @@ namespace UnitTest
             {
                 Group = "B"
             });
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4014,7 +4014,7 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4025,7 +4025,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4036,7 +4036,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4047,7 +4047,7 @@ namespace UnitTest
             {
                 Group = "B"
             });
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4077,7 +4077,7 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4088,7 +4088,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4099,7 +4099,7 @@ namespace UnitTest
             {
                 Group = "A"
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4110,7 +4110,7 @@ namespace UnitTest
             {
                 Group = "B"
             });
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4145,7 +4145,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4173,7 +4173,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4182,7 +4182,7 @@ namespace UnitTest
                 }
             });
 
-            bool res = powerPool.AddWorkToGroup("AAA", "AAA");
+            bool res = powerPool.AddWorkToGroup("AAA", WorkID.FromString("AAA"));
             Assert.False(res);
 
             Assert.DoesNotContain(id, powerPool.GetGroupMemberList("AAA"));
@@ -4203,7 +4203,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4238,7 +4238,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4252,7 +4252,7 @@ namespace UnitTest
 
             Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
 
-            bool res = powerPool.RemoveWorkFromGroup("AAA", "AAA");
+            bool res = powerPool.RemoveWorkFromGroup("AAA", WorkID.FromString("AAA"));
             Assert.False(res);
 
             Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
@@ -4271,7 +4271,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4304,7 +4304,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4341,7 +4341,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -4369,7 +4369,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -5302,7 +5302,7 @@ namespace UnitTest
             powerPool.WorkCanceled += (s, e) => { Interlocked.Increment(ref cancelCount1); };
             powerPool.PowerPoolOption.DefaultCallback = (e) => { Interlocked.Increment(ref doneCount2); };
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -5311,7 +5311,7 @@ namespace UnitTest
                 }
             });
 
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -5330,7 +5330,7 @@ namespace UnitTest
             Assert.Equal(2, powerPool.RunningWorkerCount);
             Assert.Equal(0, powerPool.IdleWorkerCount);
 
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -5438,7 +5438,7 @@ namespace UnitTest
             powerPool.WorkCanceled += (s, e) => { Interlocked.Increment(ref cancelCount1); };
             powerPool.PowerPoolOption.DefaultCallback = (e) => { Interlocked.Increment(ref doneCount2); };
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -5447,7 +5447,7 @@ namespace UnitTest
                 }
             });
 
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -5466,7 +5466,7 @@ namespace UnitTest
             Assert.Equal(2, powerPool.RunningWorkerCount);
             Assert.Equal(0, powerPool.IdleWorkerCount);
 
-            string id3 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -5927,7 +5927,7 @@ namespace UnitTest
             powerPool.WorkCanceled += (s, e) => { Interlocked.Increment(ref cancelCount1); };
             powerPool.PowerPoolOption.DefaultCallback = (e) => { Interlocked.Increment(ref doneCount2); };
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -5936,7 +5936,7 @@ namespace UnitTest
                 }
             });
 
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -6007,7 +6007,7 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 2, DestroyThreadOption = new DestroyThreadOption { KeepAliveTime = 0, MinThreads = 0 } });
 
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -6016,7 +6016,7 @@ namespace UnitTest
                 }
             });
 
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -6117,7 +6117,7 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool(new PowerPoolOption());
             WorkOption<string> workOption = new WorkOption<string>();
-            Work<string> work = new Work<string>(powerPool, "", () => { return ""; }, workOption);
+            Work<string> work = new Work<string>(powerPool, WorkID.Empty, () => { return ""; }, workOption);
             work.IsDone = false;
             Worker worker = new Worker(powerPool);
             worker.WorkStealability.InterlockedValue = WorkStealability.NotAllowed;
@@ -6152,7 +6152,7 @@ namespace UnitTest
         {
             PowerPool powerPool = new PowerPool(new PowerPoolOption());
             WorkOption<string> workOption = new WorkOption<string>();
-            Work<string> work = new Work<string>(powerPool, "", () => { return ""; }, workOption);
+            Work<string> work = new Work<string>(powerPool, WorkID.Empty, () => { return ""; }, workOption);
             work.IsDone = false;
             Worker worker = new Worker(powerPool);
             worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
@@ -6168,12 +6168,12 @@ namespace UnitTest
 
             PowerPoolOption powerPoolOption = new PowerPoolOption { WorkIDType = WorkIDType.LongIncrement };
             PowerPool powerPool = new PowerPool(powerPoolOption);
-            string longID = powerPool.QueueWorkItem(() => { });
-            bool parseLong = long.TryParse(longID, out long _);
+            WorkID longID = powerPool.QueueWorkItem(() => { });
+            bool parseLong = longID.TryGetLong(out long _);
 
             powerPoolOption.WorkIDType = WorkIDType.Guid;
-            string guidID = powerPool.QueueWorkItem(() => { });
-            bool parseGuid = Guid.TryParse(guidID, out Guid _);
+            WorkID guidID = powerPool.QueueWorkItem(() => { });
+            bool parseGuid = guidID.TryGetGuid(out Guid _);
 
             Assert.True(parseLong);
             Assert.True(parseGuid);
@@ -6195,7 +6195,7 @@ namespace UnitTest
             };
             PowerPool powerPool = new PowerPool(powerPoolOption);
 
-            string errID = "";
+            WorkID errID = default;
             var exception = Record.Exception(() =>
             {
                 _ = powerPool
@@ -6275,7 +6275,7 @@ namespace UnitTest
             });
             Assert.NotNull(exception);
             Assert.IsType<WorkRejectedException>(exception);
-            Assert.NotEmpty(((WorkRejectedException)exception).ID);
+            Assert.False(((WorkRejectedException)exception).ID.IsEmpty);
 
             powerPool.Stop();
         }
@@ -6486,7 +6486,7 @@ namespace UnitTest
             };
             PowerPool powerPool = new PowerPool(powerPoolOption);
 
-            string discardID = null;
+            WorkID discardID = default;
             RejectType rejectType = RejectType.AbortPolicy;
             powerPool.WorkDiscarded += (s, e) =>
             {
@@ -6561,7 +6561,7 @@ namespace UnitTest
                 });
 
             bool done = false;
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 done = true;
             });
@@ -6718,7 +6718,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool(powerPoolOption);
 
             bool workRejected = false;
-            string id = "";
+            WorkID id = default;
             RejectType rejectType = RejectType.CallerRunsPolicy;
             powerPool.WorkRejected += (s, e) =>
             {
@@ -6800,7 +6800,7 @@ namespace UnitTest
             powerPool.Stop();
 
             Assert.True(workRejected);
-            Assert.NotEmpty(id);
+            Assert.False(id.IsEmpty);
             Assembly.Equals(RejectType.DiscardPolicy, rejectType);
         }
 
@@ -7328,79 +7328,79 @@ namespace UnitTest
 
             int doneCount = 0;
 
-            string id0 = powerPool.QueueWorkItem(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
                 Interlocked.Increment(ref doneCount);
             });
-            string id1 = powerPool.QueueWorkItem(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
                 Interlocked.Increment(ref doneCount);
             });
-            string id2 = powerPool.QueueWorkItem(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
                 Interlocked.Increment(ref doneCount);
             });
-            string id3 = powerPool.QueueWorkItem(() =>
-            {
-                Thread.Sleep(500);
-                Interlocked.Increment(ref doneCount);
-            });
-
-            string id4 = powerPool.QueueWorkItem(() =>
-            {
-                Thread.Sleep(500);
-                Interlocked.Increment(ref doneCount);
-            });
-            string id5 = powerPool.QueueWorkItem(() =>
-            {
-                Thread.Sleep(500);
-                Interlocked.Increment(ref doneCount);
-            });
-            string id6 = powerPool.QueueWorkItem(() =>
-            {
-                Thread.Sleep(500);
-                Interlocked.Increment(ref doneCount);
-            });
-            string id7 = powerPool.QueueWorkItem(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
                 Interlocked.Increment(ref doneCount);
             });
 
-            string id8 = powerPool.QueueWorkItem(() =>
+            WorkID id4 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
                 Interlocked.Increment(ref doneCount);
-            }, new WorkOption
-            {
-                Dependents = new ConcurrentSet<string> { id4 }
             });
-            string id9 = powerPool.QueueWorkItem(() =>
+            WorkID id5 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
                 Interlocked.Increment(ref doneCount);
-            }, new WorkOption
-            {
-                Dependents = new ConcurrentSet<string> { id5 }
             });
-            string id10 = powerPool.QueueWorkItem(() =>
+            WorkID id6 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
                 Interlocked.Increment(ref doneCount);
-            }, new WorkOption
-            {
-                Dependents = new ConcurrentSet<string> { id6 }
             });
-            string id11 = powerPool.QueueWorkItem(() =>
+            WorkID id7 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            });
+
+            WorkID id8 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(500);
                 Interlocked.Increment(ref doneCount);
             }, new WorkOption
             {
-                Dependents = new ConcurrentSet<string> { id7 }
+                Dependents = new ConcurrentSet<WorkID> { id4 }
+            });
+            WorkID id9 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<WorkID> { id5 }
+            });
+            WorkID id10 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<WorkID> { id6 }
+            });
+            WorkID id11 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+                Interlocked.Increment(ref doneCount);
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<WorkID> { id7 }
             });
 
             bool done = false;
@@ -7699,19 +7699,19 @@ namespace UnitTest
             };
             PowerPool powerPool = new PowerPool(powerPoolOption);
 
-            string aID = powerPool.QueueWorkItem(() =>
+            WorkID aID = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(100);
                 throw new InvalidOperationException("Fail A");
             });
 
-            ConcurrentSet<string> deps1 = new ConcurrentSet<string>(); deps1.Add(aID);
-            ConcurrentSet<string> deps2 = new ConcurrentSet<string>(); deps2.Add(aID);
+            ConcurrentSet<WorkID> deps1 = new ConcurrentSet<WorkID>(); deps1.Add(aID);
+            ConcurrentSet<WorkID> deps2 = new ConcurrentSet<WorkID>(); deps2.Add(aID);
 
-            string b1ID = powerPool.QueueWorkItem(() => { },
+            WorkID b1ID = powerPool.QueueWorkItem(() => { },
                 new WorkOption { Dependents = deps1 });
 
-            string b2ID = powerPool.QueueWorkItem(() => { },
+            WorkID b2ID = powerPool.QueueWorkItem(() => { },
                 new WorkOption { Dependents = deps2 });
 
             powerPool.Wait();
@@ -7730,7 +7730,7 @@ namespace UnitTest
                 MaxThreads = 2,
             };
 
-            string id = powerPool.QueueWorkItem(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000000);
             });
@@ -7833,7 +7833,7 @@ namespace UnitTest
 
         public static class DivideAndConquerDemoHelpInWorkWait
         {
-            public static string ParallelSum(
+            public static WorkID ParallelSum(
                 PowerPool powerPool,
                 int[] arr, int l, int r,
                 int threshold,
@@ -7861,7 +7861,7 @@ namespace UnitTest
 
                 long leftSum = ParallelSumDirect(powerPool, arr, l, mid, threshold, workPlacementPolicy, groupName);
 
-                string rightId = ParallelSum(powerPool, arr, mid + 1, r, threshold, workPlacementPolicy, groupName);
+                WorkID rightId = ParallelSum(powerPool, arr, mid + 1, r, threshold, workPlacementPolicy, groupName);
 
                 long rightSum = powerPool.Fetch<long>(rightId, false, true).Result;
 
@@ -7893,7 +7893,7 @@ namespace UnitTest
 
                 long leftSum = ParallelSumDirect(powerPool, arr, l, mid, threshold, workPlacementPolicy, groupName);
 
-                string rightId = ParallelSum(powerPool, arr, mid + 1, r, threshold, workPlacementPolicy, groupName);
+                WorkID rightId = ParallelSum(powerPool, arr, mid + 1, r, threshold, workPlacementPolicy, groupName);
                 long rightSum = powerPool.Fetch<long>(rightId, false, true).Result;
 
                 return leftSum + rightSum;
@@ -7917,7 +7917,7 @@ namespace UnitTest
                 string groupName = "ParallelSum";
                 Group group = powerPool.GetGroup(groupName);
 
-                string rootId = ParallelSum(powerPool, arr, 0, arr.Length - 1, 10_000, workPlacementPolicy, groupName);
+                WorkID rootId = ParallelSum(powerPool, arr, 0, arr.Length - 1, 10_000, workPlacementPolicy, groupName);
 
                 powerPool.Wait(helpWhileWaiting: true);
 
@@ -7945,7 +7945,7 @@ namespace UnitTest
                     WorkPlacementPolicy = workPlacementPolicy,
                     ShouldStoreResult = true,
                 };
-                string rightId = powerPool.QueueWorkItem(() => ParallelSum(powerPool, a, m + 1, r, workPlacementPolicy, cutoff), opt);
+                WorkID rightId = powerPool.QueueWorkItem(() => ParallelSum(powerPool, a, m + 1, r, workPlacementPolicy, cutoff), opt);
 
                 long left = ParallelSum(powerPool, a, l, m, workPlacementPolicy, cutoff);
 
@@ -7972,7 +7972,7 @@ namespace UnitTest
                 int[] arr = new int[n];
                 Array.Fill(arr, 1);
 
-                string id = powerPool.QueueWorkItem(() => ParallelSum(powerPool, arr, 0, n - 1, workPlacementPolicy));
+                WorkID id = powerPool.QueueWorkItem(() => ParallelSum(powerPool, arr, 0, n - 1, workPlacementPolicy));
                 long sum = powerPool.Fetch<long>(id, removeAfterFetch: false, helpWhileWaiting: true).Result;
 
                 powerPool.Dispose();

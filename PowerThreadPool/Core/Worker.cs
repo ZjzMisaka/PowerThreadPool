@@ -35,7 +35,7 @@ namespace PowerThreadPool
 
         private ManualResetEvent _runSignal = new ManualResetEvent(false);
 
-        internal string WorkID => Work.ID;
+        internal WorkID WorkID => Work.ID;
 
         internal WorkBase Work { get; set; }
 
@@ -188,7 +188,7 @@ namespace PowerThreadPool
                     {
                         _powerPool.InvokeWorkEndedEvent(executeResult);
                     }
-                    if (Work.BaseAsyncWorkID != null)
+                    if (!Work.BaseAsyncWorkID.IsEmpty)
                     {
                         if (_powerPool._tcsDict.TryRemove(Work.RealWorkID, out ITaskCompletionSource tcs))
                         {
@@ -226,12 +226,12 @@ namespace PowerThreadPool
 
                 Work.IsDone = true;
 
-                if (Work.WaitSignal != null && Work.BaseAsyncWorkID == null)
+                if (Work.WaitSignal != null && Work.BaseAsyncWorkID.IsEmpty)
                 {
                     Work.WaitSignal.Set();
                 }
 
-                if (Work.AllowEventsAndCallback && Work.BaseAsyncWorkID != null)
+                if (Work.AllowEventsAndCallback && !Work.BaseAsyncWorkID.IsEmpty)
                 {
                     if (_powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork) && !asyncBaseWork.ShouldStoreResult)
                     {
@@ -274,7 +274,7 @@ namespace PowerThreadPool
             {
                 Interlocked.Decrement(ref _powerPool._idleWorkerCount);
             }
-            if (Work.BaseAsyncWorkID != null)
+            if (!Work.BaseAsyncWorkID.IsEmpty)
             {
                 _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true);
 

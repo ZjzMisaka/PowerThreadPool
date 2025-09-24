@@ -1,15 +1,28 @@
 ﻿using System.Globalization;
+using Microsoft.VisualStudio.TestPlatform.Utilities;
+using System.Reflection;
 using PowerThreadPool.Works;
+using Xunit.Abstractions;
 
 namespace UnitTest
 {
     public class WorkIDTest
     {
+        private readonly ITestOutputHelper _output;
+
+        public WorkIDTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [Fact]
         public void TestEmptyDefaultState()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             WorkID empty = WorkID.Empty;
             Assert.Equal(WorkIdKind.None, empty.Kind);
+            Assert.True(empty.IsEmpty);
             Assert.False(empty.IsLong);
             Assert.False(empty.IsGuid);
             Assert.False(empty.IsString);
@@ -31,11 +44,14 @@ namespace UnitTest
         [Fact]
         public void TestFromLongBasicAndImplicitAndExplicit()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             long v = 1234567890123456789;
             WorkID a = WorkID.FromLong(v);
             WorkID b = v;
 
             Assert.Equal(WorkIdKind.Long, a.Kind);
+            Assert.False(a.IsEmpty);
             Assert.True(a.IsLong);
             Assert.False(a.IsGuid);
             Assert.False(a.IsString);
@@ -71,11 +87,14 @@ namespace UnitTest
         [Fact]
         public void TestFromGuidBasicAndImplicitAndExplicit()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             Guid id = Guid.Parse("00112233-4455-6677-8899-aabbccddeeff");
             WorkID a = WorkID.FromGuid(id);
             WorkID b = id;
 
             Assert.Equal(WorkIdKind.Guid, a.Kind);
+            Assert.False(a.IsEmpty);
             Assert.True(a.IsGuid);
             Assert.False(a.IsLong);
             Assert.False(a.IsString);
@@ -114,10 +133,13 @@ namespace UnitTest
         [Fact]
         public void TestFromStringBasicAndNullThrows()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             string txt = "hello";
             WorkID a = WorkID.FromString(txt);
 
             Assert.Equal(WorkIdKind.String, a.Kind);
+            Assert.False(a.IsEmpty);
             Assert.True(a.IsString);
             Assert.False(a.IsLong);
             Assert.False(a.IsGuid);
@@ -144,6 +166,8 @@ namespace UnitTest
         [Fact]
         public void TestTryGetFailurePathsForOtherKinds()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             WorkID l = WorkID.FromLong(7);
             Assert.False(l.TryGetGuid(out _));
             Assert.False(l.TryGetString(out _));
@@ -160,6 +184,8 @@ namespace UnitTest
         [Fact]
         public void TestEqualityMatrixAndOperators()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             WorkID l1 = WorkID.FromLong(42);
             WorkID l2 = WorkID.FromLong(42);
             WorkID l3 = WorkID.FromLong(100);
@@ -211,6 +237,8 @@ namespace UnitTest
         [Fact]
         public void TestTryFormatDefaultCaseForNone()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             WorkID n = WorkID.Empty;
             Span<char> buf = stackalloc char[1];
             bool ok = n.TryFormat(buf, out int written, default, CultureInfo.InvariantCulture);

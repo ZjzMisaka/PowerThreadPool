@@ -68,10 +68,10 @@ namespace PowerThreadPool.Works
         internal abstract bool LongRunning { get; }
         internal abstract bool ShouldStoreResult { get; }
         internal abstract WorkPlacementPolicy WorkPlacementPolicy { get; }
-        internal abstract ConcurrentSet<string> Dependents { get; }
+        internal abstract ConcurrentSet<WorkID> Dependents { get; }
         internal abstract bool AllowEventsAndCallback { get; set; }
-        internal abstract string AsyncWorkID { get; }
-        internal abstract string BaseAsyncWorkID { get; }
-        internal abstract string RealWorkID { get; }
+        internal abstract WorkID AsyncWorkID { get; }
+        internal abstract WorkID BaseAsyncWorkID { get; }
+        internal abstract WorkID RealWorkID { get; }
     }
 }
