@@ -119,7 +119,7 @@ namespace UnitTest
                 Assert.True(res.StartDateTime < res.EndDateTime);
             });
             powerPool.Wait();
-            Assert.NotEqual(null, id);
+            Assert.NotNull(id);
             Assert.Equal(id, resId);
         }
 
