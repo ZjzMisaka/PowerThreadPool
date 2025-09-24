@@ -10,52 +10,40 @@ namespace PowerThreadPool.Works
         String = 3,
     }
 
-    public sealed class WorkID :
+    public abstract class WorkID :
         IEquatable<WorkID>
         , IFormattable
 #if NET6_0_OR_GREATER
         , ISpanFormattable
 #endif
     {
-        private readonly WorkIdKind _kind;
-        private readonly long _long;
-        private readonly Guid _guid;
-        private readonly string _string;
+        internal abstract WorkIdKind Kind { get; }
+        internal abstract long Long { get; }
+        internal abstract Guid Guid { get; }
+        internal abstract string String { get; }
 
-        private readonly int _hash;
+        internal abstract int Hash { get; }
 
-        public WorkIdKind Kind { get { return _kind; } }
-
-        public bool IsLong { get { return _kind == WorkIdKind.Long; } }
-        public bool IsGuid { get { return _kind == WorkIdKind.Guid; } }
-        public bool IsString { get { return _kind == WorkIdKind.String; } }
-
-        private WorkID(WorkIdKind kind, long l, Guid g, string s)
-        {
-            _kind = kind;
-            _long = l;
-            _guid = g;
-            _string = s;
-            _hash = ComputeHash(kind, l, g, s);
-        }
+        public bool IsLong { get { return Kind == WorkIdKind.Long; } }
+        public bool IsGuid { get { return Kind == WorkIdKind.Guid; } }
+        public bool IsString { get { return Kind == WorkIdKind.String; } }
 
         public static WorkID FromLong(long value)
         {
-            return new WorkID(WorkIdKind.Long, value, default(Guid), null);
+            return new WorkIDLong(value);
         }
 
         public static WorkID FromGuid(Guid value)
         {
-            return new WorkID(WorkIdKind.Guid, 0L, value, null);
+            return new WorkIDGuid(value);
         }
 
         public static WorkID FromString(string value)
         {
             if (value == null) throw new ArgumentNullException("value");
-            return new WorkID(WorkIdKind.String, 0L, default(Guid), value);
+            return new WorkIDString(value);
         }
 
-        // 隐式：long/Guid -> WorkID
         public static implicit operator WorkID(long value)
         {
             return FromLong(value);
@@ -66,29 +54,27 @@ namespace PowerThreadPool.Works
             return FromGuid(value);
         }
 
-        // 显式：WorkID -> long/Guid
         public static explicit operator long(WorkID id)
         {
             if (id == null) throw new InvalidCastException("WorkID is null.");
-            if (id._kind != WorkIdKind.Long)
+            if (id.Kind != WorkIdKind.Long)
                 throw new InvalidCastException("WorkID is not of type long.");
-            return id._long;
+            return id.Long;
         }
 
         public static explicit operator Guid(WorkID id)
         {
             if (id == null) throw new InvalidCastException("WorkID is null.");
-            if (id._kind != WorkIdKind.Guid)
+            if (id.Kind != WorkIdKind.Guid)
                 throw new InvalidCastException("WorkID is not of type Guid.");
-            return id._guid;
+            return id.Guid;
         }
 
-        // TryGetXxx
         public bool TryGetLong(out long value)
         {
-            if (_kind == WorkIdKind.Long)
+            if (Kind == WorkIdKind.Long)
             {
-                value = _long;
+                value = Long;
                 return true;
             }
             value = default(long);
@@ -97,9 +83,9 @@ namespace PowerThreadPool.Works
 
         public bool TryGetGuid(out Guid value)
         {
-            if (_kind == WorkIdKind.Guid)
+            if (Kind == WorkIdKind.Guid)
             {
-                value = _guid;
+                value = Guid;
                 return true;
             }
             value = default(Guid);
@@ -108,9 +94,9 @@ namespace PowerThreadPool.Works
 
         public bool TryGetString(out string value)
         {
-            if (_kind == WorkIdKind.String)
+            if (Kind == WorkIdKind.String)
             {
-                value = _string;
+                value = String;
                 return true;
             }
             value = null;
@@ -119,14 +105,14 @@ namespace PowerThreadPool.Works
 
         public override string ToString()
         {
-            switch (_kind)
+            switch (Kind)
             {
                 case WorkIdKind.Long:
-                    return _long.ToString();
+                    return Long.ToString();
                 case WorkIdKind.Guid:
-                    return _guid.ToString("D");
+                    return Guid.ToString("D");
                 case WorkIdKind.String:
-                    return _string;
+                    return String;
                 default:
                     return string.Empty;
             }
@@ -134,15 +120,15 @@ namespace PowerThreadPool.Works
 
         public string ToString(string format, IFormatProvider formatProvider)
         {
-            switch (_kind)
+            switch (Kind)
             {
                 case WorkIdKind.Long:
-                    return _long.ToString(format, formatProvider);
+                    return Long.ToString(format, formatProvider);
                 case WorkIdKind.Guid:
                     string f = string.IsNullOrEmpty(format) ? "D" : format;
-                    return _guid.ToString(f, formatProvider);
+                    return Guid.ToString(f, formatProvider);
                 case WorkIdKind.String:
-                    return _string;
+                    return String;
                 default:
                     return string.Empty;
             }
@@ -155,22 +141,22 @@ namespace PowerThreadPool.Works
             ReadOnlySpan<char> format,
             IFormatProvider provider)
         {
-            switch (_kind)
+            switch (Kind)
             {
                 case WorkIdKind.Long:
-                    return _long.TryFormat(destination, out charsWritten, format, provider);
+                    return Long.TryFormat(destination, out charsWritten, format, provider);
 
                 case WorkIdKind.Guid:
                     // Guid.TryFormat 不使用 provider；format 为空等价于 "D"
                     if (format.Length == 0)
                     {
-                        return _guid.TryFormat(destination, out charsWritten, "D");
+                        return Guid.TryFormat(destination, out charsWritten, "D");
                     }
-                    return _guid.TryFormat(destination, out charsWritten, format);
+                    return Guid.TryFormat(destination, out charsWritten, format);
 
                 case WorkIdKind.String:
                     {
-                        ReadOnlySpan<char> s = _string.AsSpan();
+                        ReadOnlySpan<char> s = String.AsSpan();
                         if (s.Length <= destination.Length)
                         {
                             s.CopyTo(destination);
@@ -193,18 +179,18 @@ namespace PowerThreadPool.Works
             if (ReferenceEquals(this, other)) return true;
             if ((object)other == null) return false;
 
-            if (_kind != other._kind) return false;
+            if (Kind != other.Kind) return false;
 
-            switch (_kind)
+            switch (Kind)
             {
                 case WorkIdKind.Long:
-                    return _long == other._long;
+                    return Long == other.Long;
 
                 case WorkIdKind.Guid:
-                    return _guid.Equals(other._guid);
+                    return Guid.Equals(other.Guid);
 
                 case WorkIdKind.String:
-                    return string.Equals(_string, other._string, StringComparison.Ordinal);
+                    return string.Equals(String, other.String, StringComparison.Ordinal);
 
                 default:
                     return true;
@@ -219,7 +205,7 @@ namespace PowerThreadPool.Works
 
         public override int GetHashCode()
         {
-            return _hash;
+            return Hash;
         }
 
         public static bool operator ==(WorkID left, WorkID right)
@@ -234,7 +220,7 @@ namespace PowerThreadPool.Works
             return !(left == right);
         }
 
-        private static int ComputeHash(WorkIdKind kind, long l, Guid g, string s)
+        internal static int ComputeHash(WorkIdKind kind, long l, Guid g, string s)
         {
             unchecked
             {
