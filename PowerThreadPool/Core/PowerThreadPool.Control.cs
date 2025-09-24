@@ -597,9 +597,30 @@ namespace PowerThreadPool
         /// <summary>
         /// Stop all works
         /// </summary>
+        /// <returns>Return false if no thread running</returns>
+        public bool Stop()
+        {
+            return Stop(false);
+        }
+
+        /// <summary>
+        /// Call Thread.Interrupt() and force stop all works
+        /// Although this approach is safer than Thread.Abort, from the perspective of the business logic,
+        /// it can still potentially lead to unpredictable results and cannot guarantee the time consumption of exiting the thread,
+        /// therefore you should avoid using force stop as much as possible.
+        /// </summary>
+        /// <returns>Return false if no thread running</returns>
+        public bool ForceStop()
+        {
+            return Stop(true);
+        }
+
+        /// <summary>
+        /// Stop all works
+        /// </summary>
         /// <param name="forceStop">Call Thread.Interrupt() for force stop</param>
         /// <returns>Return false if no thread running</returns>
-        public bool Stop(bool forceStop = false)
+        internal bool Stop(bool forceStop)
         {
             if (_poolState == PoolStates.NotRunning)
             {
@@ -637,7 +658,31 @@ namespace PowerThreadPool
         /// <param name="id">work id</param>
         /// <param name="forceStop">Call Thread.Interrupt() for force stop</param>
         /// <returns>Return false if the work does not exist or has been done</returns>
-        public bool Stop(WorkID id, bool forceStop = false)
+        public bool Stop(WorkID id)
+        {
+            return Stop(id, false);
+        }
+
+        /// <summary>
+        /// Call Thread.Interrupt() and force stop work by id
+        /// Although this approach is safer than Thread.Abort, from the perspective of the business logic,
+        /// it can still potentially lead to unpredictable results and cannot guarantee the time consumption of exiting the thread,
+        /// therefore you should avoid using force stop as much as possible.
+        /// </summary>
+        /// <param name="id">work id</param>
+        /// <returns>Return false if the work does not exist or has been done</returns>
+        public bool ForceStop(WorkID id)
+        {
+            return Stop(id, true);
+        }
+
+        /// <summary>
+        /// Stop work by id
+        /// </summary>
+        /// <param name="id">work id</param>
+        /// <param name="forceStop">Call Thread.Interrupt() for force stop</param>
+        /// <returns>Return false if the work does not exist or has been done</returns>
+        internal bool Stop(WorkID id, bool forceStop)
         {
             if (id == null)
             {
@@ -667,9 +712,32 @@ namespace PowerThreadPool
         /// Stop works by id list
         /// </summary>
         /// <param name="idList">work id list</param>
+        /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
+        public List<WorkID> Stop(IEnumerable<WorkID> idList)
+        {
+            return Stop(idList, false);
+        }
+
+        /// <summary>
+        /// Call Thread.Interrupt() and force stop works by id list
+        /// Although this approach is safer than Thread.Abort, from the perspective of the business logic,
+        /// it can still potentially lead to unpredictable results and cannot guarantee the time consumption of exiting the thread,
+        /// therefore you should avoid using force stop as much as possible.
+        /// </summary>
+        /// <param name="idList">work id list</param>
+        /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
+        public List<WorkID> ForceStop(IEnumerable<WorkID> idList)
+        {
+            return Stop(idList, true);
+        }
+
+        /// <summary>
+        /// Stop works by id list
+        /// </summary>
+        /// <param name="idList">work id list</param>
         /// <param name="forceStop">Call Thread.Interrupt() for force stop</param>
         /// <returns>Return a list of ID for work that either doesn't exist or hasn't been done</returns>
-        public List<WorkID> Stop(IEnumerable<WorkID> idList, bool forceStop = false)
+        internal List<WorkID> Stop(IEnumerable<WorkID> idList, bool forceStop)
         {
             List<WorkID> failedIDList = new List<WorkID>();
 

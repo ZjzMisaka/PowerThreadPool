@@ -489,7 +489,7 @@ namespace UnitTest
             });
             long start = GetNowSs();
 
-            powerPool.Stop(true);
+            powerPool.ForceStop();
             powerPool.Wait();
             long end = GetNowSs() - start;
 
@@ -554,7 +554,7 @@ namespace UnitTest
                 }
             });
 
-            powerPool.Stop(id, true);
+            powerPool.ForceStop(id);
             powerPool.Wait();
 
             Assert.Equal(3, doneCount);
@@ -627,7 +627,7 @@ namespace UnitTest
             {
                 if (e.Succeed)
                 {
-                    powerPool.Stop(true);
+                    powerPool.ForceStop();
                 }
             };
             powerPool.WorkStopped += (s, e) =>
@@ -680,7 +680,7 @@ namespace UnitTest
             });
             Thread.Sleep(10);
 
-            powerPool.Stop(true);
+            powerPool.ForceStop();
             powerPool.Wait();
 
             Assert.True(forceStopped);
@@ -709,7 +709,7 @@ namespace UnitTest
             });
             Thread.Sleep(10);
 
-            powerPool.Stop(true);
+            powerPool.ForceStop();
             powerPool.Wait();
 
             Assert.True(forceStopped);
@@ -878,7 +878,7 @@ namespace UnitTest
             Assert.Equal(7, powerPool.RunningWorkerCount);
             Assert.Equal(resID, id);
 
-            powerPool.Stop(true);
+            powerPool.ForceStop();
             await powerPool.WaitAsync();
             Assert.Equal(0, powerPool.RunningWorkerCount);
         }
@@ -1947,7 +1947,7 @@ namespace UnitTest
             });
             Task<bool> task = powerPool.WaitAsync(id);
             Thread.Sleep(100);
-            powerPool.Stop(true);
+            powerPool.ForceStop();
 
             bool res = await task;
             Assert.True(res);
@@ -1974,7 +1974,7 @@ namespace UnitTest
             powerPool.Start();
             Thread.Sleep(50);
 
-            powerPool.Stop(true);
+            powerPool.ForceStop();
 
             bool res = await task;
             Assert.True(res);
@@ -2049,7 +2049,7 @@ namespace UnitTest
 
             Thread.Sleep(1000);
 
-            powerPool.Stop(true);
+            powerPool.ForceStop();
 
             Assert.NotNull((await res).Exception);
         }
