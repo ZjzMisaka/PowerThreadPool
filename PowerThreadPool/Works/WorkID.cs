@@ -222,20 +222,20 @@ namespace PowerThreadPool.Works
             unchecked
             {
                 int h = 17;
-                h = h * 31 + (int)kind;
+                h = (h * 31) + (int)kind;
 
                 switch (kind)
                 {
                     case WorkIdKind.Long:
-                        h = h * 31 + l.GetHashCode();
+                        h = (h * 31) + l.GetHashCode();
                         break;
 
                     case WorkIdKind.Guid:
-                        h = h * 31 + g.GetHashCode();
+                        h = (h * 31) + g.GetHashCode();
                         break;
 
                     case WorkIdKind.String:
-                        h = h * 31 + StringComparer.Ordinal.GetHashCode(s);
+                        h = (h * 31) + StringComparer.Ordinal.GetHashCode(s);
                         break;
                 }
 
