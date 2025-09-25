@@ -3002,7 +3002,10 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool();
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                EnableStatisticsCollection = true,
+            });
 
             DateTime startDateTime = DateTime.MinValue;
             DateTime endDateTime = DateTime.MinValue;
@@ -5192,7 +5195,8 @@ namespace UnitTest
                         }
                     },
                     Interval = 500,
-                }
+                },
+                EnableStatisticsCollection = true,
             });
 
             Assert.Equal(DateTime.MinValue, d0);
