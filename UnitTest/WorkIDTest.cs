@@ -53,7 +53,6 @@ namespace UnitTest
             Assert.False(a.TryGetGuid(out _));
             Assert.False(a.TryGetString(out _));
 
-            // ToString
             Assert.Equal(v.ToString(), a.ToString());
             Assert.Equal(v.ToString("N0", CultureInfo.InvariantCulture), a.ToString("N0", CultureInfo.InvariantCulture));
 
@@ -128,6 +127,49 @@ namespace UnitTest
             Assert.Throws<InvalidCastException>(() => { Guid _ = (Guid)s; });
             WorkID none = null;
             Assert.Throws<InvalidCastException>(() => { Guid _ = (Guid)none; });
+        }
+
+        [Fact]
+        public void TestFromStringBasicImplicitExplicitFormattingEquality()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            string id = "str";
+            WorkID a = WorkID.FromString(id);
+            WorkID b = id;
+
+            Assert.Equal(WorkIdKind.String, a.Kind);
+            Assert.False(a.IsLong);
+            Assert.False(a.IsGuid);
+            Assert.True(a.IsString);
+
+            Assert.False(a.TryGetLong(out _));
+            Assert.False(a.TryGetGuid(out _));
+            Assert.True(a.TryGetString(out string got));
+            Assert.Equal(id, got);
+
+            Assert.Equal(id.ToString(), a.ToString());
+            Assert.Equal(id, a.ToString());
+
+            Span<char> buf = stackalloc char[64];
+            Assert.True(a.TryFormat(buf, out int written, default, CultureInfo.InvariantCulture));
+            Assert.Equal(id, new string(buf[..written]));
+            Assert.True(a.Equals(b));
+            Assert.True(a == b);
+            Assert.False(a != b);
+            Assert.Equal(a.GetHashCode(), b.GetHashCode());
+
+            string v2 = (string)a;
+            Assert.Equal(id, v2);
+
+            WorkID l = WorkID.FromLong(default);
+            Assert.Throws<InvalidCastException>(() => { string _ = (string)l; });
+
+            WorkID g = WorkID.FromGuid(Guid.NewGuid());
+            Assert.Throws<InvalidCastException>(() => { string _ = (string)g; });
+
+            WorkID none = null;
+            Assert.Throws<InvalidCastException>(() => { string _ = (string)none; });
         }
 
         [Fact]
