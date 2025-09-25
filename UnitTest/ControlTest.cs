@@ -659,7 +659,14 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool() { PowerPoolOption = new PowerPoolOption() { MaxThreads = 1 } };
+            PowerPool powerPool = new PowerPool()
+            {
+                PowerPoolOption = new PowerPoolOption()
+                {
+                    MaxThreads = 1,
+                    EnableStatisticsCollection = true,
+                }
+            };
             bool forceStopped = false;
             powerPool.WorkStopped += (s, e) =>
             {
@@ -3035,7 +3042,11 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption()
+            {
+                StartSuspended = true,
+                EnableStatisticsCollection = true,
+            });
             WorkID id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
