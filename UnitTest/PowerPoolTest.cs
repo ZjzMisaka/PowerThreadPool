@@ -103,6 +103,7 @@ namespace UnitTest
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
                 TimeoutOption = new TimeoutOption() { Duration = 10000, ForceStop = false },
                 DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 3000, ForceStop = false },
+                EnableStatisticsCollection = true,
             };
 
             WorkID id = default;
@@ -661,6 +662,7 @@ namespace UnitTest
             {
                 MaxThreads = 1,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 },
+                EnableStatisticsCollection = true,
             };
             powerPool.EnablePoolIdleCheck = false;
 
@@ -717,6 +719,7 @@ namespace UnitTest
             {
                 MaxThreads = 1,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 },
+                EnableStatisticsCollection = true,
             };
             powerPool.EnablePoolIdleCheck = false;
 
@@ -1026,7 +1029,8 @@ namespace UnitTest
             powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 8,
-                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
+                EnableStatisticsCollection = true,
             };
             int done = 0;
             WorkID id = powerPool.QueueWorkItem(() =>
@@ -7331,7 +7335,8 @@ namespace UnitTest
                 {
                     RejectType = RejectType.DiscardOldestPolicy,
                     ThreadQueueLimit = 1,
-                }
+                },
+                EnableStatisticsCollection = true,
             };
             PowerPool powerPool = new PowerPool(powerPoolOption);
 
