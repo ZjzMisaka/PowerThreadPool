@@ -9,9 +9,8 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Works
 {
-    internal class Work<TResult> : WorkBase
+    internal abstract class Work<TResult> : WorkBase
     {
-        private Func<TResult> _function;
         private WorkOption<TResult> _workOption;
 
         internal ExecuteResult<TResult> _executeResult;
@@ -51,21 +50,14 @@ namespace PowerThreadPool.Works
         internal override WorkID BaseAsyncWorkID => _workOption.BaseAsyncWorkID;
         internal override WorkID RealWorkID => _workOption.BaseAsyncWorkID == null ? ID : _workOption.BaseAsyncWorkID;
 
-        internal Work(PowerPool powerPool, WorkID id, Func<TResult> function, WorkOption<TResult> option)
+        internal Work(PowerPool powerPool, WorkID id, WorkOption<TResult> option)
         {
             PowerPool = powerPool;
             ID = id;
             ExecuteCount = 0;
-            _function = function;
             _workOption = option;
             ShouldStop = false;
             IsPausing = false;
-        }
-
-        internal override object Execute()
-        {
-            ++_executeCount;
-            return _function();
         }
 
         internal override bool Stop(bool forceStop)

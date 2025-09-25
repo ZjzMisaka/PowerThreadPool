@@ -4,24 +4,18 @@ namespace PowerThreadPool.Helpers
 {
     internal static class DelegateHelper
     {
-        internal static Func<TResult> ToNormalFunc<TResult>(Action action)
+        internal static Action ToNormalAction(Action action)
         {
-            TResult func()
-            {
-                action();
-                return default;
-            }
-            return func;
+            return action;
         }
 
-        internal static Func<TResult> ToNormalFunc<TResult>(Action<object[]> action, object[] param)
+        internal static Action ToNormalAction(Action<object[]> action, object[] param)
         {
-            TResult func()
+            void wrapper()
             {
                 action(param);
-                return default;
             }
-            return func;
+            return wrapper;
         }
 
         internal static Func<TResult> ToNormalFunc<TResult>(Func<object[], TResult> function, object[] param)
@@ -33,14 +27,13 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<TResult> ToNormalFunc<T1, TResult>(Action<T1> action, T1 param1)
+        internal static Action ToNormalAction<T1>(Action<T1> action, T1 param1)
         {
-            TResult func()
+            void wrapper()
             {
                 action(param1);
-                return default;
             }
-            return func;
+            return wrapper;
         }
 
         internal static Func<TResult> ToNormalFunc<T1, TResult>(Func<T1, TResult> function, T1 param1)
@@ -52,14 +45,13 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<TResult> ToNormalFunc<T1, T2, TResult>(Action<T1, T2> action, T1 param1, T2 param2)
+        internal static Action ToNormalAction<T1, T2>(Action<T1, T2> action, T1 param1, T2 param2)
         {
-            TResult func()
+            void wrapper()
             {
                 action(param1, param2);
-                return default;
             }
-            return func;
+            return wrapper;
         }
 
         internal static Func<TResult> ToNormalFunc<T1, T2, TResult>(Func<T1, T2, TResult> function, T1 param1, T2 param2)
@@ -71,14 +63,13 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<TResult> ToNormalFunc<T1, T2, T3, TResult>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3)
+        internal static Action ToNormalAction<T1, T2, T3>(Action<T1, T2, T3> action, T1 param1, T2 param2, T3 param3)
         {
-            TResult func()
+            void wrapper()
             {
                 action(param1, param2, param3);
-                return default;
             }
-            return func;
+            return wrapper;
         }
 
         internal static Func<TResult> ToNormalFunc<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> function, T1 param1, T2 param2, T3 param3)
@@ -90,19 +81,18 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<TResult> ToNormalFunc<T1, T2, T3, T4, TResult>(
+        internal static Action ToNormalAction<T1, T2, T3, T4>(
             Action<T1, T2, T3, T4> action,
             T1 param1,
             T2 param2,
             T3 param3,
             T4 param4)
         {
-            TResult func()
+            void wrapper()
             {
                 action(param1, param2, param3, param4);
-                return default;
             }
-            return func;
+            return wrapper;
         }
 
         internal static Func<TResult> ToNormalFunc<T1, T2, T3, T4, TResult>(
@@ -119,7 +109,7 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<TResult> ToNormalFunc<T1, T2, T3, T4, T5, TResult>(
+        internal static Action ToNormalAction<T1, T2, T3, T4, T5>(
             Action<T1, T2, T3, T4, T5> action,
             T1 param1,
             T2 param2,
@@ -127,12 +117,11 @@ namespace PowerThreadPool.Helpers
             T4 param4,
             T5 param5)
         {
-            TResult func()
+            void wrapper()
             {
                 action(param1, param2, param3, param4, param5);
-                return default;
             }
-            return func;
+            return wrapper;
         }
 
         internal static Func<TResult> ToNormalFunc<T1, T2, T3, T4, T5, TResult>(
