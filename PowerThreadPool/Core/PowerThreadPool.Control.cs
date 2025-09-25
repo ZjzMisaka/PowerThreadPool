@@ -59,16 +59,15 @@ namespace PowerThreadPool
         public void StopIfRequested(Func<bool> beforeStop = null)
         {
             WorkBase work = null;
-            Worker currentThreadWorker = null;
 
-            if (!CheckIfRequestedStopAndGetWork(ref work, ref currentThreadWorker))
+            if (!CheckIfRequestedStopAndGetWork(ref work))
             {
                 return;
             }
 
             if (work == null)
             {
-                StopAllIfRequested(currentThreadWorker, beforeStop);
+                StopAllIfRequested(beforeStop);
             }
             else
             {
@@ -76,11 +75,11 @@ namespace PowerThreadPool
             }
         }
 
-        private void StopAllIfRequested(Worker currentThreadWorker, Func<bool> beforeStop = null)
+        private void StopAllIfRequested(Func<bool> beforeStop = null)
         {
-            if (currentThreadWorker != null)
+            if (GetCurrentThreadWorker(out Worker worker))
             {
-                currentThreadWorker.Work.AllowEventsAndCallback = true;
+                worker.Work.AllowEventsAndCallback = true;
             }
             if (beforeStop != null && !beforeStop())
             {
@@ -163,28 +162,27 @@ namespace PowerThreadPool
         /// Call this function inside the work logic where you want to check if requested stop (if user call Stop(...))
         /// </summary>
         /// <param name="work">The work executing now in current thread</param>
-        /// <param name="currentThreadWorker">current thread worker</param>
         /// <returns>
         /// Return true if stop.
         /// If work is null, it means stop all, otherwise it means stopping based on work id.
         /// </returns>
-        private bool CheckIfRequestedStopAndGetWork(ref WorkBase work, ref Worker currentThreadWorker)
+        private bool CheckIfRequestedStopAndGetWork(ref WorkBase work)
         {
             if (_cancellationTokenSource.Token.IsCancellationRequested)
             {
                 return true;
             }
 
-            if (GetCurrentThreadWorker(out currentThreadWorker) && currentThreadWorker.WorkerState == WorkerStates.Running)
+            if (GetCurrentThreadWorker(out Worker worker) && worker.WorkerState == WorkerStates.Running)
             {
-                if (currentThreadWorker.IsCancellationRequested())
+                if (worker.IsCancellationRequested())
                 {
-                    work = currentThreadWorker.Work;
+                    work = worker.Work;
                     return true;
                 }
-                else if (currentThreadWorker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(currentThreadWorker.Work.BaseAsyncWorkID, out WorkBase baseAsyncWork) && baseAsyncWork.ShouldStop)
+                else if (worker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase baseAsyncWork) && baseAsyncWork.ShouldStop)
                 {
-                    work = currentThreadWorker.Work;
+                    work = worker.Work;
                     return true;
                 }
             }
