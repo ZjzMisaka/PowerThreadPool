@@ -53,6 +53,11 @@ namespace PowerThreadPool.Works
             return FromGuid(value);
         }
 
+        public static implicit operator WorkID(string value)
+        {
+            return FromString(value);
+        }
+
         public static explicit operator long(WorkID id)
         {
             if (id == null) throw new InvalidCastException("WorkID is null.");
@@ -67,6 +72,14 @@ namespace PowerThreadPool.Works
             if (id.Kind != WorkIdKind.Guid)
                 throw new InvalidCastException("WorkID is not of type Guid.");
             return id.Guid;
+        }
+
+        public static explicit operator string(WorkID id)
+        {
+            if (id == null) throw new InvalidCastException("WorkID is null.");
+            if (id.Kind != WorkIdKind.String)
+                throw new InvalidCastException("WorkID is not of type string.");
+            return id.String;
         }
 
         public bool TryGetLong(out long value)
