@@ -4,11 +4,6 @@ namespace PowerThreadPool.Helpers
 {
     internal static class DelegateHelper
     {
-        internal static Action ToNormalAction(Action action)
-        {
-            return action;
-        }
-
         internal static Action ToNormalAction(Action<object[]> action, object[] param)
         {
             void wrapper()

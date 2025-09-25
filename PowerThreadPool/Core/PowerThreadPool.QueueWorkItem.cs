@@ -201,7 +201,7 @@ namespace PowerThreadPool
         /// <param name="option"></param>
         /// <returns>work id</returns>
         public WorkID QueueWorkItem(Action<object[]> action, object[] param, WorkOption option)
-            => QueueWorkItem(DelegateHelper.ToNormalAction<object[]>(action, param), option);
+            => QueueWorkItem(DelegateHelper.ToNormalAction(action, param), option);
 
         /// <summary>
         /// Queues a work for execution. 
