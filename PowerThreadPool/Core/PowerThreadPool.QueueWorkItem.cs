@@ -6,7 +6,6 @@ using PowerThreadPool.Helpers;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;
-using static System.Collections.Specialized.BitVector32;
 
 namespace PowerThreadPool
 {
