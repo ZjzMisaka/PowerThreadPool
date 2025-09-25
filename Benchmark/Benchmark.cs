@@ -88,7 +88,6 @@ namespace Benchmark
                             _signal.Set();
                         }
                         DoWork();
-                        return true;
                     });
                 }
                 _signal.WaitOne();
@@ -120,7 +119,6 @@ namespace Benchmark
                     {
                         Interlocked.Increment(ref powerThreadPoolRunCount);
                         DoWork();
-                        return true;
                     });
                 }
                 _powerPool.EnablePoolIdleCheck = true;
