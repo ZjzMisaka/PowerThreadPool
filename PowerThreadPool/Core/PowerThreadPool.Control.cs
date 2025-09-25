@@ -59,52 +59,63 @@ namespace PowerThreadPool
         public void StopIfRequested(Func<bool> beforeStop = null)
         {
             WorkBase work = null;
+            Worker currentThreadWorker = null;
 
-            if (!CheckIfRequestedStopAndGetWork(ref work))
+            if (!CheckIfRequestedStopAndGetWork(ref work, ref currentThreadWorker))
             {
                 return;
             }
 
             if (work == null)
             {
-                if (GetCurrentThreadWorker(out Worker worker))
-                {
-                    worker.Work.AllowEventsAndCallback = true;
-                }
-                if (beforeStop != null && !beforeStop())
-                {
-                    return;
-                }
-                _workGroupDic.Clear();
-                _asyncWorkIDDict.Clear();
-                _asyncWorkCount = 0;
-                throw new WorkStopException();
+                StopAllIfRequested(currentThreadWorker, beforeStop);
             }
             else
             {
-                if (beforeStop != null && !beforeStop())
-                {
-                    return;
-                }
-                // If the result needs to be stored, there is a possibility of fetching the result through Group.
-                // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-                if (work.Group == null || !work.ShouldStoreResult)
-                {
-                    if (work.BaseAsyncWorkID == null)
-                    {
-                        _aliveWorkDic.TryRemove(work.ID, out _);
-                        work.Dispose();
-                    }
-                }
-                if (work.Group != null && !work.ShouldStoreResult)
-                {
-                    if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<WorkID> idSet))
-                    {
-                        idSet.Remove(work.ID);
-                    }
-                }
-                throw new WorkStopException();
+                StopByIDIfRequested(work, beforeStop);
             }
+        }
+
+        private void StopAllIfRequested(Worker currentThreadWorker, Func<bool> beforeStop = null)
+        {
+            if (currentThreadWorker != null)
+            {
+                currentThreadWorker.Work.AllowEventsAndCallback = true;
+            }
+            if (beforeStop != null && !beforeStop())
+            {
+                return;
+            }
+            _workGroupDic.Clear();
+            _asyncWorkIDDict.Clear();
+            _asyncWorkCount = 0;
+            throw new WorkStopException();
+        }
+
+        private void StopByIDIfRequested(WorkBase work, Func<bool> beforeStop = null)
+        {
+            if (beforeStop != null && !beforeStop())
+            {
+                return;
+            }
+            // If the result needs to be stored, there is a possibility of fetching the result through Group.
+            // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
+            if (work.Group == null || !work.ShouldStoreResult)
+            {
+                if (work.BaseAsyncWorkID == null)
+                {
+                    _aliveWorkDic.TryRemove(work.ID, out _);
+                    work.Dispose();
+                }
+            }
+            if (work.Group != null && !work.ShouldStoreResult)
+            {
+                if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<WorkID> idSet))
+                {
+                    idSet.Remove(work.ID);
+                }
+            }
+            throw new WorkStopException();
         }
 
         /// <summary>
@@ -152,27 +163,28 @@ namespace PowerThreadPool
         /// Call this function inside the work logic where you want to check if requested stop (if user call Stop(...))
         /// </summary>
         /// <param name="work">The work executing now in current thread</param>
+        /// <param name="currentThreadWorker">current thread worker</param>
         /// <returns>
         /// Return true if stop.
         /// If work is null, it means stop all, otherwise it means stopping based on work id.
         /// </returns>
-        private bool CheckIfRequestedStopAndGetWork(ref WorkBase work)
+        private bool CheckIfRequestedStopAndGetWork(ref WorkBase work, ref Worker currentThreadWorker)
         {
             if (_cancellationTokenSource.Token.IsCancellationRequested)
             {
                 return true;
             }
 
-            if (GetCurrentThreadWorker(out Worker worker) && worker.WorkerState == WorkerStates.Running)
+            if (GetCurrentThreadWorker(out currentThreadWorker) && currentThreadWorker.WorkerState == WorkerStates.Running)
             {
-                if (worker.IsCancellationRequested())
+                if (currentThreadWorker.IsCancellationRequested())
                 {
-                    work = worker.Work;
+                    work = currentThreadWorker.Work;
                     return true;
                 }
-                else if (worker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase baseAsyncWork) && baseAsyncWork.ShouldStop)
+                else if (currentThreadWorker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(currentThreadWorker.Work.BaseAsyncWorkID, out WorkBase baseAsyncWork) && baseAsyncWork.ShouldStop)
                 {
-                    work = worker.Work;
+                    work = currentThreadWorker.Work;
                     return true;
                 }
             }

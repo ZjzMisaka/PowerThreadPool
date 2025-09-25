@@ -412,83 +412,95 @@ namespace PowerThreadPool
 
                 if (rejected)
                 {
-                    RejectType rejectType = PowerPoolOption.RejectOption.RejectType;
-
-                    WorkID rejectID = work.RealWorkID;
-
-                    if (WorkRejected != null)
+                    if (OnRejected(work, out worker))
                     {
-                        WorkRejectedEventArgs workRejectedEventArgs = new WorkRejectedEventArgs(rejectType)
-                        {
-                            ID = rejectID,
-                        };
-                        SafeInvoke(WorkRejected, workRejectedEventArgs, ErrorFrom.WorkRejected, null);
-                    }
-
-                    if (rejectType == RejectType.AbortPolicy)
-                    {
-                        WorkRejectedException workRejectedException = new WorkRejectedException
-                        {
-                            ID = rejectID,
-                        };
-                        Interlocked.Decrement(ref _waitingWorkCount);
-                        throw workRejectedException;
-                    }
-                    else if (rejectType == RejectType.CallerRunsPolicy)
-                    {
-                        Interlocked.Increment(ref _runningWorkerCount);
-                        InvokeRunningWorkerCountChangedEvent(true);
-                        Worker newWorker = null;
-                        if (!_helperWorkerQueue.TryDequeue(out newWorker))
-                        {
-                            newWorker = new Worker();
-                        }
-                        newWorker.RunHelp(this, work);
-                        _helperWorkerQueue.Enqueue(newWorker);
-                        Interlocked.Decrement(ref _runningWorkerCount);
-                        InvokeRunningWorkerCountChangedEvent(false);
-
-                        CheckPoolIdle();
-
                         return;
                     }
-                    else if (rejectType == RejectType.DiscardPolicy)
+
+                    if (worker != null)
                     {
-                        Interlocked.Decrement(ref _waitingWorkCount);
-                        OnWorkDiscarded(work, rejectType);
-
-                        CheckPoolIdle();
-
-                        return;
-                    }
-                    else if (rejectType == RejectType.DiscardOldestPolicy)
-                    {
-                        foreach (Worker workerDiscard in _aliveWorkerList)
-                        {
-                            // When ThreadQueueLimit is 0 and the work rejection policy is set to "DiscardOldestPolicy",
-                            // since there are no works in the queue, the oldest work cannot be discarded.
-                            // This may cause excessive spinning with no progress.
-                            // However, this is due to an unreasonable user configuration, so no handling is implemented;
-                            // a warning is provided in the documentation instead.
-                            if (workerDiscard.DiscardOneWork(out WorkBase discardWork))
-                            {
-                                OnWorkDiscarded(discardWork, rejectType);
-                                Interlocked.Decrement(ref _waitingWorkCount);
-                                worker = workerDiscard;
-                                break;
-                            }
-                        }
-
-                        if (worker != null)
-                        {
-                            break;
-                        }
+                        break;
                     }
                 }
             }
 
             work.QueueDateTime = DateTime.UtcNow;
             worker.SetWork(work, false);
+        }
+
+        private bool OnRejected(WorkBase work, out Worker worker)
+        {
+            worker = null;
+
+            RejectType rejectType = PowerPoolOption.RejectOption.RejectType;
+
+            WorkID rejectID = work.RealWorkID;
+
+            if (WorkRejected != null)
+            {
+                WorkRejectedEventArgs workRejectedEventArgs = new WorkRejectedEventArgs(rejectType)
+                {
+                    ID = rejectID,
+                };
+                SafeInvoke(WorkRejected, workRejectedEventArgs, ErrorFrom.WorkRejected, null);
+            }
+
+            if (rejectType == RejectType.AbortPolicy)
+            {
+                WorkRejectedException workRejectedException = new WorkRejectedException
+                {
+                    ID = rejectID,
+                };
+                Interlocked.Decrement(ref _waitingWorkCount);
+                throw workRejectedException;
+            }
+            else if (rejectType == RejectType.CallerRunsPolicy)
+            {
+                Interlocked.Increment(ref _runningWorkerCount);
+                InvokeRunningWorkerCountChangedEvent(true);
+                Worker newWorker = null;
+                if (!_helperWorkerQueue.TryDequeue(out newWorker))
+                {
+                    newWorker = new Worker();
+                }
+                newWorker.RunHelp(this, work);
+                _helperWorkerQueue.Enqueue(newWorker);
+                Interlocked.Decrement(ref _runningWorkerCount);
+                InvokeRunningWorkerCountChangedEvent(false);
+
+                CheckPoolIdle();
+
+                return true;
+            }
+            else if (rejectType == RejectType.DiscardPolicy)
+            {
+                Interlocked.Decrement(ref _waitingWorkCount);
+                OnWorkDiscarded(work, rejectType);
+
+                CheckPoolIdle();
+
+                return true;
+            }
+            else if (rejectType == RejectType.DiscardOldestPolicy)
+            {
+                foreach (Worker workerDiscard in _aliveWorkerList)
+                {
+                    // When ThreadQueueLimit is 0 and the work rejection policy is set to "DiscardOldestPolicy",
+                    // since there are no works in the queue, the oldest work cannot be discarded.
+                    // This may cause excessive spinning with no progress.
+                    // However, this is due to an unreasonable user configuration, so no handling is implemented;
+                    // a warning is provided in the documentation instead.
+                    if (workerDiscard.DiscardOneWork(out WorkBase discardWork))
+                    {
+                        OnWorkDiscarded(discardWork, rejectType);
+                        Interlocked.Decrement(ref _waitingWorkCount);
+                        worker = workerDiscard;
+                        break;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private void OnWorkDiscarded(WorkBase work, RejectType rejectType)
