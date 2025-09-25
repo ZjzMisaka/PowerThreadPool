@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
-#if NET5_0_OR_GREATER
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
 using System.Runtime.CompilerServices;
 #endif
 using System.Threading;
@@ -19,7 +19,13 @@ namespace PowerThreadPool.Helpers.LockFree
 
         public T InterlockedValue
         {
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
             get => Get();
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
             set => Set(value);
         }
 
@@ -34,17 +40,26 @@ namespace PowerThreadPool.Helpers.LockFree
             Set(initialValue);
         }
 
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
 #if NET5_0_OR_GREATER
         private void Set(T value)
             => Interlocked.Exchange(ref _innerValue, Unsafe.As<T, int>(ref value));
 #else
         private void Set(T value)
             => Interlocked.Exchange(ref _innerValue, (int)(object)value);
-# endif
+#endif
 
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public T Get()
             => InnerValueToT(_innerValue);
 
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         public bool TrySet(T value, T comparand)
             => TrySet(value, comparand, out _);
 
