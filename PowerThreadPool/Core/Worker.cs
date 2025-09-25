@@ -394,11 +394,15 @@ namespace PowerThreadPool
         private ExecuteResultBase ExecuteMain()
         {
             ExecuteResultBase executeResult = null;
-            DateTime runDateTime = DateTime.UtcNow;
+            DateTime runDateTime = default;
             try
             {
-                Interlocked.Increment(ref _powerPool._startCount);
-                Interlocked.Add(ref _powerPool._queueTime, (long)(runDateTime - Work.QueueDateTime).TotalMilliseconds);
+                if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+                {
+                    runDateTime = DateTime.UtcNow;
+                    Interlocked.Increment(ref _powerPool._startCount);
+                    Interlocked.Add(ref _powerPool._queueTime, (long)(runDateTime - Work.QueueDateTime).TotalMilliseconds);
+                }
                 object result = Work.Execute();
                 if (Work.AllowEventsAndCallback)
                 {

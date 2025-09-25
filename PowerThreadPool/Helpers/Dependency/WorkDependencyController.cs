@@ -53,7 +53,10 @@ namespace PowerThreadPool.Helpers.Dependency
                         work._dependencyStatus.InterlockedValue = DependencyStatus.Failed;
                         _workDict.TryRemove(work.ID, out _);
 
-                        work.QueueDateTime = DateTime.UtcNow;
+                        if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+                        {
+                            work.QueueDateTime = DateTime.UtcNow;
+                        }
 
                         InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{dependedId}' did not complete successfully.");
                         ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
@@ -224,7 +227,7 @@ namespace PowerThreadPool.Helpers.Dependency
 
                 foreach (WorkBase work in newlyFailed)
                 {
-                    if (work.QueueDateTime == default)
+                    if (_powerPool.PowerPoolOption.EnableStatisticsCollection && work.QueueDateTime == default)
                     {
                         work.QueueDateTime = DateTime.UtcNow;
                     }

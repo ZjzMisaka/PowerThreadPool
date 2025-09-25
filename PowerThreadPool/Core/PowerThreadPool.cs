@@ -256,10 +256,15 @@ namespace PowerThreadPool
             });
             _runningTimer = new DeferredActionTimer(() =>
             {
+                DateTime dateTime = default;
+                if (PowerPoolOption.EnableStatisticsCollection)
+                {
+                    dateTime = DateTime.UtcNow;
+                }
                 RunningTimerElapsedEventArgs runningTimerElapsedEventArgs = new RunningTimerElapsedEventArgs
                 {
                     RuntimeDuration = RuntimeDuration,
-                    SignalTime = DateTime.UtcNow,
+                    SignalTime = dateTime,
                 };
                 PowerPoolOption.RunningTimerOption.Elapsed(runningTimerElapsedEventArgs);
             }, true);
@@ -424,7 +429,10 @@ namespace PowerThreadPool
                 }
             }
 
-            work.QueueDateTime = DateTime.UtcNow;
+            if (PowerPoolOption.EnableStatisticsCollection)
+            {
+                work.QueueDateTime = DateTime.UtcNow;
+            }
             worker.SetWork(work, false);
         }
 
@@ -716,12 +724,15 @@ namespace PowerThreadPool
                     SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted, null);
                 }
 
-                _startCount = 0;
-                _endCount = 0;
-                _queueTime = 0;
-                _executeTime = 0;
+                if (PowerPoolOption.EnableStatisticsCollection)
+                {
+                    _startCount = 0;
+                    _endCount = 0;
+                    _queueTime = 0;
+                    _executeTime = 0;
 
-                _startDateTime = DateTime.UtcNow;
+                    _startDateTime = DateTime.UtcNow;
+                }
 
                 if (PowerPoolOption.ClearResultStorageWhenPoolStart)
                 {
@@ -772,7 +783,10 @@ namespace PowerThreadPool
                 _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
                 )
             {
-                _endDateTime = DateTime.UtcNow;
+                if (PowerPoolOption.EnableStatisticsCollection)
+                {
+                    _endDateTime = DateTime.UtcNow;
+                }
                 if (PoolIdled != null)
                 {
                     PoolIdledEventArgs poolIdledEventArgs = new PoolIdledEventArgs

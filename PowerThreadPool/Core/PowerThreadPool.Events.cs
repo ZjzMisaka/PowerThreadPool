@@ -31,9 +31,12 @@ namespace PowerThreadPool
         /// <param name="executeResult"></param>
         internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult)
         {
-            executeResult.EndDateTime = DateTime.UtcNow;
-            Interlocked.Increment(ref _endCount);
-            Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
+            if (PowerPoolOption.EnableStatisticsCollection)
+            {
+                executeResult.EndDateTime = DateTime.UtcNow;
+                Interlocked.Increment(ref _endCount);
+                Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
+            }
             if (WorkEnded != null)
             {
                 WorkEndedEventArgs e = new WorkEndedEventArgs()
@@ -63,9 +66,12 @@ namespace PowerThreadPool
         /// <param name="executeResult"></param>
         internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult)
         {
-            executeResult.EndDateTime = DateTime.UtcNow;
-            Interlocked.Increment(ref _endCount);
-            Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
+            if (PowerPoolOption.EnableStatisticsCollection)
+            {
+                executeResult.EndDateTime = DateTime.UtcNow;
+                Interlocked.Increment(ref _endCount);
+                Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
+            }
             if (WorkStopped != null)
             {
                 WorkStoppedEventArgs e = new WorkStoppedEventArgs()
@@ -113,9 +119,12 @@ namespace PowerThreadPool
         /// <param name="executeResult"></param>
         internal void InvokeWorkCanceledEvent(ExecuteResultBase executeResult)
         {
-            executeResult.EndDateTime = DateTime.UtcNow;
-            Interlocked.Increment(ref _endCount);
-            Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
+            if (PowerPoolOption.EnableStatisticsCollection)
+            {
+                executeResult.EndDateTime = DateTime.UtcNow;
+                Interlocked.Increment(ref _endCount);
+                Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
+            }
             if (WorkCanceled != null)
             {
                 WorkCanceledEventArgs e = new WorkCanceledEventArgs()

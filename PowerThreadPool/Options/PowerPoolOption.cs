@@ -130,6 +130,12 @@ namespace PowerThreadPool.Options
         /// </summary>
         public bool StealOneWorkOnly { get; set; } = false;
 
+        /// <summary>
+        /// Indicates whether collection of usage metrics is enabled,
+        /// including counts and durations.
+        /// </summary>
+        public bool EnableStatisticsCollection { get; set; } = false;
+
         internal void OnThreadCountSettingChanged()
         {
             foreach (PowerPool powerPool in PowerPoolList)
