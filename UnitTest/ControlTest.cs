@@ -1363,7 +1363,11 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption()
+            {
+                MaxThreads = 2,
+                EnableStatisticsCollection = true,
+            });
             List<long> logList = new List<long>();
             WorkID cid = default;
             WorkID eid = default;
@@ -1456,7 +1460,11 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 2 });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption()
+            {
+                MaxThreads = 2,
+                EnableStatisticsCollection = true,
+            });
             List<long> logList = new List<long>();
             WorkID cid = default;
             WorkID eid = default;

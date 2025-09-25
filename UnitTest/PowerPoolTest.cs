@@ -3430,7 +3430,12 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true, MaxThreads = 2 });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption()
+            {
+                StartSuspended = true,
+                MaxThreads = 2,
+                EnableStatisticsCollection = true,
+            });
 
             powerPool.QueueWorkItem(() =>
             {
