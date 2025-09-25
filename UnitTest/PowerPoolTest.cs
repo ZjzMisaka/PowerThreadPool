@@ -6124,6 +6124,18 @@ namespace UnitTest
         }
 
         [Fact]
+        public async Task TestRunWorkGuardTests5Times()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            for (int i = 0; i < 5; ++i)
+            {
+                await TestWorkGuardFreezeLoopAsync();
+                TestWorkGuardFreezeNotLoop();
+            }
+        }
+
+        [Fact]
         public async Task TestWorkGuardFreezeLoopAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
