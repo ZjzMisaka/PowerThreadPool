@@ -1426,6 +1426,284 @@ namespace UnitTest
             await Assert.ThrowsAsync<AggregateException>(async () => { await task; });
         }
 
+        [Fact]
+        public void TestImmediateRetry()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+                Assert.Equal(5, e.RetryInfo.MaxRetryCount);
+                Assert.Equal(RetryPolicy.Limited, e.RetryInfo.RetryPolicy);
+            };
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(1);
+                await Task.Delay(1);
+                throw new Exception();
+            }, new WorkOption<object>()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(6, runCount);
+        }
+
+        [Fact]
+        public void TestImmediateRetryUnlimited()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            int retryCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                retryCount = e.RetryInfo.CurrentRetryCount;
+                if (e.RetryInfo.CurrentRetryCount == 100)
+                {
+                    e.RetryInfo.StopRetry = true;
+                }
+            };
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(1);
+                await Task.Delay(1);
+                throw new Exception();
+            }, new WorkOption<object>()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, RetryPolicy = RetryPolicy.Unlimited }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(100, retryCount);
+        }
+
+        [Fact]
+        public void TestImmediateRetryStopRetryByCallback()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+            };
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(1);
+                await Task.Delay(1);
+                throw new Exception();
+            }, new WorkOption<object>()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
+                Callback = (res) =>
+                {
+                    if (res.Status == Status.Failed)
+                    {
+                        if (res.RetryInfo.CurrentRetryCount == 2)
+                        {
+                            res.RetryInfo.StopRetry = true;
+                        }
+                    }
+                }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, runCount);
+        }
+
+        [Fact]
+        public void TestImmediateRetryStopRetryByEvent()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+                if (!e.Succeed)
+                {
+                    if (e.RetryInfo.CurrentRetryCount == 2)
+                    {
+                        e.RetryInfo.StopRetry = true;
+                    }
+                }
+            };
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(1);
+                await Task.Delay(1);
+                throw new Exception();
+            }, new WorkOption<object>()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, runCount);
+        }
+
+        [Fact]
+        public void TestRequeue()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+                Assert.Equal(5, e.RetryInfo.MaxRetryCount);
+                Assert.Equal(RetryPolicy.Limited, e.RetryInfo.RetryPolicy);
+            };
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(1);
+                await Task.Delay(1);
+                throw new Exception();
+            }, new WorkOption<object>()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
+                Callback = (res) =>
+                {
+                    if (res.Status == Status.Failed)
+                    {
+                        if (res.RetryInfo.CurrentRetryCount == 2)
+                        {
+                            res.RetryInfo.StopRetry = true;
+                        }
+                    }
+                }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, runCount);
+        }
+
+        [Fact]
+        public void TestRequeueStopRetryByCallback()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+            };
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(1);
+                await Task.Delay(1);
+                throw new Exception();
+            }, new WorkOption<object>()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(6, runCount);
+        }
+
+        [Fact]
+        public void TestRequeueStopRetryByEvent()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+                if (!e.Succeed)
+                {
+                    if (e.RetryInfo.CurrentRetryCount == 2)
+                    {
+                        e.RetryInfo.StopRetry = true;
+                    }
+                }
+            };
+
+            powerPool.QueueWorkItemAsync(async() =>
+            {
+                await Task.Delay(1);
+                await Task.Delay(1);
+                throw new Exception();
+            }, new WorkOption<object>()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, runCount);
+        }
+
+        [Fact]
+        public void TestRequeueUnlimited()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            int retryCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                retryCount = e.RetryInfo.CurrentRetryCount;
+                if (e.RetryInfo.CurrentRetryCount == 100)
+                {
+                    e.RetryInfo.StopRetry = true;
+                }
+            };
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(1);
+                await Task.Delay(1);
+                throw new Exception();
+            }, new WorkOption<object>()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, RetryPolicy = RetryPolicy.Unlimited }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(100, retryCount);
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();
