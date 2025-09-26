@@ -174,17 +174,30 @@ namespace PowerThreadPool
             _powerPool.OnWorkStarted(Work.ID);
 
             ExecuteResultBase executeResult;
+            bool isRetry = false;
             do
             {
+                if (isRetry && Work.BaseAsyncWorkID != null && _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork))
+                {
+                    Work = asyncBaseWork;
+                    Work.AllowEventsAndCallback = false;
+                }
                 executeResult = ExecuteMain();
                 InvokeEventsAndCallback(executeResult);
+                isRetry = true;
             } while (Work.ShouldImmediateRetry(executeResult));
 
             if (Work.ShouldRequeue(executeResult))
             {
-                Work._canCancel.InterlockedValue = CanCancel.Allowed;
+                WorkBase requeueWork = Work;
+                if (Work.BaseAsyncWorkID != null && _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork))
+                {
+                    requeueWork = asyncBaseWork;
+                    requeueWork.AllowEventsAndCallback = false;
+                }
+                requeueWork._canCancel.InterlockedValue = CanCancel.Allowed;
                 Interlocked.Increment(ref _powerPool._waitingWorkCount);
-                _powerPool.SetWork(Work);
+                _powerPool.SetWork(requeueWork);
             }
             else
             {
