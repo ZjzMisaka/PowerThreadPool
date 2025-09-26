@@ -1656,7 +1656,7 @@ namespace UnitTest
                 }
             };
 
-            powerPool.QueueWorkItemAsync(async() =>
+            powerPool.QueueWorkItemAsync(async () =>
             {
                 await Task.Delay(1);
                 await Task.Delay(1);
