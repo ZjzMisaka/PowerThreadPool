@@ -15,7 +15,15 @@ namespace PowerThreadPool.Works
         internal volatile int _executeCount;
         internal int ExecuteCount
         {
-            get => _executeCount;
+            get
+            {
+                int count = _executeCount;
+                if (BaseAsyncWorkID != null && BaseAsyncWorkID != AsyncWorkID && PowerPool._aliveWorkDic.TryGetValue(BaseAsyncWorkID, out WorkBase asyncBaseWork))
+                {
+                    count = asyncBaseWork._executeCount;
+                }
+                return count;
+            }
             set => _executeCount = value;
         }
         internal volatile bool _isDone;

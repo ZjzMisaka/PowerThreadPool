@@ -70,11 +70,6 @@ namespace PowerThreadPool
                     {
                         work.WaitSignal.Set();
                     }
-
-                    if (!work.ShouldStoreResult)
-                    {
-                        TryRemoveAsyncWork(baseAsyncWorkId, true);
-                    }
                 }
 
                 CheckPoolIdle();
