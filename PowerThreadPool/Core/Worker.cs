@@ -915,7 +915,7 @@ namespace PowerThreadPool
             WorkBase waitingWork;
             do
             {
-                waitingWork = _waitingWorkPriorityCollection.Steal() as WorkBase;
+                waitingWork = _waitingWorkPriorityCollection.Discard() as WorkBase;
             }
             while (WorkCancelNotAllowed(waitingWork));
             return waitingWork;
