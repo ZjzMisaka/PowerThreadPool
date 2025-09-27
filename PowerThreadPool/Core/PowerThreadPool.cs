@@ -808,8 +808,9 @@ namespace PowerThreadPool
             _runningTimer.Cancel();
             _timeoutTimer.Cancel();
 
-            _cancellationTokenSource.Dispose();
+            CancellationTokenSource cancellationTokenSource = _cancellationTokenSource;
             _cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Dispose();
 
             _poolState.InterlockedValue = PoolStates.NotRunning;
             if (_poolStopping)
