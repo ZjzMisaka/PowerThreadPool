@@ -217,7 +217,9 @@ namespace PowerThreadPool
 
             void TryAddBack(WorkID id)
             {
-                TryAddBackCore(source, idDict, id);
+                Spinner.Start(() =>
+                    TryAddBackFromDict(source, idDict, id)
+                    || source._watchState == WatchStates.Idle);
             }
 
             if (addBackWhenWorkCanceled)
@@ -226,14 +228,12 @@ namespace PowerThreadPool
                 WorkCanceled += onCanceled;
                 source._watchCanceledHandler = onCanceled;
             }
-
             if (addBackWhenWorkStopped)
             {
                 onStopped = (_, e) => TryAddBack(e.ID);
                 WorkStopped += onStopped;
                 source._watchStoppedHandler = onStopped;
             }
-
             if (addBackWhenWorkFailed)
             {
                 onEnded = (_, e) =>
@@ -244,19 +244,6 @@ namespace PowerThreadPool
                 WorkEnded += onEnded;
                 source._watchEndedHandler = onEnded;
             }
-        }
-
-        private void TryAddBackCore<TSource>(
-            ConcurrentObservableCollection<TSource> source,
-            ConcurrentDictionary<WorkID, TSource> idDict,
-            WorkID id)
-        {
-            if (TryAddBackFromDict(source, idDict, id))
-            {
-                return;
-            }
-
-            Spinner.Start(() => TryAddBackFromDict(source, idDict, id) || source._watchState == WatchStates.Idle);
         }
 
         private bool TryAddBackFromDict<TSource>(ConcurrentObservableCollection<TSource> source, ConcurrentDictionary<WorkID, TSource> idDict, WorkID id)
