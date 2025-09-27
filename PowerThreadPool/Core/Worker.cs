@@ -321,7 +321,7 @@ namespace PowerThreadPool
             }
             Work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
 
-            _powerPool.WorkCallbackEnd(Work, Status.Failed);
+            _powerPool.WorkCallbackEnd(Work, Status.ForceStopped);
 
             bool hasWaitingWork = RequeueAllWaitingWork();
             Work.AsyncDone = true;
