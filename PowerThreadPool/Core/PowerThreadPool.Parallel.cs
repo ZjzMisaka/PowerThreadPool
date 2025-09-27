@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
 using PowerThreadPool.Groups;
