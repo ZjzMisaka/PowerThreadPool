@@ -29,13 +29,13 @@ namespace PowerThreadPool.Helpers.LockFree
         internal static void Start(Func<bool> func)
 #endif
 #else
-        internal static void Start(Func<bool> func)
+        internal static void Start(Func<bool> func, bool doPrecheck = false)
 #endif
         {
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
 #endif
-            if (func())
+            if (doPrecheck && func())
             {
                 return;
             }

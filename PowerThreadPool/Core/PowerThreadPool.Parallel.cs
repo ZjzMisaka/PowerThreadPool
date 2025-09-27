@@ -219,7 +219,7 @@ namespace PowerThreadPool
             {
                 Spinner.Start(() =>
                     TryAddBackFromDict(source, idDict, id)
-                    || source._watchState == WatchStates.Idle);
+                    || source._watchState == WatchStates.Idle, true);
             }
 
             if (addBackWhenWorkCanceled)
