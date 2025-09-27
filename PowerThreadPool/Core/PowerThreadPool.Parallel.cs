@@ -259,9 +259,7 @@ namespace PowerThreadPool
                 return;
             }
 
-            Spinner.Start(() =>
-                (idDict.TryRemove(id, out item) && source.TryAdd(item)) ||
-                source._watchState == WatchStates.Idle);
+            Spinner.Start(() => (idDict.TryRemove(id, out item) && source.TryAdd(item)) || source._watchState == WatchStates.Idle);
         }
 
         private void OnCollectionChangedHandler<TSource>(
@@ -275,8 +273,7 @@ namespace PowerThreadPool
 
             if (source._canWatch.TrySet(CanWatch.NotAllowed, CanWatch.Allowed))
             {
-                while (source._watchState.InterlockedValue == WatchStates.Watching
-                           && source.TryTake(out TSource item))
+                while (source._watchState.InterlockedValue == WatchStates.Watching && source.TryTake(out TSource item))
                 {
                     WorkID id = QueueWorkItem(() => body(item), workOption);
                     idDict[id] = item;
