@@ -20,15 +20,20 @@ namespace PowerThreadPool.Helpers.LockFree
 #if DEBUG
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         internal static bool s_enableTimeoutLog = true;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void Start(
-        Func<bool> func,
-        [CallerMemberName] string callerName = null,
-        [CallerFilePath] string callerFilePath = null,
-        [CallerLineNumber] int callerLineNumber = 0)
+            Func<bool> func,
+            bool doPrecheck = false,
+            [CallerMemberName] string callerName = null,
+            [CallerFilePath] string callerFilePath = null,
+            [CallerLineNumber] int callerLineNumber = 0)
 #else
-        internal static void Start(Func<bool> func)
+        internal static void Start(Func<bool> func, bool doPrecheck = false)
 #endif
 #else
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#endif
         internal static void Start(Func<bool> func, bool doPrecheck = false)
 #endif
         {
@@ -39,7 +44,11 @@ namespace PowerThreadPool.Helpers.LockFree
             {
                 return;
             }
-            SpinWait.SpinUntil(func);
+            SpinWait sw = new SpinWait();
+            while (!func())
+            {
+                sw.SpinOnce();
+            }
 #if DEBUG
             stopwatch.Stop();
             if (stopwatch.Elapsed.Ticks >= 5000)
