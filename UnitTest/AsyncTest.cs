@@ -133,7 +133,9 @@ namespace UnitTest
             powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 throw new Exception("1");
+#pragma warning disable CS0162
                 return await OuterAsyncE();
+#pragma warning restore CS0162
             }, (res) =>
             {
                 e = res.Exception;
@@ -160,6 +162,7 @@ namespace UnitTest
             {
                 eventObj = e.ID;
             };
+#pragma warning disable CS1998
             WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
@@ -174,6 +177,7 @@ namespace UnitTest
                 Assert.Equal("2", l);
                 r = res.Result;
             });
+#pragma warning restore CS1998
             powerPool.Stop();
             powerPool.Wait();
             Assert.Equal("1", p);
@@ -198,6 +202,7 @@ namespace UnitTest
             {
                 eventObj = e.ID;
             };
+#pragma warning disable CS1998
             WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
@@ -212,6 +217,7 @@ namespace UnitTest
                 Assert.Equal("2", l);
                 r = res.Result;
             });
+#pragma warning restore CS1998
             powerPool.Stop(id);
             powerPool.Wait();
             Assert.Equal("1", p);
@@ -238,6 +244,7 @@ namespace UnitTest
                 eventObj = e.ID;
                 eventObj1 = e.ForceStop;
             };
+#pragma warning disable CS1998
             WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
@@ -254,6 +261,7 @@ namespace UnitTest
                 Assert.Equal("2", l);
                 r = res.Result;
             });
+#pragma warning restore CS1998
             bool res = powerPool.ForceStop();
             powerPool.Wait();
             if (res)
@@ -284,6 +292,7 @@ namespace UnitTest
                 eventObj = e.ID;
                 eventObj1 = e.ForceStop;
             };
+#pragma warning disable CS1998
             WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
             {
                 p = "1";
@@ -300,6 +309,7 @@ namespace UnitTest
                 Assert.Equal("2", l);
                 r = res.Result;
             });
+#pragma warning restore CS1998
             bool res = powerPool.ForceStop(id);
             powerPool.Wait();
             if (res)
