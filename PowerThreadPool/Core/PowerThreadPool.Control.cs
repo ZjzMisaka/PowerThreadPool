@@ -913,6 +913,7 @@ namespace PowerThreadPool
             }
             else if (_suspendedWork.TryRemove(id, out _))
             {
+                Interlocked.Decrement(ref _waitingWorkCount);
                 res = true;
             }
             else if (_stopSuspendedWork.TryRemove(id, out _))
