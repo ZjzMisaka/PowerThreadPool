@@ -156,44 +156,77 @@ namespace PowerThreadPool
             bool addBackWhenWorkFailed = true,
             string groupName = null)
         {
-            string groupID = null;
-            if (string.IsNullOrEmpty(groupName))
-            {
-                groupID = Guid.NewGuid().ToString();
-            }
-            else
-            {
-                groupID = groupName;
-            }
-            WorkOption workOption = new WorkOption()
-            {
-                Group = groupID,
-            };
-
+            string groupID = CreateGroupId(groupName);
+            WorkOption workOption = CreateWorkOption(groupID);
             ConcurrentDictionary<WorkID, TSource> idDict = new ConcurrentDictionary<WorkID, TSource>();
 
+            RegisterAddBackEvents(
+                source,
+                idDict,
+                addBackWhenWorkCanceled,
+                addBackWhenWorkStopped,
+                addBackWhenWorkFailed);
+
+            EventHandler onCollectionChanged = null;
+            onCollectionChanged = (s, e) =>
+                OnCollectionChangedHandler(source, body, workOption, idDict, onCollectionChanged);
+
+            if (!StartWatching(source, onCollectionChanged))
+            {
+                return null;
+            }
+
+            Group group = GetGroup(groupID);
+            source._group = group;
+
+            onCollectionChanged(null, null);
+
+            return group;
+        }
+
+        private string CreateGroupId(string groupName)
+        {
+            return string.IsNullOrEmpty(groupName) ? Guid.NewGuid().ToString() : groupName;
+        }
+
+        private WorkOption CreateWorkOption(string groupID)
+        {
+            return new WorkOption
+            {
+                Group = groupID
+            };
+        }
+
+        private void RegisterAddBackEvents<TSource>(
+            ConcurrentObservableCollection<TSource> source,
+            ConcurrentDictionary<WorkID, TSource> idDict,
+            bool addBackWhenWorkCanceled,
+            bool addBackWhenWorkStopped,
+            bool addBackWhenWorkFailed)
+        {
             EventHandler<WorkCanceledEventArgs> onCanceled = null;
             EventHandler<WorkStoppedEventArgs> onStopped = null;
             EventHandler<WorkEndedEventArgs> onEnded = null;
 
+            void TryAddBack(WorkID id)
+            {
+                TryAddBackCore(source, idDict, id);
+            }
+
             if (addBackWhenWorkCanceled)
             {
-                onCanceled = (s, e) =>
-                {
-                    TryAddBack(e.ID);
-                };
+                onCanceled = (s, e) => TryAddBack(e.ID);
                 WorkCanceled += onCanceled;
                 source._watchCanceledHandler = onCanceled;
             }
+
             if (addBackWhenWorkStopped)
             {
-                onStopped = (s, e) =>
-                {
-                    TryAddBack(e.ID);
-                };
+                onStopped = (s, e) => TryAddBack(e.ID);
                 WorkStopped += onStopped;
                 source._watchStoppedHandler = onStopped;
             }
+
             if (addBackWhenWorkFailed)
             {
                 onEnded = (s, e) =>
@@ -204,51 +237,58 @@ namespace PowerThreadPool
                 WorkEnded += onEnded;
                 source._watchEndedHandler = onEnded;
             }
+        }
 
-            void OnCollectionChanged(object sender, EventArgs e)
+        private void TryAddBackCore<TSource>(
+            ConcurrentObservableCollection<TSource> source,
+            ConcurrentDictionary<WorkID, TSource> idDict,
+            WorkID id)
+        {
+            TSource item = default;
+
+            if (idDict.TryRemove(id, out item))
             {
-                source.CollectionChanged -= OnCollectionChanged;
-                if (source._canWatch.TrySet(CanWatch.NotAllowed, CanWatch.Allowed))
+                source.TryAdd(item);
+                return;
+            }
+
+            Spinner.Start(() =>
+                (idDict.TryRemove(id, out item) && source.TryAdd(item)) ||
+                source._watchState == WatchStates.Idle);
+        }
+
+        private void OnCollectionChangedHandler<TSource>(
+            ConcurrentObservableCollection<TSource> source,
+            Action<TSource> body,
+            WorkOption workOption,
+            ConcurrentDictionary<WorkID, TSource> idDict,
+            EventHandler onCollectionChanged)
+        {
+            source.CollectionChanged -= onCollectionChanged;
+
+            if (source._canWatch.TrySet(CanWatch.NotAllowed, CanWatch.Allowed))
+            {
+                while (source._watchState.InterlockedValue == WatchStates.Watching
+                           && source.TryTake(out TSource item))
                 {
-                    while (source._watchState.InterlockedValue == WatchStates.Watching
-                        && source.TryTake(out TSource item))
-                    {
-                        // Because work is added to the dictionary only after being enqueued, a very short race window may occur.
-                        // Therefore, use a spinner for brief spinning in TryAddBack.
-                        WorkID id = QueueWorkItem(() => { body(item); }, workOption);
-                        idDict[id] = item;
-                    }
-                    source._canWatch.InterlockedValue = CanWatch.Allowed;
-                    if (source._watchState == WatchStates.Watching)
-                    {
-                        source.CollectionChanged += OnCollectionChanged;
-                    }
+                    WorkID id = QueueWorkItem(() => body(item), workOption);
+                    idDict[id] = item;
+                }
+
+                source._canWatch.InterlockedValue = CanWatch.Allowed;
+
+                if (source._watchState == WatchStates.Watching)
+                {
+                    source.CollectionChanged += onCollectionChanged;
                 }
             }
+        }
 
-            void TryAddBack(WorkID id)
-            {
-                TSource item = default;
-                if (idDict.TryRemove(id, out item))
-                {
-                    source.TryAdd(item);
-                    return;
-                }
-
-                Spinner.Start(() => (idDict.TryRemove(id, out item) && source.TryAdd(item)) || source._watchState == WatchStates.Idle);
-            }
-
-            if (!source.StartWatching(OnCollectionChanged))
-            {
-                return null;
-            }
-
-            Group group = GetGroup(groupID);
-            source._group = group;
-
-            OnCollectionChanged(null, null);
-
-            return group;
+        private bool StartWatching<TSource>(
+            ConcurrentObservableCollection<TSource> source,
+            EventHandler onCollectionChanged)
+        {
+            return source.StartWatching(onCollectionChanged);
         }
 
         /// <summary>
