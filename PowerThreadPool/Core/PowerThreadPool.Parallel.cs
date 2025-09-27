@@ -251,15 +251,22 @@ namespace PowerThreadPool
             ConcurrentDictionary<WorkID, TSource> idDict,
             WorkID id)
         {
-            TSource item = default;
-
-            if (idDict.TryRemove(id, out item))
+            if (TryAddBackFromDict(source, idDict, id))
             {
-                source.TryAdd(item);
                 return;
             }
 
-            Spinner.Start(() => (idDict.TryRemove(id, out item) && source.TryAdd(item)) || source._watchState == WatchStates.Idle);
+            Spinner.Start(() => TryAddBackFromDict(source, idDict, id) || source._watchState == WatchStates.Idle);
+        }
+
+        private bool TryAddBackFromDict<TSource>(ConcurrentObservableCollection<TSource> source, ConcurrentDictionary<WorkID, TSource> idDict, WorkID id)
+        {
+            if (idDict.TryRemove(id, out TSource item))
+            {
+                source.TryAdd(item);
+                return true;
+            }
+            return false;
         }
 
         private void OnCollectionChangedHandler<TSource>(
@@ -273,7 +280,7 @@ namespace PowerThreadPool
 
             if (source._canWatch.TrySet(CanWatch.NotAllowed, CanWatch.Allowed))
             {
-                while (source._watchState.InterlockedValue == WatchStates.Watching && source.TryTake(out TSource item))
+                while (source.TryTake(out TSource item))
                 {
                     WorkID id = QueueWorkItem(() => body(item), workOption);
                     idDict[id] = item;
@@ -281,7 +288,7 @@ namespace PowerThreadPool
 
                 source._canWatch.InterlockedValue = CanWatch.Allowed;
 
-                if (source._watchState == WatchStates.Watching)
+                if (source._watchState.InterlockedValue == WatchStates.Watching)
                 {
                     source.CollectionChanged += onCollectionChanged;
                 }
