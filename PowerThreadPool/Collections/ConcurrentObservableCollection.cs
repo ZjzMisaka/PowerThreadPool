@@ -130,7 +130,6 @@ public class ConcurrentObservableCollection<T>
     /// Stops watching the observable collection for changes.
     /// </summary>
     /// <param name="keepRunning"></param>
-    /// <param name="forceStop"></param>
     public void StopWatching(bool keepRunning = false)
     {
         StopWatchingCore(false, keepRunning);
@@ -143,7 +142,6 @@ public class ConcurrentObservableCollection<T>
     /// therefore you should avoid using force stop as much as possible.
     /// </summary>
     /// <param name="keepRunning"></param>
-    /// <param name="forceStop"></param>
     public void ForceStopWatching(bool keepRunning = false)
     {
         StopWatchingCore(true, keepRunning);
@@ -152,8 +150,8 @@ public class ConcurrentObservableCollection<T>
     /// <summary>
     /// Stops watching the observable collection for changes.
     /// </summary>
-    /// <param name="keepRunning"></param>
     /// <param name="forceStop"></param>
+    /// <param name="keepRunning"></param>
     private void StopWatchingCore(bool forceStop, bool keepRunning = false)
     {
         if (_watchState == WatchStates.Idle)

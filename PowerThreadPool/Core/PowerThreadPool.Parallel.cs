@@ -308,7 +308,6 @@ namespace PowerThreadPool
         /// <typeparam name="TSource"></typeparam>
         /// <param name="source"></param>
         /// <param name="keepRunning"></param>
-        /// <param name="forceStop"></param>
         public void StopWatching<TSource>(ConcurrentObservableCollection<TSource> source, bool keepRunning = false)
         {
             StopWatchingCore(source, false, keepRunning);
@@ -323,7 +322,6 @@ namespace PowerThreadPool
         /// <typeparam name="TSource"></typeparam>
         /// <param name="source"></param>
         /// <param name="keepRunning"></param>
-        /// <param name="forceStop"></param>
         public void ForceStopWatching<TSource>(ConcurrentObservableCollection<TSource> source, bool keepRunning = false)
         {
             StopWatchingCore(source, true, keepRunning);
@@ -334,8 +332,8 @@ namespace PowerThreadPool
         /// </summary>
         /// <typeparam name="TSource"></typeparam>
         /// <param name="source"></param>
-        /// <param name="keepRunning"></param>
         /// <param name="forceStop"></param>
+        /// <param name="keepRunning"></param>
         private void StopWatchingCore<TSource>(ConcurrentObservableCollection<TSource> source, bool forceStop, bool keepRunning = false)
         {
             if (forceStop)
