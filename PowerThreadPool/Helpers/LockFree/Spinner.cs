@@ -32,7 +32,7 @@ namespace PowerThreadPool.Helpers.LockFree
 #endif
 #else
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 #endif
         internal static void Start(Func<bool> func, bool doPrecheck = false)
 #endif
