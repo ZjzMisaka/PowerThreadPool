@@ -186,7 +186,14 @@ namespace PowerThreadPool
 
         private string CreateGroupId(string groupName)
         {
-            return string.IsNullOrEmpty(groupName) ? Guid.NewGuid().ToString() : groupName;
+            if (string.IsNullOrEmpty(groupName))
+            {
+                return Guid.NewGuid().ToString();
+            }
+            else
+            {
+                return groupName;
+            }
         }
 
         private WorkOption CreateWorkOption(string groupID)
@@ -215,21 +222,21 @@ namespace PowerThreadPool
 
             if (addBackWhenWorkCanceled)
             {
-                onCanceled = (s, e) => TryAddBack(e.ID);
+                onCanceled = (_, e) => TryAddBack(e.ID);
                 WorkCanceled += onCanceled;
                 source._watchCanceledHandler = onCanceled;
             }
 
             if (addBackWhenWorkStopped)
             {
-                onStopped = (s, e) => TryAddBack(e.ID);
+                onStopped = (_, e) => TryAddBack(e.ID);
                 WorkStopped += onStopped;
                 source._watchStoppedHandler = onStopped;
             }
 
             if (addBackWhenWorkFailed)
             {
-                onEnded = (s, e) =>
+                onEnded = (_, e) =>
                 {
                     if (e.Succeed) return;
                     TryAddBack(e.ID);
