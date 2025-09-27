@@ -309,9 +309,43 @@ namespace PowerThreadPool
         /// <param name="source"></param>
         /// <param name="keepRunning"></param>
         /// <param name="forceStop"></param>
-        public void StopWatching<TSource>(ConcurrentObservableCollection<TSource> source, bool keepRunning = false, bool forceStop = false)
+        public void StopWatching<TSource>(ConcurrentObservableCollection<TSource> source, bool keepRunning = false)
         {
-            source.StopWatching(keepRunning, forceStop);
+            StopWatchingCore(source, false, keepRunning);
+        }
+
+        /// <summary>
+        /// Force tops watching the observable collection for changes.
+        /// Although this approach is safer than Thread.Abort, from the perspective of the business logic,
+        /// it can still potentially lead to unpredictable results and cannot guarantee the time consumption of exiting the thread,
+        /// therefore you should avoid using force stop as much as possible.
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="keepRunning"></param>
+        /// <param name="forceStop"></param>
+        public void ForceStopWatching<TSource>(ConcurrentObservableCollection<TSource> source, bool keepRunning = false)
+        {
+            StopWatchingCore(source, true, keepRunning);
+        }
+
+        /// <summary>
+        /// Stops watching the observable collection for changes.
+        /// </summary>
+        /// <typeparam name="TSource"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="keepRunning"></param>
+        /// <param name="forceStop"></param>
+        private void StopWatchingCore<TSource>(ConcurrentObservableCollection<TSource> source, bool forceStop, bool keepRunning = false)
+        {
+            if (forceStop)
+            {
+                source.ForceStopWatching(keepRunning);
+            }
+            else
+            {
+                source.StopWatching(keepRunning);
+            }
 
             if (!keepRunning && source._group != null)
             {

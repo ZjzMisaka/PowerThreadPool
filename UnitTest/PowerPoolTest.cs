@@ -4804,6 +4804,8 @@ namespace UnitTest
             list.TryAdd(5);
             list.TryAdd(6);
 
+            Thread.Sleep(1);
+
             powerPool.StopWatching(list, true);
 
             list.TryAdd(7);
@@ -4834,6 +4836,8 @@ namespace UnitTest
             list.TryAdd(4);
             list.TryAdd(5);
             list.TryAdd(6);
+
+            Thread.Sleep(1);
 
             list.StopWatching(true);
 
@@ -4946,7 +4950,7 @@ namespace UnitTest
             list.TryAdd(5);
             list.TryAdd(6);
 
-            powerPool.StopWatching(list, false, true);
+            powerPool.ForceStopWatching(list, false);
 
             list.TryAdd(7);
             list.TryAdd(8);
@@ -5057,7 +5061,7 @@ namespace UnitTest
             list.TryAdd(5);
             list.TryAdd(6);
 
-            powerPool.StopWatching(list, false, true);
+            powerPool.ForceStopWatching(list, false);
 
             list.TryAdd(7);
             list.TryAdd(8);
@@ -5098,7 +5102,7 @@ namespace UnitTest
             list.TryAdd(5);
             list.TryAdd(6);
 
-            powerPool.StopWatching(list, false, true);
+            powerPool.ForceStopWatching(list, false);
 
             list.TryAdd(7);
             list.TryAdd(8);
