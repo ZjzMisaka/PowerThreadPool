@@ -8010,5 +8010,21 @@ namespace UnitTest
                 return sum;
             }
         }
+
+        [Fact]
+        public void TestSpinner()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int i = 0;
+
+            Spinner.Start(() =>
+            {
+                Thread.Sleep(1);
+                ++i;
+
+                return i == 5;
+            });
+        }
     }
 }
