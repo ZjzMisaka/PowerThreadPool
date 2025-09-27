@@ -35,6 +35,10 @@ namespace PowerThreadPool.Helpers.LockFree
 #if DEBUG
             Stopwatch stopwatch = Stopwatch.StartNew();
 #endif
+            if (func())
+            {
+                return;
+            }
             SpinWait.SpinUntil(func);
 #if DEBUG
             stopwatch.Stop();
