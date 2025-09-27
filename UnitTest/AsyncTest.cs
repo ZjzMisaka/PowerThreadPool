@@ -1135,6 +1135,11 @@ namespace UnitTest
                 Assert.Equal("2", l);
                 r = res.Result;
             });
+            powerPool.Wait();
+            Assert.Null(p);
+            Assert.Null(l);
+            Assert.Null(c);
+            Assert.Null(r);
             powerPool.Start();
             powerPool.Wait();
             Assert.Equal("1", p);
@@ -1171,7 +1176,18 @@ namespace UnitTest
                 Assert.Equal("2", l);
                 r = res.Result;
             });
-            powerPool.Cancel(id);
+            bool res = powerPool.Cancel(id);
+            Assert.True(res);
+            Assert.Null(p);
+            Assert.Null(l);
+            Assert.Null(c);
+            Assert.Null(r);
+            powerPool.Start();
+            powerPool.Wait();
+            Assert.Null(p);
+            Assert.Null(l);
+            Assert.Null(c);
+            Assert.Null(r);
         }
 
         [Fact]
