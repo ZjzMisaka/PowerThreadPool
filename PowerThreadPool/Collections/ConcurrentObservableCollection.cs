@@ -131,7 +131,30 @@ public class ConcurrentObservableCollection<T>
     /// </summary>
     /// <param name="keepRunning"></param>
     /// <param name="forceStop"></param>
-    public void StopWatching(bool keepRunning = false, bool forceStop = false)
+    public void StopWatching(bool keepRunning = false)
+    {
+        StopWatchingCore(false, keepRunning);
+    }
+
+    /// <summary>
+    /// Force stops watching the observable collection for changes.
+    /// Although this approach is safer than Thread.Abort, from the perspective of the business logic,
+    /// it can still potentially lead to unpredictable results and cannot guarantee the time consumption of exiting the thread,
+    /// therefore you should avoid using force stop as much as possible.
+    /// </summary>
+    /// <param name="keepRunning"></param>
+    /// <param name="forceStop"></param>
+    public void ForceStopWatching(bool keepRunning = false)
+    {
+        StopWatchingCore(true, keepRunning);
+    }
+
+    /// <summary>
+    /// Stops watching the observable collection for changes.
+    /// </summary>
+    /// <param name="keepRunning"></param>
+    /// <param name="forceStop"></param>
+    private void StopWatchingCore(bool forceStop, bool keepRunning = false)
     {
         if (_watchState == WatchStates.Idle)
         {
