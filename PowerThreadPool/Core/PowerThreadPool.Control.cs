@@ -1019,17 +1019,21 @@ namespace PowerThreadPool
             if (work.BaseAsyncWorkID != null)
             {
                 TryRemoveAsyncWork(work.ID, true);
+                _resultDic.TryRemove(work.AsyncWorkID, out _);
             }
-            else if (_aliveWorkDic.TryRemove(work.ID, out _))
+            else
             {
-                if (work.Group != null)
+                if (_aliveWorkDic.TryRemove(work.ID, out _))
                 {
-                    RemoveWorkFromGroup(work.Group, work);
+                    if (work.Group != null)
+                    {
+                        RemoveWorkFromGroup(work.Group, work);
+                    }
+                    work.Dispose();
                 }
-                work.Dispose();
-            }
 
-            _resultDic.TryRemove(work.ID, out _);
+                _resultDic.TryRemove(work.ID, out _);
+            }
 
             CheckPoolIdle();
         }
