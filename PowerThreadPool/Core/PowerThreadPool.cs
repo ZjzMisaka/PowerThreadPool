@@ -63,6 +63,8 @@ namespace PowerThreadPool
 
         internal ConcurrentQueue<Worker> _helperWorkerQueue = new ConcurrentQueue<Worker>();
 
+        internal ConcurrentDictionary<Task, RegisteredWaitHandle> _waitRegDict = new ConcurrentDictionary<Task, RegisteredWaitHandle>();
+
         internal long _startCount = 0;
         internal long _endCount = 0;
         internal long _queueTime = 0;
