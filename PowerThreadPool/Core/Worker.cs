@@ -733,7 +733,7 @@ namespace PowerThreadPool
                     {
                         if (destroyThreadOption != null && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
                         {
-                            _killTimer.Set(destroyThreadOption.KeepAliveTime);
+                            SetKillTimer();
                         }
 
                         WorkerState.InterlockedValue = WorkerStates.Idle;
