@@ -271,22 +271,36 @@ namespace PowerThreadPool
         /// <summary>
         /// Blocks the calling thread until all of the works terminates.
         /// </summary>
-        /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>A Task</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task WaitAsync(bool helpWhileWaiting = false)
+        public Task WaitAsync()
         {
-            await Task.Run(() =>
+            if (_poolState == PoolStates.NotRunning ||
+                (RunningWorkerCount == 0 && WaitingWorkCount == 0 && AsyncWorkCount == 0))
             {
-                Wait(helpWhileWaiting);
-            });
+#if (NET46_OR_GREATER || NET5_0_OR_GREATER)
+                return Task.CompletedTask;
+#else
+                return Task.FromResult(0);
+#endif
+            }
+
+            var tcs = NewTcs<object>();
+            RegisteredWaitHandle rwh = null;
+            WaitOrTimerCallback cb = (state, timedOut) =>
+            {
+                rwh?.Unregister(null);
+                tcs.TrySetResult(null);
+            };
+            rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal, cb, null, Timeout.Infinite, true);
+            return tcs.Task;
         }
 #else
-        public Task WaitAsync(bool helpWhileWaiting = false)
+        public Task WaitAsync()
         {
             return Task.Factory.StartNew(() =>
             {
-                Wait(helpWhileWaiting);
+                Wait();
             });
         }
 #endif
@@ -295,22 +309,44 @@ namespace PowerThreadPool
         /// Blocks the calling thread until the work terminates.
         /// </summary>
         /// <param name="id">work id</param>
-        /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Return false if the work isn't running</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task<bool> WaitAsync(WorkID id, bool helpWhileWaiting = false)
+        public Task<bool> WaitAsync(WorkID id)
         {
-            return await Task.Run(() =>
+            if (id == null)
             {
-                return Wait(id, helpWhileWaiting);
-            });
+                return Task.FromResult(false);
+            }
+
+            WorkBase work;
+            if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work))
+            {
+                if (IsWorkCompletedForAwait(work))
+                    return Task.FromResult(true);
+
+                var tcs = NewTcs<bool>();
+                var ev = EnsureWaitSignalExists(work);
+
+                RegisteredWaitHandle rwh = null;
+                WaitOrTimerCallback cb = (state, timedOut) =>
+                {
+                    rwh?.Unregister(null);
+                    tcs.TrySetResult(true);
+                };
+                rwh = ThreadPool.RegisterWaitForSingleObject(ev, cb, null, Timeout.Infinite, true);
+                return tcs.Task;
+            }
+            else
+            {
+                return Task.FromResult(false);
+            }
         }
 #else
-        public Task<bool> WaitAsync(WorkID id, bool helpWhileWaiting = false)
+        public Task<bool> WaitAsync(WorkID id)
         {
             return Task.Factory.StartNew(() =>
             {
-                return Wait(id, helpWhileWaiting);
+                return Wait(id, false);
             });
         }
 #endif
@@ -319,28 +355,24 @@ namespace PowerThreadPool
         /// Blocks the calling thread until the work terminates.
         /// </summary>
         /// <param name="idList">work id list</param>
-        /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Return a list of ID for work that doesn't running</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task<List<WorkID>> WaitAsync(IEnumerable<WorkID> idList, bool helpWhileWaiting = false)
+        public async Task<List<WorkID>> WaitAsync(IEnumerable<WorkID> idList)
         {
-            return await Task.Run(() =>
+            List<WorkID> failedIDList = new List<WorkID>();
+
+            foreach (var id in idList)
             {
-                List<WorkID> failedIDList = new List<WorkID>();
-
-                foreach (WorkID id in idList)
+                if (!await WaitAsync(id))
                 {
-                    if (!Wait(id, helpWhileWaiting))
-                    {
-                        failedIDList.Add(id);
-                    }
+                    failedIDList.Add(id);
                 }
+            }
 
-                return failedIDList;
-            });
+            return failedIDList;
         }
 #else
-        public Task<List<WorkID>> WaitAsync(IEnumerable<WorkID> idList, bool helpWhileWaiting = false)
+        public Task<List<WorkID>> WaitAsync(IEnumerable<WorkID> idList)
         {
             return Task.Factory.StartNew(() =>
             {
@@ -348,7 +380,7 @@ namespace PowerThreadPool
 
                 foreach (WorkID id in idList)
                 {
-                    if (!Wait(id, helpWhileWaiting))
+                    if (!Wait(id, false))
                     {
                         failedIDList.Add(id);
                     }
@@ -509,22 +541,44 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="id">work id</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
-        /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Work result</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task<ExecuteResult<TResult>> FetchAsync<TResult>(WorkID id, bool removeAfterFetch = false, bool helpWhileWaiting = false)
+        public async Task<ExecuteResult<TResult>> FetchAsync<TResult>(WorkID id, bool removeAfterFetch = false)
         {
-            return await Task.Run(() =>
+            if (id == null)
             {
-                return Fetch<TResult>(id, removeAfterFetch, helpWhileWaiting);
-            });
+                return null;
+            }
+
+            WorkBase work;
+            ExecuteResultBase executeResultBase = null;
+            if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work) || _workDependencyController._workDict.TryGetValue(id, out work) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
+            {
+                if (executeResultBase != null)
+                {
+                    return executeResultBase.ToTypedResult<TResult>();
+                }
+                else
+                {
+                    ExecuteResult<TResult> res = await work.FetchAsync<TResult>();
+                    if (removeAfterFetch)
+                    {
+                        RemoveAfterFetch(work);
+                    }
+                    return res;
+                }
+            }
+            else
+            {
+                return new ExecuteResult<TResult>() { ID = id };
+            }
         }
 #else
-        public Task<ExecuteResult<TResult>> FetchAsync<TResult>(WorkID id, bool removeAfterFetch = false, bool helpWhileWaiting = false)
+        public Task<ExecuteResult<TResult>> FetchAsync<TResult>(WorkID id, bool removeAfterFetch = false)
         {
             return Task.Factory.StartNew(() =>
             {
-                return Fetch<TResult>(id, removeAfterFetch, helpWhileWaiting);
+                return Fetch<TResult>(id, removeAfterFetch, false);
             });
         }
 #endif
@@ -534,22 +588,18 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="id">work id</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
-        /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Work result</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task<ExecuteResult<object>> FetchAsync(WorkID id, bool removeAfterFetch = false, bool helpWhileWaiting = false)
+        public Task<ExecuteResult<object>> FetchAsync(WorkID id, bool removeAfterFetch = false)
         {
-            return await Task.Run(() =>
-            {
-                return Fetch(id, removeAfterFetch, helpWhileWaiting);
-            });
+            return FetchAsync<object>(id, removeAfterFetch);
         }
 #else
-        public Task<ExecuteResult<object>> FetchAsync(WorkID id, bool removeAfterFetch = false, bool helpWhileWaiting = false)
+        public Task<ExecuteResult<object>> FetchAsync(WorkID id, bool removeAfterFetch = false)
         {
             return Task.Factory.StartNew(() =>
             {
-                return Fetch(id, removeAfterFetch, helpWhileWaiting);
+                return Fetch(id, removeAfterFetch, false);
             });
         }
 #endif
@@ -559,22 +609,53 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="idList">work id list</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
-        /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Return a list of work result</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(IEnumerable<WorkID> idList, bool removeAfterFetch = false, bool helpWhileWaiting = false)
+        public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(IEnumerable<WorkID> idList, bool removeAfterFetch = false)
         {
-            return await Task.Run(() =>
+            List<ExecuteResult<TResult>> resultList = new List<ExecuteResult<TResult>>();
+
+            List<WorkBase> workList = new List<WorkBase>();
+
+            foreach (WorkID id in idList)
             {
-                return Fetch<TResult>(idList, removeAfterFetch, helpWhileWaiting);
-            });
+                WorkBase workBase;
+                ExecuteResultBase executeResultBase = null;
+                if (_suspendedWork.TryGetValue(id, out workBase) || _aliveWorkDic.TryGetValue(id, out workBase) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
+                {
+                    if (executeResultBase != null)
+                    {
+                        resultList.Add(executeResultBase.ToTypedResult<TResult>());
+                    }
+                    else
+                    {
+                        workList.Add(workBase);
+                    }
+                }
+                else
+                {
+                    resultList.Add(new ExecuteResult<TResult>() { ID = id });
+                }
+            }
+
+            foreach (WorkBase work in workList)
+            {
+                resultList.Add(await work.FetchAsync<TResult>());
+
+                if (removeAfterFetch)
+                {
+                    RemoveAfterFetch(work);
+                }
+            }
+
+            return resultList;
         }
 #else
-        public Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(IEnumerable<WorkID> idList, bool removeAfterFetch = false, bool helpWhileWaiting = false)
+        public Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(IEnumerable<WorkID> idList, bool removeAfterFetch = false)
         {
             return Task.Factory.StartNew(() =>
             {
-                return Fetch<TResult>(idList, removeAfterFetch, helpWhileWaiting);
+                return Fetch<TResult>(idList, removeAfterFetch, false);
             });
         }
 #endif
@@ -584,22 +665,18 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="idList">work id list</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
-        /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Return a list of work result</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task<List<ExecuteResult<object>>> FetchAsync(IEnumerable<WorkID> idList, bool removeAfterFetch = false, bool helpWhileWaiting = false)
+        public Task<List<ExecuteResult<object>>> FetchAsync(IEnumerable<WorkID> idList, bool removeAfterFetch = false)
         {
-            return await Task.Run(() =>
-            {
-                return Fetch(idList, removeAfterFetch, helpWhileWaiting);
-            });
+            return FetchAsync<object>(idList, removeAfterFetch);
         }
 #else
-        public Task<List<ExecuteResult<object>>> FetchAsync(IEnumerable<WorkID> idList, bool removeAfterFetch = false, bool helpWhileWaiting = false)
+        public Task<List<ExecuteResult<object>>> FetchAsync(IEnumerable<WorkID> idList, bool removeAfterFetch = false)
         {
             return Task.Factory.StartNew(() =>
             {
-                return Fetch(idList, removeAfterFetch, helpWhileWaiting);
+                return Fetch(idList, removeAfterFetch, false);
             });
         }
 #endif
