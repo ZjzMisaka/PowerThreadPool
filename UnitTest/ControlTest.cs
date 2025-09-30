@@ -2163,6 +2163,104 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestFetchByIDAsync()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            }, new WorkOption { ShouldStoreResult = true });
+
+            ExecuteResult<bool> res = await powerPool.FetchAsync<bool>(id);
+
+            Assert.True(res.Result);
+
+            res = await powerPool.FetchAsync<bool>(id);
+
+            Assert.True(res.Result);
+        }
+
+        [Fact]
+        public async void TestFetchByIDAsyncError()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            bool b = true;
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                if (b)
+                    throw new Exception();
+                return true;
+            }, new WorkOption { ShouldStoreResult = true });
+
+            ExecuteResult<bool> res = await powerPool.FetchAsync<bool>(id);
+
+            Assert.NotNull(res.Exception);
+            Assert.False(res.Result);
+        }
+
+        [Fact]
+        public async void TestFetchByIDAsyncRemoveAfterFetch()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            }, new WorkOption { ShouldStoreResult = true });
+
+            ExecuteResult<bool> res = await powerPool.FetchAsync<bool>(id, true);
+
+            Assert.True(res.Result);
+
+            res = await powerPool.FetchAsync<bool>(id, true);
+
+            Assert.False(res.Result);
+        }
+
+        [Fact]
+        public async void TestFetchByWrongIDAsync()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+
+            ExecuteResult<bool> res = await powerPool.FetchAsync<bool>("ID");
+
+            Assert.False(res.Result);
+        }
+
+        [Fact]
+        public async void TestFetchByNullIDAsync()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+
+            WorkID nid = null;
+            ExecuteResult<bool> res = await powerPool.FetchAsync<bool>(nid);
+
+            Assert.Null(res);
+        }
+
+        [Fact]
         public async void TestFetchByIDInterrupted()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2610,7 +2708,7 @@ namespace UnitTest
                 return "1";
             });
 
-            Task<List<ExecuteResult<string>>> resListTask = powerPool.FetchAsync<string>(new List<WorkID>() { id0, id1, WorkID.FromString("id") });
+            Task<List<ExecuteResult<string>>> resListTask = powerPool.FetchAsync<string>(new List<WorkID>() { id0, id1, WorkID.FromString("id") }, true);
 
             powerPool.Start();
             powerPool.Wait();

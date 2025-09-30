@@ -237,7 +237,7 @@ namespace PowerThreadPool
             }
 
             WorkBase work;
-            if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work))
+            if (TryGetSuspendOrAliveWork(id, out work))
             {
                 return work.Wait(helpWhileWaiting);
             }
@@ -319,7 +319,7 @@ namespace PowerThreadPool
             }
 
             WorkBase work;
-            if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work))
+            if (TryGetSuspendOrAliveWork(id, out work))
             {
                 return work.WaitAsync();
             }
@@ -412,7 +412,11 @@ namespace PowerThreadPool
             }
             else
             {
-                return new ExecuteResult<TResult>() { ID = id };
+                return new ExecuteResult<TResult>()
+                {
+                    ID = id,
+                    IsNotFound = true,
+                };
             }
         }
 
@@ -541,7 +545,11 @@ namespace PowerThreadPool
             }
             else
             {
-                return new ExecuteResult<TResult>() { ID = id };
+                return new ExecuteResult<TResult>()
+                {
+                    ID = id,
+                    IsNotFound = true,
+                };
             }
         }
 #else
@@ -653,7 +661,11 @@ namespace PowerThreadPool
             }
             else
             {
-                resultList.Add(new ExecuteResult<TResult>() { ID = id });
+                resultList.Add(new ExecuteResult<TResult>()
+                {
+                    ID = id,
+                    IsNotFound = true,
+                });
             }
         }
 
@@ -1090,6 +1102,11 @@ namespace PowerThreadPool
             {
                 return false;
             }
+        }
+
+        private bool TryGetSuspendOrAliveWork(WorkID id, out WorkBase work)
+        {
+            return _suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work);
         }
     }
 }

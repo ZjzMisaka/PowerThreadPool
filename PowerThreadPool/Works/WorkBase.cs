@@ -40,6 +40,8 @@ namespace PowerThreadPool.Works
             set => _asyncDone = value;
         }
         internal volatile bool _isPausing;
+        internal bool SyncOrAsyncWorkDone
+            => IsDone && (BaseAsyncWorkID == null || AsyncDone);
         internal bool IsPausing
         {
             get => _isPausing;

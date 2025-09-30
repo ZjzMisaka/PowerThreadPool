@@ -178,7 +178,7 @@ namespace PowerThreadPool.Works
 
             EnsureWaitSignalExists();
 
-            if (!IsDone || (BaseAsyncWorkID != null && !AsyncDone))
+            if (!SyncOrAsyncWorkDone)
             {
                 WaitSignal.WaitOne();
             }
@@ -189,7 +189,7 @@ namespace PowerThreadPool.Works
         internal override Task<bool> WaitAsync()
         {
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-            if (IsDone && (BaseAsyncWorkID == null || AsyncDone))
+            if (SyncOrAsyncWorkDone)
             {
                 return Task.FromResult(true);
             }

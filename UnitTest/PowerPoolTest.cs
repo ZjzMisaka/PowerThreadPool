@@ -3548,10 +3548,12 @@ namespace UnitTest
             ExecuteResult<string> res = powerPool.Fetch<string>(id0);
 
             Assert.Equal("0", res.Result);
+            Assert.False(res.IsNotFound);
 
             powerPool.ClearResultStorage();
             res = powerPool.Fetch<string>(id0);
             Assert.Null(res.Result);
+            Assert.True(res.IsNotFound);
         }
 
         [Fact]
