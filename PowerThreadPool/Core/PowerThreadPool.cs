@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 #endif
 using System.Threading;
+using System.Threading.Tasks;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
@@ -72,6 +73,14 @@ namespace PowerThreadPool
 
         private readonly InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
         internal readonly InterlockedFlag<CanDeleteRedundantWorker> _canDeleteRedundantWorker = CanDeleteRedundantWorker.Allowed;
+
+#if (NET46_OR_GREATER || NET5_0_OR_GREATER)
+        internal TaskCompletionSource<T> NewTcs<T>()
+            => new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+#else
+        internal TaskCompletionSource<T> NewTcs<T>()
+            => new TaskCompletionSource<T>();
+#endif
 
         private PowerPoolOption _powerPoolOption;
         public PowerPoolOption PowerPoolOption

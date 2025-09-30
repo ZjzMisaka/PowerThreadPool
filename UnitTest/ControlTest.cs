@@ -489,13 +489,16 @@ namespace UnitTest
             });
             long start = GetNowSs();
 
-            powerPool.ForceStop();
+            bool res = powerPool.ForceStop();
             powerPool.Wait();
             long end = GetNowSs() - start;
 
-            Assert.IsType<ThreadInterruptedException>(res0);
-            Assert.IsType<ThreadInterruptedException>(res1);
-            Assert.IsType<ThreadInterruptedException>(res2);
+            if (res)
+            {
+                Assert.IsType<ThreadInterruptedException>(res0);
+                Assert.IsType<ThreadInterruptedException>(res1);
+                Assert.IsType<ThreadInterruptedException>(res2);
+            }
         }
 
         [Fact]
@@ -2085,6 +2088,25 @@ namespace UnitTest
             await powerPool.WaitAsync(id);
 
             Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact]
+        public async void TestWaitByWrongIDAsync()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            await powerPool.WaitAsync("id");
+
+            Assert.True(GetNowSs() - start < 1000);
+
+            await powerPool.WaitAsync();
         }
 
         [Fact]

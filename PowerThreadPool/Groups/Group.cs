@@ -62,10 +62,7 @@ namespace PowerThreadPool.Groups
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task WaitAsync(bool helpWhileWaiting = false)
         {
-            await Task.Run(() =>
-            {
-                Wait(helpWhileWaiting);
-            });
+            await _powerPool.WaitAsync(_powerPool.GetGroupMemberList(Name));
         }
 #else
         public Task WaitAsync(bool helpWhileWaiting = false)
@@ -122,10 +119,7 @@ namespace PowerThreadPool.Groups
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
-            return await Task.Run(() =>
-            {
-                return Fetch<TResult>(removeAfterFetch, helpWhileWaiting);
-            });
+            return await _powerPool.FetchAsync<TResult>(_powerPool.GetGroupMemberList(Name), removeAfterFetch);
         }
 #else
         public Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false, bool helpWhileWaiting = false)
@@ -146,10 +140,7 @@ namespace PowerThreadPool.Groups
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
-            return await Task.Run(() =>
-            {
-                return Fetch(removeAfterFetch, helpWhileWaiting);
-            });
+            return await _powerPool.FetchAsync<object>(_powerPool.GetGroupMemberList(Name), removeAfterFetch);
         }
 #else
         public Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false, bool helpWhileWaiting = false)

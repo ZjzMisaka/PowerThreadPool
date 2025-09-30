@@ -209,7 +209,7 @@ namespace PowerThreadPool.Works
 
         public override bool Equals(object obj)
         {
-            var other = obj as WorkID;
+            WorkID other = obj as WorkID;
             return Equals(other);
         }
 

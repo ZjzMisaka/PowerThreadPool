@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers.LockFree;
@@ -58,7 +59,9 @@ namespace PowerThreadPool.Works
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Cancel(bool needFreeze);
         internal abstract bool Wait(bool helpWhileWaiting = false);
+        internal abstract Task<bool> WaitAsync();
         internal abstract ExecuteResult<T> Fetch<T>(bool helpWhileWaiting = false);
+        internal abstract Task<ExecuteResult<T>> FetchAsync<T>();
         internal abstract bool Pause();
         internal abstract bool Resume();
         internal abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
