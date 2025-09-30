@@ -443,23 +443,7 @@ namespace PowerThreadPool
 
             foreach (WorkID id in idList)
             {
-                WorkBase workBase;
-                ExecuteResultBase executeResultBase = null;
-                if (_suspendedWork.TryGetValue(id, out workBase) || _aliveWorkDic.TryGetValue(id, out workBase) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
-                {
-                    if (executeResultBase != null)
-                    {
-                        resultList.Add(executeResultBase.ToTypedResult<TResult>());
-                    }
-                    else
-                    {
-                        workList.Add(workBase);
-                    }
-                }
-                else
-                {
-                    resultList.Add(new ExecuteResult<TResult>() { ID = id });
-                }
+                GetFetchWorkByIDList(resultList, workList, id, removeAfterFetch);
             }
 
             foreach (WorkBase work in workList)
@@ -606,23 +590,7 @@ namespace PowerThreadPool
 
             foreach (WorkID id in idList)
             {
-                WorkBase workBase;
-                ExecuteResultBase executeResultBase = null;
-                if (_suspendedWork.TryGetValue(id, out workBase) || _aliveWorkDic.TryGetValue(id, out workBase) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
-                {
-                    if (executeResultBase != null)
-                    {
-                        resultList.Add(executeResultBase.ToTypedResult<TResult>());
-                    }
-                    else
-                    {
-                        workList.Add(workBase);
-                    }
-                }
-                else
-                {
-                    resultList.Add(new ExecuteResult<TResult>() { ID = id });
-                }
+                GetFetchWorkByIDList(resultList, workList, id, removeAfterFetch);
             }
 
             foreach (WorkBase work in workList)
@@ -667,6 +635,27 @@ namespace PowerThreadPool
             });
         }
 #endif
+
+        private void GetFetchWorkByIDList<TResult>(List<ExecuteResult<TResult>> resultList, List<WorkBase> workList, WorkID id, bool removeAfterFetch)
+        {
+            WorkBase workBase;
+            ExecuteResultBase executeResultBase = null;
+            if (_suspendedWork.TryGetValue(id, out workBase) || _aliveWorkDic.TryGetValue(id, out workBase) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
+            {
+                if (executeResultBase != null)
+                {
+                    resultList.Add(executeResultBase.ToTypedResult<TResult>());
+                }
+                else
+                {
+                    workList.Add(workBase);
+                }
+            }
+            else
+            {
+                resultList.Add(new ExecuteResult<TResult>() { ID = id });
+            }
+        }
 
         /// <summary>
         /// Stop all works
