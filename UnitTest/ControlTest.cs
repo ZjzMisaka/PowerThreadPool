@@ -2085,8 +2085,9 @@ namespace UnitTest
                 Thread.Sleep(1000);
             });
 
-            await powerPool.WaitAsync(id);
+            bool res = await powerPool.WaitAsync(id);
 
+            Assert.True(res);
             Assert.True(GetNowSs() - start >= 1000);
         }
 
