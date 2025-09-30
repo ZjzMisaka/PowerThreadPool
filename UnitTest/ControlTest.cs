@@ -2091,6 +2091,25 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestWaitByIDAsyncDouble()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            Task t1 = powerPool.WaitAsync(id);
+            Task t2 = powerPool.WaitAsync(id);
+            await Task.WhenAll(t1, t2);
+
+            Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact]
         public async void TestWaitByWrongIDAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");

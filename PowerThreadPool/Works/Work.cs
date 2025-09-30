@@ -65,7 +65,7 @@ namespace PowerThreadPool.Works
         {
             if (WaitSignal == null)
             {
-                WaitSignal = new AutoResetEvent(false);
+                WaitSignal = new ManualResetEvent(false);
             }
         }
 
@@ -196,7 +196,7 @@ namespace PowerThreadPool.Works
 
             TaskCompletionSource<bool> tcs = PowerPool.NewTcs<bool>();
             EnsureWaitSignalExists();
-            AutoResetEvent ev = WaitSignal;
+            ManualResetEvent ev = WaitSignal;
 
             RegisteredWaitHandle rwh = null;
             WaitOrTimerCallback cb = (state, timedOut) =>
