@@ -82,24 +82,6 @@ namespace PowerThreadPool
             => new TaskCompletionSource<T>();
 #endif
 
-        internal bool IsWorkCompletedForAwait(Works.WorkBase work)
-            => work.IsDone && (work.BaseAsyncWorkID == null || work.AsyncDone);
-
-        internal AutoResetEvent EnsureWaitSignalExists(Works.WorkBase work)
-        {
-            if (work.WaitSignal == null)
-            {
-                var ev = new AutoResetEvent(false);
-                if (work.WaitSignal == null)
-                {
-                    work.WaitSignal = ev;
-                    ev = null;
-                }
-                if (ev != null) ev.Dispose();
-            }
-            return work.WaitSignal;
-        }
-
         private PowerPoolOption _powerPoolOption;
         public PowerPoolOption PowerPoolOption
         {

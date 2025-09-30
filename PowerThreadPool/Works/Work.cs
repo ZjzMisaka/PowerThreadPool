@@ -61,6 +61,14 @@ namespace PowerThreadPool.Works
             IsPausing = false;
         }
 
+        private void EnsureWaitSignalExists()
+        {
+            if (WaitSignal == null)
+            {
+                WaitSignal = new AutoResetEvent(false);
+            }
+        }
+
         internal override bool Stop(bool forceStop)
         {
             bool res = false;
@@ -168,10 +176,7 @@ namespace PowerThreadPool.Works
                 }
             }
 
-            if (WaitSignal == null)
-            {
-                WaitSignal = new AutoResetEvent(false);
-            }
+            EnsureWaitSignalExists();
 
             if (!IsDone || (BaseAsyncWorkID != null && !AsyncDone))
             {
@@ -184,11 +189,14 @@ namespace PowerThreadPool.Works
         internal override Task<bool> WaitAsync()
         {
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-            if (PowerPool.IsWorkCompletedForAwait(this))
+            if (IsDone && (BaseAsyncWorkID == null || AsyncDone))
+            {
                 return Task.FromResult(true);
+            }
 
-            var tcs = PowerPool.NewTcs<bool>();
-            var ev = PowerPool.EnsureWaitSignalExists(this);
+            TaskCompletionSource<bool> tcs = PowerPool.NewTcs<bool>();
+            EnsureWaitSignalExists();
+            AutoResetEvent ev = WaitSignal;
 
             RegisteredWaitHandle rwh = null;
             WaitOrTimerCallback cb = (state, timedOut) =>

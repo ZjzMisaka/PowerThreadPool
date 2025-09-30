@@ -285,7 +285,7 @@ namespace PowerThreadPool
 #endif
             }
 
-            var tcs = NewTcs<object>();
+            TaskCompletionSource<object> tcs = NewTcs<object>();
             RegisteredWaitHandle rwh = null;
             WaitOrTimerCallback cb = (state, timedOut) =>
             {
@@ -321,20 +321,7 @@ namespace PowerThreadPool
             WorkBase work;
             if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work))
             {
-                if (IsWorkCompletedForAwait(work))
-                    return Task.FromResult(true);
-
-                var tcs = NewTcs<bool>();
-                var ev = EnsureWaitSignalExists(work);
-
-                RegisteredWaitHandle rwh = null;
-                WaitOrTimerCallback cb = (state, timedOut) =>
-                {
-                    rwh?.Unregister(null);
-                    tcs.TrySetResult(true);
-                };
-                rwh = ThreadPool.RegisterWaitForSingleObject(ev, cb, null, Timeout.Infinite, true);
-                return tcs.Task;
+                return work.WaitAsync();
             }
             else
             {
@@ -361,7 +348,7 @@ namespace PowerThreadPool
         {
             List<WorkID> failedIDList = new List<WorkID>();
 
-            foreach (var id in idList)
+            foreach (WorkID id in idList)
             {
                 if (!await WaitAsync(id))
                 {

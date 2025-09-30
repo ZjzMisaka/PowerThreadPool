@@ -2091,6 +2091,25 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestWaitByWrongIDAsync()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            await powerPool.WaitAsync("id");
+
+            Assert.True(GetNowSs() - start < 1000);
+
+            await powerPool.WaitAsync();
+        }
+
+        [Fact]
         public async void TestWaitByIDListAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
