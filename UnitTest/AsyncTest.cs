@@ -911,6 +911,60 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestWaitByIDAsync()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object c = null;
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItemAsync(async () =>
+            {
+                p = "1";
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                c = "2";
+            });
+
+            await powerPool.WaitAsync(id);
+
+            Assert.Equal("1", p);
+            Assert.Equal("2", c);
+            Assert.True(GetNowSs() - start >= 30);
+        }
+
+        [Fact]
+        public async void TestWaitByIDAsyncDouble()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object c = null;
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItemAsync(async () =>
+            {
+                p = "1";
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                c = "2";
+            });
+
+            Task t1 = powerPool.WaitAsync(id);
+            Task t2 = powerPool.WaitAsync(id);
+            await Task.WhenAll(t1, t2);
+
+            Assert.Equal("1", p);
+            Assert.Equal("2", c);
+            Assert.True(GetNowSs() - start >= 30);
+        }
+
+        [Fact]
         public void TestWaitByIDWhenRunning()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
