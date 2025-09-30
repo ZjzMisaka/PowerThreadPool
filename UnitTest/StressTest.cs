@@ -278,14 +278,12 @@ namespace UnitTest
                     if (powerPool.PoolRunning)
                     {
                         powerPool.Wait();
-                        Console.WriteLine($"ReCheck1");
                         goto ReCheck;
                     }
                     Thread.Sleep(5);
                     if (powerPool.PoolRunning)
                     {
                         powerPool.Wait();
-                        Console.WriteLine($"ReCheck2");
                         goto ReCheck;
                     }
                     errLog += " | " + "doneCount: " + doneCount + "/" + 100 * 1000000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
