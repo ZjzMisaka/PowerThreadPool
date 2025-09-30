@@ -79,6 +79,8 @@ namespace UnitTest
                         Assert.Fail(errLog + " | PoolRunning: " + powerPool.PoolRunning);
                     }
                 }
+
+                powerPool.Dispose();
             });
         }
 
@@ -230,6 +232,8 @@ namespace UnitTest
                         Sleep(random.Next(0, 1500), powerPool);
                     }
                 }
+
+                powerPool.Dispose();
             });
         }
 
@@ -285,6 +289,8 @@ namespace UnitTest
                     errLog += " | " + "doneCount: " + doneCount + "/" + 100 * 1000000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
                     Assert.Fail(errLog + " | PoolRunning: " + powerPool.PoolRunning);
                 }
+
+                powerPool.Dispose();
             });
         }
 

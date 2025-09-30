@@ -198,13 +198,13 @@ namespace PowerThreadPool.Works
             EnsureWaitSignalExists();
             ManualResetEvent ev = WaitSignal;
 
-            RegisteredWaitHandle rwh = null;
-            WaitOrTimerCallback cb = (state, timedOut) =>
+            RegisteredWaitState<bool> state = new RegisteredWaitState<bool>
             {
-                rwh?.Unregister(null);
-                tcs.TrySetResult(true);
+                Tcs = tcs,
+                Res = true,
             };
-            rwh = ThreadPool.RegisterWaitForSingleObject(ev, cb, null, Timeout.Infinite, true);
+            state.Handle = ThreadPool.UnsafeRegisterWaitForSingleObject(ev, RegisteredWaitState<bool>.WaitCallback, state, Timeout.Infinite, true);
+
             return tcs.Task;
 #else
             return Task.Factory.StartNew(() =>
