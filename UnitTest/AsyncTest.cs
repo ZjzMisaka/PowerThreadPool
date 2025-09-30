@@ -1146,6 +1146,36 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestFetchAsyncByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object c = null;
+
+            PowerPool powerPool = new PowerPool { PowerPoolOption = new PowerPoolOption { MaxThreads = 1 } };
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                c = "2";
+                return "100";
+            }, new WorkOption<string> { ShouldStoreResult = true });
+            var res = await powerPool.FetchAsync<string>(id, true);
+            powerPool.Wait();
+
+            Assert.Equal("1", p);
+            Assert.Equal("2", c);
+            Assert.Equal("100", res.Result);
+        }
+
+        [Fact]
         public void TestFetchByIDList()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1168,6 +1198,36 @@ namespace UnitTest
                 return "100";
             }, new WorkOption<string> { ShouldStoreResult = true });
             var res = powerPool.Fetch<string>(new List<WorkID> { id }, true);
+            powerPool.Wait();
+
+            Assert.Equal("1", p);
+            Assert.Equal("2", c);
+            Assert.Equal("100", res[0].Result);
+        }
+
+        [Fact]
+        public async void TestFetchAsyncByIDList()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object c = null;
+
+            PowerPool powerPool = new PowerPool { PowerPoolOption = new PowerPoolOption { MaxThreads = 1 } };
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            WorkID id = powerPool.QueueWorkItemAsync<string>(async () =>
+            {
+                p = "1";
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                c = "2";
+                return "100";
+            }, new WorkOption<string> { ShouldStoreResult = true });
+            var res = await powerPool.FetchAsync<string>(new List<WorkID> { id }, true);
             powerPool.Wait();
 
             Assert.Equal("1", p);

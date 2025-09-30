@@ -26,6 +26,11 @@ namespace PowerThreadPool.Results
         public Status Status { get; internal set; }
 
         /// <summary>
+        /// Is result not found.
+        /// </summary>
+        public bool IsNotFound { get; internal set; }
+
+        /// <summary>
         /// If failed, the exception will be stored here.
         /// </summary>
         public Exception Exception { get; internal set; }

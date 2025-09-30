@@ -22,6 +22,7 @@ namespace PowerThreadPool.Results
             }
             Exception = exception;
             Status = status;
+            IsNotFound = false;
             QueueDateTime = queueDateTime;
 
             if (status == Status.Failed && retryOption != null)
@@ -49,7 +50,8 @@ namespace PowerThreadPool.Results
                 result = new ExecuteResult<TRes>()
                 {
                     Exception = Exception,
-                    Result = (TRes)(object)Result,
+                    IsNotFound = false,
+                    Result = Result != null ? (TRes)(object)Result : default,
                     ID = ID,
                     QueueDateTime = UtcQueueDateTime
                 };
