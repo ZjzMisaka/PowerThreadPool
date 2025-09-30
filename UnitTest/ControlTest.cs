@@ -1908,6 +1908,26 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestWaitByAllAsync()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            await powerPool.WaitAsync();
+
+            Assert.False(powerPool.PoolRunning);
+        }
+
+        [Fact]
         public void TestWaitByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2085,9 +2105,8 @@ namespace UnitTest
                 Thread.Sleep(1000);
             });
 
-            bool res = await powerPool.WaitAsync(id);
+            await powerPool.WaitAsync(id);
 
-            Assert.True(res);
             Assert.True(GetNowSs() - start >= 1000);
         }
 

@@ -9,9 +9,6 @@ using System.Threading.Tasks;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Exceptions;
-#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-using PowerThreadPool.Helpers.Asynchronous;
-#endif
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;
 
@@ -289,12 +286,18 @@ namespace PowerThreadPool
             }
 
             TaskCompletionSource<object> tcs = NewTcs<object>();
-            RegisteredWaitState<object> state = new RegisteredWaitState<object>
+            RegisteredWaitHandle rwh = null;
+            WaitOrTimerCallback cb = (state, timedOut) =>
             {
-                Tcs = tcs,
-                Res = default,
+                tcs.TrySetResult(null);
+                if (_waitRegDict.TryRemove(tcs.Task, out RegisteredWaitHandle h))
+                {
+                    h.Unregister(null);
+                }
             };
-            state.Handle = ThreadPool.UnsafeRegisterWaitForSingleObject(_waitAllSignal, RegisteredWaitState<object>.WaitCallback, state, Timeout.Infinite, true);
+            rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal, cb, null, Timeout.Infinite, true);
+
+            _waitRegDict[tcs.Task] = rwh;
 
             return tcs.Task;
         }
