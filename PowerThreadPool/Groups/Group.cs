@@ -117,16 +117,16 @@ namespace PowerThreadPool.Groups
         /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Return a list of work result</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false, bool helpWhileWaiting = false)
+        public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false)
         {
             return await _powerPool.FetchAsync<TResult>(_powerPool.GetGroupMemberList(Name), removeAfterFetch);
         }
 #else
-        public Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false, bool helpWhileWaiting = false)
+        public Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false)
         {
             return Task.Factory.StartNew(() =>
             {
-                return Fetch<TResult>(removeAfterFetch, helpWhileWaiting);
+                return Fetch<TResult>(removeAfterFetch);
             });
         }
 #endif
@@ -138,16 +138,16 @@ namespace PowerThreadPool.Groups
         /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Return a list of work result</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false, bool helpWhileWaiting = false)
+        public async Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false)
         {
             return await _powerPool.FetchAsync<object>(_powerPool.GetGroupMemberList(Name), removeAfterFetch);
         }
 #else
-        public Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false, bool helpWhileWaiting = false)
+        public Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false)
         {
             return Task.Factory.StartNew(() =>
             {
-                return Fetch(removeAfterFetch, helpWhileWaiting);
+                return Fetch(removeAfterFetch);
             });
         }
 #endif
