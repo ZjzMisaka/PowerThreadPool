@@ -79,6 +79,8 @@ namespace UnitTest
                         Assert.Fail(errLog + " | PoolRunning: " + powerPool.PoolRunning);
                     }
                 }
+
+                powerPool.Dispose();
             });
         }
 
@@ -230,30 +232,9 @@ namespace UnitTest
                         Sleep(random.Next(0, 1500), powerPool);
                     }
                 }
-            });
-        }
 
-        [Fact]
-        public async Task StressTestAAA()
-        {
-            int c = 0;
-            while (true)
-            {
-                PowerPool powerPool = new PowerPool(new PowerPoolOption() { DestroyThreadOption = new DestroyThreadOption() });
-                powerPool.QueueWorkItem(() =>
-                {
-                    Thread.Sleep(0);
-                });
-                Task t1 = powerPool.WaitAsync();
-                Task t2 = powerPool.WaitAsync();
-                Task t3 = powerPool.WaitAsync();
-                Task t4 = powerPool.WaitAsync();
-                await t1;
-                await t2;
-                await t3;
-                await t4;
-                Console.WriteLine($"StressTestAAA {++c}");
-            }
+                powerPool.Dispose();
+            });
         }
 
         [Fact(Timeout = 15 * 60 * 1000)]
@@ -267,7 +248,7 @@ namespace UnitTest
 
                 int totalTasks = 100;
                 int doneCount = 0;
-                for (int i = 0; i < 10000; ++i)
+                for (int i = 0; i < 1000000; ++i)
                 {
                     powerPool.EnablePoolIdleCheck = false;
 
@@ -291,8 +272,8 @@ namespace UnitTest
             ReCheck:
 
                 string errLog = "";
-                errLog = "doneCount: " + doneCount + "/" + 100 * 10000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
-                if (100 * 10000 != doneCount || 0 != powerPool.RunningWorkerCount || 0 != powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
+                errLog = "doneCount: " + doneCount + "/" + 100 * 1000000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
+                if (100 * 1000000 != doneCount || 0 != powerPool.RunningWorkerCount || 0 != powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
                 {
                     if (powerPool.PoolRunning)
                     {
@@ -307,11 +288,11 @@ namespace UnitTest
                         Console.WriteLine($"ReCheck2");
                         goto ReCheck;
                     }
-                    errLog += " | " + "doneCount: " + doneCount + "/" + 100 * 10000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
+                    errLog += " | " + "doneCount: " + doneCount + "/" + 100 * 1000000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
                     Assert.Fail(errLog + " | PoolRunning: " + powerPool.PoolRunning);
                 }
 
-                // powerPool.Dispose();
+                powerPool.Dispose();
             });
         }
 
