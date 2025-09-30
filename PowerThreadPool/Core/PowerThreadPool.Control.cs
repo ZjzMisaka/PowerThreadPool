@@ -418,7 +418,7 @@ namespace PowerThreadPool
                 return new ExecuteResult<TResult>()
                 {
                     ID = id,
-                    IsNotFound = true,
+                    IsFound = false,
                 };
             }
         }
@@ -551,7 +551,7 @@ namespace PowerThreadPool
                 return new ExecuteResult<TResult>()
                 {
                     ID = id,
-                    IsNotFound = true,
+                    IsFound = false,
                 };
             }
         }
@@ -667,7 +667,7 @@ namespace PowerThreadPool
                 resultList.Add(new ExecuteResult<TResult>()
                 {
                     ID = id,
-                    IsNotFound = true,
+                    IsFound = false,
                 });
             }
         }
