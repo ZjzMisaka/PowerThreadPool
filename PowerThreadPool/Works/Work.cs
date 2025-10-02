@@ -202,11 +202,7 @@ namespace PowerThreadPool.Works
             RegisteredWaitHandle rwh = null;
             WaitOrTimerCallback cb = (state, timedOut) =>
             {
-                tcs.TrySetResult(true);
-                if (PowerPool._waitRegDict.TryRemove(tcs.Task, out RegisteredWaitHandle h))
-                {
-                    h.Unregister(null);
-                }
+                SetTcsResult(tcs);
             };
             rwh = ThreadPool.RegisterWaitForSingleObject(ev, cb, null, Timeout.Infinite, true);
 
