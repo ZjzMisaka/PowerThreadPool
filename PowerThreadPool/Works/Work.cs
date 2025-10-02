@@ -189,9 +189,10 @@ namespace PowerThreadPool.Works
         internal override Task<bool> WaitAsync()
         {
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-            if (SyncOrAsyncWorkDone)
+            Task<bool> task = null;
+            if (CheckWorkAlreadyDoneWhenAsyncWait(null, out task))
             {
-                return Task.FromResult(true);
+                return task;
             }
 
             TaskCompletionSource<bool> tcs = PowerPool.NewTcs<bool>();
@@ -211,6 +212,11 @@ namespace PowerThreadPool.Works
 
             PowerPool._waitRegDict[tcs.Task] = rwh;
 
+            if (CheckWorkAlreadyDoneWhenAsyncWait(tcs, out task))
+            {
+                return task;
+            }
+
             return tcs.Task;
 #else
             return Task.Factory.StartNew(() =>
@@ -219,6 +225,37 @@ namespace PowerThreadPool.Works
             });
 #endif
         }
+
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        private bool CheckWorkAlreadyDoneWhenAsyncWait(TaskCompletionSource<bool> tcs, out Task<bool> task)
+        {
+            bool res = false;
+            task = default;
+
+            if (SyncOrAsyncWorkDone)
+            {
+                res = true;
+
+                SetTcsResult(tcs);
+
+                task = Task.FromResult(true);
+            }
+
+            return res;
+        }
+
+        private void SetTcsResult(TaskCompletionSource<bool> tcs)
+        {
+            if (tcs != null)
+            {
+                tcs.TrySetResult(true);
+                if (PowerPool._waitRegDict.TryRemove(tcs.Task, out RegisteredWaitHandle h))
+                {
+                    h.Unregister(null);
+                }
+            }
+        }
+#endif
 
         internal override ExecuteResult<T> Fetch<T>(bool helpWhileWaiting = false)
         {
