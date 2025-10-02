@@ -266,7 +266,6 @@ namespace PowerThreadPool
                     if (asyncBaseWork.WaitSignal != null)
                     {
                         asyncBaseWork.WaitSignal.Set();
-                        asyncBaseWork.Dispose();
                     }
                     _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true);
                 }
