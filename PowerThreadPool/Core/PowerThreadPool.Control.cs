@@ -275,14 +275,10 @@ namespace PowerThreadPool
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public Task WaitAsync()
         {
-            if (_poolState == PoolStates.NotRunning ||
-                (RunningWorkerCount == 0 && WaitingWorkCount == 0 && AsyncWorkCount == 0))
+            Task task;
+            if (CheckSignalAlreadySetWhenAsyncWait(null, out task))
             {
-#if (NET46_OR_GREATER || NET5_0_OR_GREATER)
-                return Task.CompletedTask;
-#else
-                return Task.FromResult(0);
-#endif
+                return task;
             }
 
             TaskCompletionSource<object> tcs = NewTcs<object>();
@@ -299,6 +295,11 @@ namespace PowerThreadPool
 
             _waitRegDict[tcs.Task] = rwh;
 
+            if (CheckSignalAlreadySetWhenAsyncWait(tcs, out task))
+            {
+                return task;
+            }
+
             return tcs.Task;
         }
 #else
@@ -308,6 +309,41 @@ namespace PowerThreadPool
             {
                 Wait();
             });
+        }
+#endif
+
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        private bool CheckSignalAlreadySetWhenAsyncWait(TaskCompletionSource<object> tcs, out Task task)
+        {
+            bool res = false;
+            task = default;
+
+            if (_waitAllSignal.WaitOne(0))
+            {
+                res = true;
+
+                SetTcsResult(tcs);
+
+#if (NET46_OR_GREATER || NET5_0_OR_GREATER)
+                task = Task.CompletedTask;
+#else
+                task = Task.FromResult(0);
+#endif
+            }
+
+            return res;
+        }
+
+        private void SetTcsResult(TaskCompletionSource<object> tcs)
+        {
+            if (tcs != null)
+            {
+                tcs.TrySetResult(null);
+                if (_waitRegDict.TryRemove(tcs.Task, out RegisteredWaitHandle h))
+                {
+                    h.Unregister(null);
+                }
+            }
         }
 #endif
 
