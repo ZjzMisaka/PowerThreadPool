@@ -1945,6 +1945,50 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestWaitByIDHasGroupAndStoreResult()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, new WorkOption
+            {
+                Group = "A",
+                ShouldStoreResult = true,
+            });
+
+            powerPool.Wait(id);
+
+            Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact]
+        public async Task TestForceStopHasGroupAndStoreResult()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, new WorkOption
+            {
+                Group = "A",
+                ShouldStoreResult = true,
+            });
+
+            Task task = powerPool.WaitAsync(id);
+            powerPool.ForceStop();
+            await task;
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
         public async void TestWaitAsyncAShortWorkByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
