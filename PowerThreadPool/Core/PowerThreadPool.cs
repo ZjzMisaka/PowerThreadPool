@@ -788,10 +788,16 @@ namespace PowerThreadPool
                 return;
             }
 
-            if (RunningWorkerCount == 0 &&
-                WaitingWorkCount == 0 &&
-                AsyncWorkCount == 0 &&
-                _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+            if (Volatile.Read(ref _runningWorkerCount) == 0 &&
+               Volatile.Read(ref _waitingWorkCount) == 0 &&
+               Volatile.Read(ref _asyncWorkCount) == 0 &&
+#else
+            if (Thread.VolatileRead(ref _runningWorkerCount) == 0 &&
+               Thread.VolatileRead(ref _waitingWorkCount) == 0 &&
+               Thread.VolatileRead(ref _asyncWorkCount) == 0 &&
+#endif
+            _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
                 )
             {
                 if (PowerPoolOption.EnableStatisticsCollection)
