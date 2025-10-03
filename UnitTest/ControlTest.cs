@@ -1994,26 +1994,13 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            WorkID id1 = powerPool.QueueWorkItem(() =>
+            for (int i = 0; i < 100; ++i)
             {
-            });
-            await powerPool.WaitAsync(id1);
-            WorkID id2 = powerPool.QueueWorkItem(() =>
-            {
-            });
-            await powerPool.WaitAsync(id2);
-            WorkID id3 = powerPool.QueueWorkItem(() =>
-            {
-            });
-            await powerPool.WaitAsync(id3);
-            WorkID id4 = powerPool.QueueWorkItem(() =>
-            {
-            });
-            await powerPool.WaitAsync(id4);
-            WorkID id5 = powerPool.QueueWorkItem(() =>
-            {
-            });
-            await powerPool.WaitAsync(id5);
+                WorkID id = powerPool.QueueWorkItem(() =>
+                {
+                });
+                await powerPool.WaitAsync(id);
+            }
             Assert.Equal(0, powerPool.RunningWorkerCount);
         }
 
