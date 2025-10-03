@@ -143,8 +143,10 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="work"></param>
         /// <param name="status"></param>
-        internal void WorkCallbackEnd(WorkBase work, Status status)
+        internal bool WorkCallbackEnd(WorkBase work, Status status)
         {
+            bool disposed = false;
+
             if (status == Status.Failed)
             {
                 _failedWorkSet.Add(work.ID);
@@ -164,7 +166,12 @@ namespace PowerThreadPool
             if ((work.Group == null || !work.ShouldStoreResult) && work.BaseAsyncWorkID == null)
             {
                 _aliveWorkDic.TryRemove(work.ID, out _);
+                if (work.WaitSignal != null)
+                {
+                    work.WaitSignal.Set();
+                }
                 work.Dispose();
+                disposed = true;
             }
             if (work.Group != null && !work.ShouldStoreResult)
             {
@@ -173,6 +180,7 @@ namespace PowerThreadPool
                     idSet.Remove(work.RealWorkID);
                 }
             }
+            return disposed;
         }
 
         /// <summary>
