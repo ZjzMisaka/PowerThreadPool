@@ -1945,6 +1945,35 @@ namespace UnitTest
         }
 
         [Fact]
+        public async void TestWaitAsyncAShortWorkByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+            });
+            await powerPool.WaitAsync(id1);
+            WorkID id2 = powerPool.QueueWorkItem(() =>
+            {
+            });
+            await powerPool.WaitAsync(id2);
+            WorkID id3 = powerPool.QueueWorkItem(() =>
+            {
+            });
+            await powerPool.WaitAsync(id3);
+            WorkID id4 = powerPool.QueueWorkItem(() =>
+            {
+            });
+            await powerPool.WaitAsync(id4);
+            WorkID id5 = powerPool.QueueWorkItem(() =>
+            {
+            });
+            await powerPool.WaitAsync(id5);
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
         public void TestWaitByIDNotRunningYet()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
