@@ -204,7 +204,14 @@ namespace PowerThreadPool.Works
             {
                 SetTcsResult(tcs);
             };
-            rwh = ThreadPool.RegisterWaitForSingleObject(ev, cb, null, Timeout.Infinite, true);
+            try
+            {
+                rwh = ThreadPool.RegisterWaitForSingleObject(ev, cb, null, Timeout.Infinite, true);
+            }
+            catch
+            {
+                return Task.FromResult(true);
+            }
 
             PowerPool._waitRegDict[tcs.Task] = rwh;
 
