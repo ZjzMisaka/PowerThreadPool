@@ -414,10 +414,6 @@ namespace PowerThreadPool.Works
             {
                 PauseSignal.Dispose();
             }
-            if (WaitSignal != null)
-            {
-                WaitSignal.Dispose();
-            }
         }
     }
 }
