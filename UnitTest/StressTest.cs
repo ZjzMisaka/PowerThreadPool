@@ -56,7 +56,7 @@ namespace UnitTest
 
                     powerPool.EnablePoolIdleCheck = true;
 
-                    await powerPool.WaitAsync();
+                    powerPool.Wait();
 
                     string errLog = "";
                     errLog = "doneCount: " + doneCount + "/" + totalTasks + " | failedCount: " + failedCount + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
@@ -252,7 +252,7 @@ namespace UnitTest
 
                     powerPool.EnablePoolIdleCheck = true;
 
-                    await powerPool.WaitAsync();
+                    powerPool.Wait();
                 }
 
                 string errLog = "";
