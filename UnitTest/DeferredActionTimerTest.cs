@@ -16,7 +16,7 @@ namespace UnitTest
             _stopwatch = new Stopwatch();
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestDeferredActionTimer1()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -54,7 +54,7 @@ namespace UnitTest
             timer.Dispose();
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestDeferredActionTimer2()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -77,7 +77,7 @@ namespace UnitTest
             timer.Dispose();
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestDeferredActionTimer3()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");

@@ -24,7 +24,7 @@ namespace UnitTest
             return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestPauseAll()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -84,7 +84,7 @@ namespace UnitTest
             );
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestPauseByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -141,7 +141,7 @@ namespace UnitTest
             );
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestPauseByIDList()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -198,7 +198,7 @@ namespace UnitTest
             );
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestPauseByGroup()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -266,7 +266,7 @@ namespace UnitTest
             );
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestPauseByGroupObject()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -334,7 +334,7 @@ namespace UnitTest
             );
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestPauseByIDAndResumeAll()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -390,7 +390,7 @@ namespace UnitTest
             );
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestPauseByIDAndResumeAllWhenItStealWaiting()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -446,7 +446,7 @@ namespace UnitTest
             );
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestForceStop()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -501,7 +501,7 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestForceStopBeforeRunning()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -564,7 +564,7 @@ namespace UnitTest
             Assert.Equal(1, cancelCount);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestStopBeforeRunning()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -618,7 +618,7 @@ namespace UnitTest
             Assert.Equal(3, doneCount);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestForceStopAfterExecuteEnd()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -657,7 +657,7 @@ namespace UnitTest
             Assert.Equal(resId, id);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestForceStopWhenCallback()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -696,7 +696,7 @@ namespace UnitTest
             Assert.True(forceStopped);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestForceStopWhenInvoke()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -725,7 +725,7 @@ namespace UnitTest
             Assert.True(forceStopped);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestStopAll()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -774,7 +774,7 @@ namespace UnitTest
             Assert.True(end >= 0 && end <= 300);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestStopByIDMultiWorks()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -893,7 +893,7 @@ namespace UnitTest
             Assert.Equal(0, powerPool.RunningWorkerCount);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestStopByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -929,7 +929,7 @@ namespace UnitTest
             Assert.Equal(id, resID);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestStopByIDAfterWorkStart()
         {
 #if DEBUG
@@ -956,7 +956,7 @@ namespace UnitTest
 #endif
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestStopByIDList()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -992,7 +992,7 @@ namespace UnitTest
             Assert.Equal(id, resID);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestForceStopByIDList()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1027,7 +1027,7 @@ namespace UnitTest
             Assert.Equal(id, resID);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestStopByGroup()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1068,7 +1068,7 @@ namespace UnitTest
             Assert.Equal(id, resID);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestStopByGroupObject()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1109,7 +1109,7 @@ namespace UnitTest
             Assert.Equal(id, resID);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestForceStopByGroupObject()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1149,7 +1149,7 @@ namespace UnitTest
             Assert.Equal(id, resID);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestStopByIDUseCheckIfRequestedStop()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1188,7 +1188,7 @@ namespace UnitTest
             Assert.Equal(id, resID);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestStopByIDDoActionBeforeStop()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1224,7 +1224,7 @@ namespace UnitTest
             Assert.Equal(WorkID.FromString("Stopped" + id), resID);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestStopByIDDoBeforeStop()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1260,7 +1260,7 @@ namespace UnitTest
             Assert.Equal(WorkID.FromString("Stopped" + id), resID);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestStopAllDoBeforeStop()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1296,7 +1296,7 @@ namespace UnitTest
             Assert.Equal(WorkID.FromString("Stopped" + id), resID);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestStopByIDDoBeforeStopReturnFalse()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1332,7 +1332,7 @@ namespace UnitTest
             Assert.Equal(WorkID.FromString("Ended" + id), resID);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestStopAllDoBeforeStopReturnFalse()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1368,7 +1368,7 @@ namespace UnitTest
             Assert.Equal(WorkID.FromString("Ended" + id), resID);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestCancelByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1465,7 +1465,7 @@ namespace UnitTest
             Assert.Equal(2, logList.Count);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestCancelByIDHasWorkGroup()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1548,7 +1548,7 @@ namespace UnitTest
             Assert.Equal(2, logList.Count);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestCancelByIDSuspended()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1570,7 +1570,7 @@ namespace UnitTest
             Assert.True(canceled);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestCancelByIDList()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1634,7 +1634,7 @@ namespace UnitTest
             Assert.Equal(2, logList.Count);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestCancelByGroup()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1709,7 +1709,7 @@ namespace UnitTest
             Assert.Equal(2, logList.Count);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestCancelByGroupObject()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1784,7 +1784,7 @@ namespace UnitTest
             Assert.Equal(2, logList.Count);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestCancelAll()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1848,7 +1848,7 @@ namespace UnitTest
             Assert.Single(logList);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestIDEmpty()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1873,7 +1873,7 @@ namespace UnitTest
             Assert.Null((await powerPool.WaitAsync(new List<WorkID>() { workID })).First());
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestStopAfterIdle()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1887,7 +1887,7 @@ namespace UnitTest
             Assert.False(powerPool.Stop());
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestWaitByAll()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1907,7 +1907,7 @@ namespace UnitTest
             Assert.False(powerPool.PoolRunning);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestWaitByAllAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1927,7 +1927,7 @@ namespace UnitTest
             Assert.False(powerPool.PoolRunning);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestWaitByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1944,7 +1944,7 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 1000);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestWaitByIDHasGroupAndStoreResult()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1965,7 +1965,7 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 1000);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async Task TestForceStopHasGroupAndStoreResult()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -1988,7 +1988,7 @@ namespace UnitTest
             Assert.Equal(0, powerPool.RunningWorkerCount);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestWaitAsyncAShortWorkByID1()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2005,7 +2005,7 @@ namespace UnitTest
             Assert.Equal(0, powerPool.RunningWorkerCount);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestWaitAsyncAShortWorkByID2()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2022,7 +2022,7 @@ namespace UnitTest
             Assert.Equal(0, powerPool.RunningWorkerCount);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestWaitByIDNotRunningYet()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2045,7 +2045,7 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 2000);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestWaitByIDList()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2062,7 +2062,7 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 1000);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestWaitByGroup()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2082,7 +2082,7 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 1000);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestWaitByGroupObject()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2102,7 +2102,7 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 1000);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async Task TestWaitAsyncByGroupObject()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2122,7 +2122,7 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 1000);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async Task TestWaitByIDInterruptEnd()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2144,7 +2144,7 @@ namespace UnitTest
             Assert.True(res);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async Task TestWaitByIDSuspended()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2171,7 +2171,7 @@ namespace UnitTest
             Assert.True(res);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestWaitByIDAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2188,7 +2188,7 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 1000);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestWaitByIDAsyncDouble()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2207,7 +2207,7 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 1000);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestWaitByWrongIDAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2226,7 +2226,7 @@ namespace UnitTest
             await powerPool.WaitAsync();
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestWaitByIDListAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2243,7 +2243,7 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 1000);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2260,7 +2260,7 @@ namespace UnitTest
             Assert.True(res.Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchByIDAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2281,7 +2281,7 @@ namespace UnitTest
             Assert.True(res.Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchByIDAsyncError()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2302,7 +2302,7 @@ namespace UnitTest
             Assert.False(res.Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchByIDAsyncRemoveAfterFetch()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2323,7 +2323,7 @@ namespace UnitTest
             Assert.False(res.Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchByWrongIDAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2340,7 +2340,7 @@ namespace UnitTest
             Assert.False(res.Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchByNullIDAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2358,7 +2358,7 @@ namespace UnitTest
             Assert.Null(res);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchByIDInterrupted()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2381,7 +2381,7 @@ namespace UnitTest
             Assert.NotNull((await res).Exception);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByIDAlreadyDone()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2403,7 +2403,7 @@ namespace UnitTest
             Assert.True(res.Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByIDClearResultStorageWhenPoolStart()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2432,7 +2432,7 @@ namespace UnitTest
             Assert.Null(res.Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByIDRemoveAfterFetch()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2459,7 +2459,7 @@ namespace UnitTest
             Assert.Null(res.Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByIDRemoveAfterFetchNeedWait()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2483,7 +2483,7 @@ namespace UnitTest
             powerPool.Wait();
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchObjByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2500,7 +2500,7 @@ namespace UnitTest
             Assert.True((bool)resObj.Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchObjByIDAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2517,7 +2517,7 @@ namespace UnitTest
             Assert.True((bool)resObj.Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByIDNotExist()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2529,7 +2529,7 @@ namespace UnitTest
             Assert.Null(res.Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByIDEmpty()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2542,7 +2542,7 @@ namespace UnitTest
             Assert.Null(res);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchByIDSuspending()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2564,7 +2564,7 @@ namespace UnitTest
             Assert.True(res.Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByIDListRemoveAfterFetch()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2602,7 +2602,7 @@ namespace UnitTest
             Assert.Null(res[1].Result);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchObjByIDList()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2638,7 +2638,7 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchObjByIDListAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2674,7 +2674,7 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByIDList()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2710,7 +2710,7 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByIDListAlreadyDone()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2753,7 +2753,7 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchByIDListAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2789,7 +2789,7 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchByIDListAsyncSuspended()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2829,7 +2829,7 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByPredicate()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2886,7 +2886,7 @@ namespace UnitTest
             Assert.Empty(resList);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchObjByGroupObject()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2924,7 +2924,7 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchObjByGroupObjectAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2962,7 +2962,7 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByGroupObject()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3000,7 +3000,7 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchByGroupObjectAsync()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3038,7 +3038,7 @@ namespace UnitTest
             }
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFetchByPredicateByGroupObject()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3094,7 +3094,7 @@ namespace UnitTest
             Assert.True(resList.Count == 0);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestPauseWorkTimer()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3121,7 +3121,7 @@ namespace UnitTest
             Assert.True(duration >= 2800);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestPauseThreadTimer()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3148,7 +3148,7 @@ namespace UnitTest
             Assert.True(duration >= 2900);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestResumeByIDDirectlyWithoutPause()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3171,7 +3171,7 @@ namespace UnitTest
             Assert.False(res);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestResumeAllDirectlyWithoutPause()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3191,7 +3191,7 @@ namespace UnitTest
             powerPool.Stop();
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestStartSuspended()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3244,7 +3244,7 @@ namespace UnitTest
             Assert.False(powerPool.PoolRunning);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestStartWhenNotSuspended()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3274,7 +3274,7 @@ namespace UnitTest
             powerPool.Wait();
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestStartSuspendedWithDependents()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3321,7 +3321,7 @@ namespace UnitTest
             Assert.False(powerPool.PoolRunning);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestWorkGroup()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3448,7 +3448,7 @@ namespace UnitTest
             Assert.Empty(powerPool.GetGroupMemberList("BBB"));
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestCallPauseIfRequestedNotOnPowerPoolWorkerThread()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3458,7 +3458,7 @@ namespace UnitTest
             Assert.Throws<InvalidOperationException>(() => powerPool.PauseIfRequested());
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestCallCheckIfRequestedStopNotOnPowerPoolWorkerThread()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
