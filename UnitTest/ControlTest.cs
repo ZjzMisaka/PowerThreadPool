@@ -1989,7 +1989,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public async void TestWaitAsyncAShortWorkByID()
+        public async void TestWaitAsyncAShortWorkByID1()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -2001,6 +2001,24 @@ namespace UnitTest
                 });
                 await powerPool.WaitAsync(id);
             }
+            powerPool.Wait();
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
+        public async void TestWaitAsyncAShortWorkByID2()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            for (int i = 0; i < 1000; ++i)
+            {
+                WorkID id = powerPool.QueueWorkItem(() =>
+                {
+                });
+                await powerPool.WaitAsync(id);
+            }
+            powerPool.Wait();
             Assert.Equal(0, powerPool.RunningWorkerCount);
         }
 
