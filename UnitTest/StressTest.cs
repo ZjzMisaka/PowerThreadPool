@@ -58,24 +58,10 @@ namespace UnitTest
 
                     await powerPool.WaitAsync();
 
-                ReCheck:
-
                     string errLog = "";
                     errLog = "doneCount: " + doneCount + "/" + totalTasks + " | failedCount: " + failedCount + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
                     if (totalTasks != doneCount || 0 != failedCount || 0 != powerPool.RunningWorkerCount || 0 != powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
                     {
-                        if (powerPool.PoolRunning)
-                        {
-                            powerPool.Wait();
-                            goto ReCheck;
-                        }
-                        Thread.Sleep(5);
-                        if (powerPool.PoolRunning)
-                        {
-                            powerPool.Wait();
-                            goto ReCheck;
-                        }
-                        errLog += " | " + "doneCount: " + doneCount + "/" + totalTasks + " | failedCount: " + failedCount + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
                         Assert.Fail(errLog + " | PoolRunning: " + powerPool.PoolRunning);
                     }
                 }
@@ -269,24 +255,10 @@ namespace UnitTest
                     await powerPool.WaitAsync();
                 }
 
-            ReCheck:
-
                 string errLog = "";
                 errLog = "doneCount: " + doneCount + "/" + 100 * 1000000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
                 if (100 * 1000000 != doneCount || 0 != powerPool.RunningWorkerCount || 0 != powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
                 {
-                    if (powerPool.PoolRunning)
-                    {
-                        powerPool.Wait();
-                        goto ReCheck;
-                    }
-                    Thread.Sleep(5);
-                    if (powerPool.PoolRunning)
-                    {
-                        powerPool.Wait();
-                        goto ReCheck;
-                    }
-                    errLog += " | " + "doneCount: " + doneCount + "/" + 100 * 1000000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
                     Assert.Fail(errLog + " | PoolRunning: " + powerPool.PoolRunning);
                 }
 
