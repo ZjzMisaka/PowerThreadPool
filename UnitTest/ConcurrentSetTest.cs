@@ -14,7 +14,7 @@ namespace UnitTest
             _output = output;
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestDefaultConstructor()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -23,7 +23,7 @@ namespace UnitTest
             Assert.Equal(0, set.Count);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestAddAndCountMethods()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -36,7 +36,7 @@ namespace UnitTest
             Assert.Equal(3, set.Count);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestTryRemoveMethod()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -50,7 +50,7 @@ namespace UnitTest
             Assert.DoesNotContain(1, set);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestConstructorWithItems()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -62,7 +62,7 @@ namespace UnitTest
             Assert.All(items, item => Assert.Contains(item, set));
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestGetEnumerator()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -79,7 +79,7 @@ namespace UnitTest
             Assert.Equal(items, enumeratedItems);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestNonGenericGetEnumerator()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");

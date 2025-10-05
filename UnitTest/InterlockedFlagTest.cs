@@ -23,7 +23,7 @@ namespace UnitTest
             _canGetWork1 = CanGetWork.Allowed;
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestGetSet()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -34,7 +34,7 @@ namespace UnitTest
             Assert.Equal(CanGetWork.Disabled, _canGetWork0.InterlockedValue);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestValue()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -45,7 +45,7 @@ namespace UnitTest
             Assert.Equal(CanGetWork.Disabled, _canGetWork0.Value);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestDebuggerDisplay()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -56,7 +56,7 @@ namespace UnitTest
             Assert.Equal("CanGetWork.Allowed", dd);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestGet()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -67,7 +67,7 @@ namespace UnitTest
             Assert.Equal(CanGetWork.Disabled, _canGetWork0.Get());
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestTrySet()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -84,7 +84,7 @@ namespace UnitTest
             Assert.False(res);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestTrySetWithOrigValueParam()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -103,7 +103,7 @@ namespace UnitTest
             Assert.False(res);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestOperator1()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -131,7 +131,7 @@ namespace UnitTest
             Assert.False(res);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestOperator2()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -153,7 +153,7 @@ namespace UnitTest
             Assert.False(res);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Testimplicit()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -166,7 +166,7 @@ namespace UnitTest
             Assert.Equal(CanGetWork.ToBeDisabled, f);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestEquals1()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -183,7 +183,7 @@ namespace UnitTest
             Assert.False(res);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestEquals2()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -200,7 +200,7 @@ namespace UnitTest
             Assert.False(res);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestEquals3()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -214,7 +214,7 @@ namespace UnitTest
             Assert.False(res);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestGetHashCode()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");

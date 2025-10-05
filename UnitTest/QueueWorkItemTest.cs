@@ -15,7 +15,7 @@ namespace UnitTest
             _output = output;
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test1()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -27,7 +27,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test2()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -39,7 +39,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test3()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -51,7 +51,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test4()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -63,7 +63,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test5()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -75,7 +75,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test6()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -87,7 +87,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test7()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -99,7 +99,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test8()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -111,7 +111,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test9()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -123,7 +123,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test10()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -135,7 +135,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test11()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -147,7 +147,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test12()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -159,7 +159,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test13()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -171,7 +171,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test14()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -183,7 +183,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test15()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -195,7 +195,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test16()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -207,7 +207,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test17()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -219,7 +219,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test18()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -231,7 +231,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test19()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -243,7 +243,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test20()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -255,7 +255,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test21()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -267,7 +267,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test22()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -279,7 +279,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test23()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -291,7 +291,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test24()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -303,7 +303,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test25()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -315,7 +315,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test26()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -327,7 +327,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test27()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -339,7 +339,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test28()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -351,7 +351,7 @@ namespace UnitTest
             Assert.Equal("1", p);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test29()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -377,7 +377,7 @@ namespace UnitTest
             Assert.Equal("3", c);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void Test30()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -408,7 +408,7 @@ namespace UnitTest
             Assert.Equal("100", r);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void testSugar1()
         {
             PowerPool powerPool = new PowerPool();
@@ -416,7 +416,7 @@ namespace UnitTest
             Assert.False(id == null);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void testSugar2()
         {
             int doneCount = 0;
@@ -429,7 +429,7 @@ namespace UnitTest
             Assert.Equal(3, doneCount);
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void testSugar3()
         {
             int doneCount = 0;

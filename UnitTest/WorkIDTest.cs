@@ -14,7 +14,7 @@ namespace UnitTest
             _output = output;
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestNullRepresentsNoneStateAndSafeUsages()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
@@ -34,7 +34,7 @@ namespace UnitTest
         private static bool WorkIDEqualityToNull(WorkID n) => (n == null) && !(n != null);
         private static bool WorkIDEqualityToInstance(WorkID n, WorkID other) => (n == other);
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFromLongBasicImplicitExplicitFormattingEquality()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
@@ -77,7 +77,7 @@ namespace UnitTest
             Assert.Throws<InvalidCastException>(() => { long _ = (long)none; });
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFromGuidBasicImplicitExplicitFormattingEquality()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
@@ -129,7 +129,7 @@ namespace UnitTest
             Assert.Throws<InvalidCastException>(() => { Guid _ = (Guid)none; });
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFromStringBasicImplicitExplicitFormattingEquality()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
@@ -172,7 +172,7 @@ namespace UnitTest
             Assert.Throws<InvalidCastException>(() => { string _ = (string)none; });
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestFromStringBasicTryGetToStringTryFormat()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
@@ -206,7 +206,7 @@ namespace UnitTest
             Assert.Throws<ArgumentNullException>(() => WorkID.FromString(null));
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestTryGetFailurPathsForOtherKinds()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
@@ -224,7 +224,7 @@ namespace UnitTest
             Assert.False(s.TryGetGuid(out _));
         }
 
-        [Fact]
+        [Fact(Timeout = 5 * 60 * 1000)]
         public void TestEqualityMatrixAndOperatorsAndHashCodes()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
