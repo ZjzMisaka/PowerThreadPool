@@ -24,7 +24,7 @@ namespace UnitTest
 
             await Task.Run(async () =>
             {
-                PowerPool powerPool = new PowerPool(new PowerPoolOption() { DestroyThreadOption = new DestroyThreadOption() });
+                PowerPool powerPool = new PowerPool();
 
                 int totalTasks = 1000000;
 
@@ -230,7 +230,7 @@ namespace UnitTest
 
             await Task.Run(async () =>
             {
-                PowerPool powerPool = new PowerPool(new PowerPoolOption() { DestroyThreadOption = new DestroyThreadOption() });
+                PowerPool powerPool = new PowerPool();
 
                 int totalTasks = 100;
                 int doneCount = 0;
