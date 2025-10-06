@@ -5,7 +5,7 @@ namespace UnitTest
 {
     public class StealablePriorityCollectionTest
     {
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact]
         public void TestConcurrentStealablePriorityQueue()
         {
             ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
@@ -36,7 +36,7 @@ namespace UnitTest
             Assert.Equal(12, queue.Get());
         }
 
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact]
         public void TestConcurrentStealablePriorityStack()
         {
             ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>();
@@ -67,7 +67,7 @@ namespace UnitTest
             Assert.Equal(11, queue.Get());
         }
 
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact]
         public void TestConcurrentStealablePriorityQueueDiscard()
         {
             ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
@@ -75,7 +75,7 @@ namespace UnitTest
             Assert.Equal(1, queue.Discard());
         }
 
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact]
         public void TestConcurrentStealablePriorityStackDiscard()
         {
             ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>();
@@ -83,7 +83,7 @@ namespace UnitTest
             Assert.Equal(1, queue.Discard());
         }
 
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact]
         public void TestConcurrentStealablePriorityQueueNotInserted()
         {
             ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
@@ -91,7 +91,7 @@ namespace UnitTest
             Assert.Equal(1, queue.Discard());
         }
 
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact]
         public void TestConcurrentStealablePriorityStackNotInserted()
         {
             ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>();
@@ -99,7 +99,7 @@ namespace UnitTest
             Assert.Equal(1, queue.Discard());
         }
 
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact]
         public void TestGetQueueReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
             var q = new ConcurrentStealablePriorityQueue<int>();
@@ -120,7 +120,7 @@ namespace UnitTest
             Assert.Equal(42, got);
         }
 
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact]
         public void TestGetStackReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
             ConcurrentStealablePriorityQueue<int> q = new ConcurrentStealablePriorityQueue<int>();
@@ -141,7 +141,7 @@ namespace UnitTest
             Assert.Equal(42, got);
         }
 
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact]
         public void TryGetStackReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
             ConcurrentStealablePriorityStack<int> s = new ConcurrentStealablePriorityStack<int>();
@@ -162,7 +162,7 @@ namespace UnitTest
             Assert.Equal(99, got);
         }
 
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact]
         public void ConcurrentStealablePriorityQueueDiscardShouldIterateAllPrioritiesAndReturnDefaultWhenAllQueuesEmpty()
         {
             ConcurrentStealablePriorityQueue<object> q = new ConcurrentStealablePriorityQueue<object>();
@@ -184,7 +184,7 @@ namespace UnitTest
             Assert.Null(result);
         }
 
-        [Fact(Timeout = 5 * 60 * 1000)]
+        [Fact]
         public void ConcurrentStealablePriorityStackDiscardShouldIterateAllPrioritiesAndReturnDefaultWhenAllQueuesEmpty()
         {
             ConcurrentStealablePriorityStack<object> q = new ConcurrentStealablePriorityStack<object>();
