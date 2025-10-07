@@ -177,7 +177,6 @@ namespace PowerThreadPool
                     idSet.Remove(work.RealWorkID);
                 }
             }
-            return disposed;
         }
 
         /// <summary>
