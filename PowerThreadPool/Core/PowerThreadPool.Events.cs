@@ -143,10 +143,8 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="work"></param>
         /// <param name="status"></param>
-        internal bool WorkCallbackEnd(WorkBase work, Status status)
+        internal void WorkCallbackEnd(WorkBase work, Status status)
         {
-            bool disposed = false;
-
             if (status == Status.Failed)
             {
                 _failedWorkSet.Add(work.ID);
@@ -171,7 +169,6 @@ namespace PowerThreadPool
                     work.WaitSignal.Set();
                 }
                 work.Dispose();
-                disposed = true;
             }
             if (work.Group != null && !work.ShouldStoreResult)
             {

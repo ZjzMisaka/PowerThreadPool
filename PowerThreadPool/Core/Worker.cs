@@ -246,17 +246,15 @@ namespace PowerThreadPool
 
         private void CleanUpAndSetSignalAfterExecute(ExecuteResultBase executeResult)
         {
-            bool disposed = false;
-
             if (Work.AllowEventsAndCallback)
             {
-                disposed = _powerPool.WorkCallbackEnd(Work, executeResult.Status);
+                _powerPool.WorkCallbackEnd(Work, executeResult.Status);
                 Work.AsyncDone = true;
             }
 
             Work.IsDone = true;
 
-            if (Work.WaitSignal != null && Work.BaseAsyncWorkID == null && !disposed)
+            if (Work.WaitSignal != null && Work.BaseAsyncWorkID == null)
             {
                 Work.WaitSignal.Set();
             }
@@ -322,13 +320,13 @@ namespace PowerThreadPool
             }
             Work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
 
-            bool disposed = _powerPool.WorkCallbackEnd(Work, Status.ForceStopped);
+            _powerPool.WorkCallbackEnd(Work, Status.ForceStopped);
 
             bool hasWaitingWork = RequeueAllWaitingWork();
             Work.AsyncDone = true;
             Work.IsDone = true;
 
-            if (Work.WaitSignal != null && !disposed)
+            if (Work.WaitSignal != null)
             {
                 Work.WaitSignal.Set();
             }
