@@ -45,7 +45,14 @@ namespace PowerThreadPool.Works
         internal override bool AllowEventsAndCallback
         {
             get => _workOption.AllowEventsAndCallback;
-            set => _workOption.AllowEventsAndCallback = value;
+            set
+            {
+                if (_workOption.IsDefaultInstance)
+                {
+                    _workOption = new WorkOption<TResult>();
+                }
+                _workOption.AllowEventsAndCallback = value;
+            }
         }
         internal override WorkID AsyncWorkID => _workOption.AsyncWorkID;
         internal override WorkID BaseAsyncWorkID => _workOption.BaseAsyncWorkID;
