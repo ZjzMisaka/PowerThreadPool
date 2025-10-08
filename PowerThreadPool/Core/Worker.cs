@@ -980,7 +980,6 @@ namespace PowerThreadPool
                     }
                 }
 
-                _runSignal.Dispose();
                 if (_timeoutTimer != null)
                 {
                     _timeoutTimer.Dispose();
