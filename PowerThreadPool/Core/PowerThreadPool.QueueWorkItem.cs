@@ -581,7 +581,6 @@ namespace PowerThreadPool
         /// <summary>
         /// Create and return a WorkOption<TResult> instance with callback.
         /// </summary>
-        /// <typeparam name="TResult"></typeparam>
         /// <param name="callBack"></param>
         /// <returns>A WorkOption<TResult> instance</returns>
         private WorkOption GetOption(Action<ExecuteResult<object>> callBack)
