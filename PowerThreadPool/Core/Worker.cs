@@ -352,7 +352,7 @@ namespace PowerThreadPool
                     return false;
                 }
 
-                CanGetWork.InterlockedValue = Constants.CanGetWork.Disabled;
+                Spinner.Start(() => CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.Allowed));
 
                 WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
 
@@ -369,13 +369,13 @@ namespace PowerThreadPool
 
                 _powerPool.FillWorkerQueue();
 
-                Dispose();
-
                 bool hasWaitingWork = RequeueAllWaitingWork();
                 if (!hasWaitingWork)
                 {
                     _powerPool.CheckPoolIdle();
                 }
+
+                Dispose();
 
                 res = true;
             }
