@@ -112,7 +112,6 @@ namespace Benchmark
             try
             {
                 int powerThreadPoolRunCount = 0;
-                _powerPool.EnablePoolIdleCheck = false;
                 for (int i = 0; i < 1000; ++i)
                 {
                     _powerPool.QueueWorkItem(() =>
@@ -121,7 +120,6 @@ namespace Benchmark
                         DoWork();
                     });
                 }
-                _powerPool.EnablePoolIdleCheck = true;
                 _powerPool.Wait();
                 int count = powerThreadPoolRunCount;
                 if (count != 1000)

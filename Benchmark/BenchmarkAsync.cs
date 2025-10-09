@@ -63,7 +63,6 @@ namespace Benchmark
             try
             {
                 int powerThreadPoolRunCount = 0;
-                _powerPool.EnablePoolIdleCheck = false;
                 for (int i = 0; i < 50; ++i)
                 {
                     _powerPool.QueueWorkItemAsync(async () =>
@@ -75,7 +74,6 @@ namespace Benchmark
                         return true;
                     });
                 }
-                _powerPool.EnablePoolIdleCheck = true;
                 _powerPool.Wait();
                 int count = powerThreadPoolRunCount;
                 if (count != 50)
@@ -96,7 +94,6 @@ namespace Benchmark
             try
             {
                 int powerThreadPoolRunCount = 0;
-                _powerPool.EnablePoolIdleCheck = false;
                 for (int i = 0; i < 50; ++i)
                 {
                     _powerPool.QueueWorkItem(() =>
@@ -108,7 +105,6 @@ namespace Benchmark
                         return true;
                     });
                 }
-                _powerPool.EnablePoolIdleCheck = true;
                 _powerPool.Wait();
                 int count = powerThreadPoolRunCount;
                 if (count != 50)
