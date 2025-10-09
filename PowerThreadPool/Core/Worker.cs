@@ -341,10 +341,17 @@ namespace PowerThreadPool
             Dispose();
         }
 
-        private void WorkerCountOutOfRange()
+        private bool WorkerCountOutOfRange()
         {
+            bool res = false;
             if (_powerPool._canDeleteRedundantWorker.TrySet(CanDeleteRedundantWorker.NotAllowed, CanDeleteRedundantWorker.Allowed))
             {
+                if (_powerPool.AliveWorkerCount - _powerPool.LongRunningWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
+                {
+                    _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
+                    return false;
+                }
+
                 CanGetWork.InterlockedValue = Constants.CanGetWork.Disabled;
 
                 WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
@@ -356,21 +363,23 @@ namespace PowerThreadPool
                 }
 
                 _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
+
+                Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
+                _powerPool.FillWorkerQueue();
+
+                Dispose();
+
+                bool hasWaitingWork = RequeueAllWaitingWork();
+                if (!hasWaitingWork)
+                {
+                    _powerPool.CheckPoolIdle();
+                }
+
+                res = true;
             }
-
-            bool hasWaitingWork = RequeueAllWaitingWork();
-
-            Interlocked.Decrement(ref _powerPool._runningWorkerCount);
-            _powerPool.InvokeRunningWorkerCountChangedEvent(false);
-
-            _powerPool.FillWorkerQueue();
-
-            if (!hasWaitingWork)
-            {
-                _powerPool.CheckPoolIdle();
-            }
-
-            Dispose();
+            return res;
         }
 
         private bool RequeueAllWaitingWork()
@@ -552,9 +561,10 @@ namespace PowerThreadPool
 
                 if (_powerPool.AliveWorkerCount - _powerPool.LongRunningWorkerCount > _powerPool.PowerPoolOption.MaxThreads)
                 {
-                    WorkerCountOutOfRange();
-
-                    return;
+                    if (WorkerCountOutOfRange())
+                    {
+                        return;
+                    }
                 }
 
                 work = Get();
