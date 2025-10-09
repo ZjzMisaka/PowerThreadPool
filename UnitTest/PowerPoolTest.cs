@@ -8028,5 +8028,86 @@ namespace UnitTest
                 return i == 5;
             });
         }
+
+        [Fact]
+        public void TestWorkerCountOutOfRange1()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int done = 0;
+
+            PowerPoolOption ppo = new PowerPoolOption { MaxThreads = 100 };
+            PowerPool powerPool = new PowerPool(ppo);
+            for (int i = 0; i < 100; ++i)
+            {
+                if (ppo.MaxThreads >= 2)
+                {
+                    ppo.MaxThreads = ppo.MaxThreads - 1;
+                }
+
+                for (int j = 0; j < 100; ++j)
+                {
+                    powerPool.QueueWorkItem(() => { Interlocked.Increment(ref done); });
+                }
+            }
+
+            powerPool.Wait();
+
+            Assert.Equal(10000, done);
+        }
+
+        [Fact]
+        public void TestWorkerCountOutOfRange2()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int done = 0;
+
+            PowerPoolOption ppo = new PowerPoolOption { MaxThreads = 100 };
+            PowerPool powerPool = new PowerPool(ppo);
+            for (int i = 0; i < 100; ++i)
+            {
+                if (ppo.MaxThreads >= 2)
+                {
+                    ppo.MaxThreads = ppo.MaxThreads - 1;
+                }
+
+                for (int j = 0; j < 100; ++j)
+                {
+                    powerPool.QueueWorkItem(() => { Interlocked.Increment(ref done); });
+                }
+            }
+
+            powerPool.Wait();
+
+            Assert.Equal(10000, done);
+        }
+
+        [Fact]
+        public void TestWorkerCountOutOfRange3()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int done = 0;
+
+            PowerPoolOption ppo = new PowerPoolOption { MaxThreads = 100 };
+            PowerPool powerPool = new PowerPool(ppo);
+            for (int i = 0; i < 100; ++i)
+            {
+                if (ppo.MaxThreads >= 2)
+                {
+                    ppo.MaxThreads = ppo.MaxThreads - 1;
+                }
+
+                for (int j = 0; j < 100; ++j)
+                {
+                    powerPool.QueueWorkItem(() => { Interlocked.Increment(ref done); });
+                }
+            }
+
+            powerPool.Wait();
+
+            Assert.Equal(10000, done);
+        }
     }
 }
