@@ -502,6 +502,116 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestForceStopManyTimes1()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            object res0 = null;
+            object res1 = null;
+            object res2 = null;
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                res0 = res.Exception;
+            });
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                res1 = res.Exception;
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                res2 = res.Exception;
+            });
+            long start = GetNowSs();
+
+            bool r1 = powerPool.ForceStop();
+            bool r2 = powerPool.ForceStop();
+            bool r3 = powerPool.ForceStop();
+            bool r4 = powerPool.ForceStop();
+            powerPool.Wait();
+
+            if (r1 || r2 || r3 || r4)
+            {
+                Assert.IsType<ThreadInterruptedException>(res0);
+                Assert.IsType<ThreadInterruptedException>(res1);
+                Assert.IsType<ThreadInterruptedException>(res2);
+            }
+        }
+
+        [Fact]
+        public void TestForceStopManyTimes2()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            object res0 = null;
+            object res1 = null;
+            object res2 = null;
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                res0 = res.Exception;
+            });
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                res1 = res.Exception;
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                res2 = res.Exception;
+            });
+            long start = GetNowSs();
+
+            bool r1 = powerPool.ForceStop();
+            bool r2 = powerPool.ForceStop();
+            bool r3 = powerPool.ForceStop();
+            bool r4 = powerPool.ForceStop();
+            powerPool.Wait();
+
+            if (r1 || r2 || r3 || r4)
+            {
+                Assert.IsType<ThreadInterruptedException>(res0);
+                Assert.IsType<ThreadInterruptedException>(res1);
+                Assert.IsType<ThreadInterruptedException>(res2);
+            }
+        }
+
+        [Fact]
         public void TestForceStopBeforeRunning()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");

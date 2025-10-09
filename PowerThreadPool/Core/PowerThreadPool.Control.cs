@@ -740,6 +740,8 @@ namespace PowerThreadPool
                 return false;
             }
 
+            bool res = true;
+
             _poolStopping = true;
 
             if (forceStop)
@@ -752,6 +754,10 @@ namespace PowerThreadPool
                     {
                         worker.ForceStop();
                     }
+                    else
+                    {
+                        res = false;
+                    }
                 }
             }
             else
@@ -762,7 +768,7 @@ namespace PowerThreadPool
 
             _workDependencyController.Cancel();
 
-            return true;
+            return res;
         }
 
         /// <summary>
