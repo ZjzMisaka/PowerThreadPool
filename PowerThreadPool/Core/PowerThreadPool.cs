@@ -337,6 +337,8 @@ namespace PowerThreadPool
             while (AliveWorkerCount < minThreads)
             {
                 Worker worker = new Worker(this);
+                worker.CanGetWork.InterlockedValue = CanGetWork.NotAllowed;
+
                 if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                 {
                     Interlocked.Increment(ref _aliveWorkerCount);
@@ -345,12 +347,15 @@ namespace PowerThreadPool
 
                 if (PoolRunning && WaitingWorkCount > 0 && worker.TryAssignWorkForNewWorker())
                 {
+                    worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
                     continue;
                 }
 
                 _idleWorkerDic[worker.ID] = worker;
                 Interlocked.Increment(ref _idleWorkerCount);
                 _idleWorkerQueue.Enqueue(worker.ID);
+
+                worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
             }
         }
 

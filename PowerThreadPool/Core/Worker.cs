@@ -344,15 +344,15 @@ namespace PowerThreadPool
         private bool WorkerCountOutOfRange()
         {
             bool res = false;
-            if (_powerPool._canDeleteRedundantWorker.TrySet(CanDeleteRedundantWorker.NotAllowed, CanDeleteRedundantWorker.Allowed))
+            if (_powerPool._canDeleteRedundantWorker.TrySet(CanDeleteRedundantWorker.NotAllowed, CanDeleteRedundantWorker.Allowed)
+                && CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.Allowed))
             {
                 if (_powerPool.AliveWorkerCount - _powerPool.LongRunningWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
                 {
                     _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
+                    CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
                     return false;
                 }
-
-                Spinner.Start(() => CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.Allowed));
 
                 WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
 
@@ -498,7 +498,7 @@ namespace PowerThreadPool
             }
         }
 
-        internal void SetWork(WorkBase work, bool reset)
+        internal void SetWork(WorkBase work, bool shouldSetCanGetWork)
         {
             _powerPool.SetWorkOwner(work);
             _waitingWorkPriorityCollection.Set(work, work.WorkPriority);
@@ -511,7 +511,7 @@ namespace PowerThreadPool
                 _killTimer.Cancel();
             }
 
-            if (!reset)
+            if (!shouldSetCanGetWork)
             {
                 CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
             }
