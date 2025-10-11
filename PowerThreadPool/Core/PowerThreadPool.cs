@@ -336,26 +336,31 @@ namespace PowerThreadPool
 
             while (AliveWorkerCount < minThreads)
             {
-                Worker worker = new Worker(this);
-                worker.CanGetWork.InterlockedValue = CanGetWork.NotAllowed;
-
-                if (_aliveWorkerDic.TryAdd(worker.ID, worker))
+                if (_canCreateNewWorker.TrySet(CanCreateNewWorker.NotAllowed, CanCreateNewWorker.Allowed))
                 {
-                    Interlocked.Increment(ref _aliveWorkerCount);
-                    _aliveWorkerDicChanged = true;
-                }
+                    Worker worker = new Worker(this);
+                    worker.CanGetWork.InterlockedValue = CanGetWork.NotAllowed;
 
-                if (PoolRunning && WaitingWorkCount > 0 && worker.TryAssignWorkForNewWorker())
-                {
+                    if (_aliveWorkerDic.TryAdd(worker.ID, worker))
+                    {
+                        Interlocked.Increment(ref _aliveWorkerCount);
+                        _aliveWorkerDicChanged = true;
+                    }
+
+                    _canCreateNewWorker.InterlockedValue = CanCreateNewWorker.Allowed;
+
+                    if (PoolRunning && WaitingWorkCount > 0 && worker.TryAssignWorkForNewWorker())
+                    {
+                        worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
+                        continue;
+                    }
+
+                    _idleWorkerDic[worker.ID] = worker;
+                    Interlocked.Increment(ref _idleWorkerCount);
+                    _idleWorkerQueue.Enqueue(worker.ID);
+
                     worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
-                    continue;
                 }
-
-                _idleWorkerDic[worker.ID] = worker;
-                Interlocked.Increment(ref _idleWorkerCount);
-                _idleWorkerQueue.Enqueue(worker.ID);
-
-                worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
             }
         }
 
