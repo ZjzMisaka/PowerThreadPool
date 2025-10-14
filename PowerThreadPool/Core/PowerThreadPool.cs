@@ -31,7 +31,7 @@ namespace PowerThreadPool
 
         private WorkDependencyController _workDependencyController;
 
-        private readonly ManualResetEvent _waitAllSignal = new ManualResetEvent(false);
+        private readonly ManualResetEvent _waitAllSignal = new ManualResetEvent(true);
         private readonly ManualResetEvent _pauseSignal = new ManualResetEvent(true);
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
