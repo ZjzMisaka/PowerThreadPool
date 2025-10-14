@@ -1003,6 +1003,64 @@ namespace UnitTest
             Assert.Equal(0, powerPool.RunningWorkerCount);
         }
 
+        [Fact]
+        public void TestStopWithNoWork()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.Wait();
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
+        public void TestStopAllWorkDone()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            powerPool.QueueWorkItem(() =>
+            {
+            });
+            powerPool.Wait();
+            Thread.Sleep(100);
+
+            powerPool.Wait();
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestStopAsyncWithNoWork()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            await powerPool.WaitAsync();
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestStopAsyncAllWorkDone()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            powerPool.QueueWorkItem(() =>
+            {
+            });
+            powerPool.Wait();
+            Thread.Sleep(100);
+
+            await powerPool.WaitAsync();
+
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
         [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestStopByID()
         {
