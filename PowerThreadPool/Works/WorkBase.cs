@@ -61,9 +61,13 @@ namespace PowerThreadPool.Works
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Cancel(bool needFreeze);
         internal abstract bool Wait(bool helpWhileWaiting = false);
+        internal abstract bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false);
         internal abstract Task<bool> WaitAsync();
+        internal abstract Task<bool> WaitAsync(CancellationToken cancellationToken);
         internal abstract ExecuteResult<T> Fetch<T>(bool helpWhileWaiting = false);
+        internal abstract ExecuteResult<T> Fetch<T>(CancellationToken cancellationToken, bool helpWhileWaiting = false);
         internal abstract Task<ExecuteResult<T>> FetchAsync<T>();
+        internal abstract Task<ExecuteResult<T>> FetchAsync<T>(CancellationToken cancellationToken);
         internal abstract bool Pause();
         internal abstract bool Resume();
         internal abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
