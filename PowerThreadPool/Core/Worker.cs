@@ -103,6 +103,7 @@ namespace PowerThreadPool
                 }
             });
             ID = _thread.ManagedThreadId;
+            _thread.IsBackground = true;
             _thread.Start();
         }
 
@@ -754,6 +755,8 @@ namespace PowerThreadPool
                             Interlocked.Increment(ref _powerPool._idleWorkerCount);
                             _powerPool._idleWorkerQueue.Enqueue(ID);
                         }
+
+                        _thread.IsBackground = true;
                     }
 
                     _powerPool.CheckPoolIdle();
