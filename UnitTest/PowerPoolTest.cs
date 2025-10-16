@@ -7822,6 +7822,7 @@ namespace UnitTest
             Assert.True(powerPool.PoolRunning);
 
             powerPool.Wait(true);
+            powerPool.Wait();
 
             Assert.False(powerPool.PoolRunning);
         }
@@ -7861,6 +7862,7 @@ namespace UnitTest
             Assert.True(powerPool.PoolRunning);
 
             powerPool.Wait(true);
+            powerPool.Wait();
 
             Assert.False(powerPool.PoolRunning);
         }
