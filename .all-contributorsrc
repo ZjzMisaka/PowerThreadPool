@@ -62,6 +62,15 @@
       "contributions": [
         "question"
       ]
+    },
+    {
+      "login": "lindexi",
+      "name": "lindexi",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16054566?v=4",
+      "profile": "https://blog.lindexi.com/",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
