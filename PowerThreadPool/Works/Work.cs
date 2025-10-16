@@ -170,7 +170,7 @@ namespace PowerThreadPool.Works
 
         internal override bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
         {
-            HelpWhileWaiting(helpWhileWaiting);
+            HelpWhileWaiting(cancellationToken, helpWhileWaiting);
 
             EnsureWaitSignalExists();
 
@@ -193,11 +193,15 @@ namespace PowerThreadPool.Works
             return true;
         }
 
-        private void HelpWhileWaiting(bool helpWhileWaiting)
+        private void HelpWhileWaiting(CancellationToken cancellationToken, bool helpWhileWaiting)
         {
             SpinWait spinner = new SpinWait();
             while (!IsDone && helpWhileWaiting)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
                 if (!PowerPool.HelpWhileWaiting())
                 {
                     spinner.SpinOnce();

@@ -213,7 +213,7 @@ namespace PowerThreadPool
 
             if (helpWhileWaiting)
             {
-                HelpWhileWaitingUntilPoolIdle();
+                HelpWhileWaitingUntilPoolIdle(cancellationToken);
                 return;
             }
             else
@@ -233,10 +233,14 @@ namespace PowerThreadPool
             }
         }
 
-        private void HelpWhileWaitingUntilPoolIdle()
+        private void HelpWhileWaitingUntilPoolIdle(CancellationToken cancellationToken)
         {
             while (true)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                }
                 if (!HelpWhileWaiting())
                 {
                     if (RunningWorkerCount == 0 &&
