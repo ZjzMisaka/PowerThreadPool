@@ -58,6 +58,7 @@ namespace PowerThreadPool.Groups
         /// <summary>
         /// Wait until all the work belonging to the group is done.
         /// </summary>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel this operation.</param>
         /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         public void Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
         {
@@ -87,6 +88,7 @@ namespace PowerThreadPool.Groups
         /// <summary>
         /// Wait until all the work belonging to the group is done.
         /// </summary>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel this operation.</param>
         /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns></returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
@@ -118,6 +120,7 @@ namespace PowerThreadPool.Groups
         /// <summary>
         /// Fetch the work result.
         /// </summary>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel this operation.</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Return a list of work result</returns>
@@ -140,6 +143,7 @@ namespace PowerThreadPool.Groups
         /// <summary>
         /// Fetch the work result.
         /// </summary>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel this operation.</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
         /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Return a list of work result</returns>
@@ -186,8 +190,8 @@ namespace PowerThreadPool.Groups
         /// <summary>
         /// Fetch the work result.
         /// </summary>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel this operation.</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
-        /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Return a list of work result</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(CancellationToken cancellationToken, bool removeAfterFetch = false)
@@ -228,8 +232,8 @@ namespace PowerThreadPool.Groups
         /// <summary>
         /// Fetch the work result.
         /// </summary>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel this operation.</param>
         /// <param name="removeAfterFetch">remove the result from storage</param>
-        /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Return a list of work result</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<object>>> FetchAsync(CancellationToken cancellationToken, bool removeAfterFetch = false)

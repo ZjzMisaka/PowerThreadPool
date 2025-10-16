@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.ConstrainedExecution;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerThreadPool.Collections;
@@ -169,33 +168,33 @@ namespace PowerThreadPool.Works
             return res;
         }
 
-        internal override bool Wait(bool helpWhileWaiting = false)
-        {
-            SpinWait spinner = new SpinWait();
-            while (!IsDone && helpWhileWaiting)
-            {
-                if (!PowerPool.HelpWhileWaiting())
-                {
-                    spinner.SpinOnce();
-                }
-                else
-                {
-                    spinner.Reset();
-                }
-            }
-
-            EnsureWaitSignalExists();
-
-            if (!SyncOrAsyncWorkDone)
-            {
-                WaitSignal.WaitOne();
-            }
-
-            return true;
-        }
-
         internal override bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
         {
+            HelpWhileWaiting(helpWhileWaiting);
+
+            EnsureWaitSignalExists();
+
+            if (!SyncOrAsyncWorkDone)
+            {
+                if (cancellationToken == default)
+                {
+                    WaitSignal.WaitOne();
+                }
+                else
+                {
+                    int idx = WaitHandle.WaitAny(new WaitHandle[] { WaitSignal, cancellationToken.WaitHandle });
+                    if (idx == 1)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        private void HelpWhileWaiting(bool helpWhileWaiting)
+        {
             SpinWait spinner = new SpinWait();
             while (!IsDone && helpWhileWaiting)
             {
@@ -208,55 +207,6 @@ namespace PowerThreadPool.Works
                     spinner.Reset();
                 }
             }
-
-            EnsureWaitSignalExists();
-
-            if (!SyncOrAsyncWorkDone)
-            {
-                int idx = WaitHandle.WaitAny(new WaitHandle[] { WaitSignal, cancellationToken.WaitHandle });
-                if (idx == 1)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                }
-            }
-
-            return true;
-        }
-
-        internal override Task<bool> WaitAsync()
-        {
-#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-            Task<bool> task = null;
-            if (CheckWorkAlreadyDoneWhenAsyncWait(null, out task))
-            {
-                return task;
-            }
-
-            TaskCompletionSource<bool> tcs = PowerPool.NewTcs<bool>();
-            EnsureWaitSignalExists();
-            ManualResetEvent ev = WaitSignal;
-
-            RegisteredWaitHandle rwh = null;
-            WaitOrTimerCallback cb = (state, timedOut) =>
-            {
-                SetTcsResult(tcs);
-            };
-            rwh = ThreadPool.RegisterWaitForSingleObject(ev, cb, null, Timeout.Infinite, true);
-
-            PowerPool._waitRegDict[tcs.Task] = rwh;
-
-            if (CheckWorkAlreadyDoneWhenAsyncWait(tcs, out task))
-            {
-                return task;
-            }
-
-            return tcs.Task;
-#else
-            return Task.Factory.StartNew(() =>
-            {
-                return Wait(false);
-            });
-#endif
         }
 
         internal override Task<bool> WaitAsync(CancellationToken cancellationToken)
@@ -273,7 +223,6 @@ namespace PowerThreadPool.Works
             ManualResetEvent ev = WaitSignal;
 
             RegisteredWaitHandle rwh = null;
-            CancellationTokenRegistration ctr = default;
             WaitOrTimerCallback cb = (state, timedOut) =>
             {
                 SetTcsResult(tcs);
@@ -284,7 +233,7 @@ namespace PowerThreadPool.Works
 
             if (cancellationToken.CanBeCanceled)
             {
-                ctr = cancellationToken.Register(() =>
+                cancellationToken.Register(() =>
                 {
 #if (NET46_OR_GREATER || NET5_0_OR_GREATER)
                     if (tcs.TrySetCanceled(cancellationToken))
@@ -345,90 +294,19 @@ namespace PowerThreadPool.Works
         }
 #endif
 
-        internal override ExecuteResult<T> Fetch<T>(bool helpWhileWaiting = false)
-        {
-            Wait(helpWhileWaiting);
-
-            if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
-            {
-                Work<T> lastWorkT = lastWork as Work<T>;
-                Spinner.Start(() => lastWorkT.ExecuteResult != null, true);
-                return lastWorkT.ExecuteResult.ToTypedResult<T>();
-            }
-            else
-            {
-                return ExecuteResult.ToTypedResult<T>();
-            }
-        }
-
         internal override ExecuteResult<T> Fetch<T>(CancellationToken cancellationToken, bool helpWhileWaiting = false)
         {
             Wait(cancellationToken, helpWhileWaiting);
 
-            if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
-            {
-                Work<T> lastWorkT = lastWork as Work<T>;
-                Spinner.Start(() => lastWorkT.ExecuteResult != null, true);
-                return lastWorkT.ExecuteResult.ToTypedResult<T>();
-            }
-            else
-            {
-                return ExecuteResult.ToTypedResult<T>();
-            }
+            return FetchCore<T>();
         }
-
-#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        internal override async Task<ExecuteResult<T>> FetchAsync<T>()
-        {
-            await WaitAsync();
-
-            if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
-            {
-                Work<T> lastWorkT = lastWork as Work<T>;
-                Spinner.Start(() => lastWorkT.ExecuteResult != null, true);
-                return lastWorkT.ExecuteResult.ToTypedResult<T>();
-            }
-            else
-            {
-                return ExecuteResult.ToTypedResult<T>();
-            }
-        }
-#else
-        internal override Task<ExecuteResult<T>> FetchAsync<T>()
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                WaitAsync().Wait();
-
-                if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
-                {
-                    Work<T> lastWorkT = lastWork as Work<T>;
-                    Spinner.Start(() => lastWorkT.ExecuteResult != null, true);
-                    return lastWorkT.ExecuteResult.ToTypedResult<T>();
-                }
-                else
-                {
-                    return ExecuteResult.ToTypedResult<T>();
-                }
-            });
-        }
-#endif
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         internal override async Task<ExecuteResult<T>> FetchAsync<T>(CancellationToken cancellationToken)
         {
             await WaitAsync(cancellationToken);
 
-            if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
-            {
-                Work<T> lastWorkT = lastWork as Work<T>;
-                Spinner.Start(() => lastWorkT.ExecuteResult != null, true);
-                return lastWorkT.ExecuteResult.ToTypedResult<T>();
-            }
-            else
-            {
-                return ExecuteResult.ToTypedResult<T>();
-            }
+            return FetchCore<T>();
         }
 #else
         internal override Task<ExecuteResult<T>> FetchAsync<T>(CancellationToken cancellationToken)
@@ -437,19 +315,24 @@ namespace PowerThreadPool.Works
             {
                 WaitAsync(cancellationToken).Wait();
 
-                if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
-                {
-                    Work<T> lastWorkT = lastWork as Work<T>;
-                    Spinner.Start(() => lastWorkT.ExecuteResult != null, true);
-                    return lastWorkT.ExecuteResult.ToTypedResult<T>();
-                }
-                else
-                {
-                    return ExecuteResult.ToTypedResult<T>();
-                }
+                return FetchCore<T>();
             });
         }
 #endif
+
+        private ExecuteResult<T> FetchCore<T>()
+        {
+            if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
+            {
+                Work<T> lastWorkT = lastWork as Work<T>;
+                Spinner.Start(() => lastWorkT.ExecuteResult != null, true);
+                return lastWorkT.ExecuteResult.ToTypedResult<T>();
+            }
+            else
+            {
+                return ExecuteResult.ToTypedResult<T>();
+            }
+        }
 
         internal override bool Pause()
         {
