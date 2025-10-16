@@ -68,19 +68,18 @@ namespace PowerThreadPool.Groups
         /// <summary>
         /// Wait until all the work belonging to the group is done.
         /// </summary>
-        /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns></returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task WaitAsync(bool helpWhileWaiting = false)
+        public async Task WaitAsync()
         {
             await _powerPool.WaitAsync(_powerPool.GetGroupMemberList(Name));
         }
 #else
-        public Task WaitAsync(bool helpWhileWaiting = false)
+        public Task WaitAsync()
         {
             return Task.Factory.StartNew(() =>
             {
-                Wait(helpWhileWaiting);
+                Wait();
             });
         }
 #endif
@@ -89,19 +88,18 @@ namespace PowerThreadPool.Groups
         /// Wait until all the work belonging to the group is done.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token that can be used to cancel this operation.</param>
-        /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns></returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        public async Task WaitAsync(CancellationToken cancellationToken, bool helpWhileWaiting = false)
+        public async Task WaitAsync(CancellationToken cancellationToken)
         {
             await _powerPool.WaitAsync(_powerPool.GetGroupMemberList(Name), cancellationToken);
         }
 #else
-        public Task WaitAsync(CancellationToken cancellationToken, bool helpWhileWaiting = false)
+        public Task WaitAsync(CancellationToken cancellationToken)
         {
             return Task.Factory.StartNew(() =>
             {
-                Wait(cancellationToken, helpWhileWaiting);
+                Wait(cancellationToken);
             });
         }
 #endif
@@ -212,7 +210,6 @@ namespace PowerThreadPool.Groups
         /// Fetch the work result.
         /// </summary>
         /// <param name="removeAfterFetch">remove the result from storage</param>
-        /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         /// <returns>Return a list of work result</returns>
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false)
