@@ -9,22 +9,20 @@ namespace Benchmark
     {
         private SmartThreadPool _smartThreadPool;
         private PowerPool _powerPool;
-        private ManualResetEvent _signal;
 
         [GlobalSetup]
         public void Setup()
         {
-            _signal = new ManualResetEvent(false);
             _smartThreadPool = new SmartThreadPool();
             _smartThreadPool.MaxThreads = 8;
             _powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption { MaxThreads = 8 });
+            ThreadPool.SetMinThreads(8, 8);
             ThreadPool.SetMaxThreads(8, 8);
         }
 
         [GlobalCleanup]
         public void Cleanup()
         {
-            _signal.Dispose();
             _smartThreadPool.Shutdown();
             _smartThreadPool.Dispose();
             _powerPool.Stop();
@@ -83,14 +81,9 @@ namespace Benchmark
                     _smartThreadPool.QueueWorkItem(() =>
                     {
                         Interlocked.Increment(ref smartThreadPoolRunCount);
-                        if (smartThreadPoolRunCount == 1000)
-                        {
-                            _signal.Set();
-                        }
                         DoWork();
                     });
                 }
-                _signal.WaitOne();
                 _smartThreadPool.WaitForIdle();
 
                 int count = smartThreadPoolRunCount;

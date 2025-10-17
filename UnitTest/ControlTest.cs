@@ -2075,6 +2075,36 @@ namespace UnitTest
             Assert.False(powerPool.PoolRunning);
         }
 
+        [Fact]
+        public void TestWaitByAllCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            Assert.Throws<OperationCanceledException>(() => powerPool.Wait(cts.Token));
+
+            Assert.True(powerPool.PoolRunning);
+
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
+        }
+
         [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestWaitByAllAsync()
         {
@@ -2095,6 +2125,36 @@ namespace UnitTest
             Assert.False(powerPool.PoolRunning);
         }
 
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async Task TestWaitByAllAsyncCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await powerPool.WaitAsync(cts.Token));
+
+            Assert.True(powerPool.PoolRunning);
+
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
+        }
+
         [Fact]
         public void TestWaitByID()
         {
@@ -2106,6 +2166,36 @@ namespace UnitTest
             {
                 Thread.Sleep(1000);
             });
+
+            powerPool.Wait(id);
+
+            Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact]
+        public void TestWaitByIDCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            Assert.Throws<OperationCanceledException>(() => powerPool.Wait(id, cts.Token));
+
+            Assert.True(powerPool.PoolRunning);
+            Assert.True(GetNowSs() - start <= 400);
+            Assert.True(GetNowSs() - start >= 100);
 
             powerPool.Wait(id);
 
@@ -2285,6 +2375,41 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestWaitByGroupCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            Assert.Throws<OperationCanceledException>(() => powerPool.Wait(powerPool.GetGroupMemberList("A"), cts.Token));
+
+            Assert.True(powerPool.PoolRunning);
+            Assert.True(GetNowSs() - start <= 400);
+            Assert.True(GetNowSs() - start >= 100);
+
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
+
+            Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact]
         public void TestWaitByGroupObject()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2300,6 +2425,41 @@ namespace UnitTest
             });
 
             powerPool.GetGroup("A").Wait();
+
+            Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact]
+        public void TestWaitByGroupObjectCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            Assert.Throws<OperationCanceledException>(() => powerPool.GetGroup("A").Wait(cts.Token));
+
+            Assert.True(powerPool.PoolRunning);
+            Assert.True(GetNowSs() - start <= 400);
+            Assert.True(GetNowSs() - start >= 100);
+
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
 
             Assert.True(GetNowSs() - start >= 1000);
         }
@@ -2320,6 +2480,41 @@ namespace UnitTest
             });
 
             await powerPool.GetGroup("A").WaitAsync();
+
+            Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async Task TestWaitAsyncByGroupObjectCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await powerPool.GetGroup("A").WaitAsync(cts.Token));
+
+            Assert.True(powerPool.PoolRunning);
+            Assert.True(GetNowSs() - start <= 400);
+            Assert.True(GetNowSs() - start >= 100);
+
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
 
             Assert.True(GetNowSs() - start >= 1000);
         }
@@ -2391,6 +2586,38 @@ namespace UnitTest
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestWaitByIDAsyncCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await powerPool.WaitAsync(id, cts.Token));
+
+            Assert.True(powerPool.PoolRunning);
+            Assert.True(GetNowSs() - start <= 400);
+            Assert.True(GetNowSs() - start >= 100);
+
+            await powerPool.WaitAsync();
+
+            Assert.False(powerPool.PoolRunning);
+
+            Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestWaitByIDAsyncDouble()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -2445,6 +2672,184 @@ namespace UnitTest
             Assert.True(GetNowSs() - start >= 1000);
         }
 
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestWaitByIDListAsyncCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            long start = GetNowSs();
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await powerPool.WaitAsync(new List<WorkID>() { id }, cts.Token));
+
+            Assert.True(powerPool.PoolRunning);
+            Assert.True(GetNowSs() - start <= 400);
+            Assert.True(GetNowSs() - start >= 100);
+
+            await powerPool.WaitAsync(new List<WorkID>() { id });
+
+            Assert.True(GetNowSs() - start >= 1000);
+        }
+
+        [Fact]
+        public void TestHelpWhileWaiting()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            long start = GetNowSs();
+
+            powerPool.Wait(true);
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
+            Assert.True(GetNowSs() - start < 4000);
+        }
+
+        [Fact]
+        public void TestHelpWhileWaitingByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            var id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            long start = GetNowSs();
+
+            powerPool.Wait(id, true);
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
+            Assert.True(GetNowSs() - start < 4000);
+        }
+
+        [Fact]
+        public void TestHelpWhileWaitingCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            Assert.Throws<OperationCanceledException>(() => powerPool.Wait(cts.Token, true));
+
+            Assert.True(powerPool.PoolRunning);
+
+            powerPool.Wait(true);
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
+        }
+
+        [Fact]
+        public void TestHelpWhileWaitingByIDCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            var id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            Assert.Throws<OperationCanceledException>(() => powerPool.Wait(id, cts.Token, true));
+
+            Assert.True(powerPool.PoolRunning);
+
+            powerPool.Wait(true);
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
+        }
+
         [Fact]
         public void TestFetchByID()
         {
@@ -2459,6 +2864,34 @@ namespace UnitTest
 
             ExecuteResult<bool> res = powerPool.Fetch<bool>(id);
 
+            Assert.True(res.Result);
+        }
+
+        [Fact]
+        public void TestFetchByIDCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            ExecuteResult<bool> res = null;
+            Assert.Throws<OperationCanceledException>(() => res = powerPool.Fetch<bool>(id, cts.Token));
+            Assert.True(powerPool.PoolRunning);
+            Assert.Null(res);
+
+            res = powerPool.Fetch<bool>(id);
             Assert.True(res.Result);
         }
 
@@ -2477,6 +2910,35 @@ namespace UnitTest
             ExecuteResult<bool> res = await powerPool.FetchAsync<bool>(id);
 
             Assert.True(res.Result);
+
+            res = await powerPool.FetchAsync<bool>(id);
+
+            Assert.True(res.Result);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestFetchByIDAsyncCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            }, new WorkOption { ShouldStoreResult = true });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            ExecuteResult<bool> res = null;
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => res = await powerPool.FetchAsync<bool>(id, cts.Token));
+            Assert.True(powerPool.PoolRunning);
+            Assert.Null(res);
 
             res = await powerPool.FetchAsync<bool>(id);
 
@@ -2702,6 +3164,35 @@ namespace UnitTest
             Assert.True((bool)resObj.Result);
         }
 
+        [Fact]
+        public void TestFetchObjByIDCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            ExecuteResult<object> resObj = null;
+            Assert.Throws<OperationCanceledException>(() => resObj = powerPool.Fetch(id, cts.Token));
+            Assert.True(powerPool.PoolRunning);
+            Assert.Null(resObj);
+
+            resObj = powerPool.Fetch(id);
+
+            Assert.True((bool)resObj.Result);
+        }
+
         [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchObjByIDAsync()
         {
@@ -2715,6 +3206,35 @@ namespace UnitTest
             });
 
             ExecuteResult<object> resObj = await powerPool.FetchAsync(id);
+
+            Assert.True((bool)resObj.Result);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestFetchObjByIDAsyncCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            ExecuteResult<object> resObj = null;
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => resObj = await powerPool.FetchAsync(id, cts.Token));
+            Assert.True(powerPool.PoolRunning);
+            Assert.Null(resObj);
+
+            resObj = await powerPool.FetchAsync(id);
 
             Assert.True((bool)resObj.Result);
         }
@@ -2840,6 +3360,54 @@ namespace UnitTest
             }
         }
 
+        [Fact]
+        public void TestFetchObjByIDListCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return false;
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            List<ExecuteResult<object>> resList = null;
+            Assert.Throws<OperationCanceledException>(() => resList = powerPool.Fetch(new List<WorkID>() { id0, id1, WorkID.FromString("id") }, cts.Token));
+            Assert.True(powerPool.PoolRunning);
+            Assert.Null(resList);
+
+            resList = powerPool.Fetch(new List<WorkID>() { id0, id1, WorkID.FromString("id") });
+
+            foreach (ExecuteResult<object> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.True((bool)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.False((bool)res.Result);
+                }
+                if (res.ID == WorkID.FromString("id"))
+                {
+                    Assert.True(res.Result == null);
+                }
+            }
+        }
+
         [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchObjByIDListAsync()
         {
@@ -2876,6 +3444,54 @@ namespace UnitTest
             }
         }
 
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestFetchObjByIDListAsyncCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return false;
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            List<ExecuteResult<object>> resList = null;
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => resList = await powerPool.FetchAsync(new List<WorkID>() { id0, id1, WorkID.FromString("id") }, cts.Token));
+            Assert.True(powerPool.PoolRunning);
+            Assert.Null(resList);
+
+            resList = await powerPool.FetchAsync(new List<WorkID>() { id0, id1, WorkID.FromString("id") });
+
+            foreach (ExecuteResult<object> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.True((bool)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.False((bool)res.Result);
+                }
+                if (res.ID == WorkID.FromString("id"))
+                {
+                    Assert.True(res.Result == null);
+                }
+            }
+        }
+
         [Fact]
         public void TestFetchByIDList()
         {
@@ -2894,6 +3510,54 @@ namespace UnitTest
             });
 
             List<ExecuteResult<string>> resList = powerPool.Fetch<string>(new List<WorkID>() { id0, id1, WorkID.FromString("id") });
+
+            foreach (ExecuteResult<string> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.Equal("0", (string)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.Equal("1", (string)res.Result);
+                }
+                if (res.ID == WorkID.FromString("id"))
+                {
+                    Assert.True(res.Result == null);
+                }
+            }
+        }
+
+        [Fact]
+        public void TestFetchByIDListCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "0";
+            });
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "1";
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            List<ExecuteResult<string>> resList = null;
+            Assert.Throws<OperationCanceledException>(() => resList = powerPool.Fetch<string>(new List<WorkID>() { id0, id1, WorkID.FromString("id") }, cts.Token));
+            Assert.True(powerPool.PoolRunning);
+            Assert.Null(resList);
+
+            resList = powerPool.Fetch<string>(new List<WorkID>() { id0, id1, WorkID.FromString("id") });
 
             foreach (ExecuteResult<string> res in resList)
             {
@@ -2973,6 +3637,54 @@ namespace UnitTest
             });
 
             List<ExecuteResult<string>> resList = await powerPool.FetchAsync<string>(new List<WorkID>() { id0, id1, WorkID.FromString("id") });
+
+            foreach (ExecuteResult<string> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.Equal("0", (string)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.Equal("1", (string)res.Result);
+                }
+                if (res.ID == WorkID.FromString("id"))
+                {
+                    Assert.True(res.Result == null);
+                }
+            }
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestFetchByIDListAsyncCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "0";
+            });
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "1";
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            List<ExecuteResult<string>> resList = null;
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => resList = await powerPool.FetchAsync<string>(new List<WorkID>() { id0, id1, WorkID.FromString("id") }, cts.Token));
+            Assert.True(powerPool.PoolRunning);
+            Assert.Null(resList);
+
+            resList = await powerPool.FetchAsync<string>(new List<WorkID>() { id0, id1, WorkID.FromString("id") });
 
             foreach (ExecuteResult<string> res in resList)
             {
@@ -3126,6 +3838,56 @@ namespace UnitTest
             }
         }
 
+        [Fact]
+        public void TestFetchObjByGroupObjectCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return false;
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            List<ExecuteResult<object>> resList = null;
+            Assert.Throws<OperationCanceledException>(() => resList = powerPool.GetGroup("A").Fetch(cts.Token));
+            Assert.True(powerPool.PoolRunning);
+            Assert.Null(resList);
+
+            resList = powerPool.GetGroup("A").Fetch();
+
+            foreach (ExecuteResult<object> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.True((bool)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.False((bool)res.Result);
+                }
+            }
+        }
+
         [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchObjByGroupObjectAsync()
         {
@@ -3150,6 +3912,56 @@ namespace UnitTest
             });
 
             List<ExecuteResult<object>> resList = await powerPool.GetGroup("A").FetchAsync();
+
+            foreach (ExecuteResult<object> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.True((bool)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.False((bool)res.Result);
+                }
+            }
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestFetchObjByGroupObjectAsyncCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return false;
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            List<ExecuteResult<object>> resList = null;
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => resList = await powerPool.GetGroup("A").FetchAsync(cts.Token));
+            Assert.True(powerPool.PoolRunning);
+            Assert.Null(resList);
+
+            resList = await powerPool.GetGroup("A").FetchAsync();
 
             foreach (ExecuteResult<object> res in resList)
             {
@@ -3202,6 +4014,56 @@ namespace UnitTest
             }
         }
 
+        [Fact]
+        public void TestFetchByGroupObjectCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "0";
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "1";
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            List<ExecuteResult<string>> resList = null;
+            Assert.Throws<OperationCanceledException>(() => resList = powerPool.GetGroup("A").Fetch<string>(cts.Token));
+            Assert.True(powerPool.PoolRunning);
+            Assert.Null(resList);
+
+            resList = powerPool.GetGroup("A").Fetch<string>();
+
+            foreach (ExecuteResult<string> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.Equal("0", (string)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.Equal("1", (string)res.Result);
+                }
+            }
+        }
+
         [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestFetchByGroupObjectAsync()
         {
@@ -3226,6 +4088,56 @@ namespace UnitTest
             });
 
             List<ExecuteResult<string>> resList = await powerPool.GetGroup("A").FetchAsync<string>();
+
+            foreach (ExecuteResult<string> res in resList)
+            {
+                if (res.ID == id0)
+                {
+                    Assert.Equal("0", (string)res.Result);
+                }
+                if (res.ID == id1)
+                {
+                    Assert.Equal("1", (string)res.Result);
+                }
+            }
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestFetchByGroupObjectAsyncCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "0";
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return "1";
+            }, new WorkOption()
+            {
+                Group = "A"
+            });
+
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            _ = Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            List<ExecuteResult<string>> resList = null;
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => resList = await powerPool.GetGroup("A").FetchAsync<string>(cts.Token));
+            Assert.True(powerPool.PoolRunning);
+            Assert.Null(resList);
+
+            resList = await powerPool.GetGroup("A").FetchAsync<string>();
 
             foreach (ExecuteResult<string> res in resList)
             {
