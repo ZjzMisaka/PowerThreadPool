@@ -5,7 +5,7 @@ using PowerThreadPool;
 namespace Benchmark
 {
     [MemoryDiagnoser]
-    public class Benchmark
+    public class BenchmarkCPUWork
     {
         private SmartThreadPool _smartThreadPool;
         private PowerPool _powerPool;
@@ -14,6 +14,7 @@ namespace Benchmark
         public void Setup()
         {
             _smartThreadPool = new SmartThreadPool();
+            _smartThreadPool.MinThreads = 8;
             _smartThreadPool.MaxThreads = 8;
             _powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption { MaxThreads = 8 });
             ThreadPool.SetMinThreads(8, 8);
