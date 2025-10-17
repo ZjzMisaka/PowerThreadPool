@@ -2703,6 +2703,154 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestHelpWhileWaiting()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            long start = GetNowSs();
+
+            powerPool.Wait(true);
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
+            Assert.True(GetNowSs() - start < 4000);
+        }
+
+        [Fact]
+        public void TestHelpWhileWaitingByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            var id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            long start = GetNowSs();
+
+            powerPool.Wait(id, true);
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
+            Assert.True(GetNowSs() - start < 4000);
+        }
+
+        [Fact]
+        public void TestHelpWhileWaitingCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            Assert.Throws<OperationCanceledException>(() => powerPool.Wait(cts.Token, true));
+
+            Assert.True(powerPool.PoolRunning);
+
+            powerPool.Wait(true);
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
+        }
+
+        [Fact]
+        public void TestHelpWhileWaitingByIDCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            var id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+            CancellationTokenSource cts = new CancellationTokenSource();
+            Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                cts.Cancel();
+            });
+            Assert.Throws<OperationCanceledException>(() => powerPool.Wait(id, cts.Token, true));
+
+            Assert.True(powerPool.PoolRunning);
+
+            powerPool.Wait(true);
+            powerPool.Wait();
+
+            Assert.False(powerPool.PoolRunning);
+        }
+
+        [Fact]
         public void TestFetchByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
