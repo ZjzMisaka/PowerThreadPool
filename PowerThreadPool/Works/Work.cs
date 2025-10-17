@@ -177,17 +177,9 @@ namespace PowerThreadPool.Works
             if (!SyncOrAsyncWorkDone)
             {
                 if (cancellationToken == default)
-                {
                     WaitSignal.WaitOne();
-                }
-                else
-                {
-                    int idx = WaitHandle.WaitAny(new WaitHandle[] { WaitSignal, cancellationToken.WaitHandle });
-                    if (idx == 1)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-                }
+                else if (WaitHandle.WaitAny(new WaitHandle[] { WaitSignal, cancellationToken.WaitHandle }) == 1)
+                    cancellationToken.ThrowIfCancellationRequested();
             }
 
             return true;
@@ -199,9 +191,8 @@ namespace PowerThreadPool.Works
             while (!IsDone && helpWhileWaiting)
             {
                 if (cancellationToken.IsCancellationRequested)
-                {
                     cancellationToken.ThrowIfCancellationRequested();
-                }
+
                 if (!PowerPool.HelpWhileWaiting())
                 {
                     spinner.SpinOnce();

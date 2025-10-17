@@ -219,17 +219,9 @@ namespace PowerThreadPool
             else
             {
                 if (cancellationToken == default)
-                {
                     _waitAllSignal.WaitOne();
-                }
-                else
-                {
-                    int idx = WaitHandle.WaitAny(new WaitHandle[] { _waitAllSignal, cancellationToken.WaitHandle });
-                    if (idx == 1)
-                    {
-                        cancellationToken.ThrowIfCancellationRequested();
-                    }
-                }
+                else if (WaitHandle.WaitAny(new WaitHandle[] { _waitAllSignal, cancellationToken.WaitHandle }) == 1)
+                    cancellationToken.ThrowIfCancellationRequested();
             }
         }
 
@@ -238,9 +230,8 @@ namespace PowerThreadPool
             while (true)
             {
                 if (cancellationToken.IsCancellationRequested)
-                {
                     cancellationToken.ThrowIfCancellationRequested();
-                }
+
                 if (!HelpWhileWaiting())
                 {
                     if (RunningWorkerCount == 0 &&
