@@ -6,7 +6,7 @@ namespace Benchmark
     {
         static void Main(string[] args)
         {
-            BenchmarkRunner.Run<Benchmark>();
+            BenchmarkRunner.Run<BenchmarkCPUWork>();
             BenchmarkRunner.Run<BenchmarkAsync>();
         }
     }
