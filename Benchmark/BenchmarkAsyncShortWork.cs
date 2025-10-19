@@ -4,7 +4,7 @@ using PowerThreadPool;
 namespace Benchmark
 {
     [MemoryDiagnoser]
-    public class BenchmarkAsync
+    public class BenchmarkAsyncShortWork
     {
         private PowerPool _powerPool;
 
@@ -30,15 +30,22 @@ namespace Benchmark
             {
                 int threadPoolRunCount = 0;
 
-                Task[] tasks = new Task[50];
+                Task[] tasks = new Task[10000];
 
-                for (int i = 0; i < 50; ++i)
+                for (int i = 0; i < 10000; ++i)
                 {
                     tasks[i] = Task.Run(async () =>
                     {
-                        await Task.Delay(10);
-                        await Task.Delay(10);
-                        await Task.Delay(10);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
                         Interlocked.Increment(ref threadPoolRunCount);
                     });
                 }
@@ -46,9 +53,9 @@ namespace Benchmark
                 Task.WhenAll(tasks).Wait();
 
                 int count = threadPoolRunCount;
-                if (count != 50)
+                if (count != 10000)
                 {
-                    throw new InvalidOperationException($"Task: {count} -> 50");
+                    throw new InvalidOperationException($"Task: {count} -> 10000");
                 }
             }
             catch (Exception ex)
@@ -64,22 +71,29 @@ namespace Benchmark
             try
             {
                 int powerThreadPoolRunCount = 0;
-                for (int i = 0; i < 50; ++i)
+                for (int i = 0; i < 10000; ++i)
                 {
                     _powerPool.QueueWorkItemAsync(async () =>
                     {
-                        await Task.Delay(10);
-                        await Task.Delay(10);
-                        await Task.Delay(10);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
+                        await Task.Delay(0);
                         Interlocked.Increment(ref powerThreadPoolRunCount);
                         return true;
                     });
                 }
                 _powerPool.Wait();
                 int count = powerThreadPoolRunCount;
-                if (count != 50)
+                if (count != 10000)
                 {
-                    throw new InvalidOperationException($"TestPowerThreadPool: {count} -> 50");
+                    throw new InvalidOperationException($"TestPowerThreadPool: {count} -> 10000");
                 }
             }
             catch (Exception ex)
@@ -95,22 +109,41 @@ namespace Benchmark
             try
             {
                 int powerThreadPoolRunCount = 0;
-                for (int i = 0; i < 50; ++i)
+                for (int i = 0; i < 10000; ++i)
                 {
                     _powerPool.QueueWorkItem(() =>
                     {
-                        Task.Delay(10).Wait();
-                        Task.Delay(10).Wait();
-                        Task.Delay(10).Wait();
+                        Task.Delay(0).Wait();
+                        Task.Delay(0).Wait();
+                        Task.Delay(0).Wait();
+                        Task.Delay(0).Wait();
+                        Task.Delay(0).Wait();
+                        Task.Delay(0).Wait();
+                        Task.Delay(0).Wait();
+                        Task.Delay(0).Wait();
+                        Task.Delay(0).Wait();
+                        Task.Delay(0).Wait();
                         Interlocked.Increment(ref powerThreadPoolRunCount);
                         return true;
                     });
                 }
                 _powerPool.Wait();
                 int count = powerThreadPoolRunCount;
-                if (count != 50)
+                if (count != 10000)
                 {
-                    throw new InvalidOperationException($"TestPowerThreadPool: {count} -> 50");
+                    Thread.Yield();
+                    _powerPool.Wait();
+                    if (count != 10000)
+                    {
+                        Thread.Yield();
+                        _powerPool.Wait();
+                        if (count != 10000)
+                        {
+                            Thread.Yield();
+                            _powerPool.Wait();
+                            throw new InvalidOperationException($"TestPowerThreadPool: {count} -> 10000");
+                        }
+                    }
                 }
             }
             catch (Exception ex)

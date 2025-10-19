@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
@@ -16,6 +17,12 @@ namespace PowerThreadPool
 {
     internal class Worker : IDisposable
     {
+        private static readonly long s_statusPingPongThresholdTicks = Stopwatch.Frequency / 2000;
+        private Stopwatch _timeSinceLastIdle = new Stopwatch();
+        private int _spinCount = 100;
+        private int _spinCountStart = 100;
+        private int _spinCountAdd = 100;
+
         internal InterlockedFlag<CanDispose> CanDispose { get; } = Constants.CanDispose.Allowed;
         internal InterlockedFlag<CanForceStop> CanForceStop { get; } = Constants.CanForceStop.Allowed;
 
@@ -57,6 +64,7 @@ namespace PowerThreadPool
         internal Worker(PowerPool powerPool)
         {
             _powerPool = powerPool;
+            _timeSinceLastIdle.Start();
 
             _waitingWorkPriorityCollection = QueueFactory();
 
@@ -714,7 +722,8 @@ namespace PowerThreadPool
         {
             if (CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed))
             {
-                work = Get();
+                work = TryGetWorkAgainBeforeTurnToIdle(work);
+
                 if (work != null)
                 {
                     Interlocked.Decrement(ref _waitingWorkCount);
@@ -741,6 +750,7 @@ namespace PowerThreadPool
                     }
                     else
                     {
+                        _timeSinceLastIdle.Restart();
                         if (destroyThreadOption != null && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
                         {
                             SetKillTimer();
@@ -768,6 +778,39 @@ namespace PowerThreadPool
             {
                 return false;
             }
+        }
+
+        private WorkBase TryGetWorkAgainBeforeTurnToIdle(WorkBase work)
+        {
+            long ticks = _timeSinceLastIdle.ElapsedTicks;
+            // When a Worker experiences a state "ping-pong" (i.e., the time interval since it last entered the Idle state and was then awakened is less than the threshold),
+            // perform a limited number of spins (100 times) to fetch Work before transitioning to Idle.
+            // If Work still cannot be acquired after spinning, increase the spin count by multiples of 100.
+            // However, as soon as there is an iteration where no state ping-pong occurs, reset the spin count back to 100.
+            if (ticks <= s_statusPingPongThresholdTicks)
+            {
+                int spinCountLocal = _spinCount;
+                for (int i = 0; i < spinCountLocal && work == null; ++i)
+                {
+                    if (i > 500)
+                    {
+                        Thread.Yield();
+                    }
+                    work = Get();
+                    if (i == spinCountLocal - 1)
+                    {
+                        _spinCount += _spinCountAdd;
+                    }
+                }
+            }
+            else
+            {
+                // No recent ping-pong detected: do a single fetch attempt instead of spinning.
+                work = Get();
+                _spinCount = _spinCountStart;
+            }
+
+            return work;
         }
 
         private void SetWorkToRun(WorkBase work)
