@@ -20,7 +20,7 @@ namespace PowerThreadPool.Options
 
     public class PowerPoolOption
     {
-        internal List<PowerPool> PowerPoolList { get; set; } = new List<PowerPool>();
+        internal ConcurrentSet<PowerPool> PowerPoolList { get; set; } = new ConcurrentSet<PowerPool>();
 
         private int _maxThreads = Environment.ProcessorCount * 2;
         /// <summary>

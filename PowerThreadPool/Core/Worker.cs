@@ -17,7 +17,7 @@ namespace PowerThreadPool
 {
     internal class Worker : IDisposable
     {
-        private static readonly long s_statusPingPongThresholdTicks = Stopwatch.Frequency / 2000;
+        private static readonly long s_statusPingPongThresholdTicks = Stopwatch.Frequency / 20000;
         private Stopwatch _timeSinceLastIdle = new Stopwatch();
         private int _spinCount = 100;
         private int _spinCountStart = 100;
