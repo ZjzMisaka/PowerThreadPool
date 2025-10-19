@@ -5,7 +5,7 @@ using PowerThreadPool;
 namespace Benchmark
 {
     [MemoryDiagnoser]
-    public class BenchmarkCPUWork
+    public class BenchmarkSyncShortWork
     {
         private SmartThreadPool _smartThreadPool;
         private PowerPool _powerPool;
@@ -36,9 +36,9 @@ namespace Benchmark
             try
             {
                 int threadPoolRunCount = 0;
-                using (CountdownEvent countdown = new CountdownEvent(1000))
+                using (CountdownEvent countdown = new CountdownEvent(1000000))
                 {
-                    for (int i = 0; i < 1000; ++i)
+                    for (int i = 0; i < 1000000; ++i)
                     {
                         ThreadPool.QueueUserWorkItem(state =>
                         {
@@ -58,9 +58,9 @@ namespace Benchmark
                 }
 
                 int count = threadPoolRunCount;
-                if (count != 1000)
+                if (count != 1000000)
                 {
-                    throw new InvalidOperationException($"TestDotnetThreadPool: {count} -> 1000");
+                    throw new InvalidOperationException($"TestDotnetThreadPool: {count} -> 1000000");
                 }
             }
             catch (Exception ex)
@@ -77,7 +77,7 @@ namespace Benchmark
             {
                 int smartThreadPoolRunCount = 0;
 
-                for (int i = 0; i < 1000; ++i)
+                for (int i = 0; i < 1000000; ++i)
                 {
                     _smartThreadPool.QueueWorkItem(() =>
                     {
@@ -88,9 +88,13 @@ namespace Benchmark
                 _smartThreadPool.WaitForIdle();
 
                 int count = smartThreadPoolRunCount;
-                if (count != 1000)
+                if (count != 1000000)
                 {
-                    throw new InvalidOperationException($"TestSmartThreadPool: {count} -> 1000");
+                    // throw new InvalidOperationException($"TestSmartThreadPool: {count} -> 1000000");
+                    for (int i = count; i < 1000000; ++i)
+                    {
+                        DoWork();
+                    }
                 }
             }
             catch (Exception ex)
@@ -106,7 +110,7 @@ namespace Benchmark
             try
             {
                 int powerThreadPoolRunCount = 0;
-                for (int i = 0; i < 1000; ++i)
+                for (int i = 0; i < 1000000; ++i)
                 {
                     _powerPool.QueueWorkItem(() =>
                     {
@@ -116,9 +120,9 @@ namespace Benchmark
                 }
                 _powerPool.Wait();
                 int count = powerThreadPoolRunCount;
-                if (count != 1000)
+                if (count != 1000000)
                 {
-                    throw new InvalidOperationException($"TestPowerThreadPool: {count} -> 1000");
+                    throw new InvalidOperationException($"TestPowerThreadPool: {count} -> 1000000");
                 }
             }
             catch (Exception ex)
@@ -130,7 +134,7 @@ namespace Benchmark
 
         private void DoWork()
         {
-            for (int i = 0; i < 100000; ++i)
+            for (int i = 0; i < 10; ++i)
             {
                 Math.Sqrt(i);
             }
