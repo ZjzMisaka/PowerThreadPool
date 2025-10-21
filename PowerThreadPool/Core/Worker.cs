@@ -728,11 +728,15 @@ namespace PowerThreadPool
 
         private bool TurnToIdle(ref WorkBase work)
         {
-            work = TryGetWorkAgainBeforeTurnToIdle();
-            if (work != null)
+            if (_hasPingedPong)
             {
-                Interlocked.Decrement(ref _waitingWorkCount);
-                return false;
+                work = TryGetWorkAgainOnPingedPong();
+
+                if (work != null)
+                {
+                    Interlocked.Decrement(ref _waitingWorkCount);
+                    return false;
+                }
             }
 
             if (CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed))
@@ -795,51 +799,42 @@ namespace PowerThreadPool
             }
         }
 
-        private WorkBase TryGetWorkAgainBeforeTurnToIdle()
+        private WorkBase TryGetWorkAgainOnPingedPong()
         {
-            WorkBase work = null;
             // When a Worker experiences a state "ping-pong"
             // (i.e., the time interval since it last entered the Idle state and was then awakened is less than the threshold),
             // perform a limited number of spins to fetch Work before transitioning to Idle.
-            if (_hasPingedPong)
+            WorkBase work = null;
+            _spinWatch.Restart();
+            for (int i = 0; _spinWatch.ElapsedTicks < _statusPingPongThresholdTicks && work == null; ++i)
             {
-                _spinWatch.Restart();
-                for (int i = 0; _spinWatch.ElapsedTicks < _statusPingPongThresholdTicks && work == null; ++i)
+                if (i > 100)
                 {
-                    if (i > 100)
-                    {
-                        Thread.Yield();
-                    }
-                    work = Get();
+                    Thread.Yield();
                 }
-                if (work == null)
-                {
-                    _hasPingedPong = false;
-                    _hitChecker.Missed();
-                }
-                else
-                {
-                    _hitChecker.Hit();
-                }
-                // Adapt the spin window based on the ratio of misses to hits.
-                if (_hitChecker.Count == 10)
-                {
-                    if (_hitChecker.MissCount > 2)
-                    {
-                        _pingPongThresholdDivisor += 500;
-                        _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
-                    }
-                    else if (_hitChecker.MissCount <= 1 && _pingPongThresholdDivisor > 2000)
-                    {
-                        _pingPongThresholdDivisor -= 500;
-                        _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
-                    }
-                }
+                work = Get();
+            }
+            if (work == null)
+            {
+                _hasPingedPong = false;
+                _hitChecker.Missed();
             }
             else
             {
-                // No recent ping-pong detected: do a single fetch attempt instead of spinning.
-                work = Get();
+                _hitChecker.Hit();
+            }
+            if (_hitChecker.Count == 10)
+            {
+                if (_hitChecker.MissCount > 2)
+                {
+                    _pingPongThresholdDivisor += 500;
+                    _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
+                }
+                else if (_hitChecker.MissCount <= 1 && _pingPongThresholdDivisor > 2000)
+                {
+                    _pingPongThresholdDivisor -= 500;
+                    _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
+                }
             }
 
             return work;
