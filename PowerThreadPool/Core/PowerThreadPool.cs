@@ -560,6 +560,7 @@ namespace PowerThreadPool
             Worker worker = TryDequeueIdleWorker(longRunning);
             if (worker != null)
             {
+                worker.CheckIsPingedPong();
                 return worker;
             }
 
