@@ -821,6 +821,7 @@ namespace PowerThreadPool
                 {
                     _hitChecker.Hit();
                 }
+                // Adapt the spin window based on the ratio of misses to hits.
                 if (_hitChecker.Count == 10)
                 {
                     if (_hitChecker.MissCount > 2)
