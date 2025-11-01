@@ -8571,5 +8571,91 @@ namespace UnitTest
             }.Min();
             Assert.InRange(minDiff.TotalMilliseconds, 100, 150);
         }
+
+
+        [Fact]
+        public void TestAsyncDurationWorkEnded()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { EnableStatisticsCollection = true });
+
+            long d1 = -1;
+            long d2 = -1;
+
+            double rt1 = -1;
+            double rt2 = -1;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                d2 = e.Duration;
+                rt2 = (e.EndDateTime - e.StartDateTime).TotalMilliseconds;
+            };
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+            }, (res) =>
+            {
+                d1 = res.Duration;
+                rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+
+            powerPool.Wait();
+
+            Assert.InRange(d1, 0, 5);
+            Assert.InRange(d2, 0, 5);
+
+            Assert.InRange(rt1, 500, 550);
+            Assert.InRange(rt2, 500, 550);
+        }
+
+        [Fact]
+        public void TestAsyncDurationWorkStopped()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { EnableStatisticsCollection = true });
+
+            long d1 = -1;
+            long d2 = -1;
+
+            double rt1 = -1;
+            double rt2 = -1;
+
+            powerPool.WorkStopped += (s, e) =>
+            {
+                d2 = e.Duration;
+                rt2 = (e.EndDateTime - e.StartDateTime).TotalMilliseconds;
+            };
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+            }, (res) =>
+            {
+                d1 = res.Duration;
+                rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+
+            Thread.Sleep(1);
+            powerPool.Stop();
+
+            powerPool.Wait();
+
+            Assert.InRange(d1, 0, 5);
+            Assert.InRange(d2, 0, 5);
+
+            Assert.InRange(rt1, 100, 150);
+            Assert.InRange(rt2, 100, 150);
+        }
     }
 }

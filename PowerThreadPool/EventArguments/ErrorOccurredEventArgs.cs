@@ -46,6 +46,7 @@ namespace PowerThreadPool.EventArguments
                 QueueDateTime = executeResult.UtcQueueDateTime;
                 StartDateTime = executeResult.UtcStartDateTime;
                 EndDateTime = executeResult.UtcEndDateTime;
+                Duration = executeResult.Duration;
             }
             Exception = exception;
             ErrorFrom = errorFrom;

@@ -48,6 +48,7 @@ namespace PowerThreadPool
                     QueueDateTime = executeResult.UtcQueueDateTime,
                     StartDateTime = executeResult.UtcStartDateTime,
                     EndDateTime = executeResult.UtcEndDateTime,
+                    Duration = executeResult.Duration,
                     RetryInfo = executeResult.RetryInfo,
                 };
 
@@ -87,6 +88,7 @@ namespace PowerThreadPool
                     QueueDateTime = executeResult.UtcQueueDateTime,
                     StartDateTime = executeResult.UtcStartDateTime,
                     EndDateTime = executeResult.UtcEndDateTime,
+                    Duration = executeResult.Duration,
                 };
 
                 if (isAsync && PowerPoolOption.EnableStatisticsCollection && _aliveWorkDic.TryGetValue(executeResult.ID, out WorkBase work))
