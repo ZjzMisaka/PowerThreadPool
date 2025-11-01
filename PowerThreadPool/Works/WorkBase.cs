@@ -57,6 +57,11 @@ namespace PowerThreadPool.Works
         /// Queue datetime (UTC).
         /// </summary>
         internal DateTime QueueDateTime { get; set; }
+        /// <summary>
+        /// Start datetime (UTC).
+        /// </summary>
+        internal DateTime StartDateTime { get; set; }
+        internal long Duration { get; set; }
         internal abstract object Execute();
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Cancel(bool needFreeze);

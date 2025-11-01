@@ -10,7 +10,7 @@ namespace PowerThreadPool.Results
         Failed,
         Canceled,
         Stopped,
-        ForceStopped
+        ForceStopped,
     }
 
     public abstract class ExecuteResultBase
@@ -67,6 +67,12 @@ namespace PowerThreadPool.Results
             internal set => _endDateTime = value;
         }
         internal DateTime UtcEndDateTime => _endDateTime;
+
+        /// <summary>
+        /// Measures the total wall-clock time that the work’s code runs on workers,
+        /// excluding time spent awaiting external I/O or being suspended off-thread.
+        /// </summary>
+        public long Duration { get; internal set; }
 
         /// <summary>
         /// Retry information.

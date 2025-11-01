@@ -8109,5 +8109,467 @@ namespace UnitTest
 
             Assert.Equal(10000, done);
         }
+
+        [Fact]
+        public void TestSyncDurationNotEnableStatisticsCollection()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            long d1 = -1;
+            long d2 = -1;
+
+            double rt1 = -1;
+            double rt2 = -1;
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+            }, (res) =>
+            {
+                d1 = res.Duration;
+                rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+            }, (res) =>
+            {
+                d2 = res.Duration;
+                rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+
+            powerPool.Wait();
+
+            Assert.InRange(d1, 0, 0);
+            Assert.InRange(d2, 0, 0);
+
+            Assert.InRange(rt1, 0, 0);
+            Assert.InRange(rt2, 0, 0);
+        }
+
+        [Fact]
+        public void TestSyncDuration()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { EnableStatisticsCollection = true });
+
+            long d1 = -1;
+            long d2 = -1;
+
+            double rt1 = -1;
+            double rt2 = -1;
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+            }, (res) =>
+            {
+                d1 = res.Duration;
+                rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+                Thread.Sleep(100);
+            }, (res) =>
+            {
+                d2 = res.Duration;
+                rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+
+            powerPool.Wait();
+
+            Assert.InRange(d1, 500, 550);
+            Assert.InRange(d2, 500, 550);
+
+            Assert.InRange(rt1, 500, 550);
+            Assert.InRange(rt2, 500, 550);
+        }
+
+        [Fact]
+        public void TestAsyncDurationNotEnableStatisticsCollection()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            long d1 = -1;
+            long d2 = -1;
+
+            double rt1 = -1;
+            double rt2 = -1;
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+            }, (res) =>
+            {
+                d1 = res.Duration;
+                rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+            }, (res) =>
+            {
+                d2 = res.Duration;
+                rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+
+            powerPool.Wait();
+
+            Assert.InRange(d1, 0, 0);
+            Assert.InRange(d2, 0, 0);
+
+            Assert.InRange(rt1, 0, 0);
+            Assert.InRange(rt2, 0, 0);
+        }
+
+        [Fact]
+        public void TestAsyncDuration()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { EnableStatisticsCollection = true });
+
+            long d1 = -1;
+            long d2 = -1;
+
+            double rt1 = -1;
+            double rt2 = -1;
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+            }, (res) =>
+            {
+                d1 = res.Duration;
+                rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+            }, (res) =>
+            {
+                d2 = res.Duration;
+                rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+
+            powerPool.Wait();
+
+            Assert.InRange(d1, 0, 5);
+            Assert.InRange(d2, 0, 5);
+
+            Assert.InRange(rt1, 500, 550);
+            Assert.InRange(rt2, 500, 550);
+        }
+
+        [Fact]
+        public void TestAsyncWithSyncLogicDuration()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { EnableStatisticsCollection = true });
+
+            long d1 = -1;
+            long d2 = -1;
+
+            double rt1 = -1;
+            double rt2 = -1;
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                Thread.Sleep(50);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                Thread.Sleep(50);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                Thread.Sleep(50);
+            }, (res) =>
+            {
+                d1 = res.Duration;
+                rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                Thread.Sleep(50);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                Thread.Sleep(50);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                Thread.Sleep(50);
+            }, (res) =>
+            {
+                d2 = res.Duration;
+                rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+
+            powerPool.Wait();
+
+            Assert.InRange(d1, 150, 200);
+            Assert.InRange(d2, 150, 200);
+
+            Assert.InRange(rt1, 650, double.MaxValue);
+            Assert.InRange(rt2, 650, double.MaxValue);
+        }
+
+        [Fact]
+        public void TestAsyncWithSyncLogicDurationManyWorker()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                EnableStatisticsCollection = true,
+                MaxThreads = 10
+            });
+
+            long d1 = -1;
+            long d2 = -1;
+            long d3 = -1;
+            long d4 = -1;
+
+            double rt1 = -1;
+            double rt2 = -1;
+            double rt3 = -1;
+            double rt4 = -1;
+
+            DateTime s1 = default;
+            DateTime s2 = default;
+            DateTime s3 = default;
+            DateTime s4 = default;
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+            }, (res) =>
+            {
+                d1 = res.Duration;
+                rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+                s1 = res.StartDateTime;
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+            }, (res) =>
+            {
+                d2 = res.Duration;
+                rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+                s2 = res.StartDateTime;
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+            }, (res) =>
+            {
+                d3 = res.Duration;
+                rt3 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+                s3 = res.StartDateTime;
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+            }, (res) =>
+            {
+                d4 = res.Duration;
+                rt4 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+                s4 = res.StartDateTime;
+            });
+
+            powerPool.Wait();
+
+            Assert.InRange(d1, 300, 350);
+            Assert.InRange(d2, 300, 350);
+            Assert.InRange(d3, 300, 350);
+            Assert.InRange(d4, 300, 350);
+
+            Assert.InRange(rt1, 300, 450);
+            Assert.InRange(rt2, 300, 450);
+            Assert.InRange(rt3, 300, 450);
+            Assert.InRange(rt4, 300, 450);
+
+            DateTime min = new[] { s1, s2, s3, s4 }.Min();
+            DateTime max = new[] { s1, s2, s3, s4 }.Max();
+            Assert.InRange((max - min).TotalMilliseconds, 0, 50);
+        }
+
+        [Fact]
+        public void TestAsyncWithSyncLogicDurationOneWorker()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                EnableStatisticsCollection = true,
+                MaxThreads = 1
+            });
+
+            long d1 = -1;
+            long d2 = -1;
+            long d3 = -1;
+            long d4 = -1;
+
+            double rt1 = -1;
+            double rt2 = -1;
+            double rt3 = -1;
+            double rt4 = -1;
+
+            DateTime s1 = default;
+            DateTime s2 = default;
+            DateTime s3 = default;
+            DateTime s4 = default;
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+            }, (res) =>
+            {
+                d1 = res.Duration;
+                rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+                s1 = res.StartDateTime;
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+            }, (res) =>
+            {
+                d2 = res.Duration;
+                rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+                s2 = res.StartDateTime;
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+            }, (res) =>
+            {
+                d3 = res.Duration;
+                rt3 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+                s3 = res.StartDateTime;
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100);
+            }, (res) =>
+            {
+                d4 = res.Duration;
+                rt4 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+                s4 = res.StartDateTime;
+            });
+
+            powerPool.Wait();
+
+            Assert.InRange(d1, 300, 350);
+            Assert.InRange(d2, 300, 350);
+            Assert.InRange(d3, 300, 350);
+            Assert.InRange(d4, 300, 350);
+
+            Assert.InRange(rt1, 450, double.MaxValue);
+            Assert.InRange(rt2, 450, double.MaxValue);
+            Assert.InRange(rt3, 450, double.MaxValue);
+            Assert.InRange(rt4, 450, double.MaxValue);
+
+            var arr = new[] { s1, s2, s3, s4 }.OrderBy(s => s).ToArray();
+            TimeSpan minDiff = new[]
+            {
+                arr[1] - arr[0],
+                arr[2] - arr[1],
+                arr[3] - arr[2],
+            }.Min();
+            Assert.InRange(minDiff.TotalMilliseconds, 100, 150);
+        }
     }
 }

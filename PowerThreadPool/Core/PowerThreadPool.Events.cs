@@ -29,7 +29,7 @@ namespace PowerThreadPool
         /// Invoke work end event
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult)
+        internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult, bool allowEventsAndCallback, bool isAsync)
         {
             if (PowerPoolOption.EnableStatisticsCollection)
             {
@@ -37,7 +37,7 @@ namespace PowerThreadPool
                 Interlocked.Increment(ref _endCount);
                 Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
             }
-            if (WorkEnded != null)
+            if (allowEventsAndCallback && WorkEnded != null)
             {
                 WorkEndedEventArgs e = new WorkEndedEventArgs()
                 {
@@ -50,6 +50,12 @@ namespace PowerThreadPool
                     EndDateTime = executeResult.UtcEndDateTime,
                     RetryInfo = executeResult.RetryInfo,
                 };
+
+                if (isAsync && PowerPoolOption.EnableStatisticsCollection && _aliveWorkDic.TryGetValue(executeResult.ID, out WorkBase work))
+                {
+                    e.QueueDateTime = work.QueueDateTime;
+                    e.StartDateTime = work.StartDateTime;
+                }
 
                 if (executeResult.RetryInfo != null)
                 {
@@ -64,7 +70,7 @@ namespace PowerThreadPool
         /// Invoke work stopped event
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult)
+        internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult, bool allowEventsAndCallback, bool isAsync)
         {
             if (PowerPoolOption.EnableStatisticsCollection)
             {
@@ -72,7 +78,7 @@ namespace PowerThreadPool
                 Interlocked.Increment(ref _endCount);
                 Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
             }
-            if (WorkStopped != null)
+            if (allowEventsAndCallback && WorkStopped != null)
             {
                 WorkStoppedEventArgs e = new WorkStoppedEventArgs()
                 {
@@ -82,6 +88,13 @@ namespace PowerThreadPool
                     StartDateTime = executeResult.UtcStartDateTime,
                     EndDateTime = executeResult.UtcEndDateTime,
                 };
+
+                if (isAsync && PowerPoolOption.EnableStatisticsCollection && _aliveWorkDic.TryGetValue(executeResult.ID, out WorkBase work))
+                {
+                    e.QueueDateTime = work.QueueDateTime;
+                    e.StartDateTime = work.StartDateTime;
+                }
+
                 SafeInvoke(WorkStopped, e, ErrorFrom.WorkStopped, executeResult);
             }
         }
@@ -123,7 +136,6 @@ namespace PowerThreadPool
             {
                 executeResult.EndDateTime = DateTime.UtcNow;
                 Interlocked.Increment(ref _endCount);
-                Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
             }
             if (WorkCanceled != null)
             {

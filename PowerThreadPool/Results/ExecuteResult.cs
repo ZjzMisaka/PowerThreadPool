@@ -53,7 +53,11 @@ namespace PowerThreadPool.Results
                     IsFound = true,
                     Result = Result != null ? (TRes)(object)Result : default,
                     ID = ID,
-                    QueueDateTime = UtcQueueDateTime
+                    QueueDateTime = UtcQueueDateTime,
+                    StartDateTime = UtcStartDateTime,
+                    EndDateTime = UtcEndDateTime,
+                    Duration = Duration,
+                    RetryInfo = RetryInfo,
                 };
             }
             return result;
