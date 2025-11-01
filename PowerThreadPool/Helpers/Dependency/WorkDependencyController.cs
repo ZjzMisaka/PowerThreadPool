@@ -68,7 +68,7 @@ namespace PowerThreadPool.Helpers.Dependency
 
                         _powerPool._resultDic[work.ID] = executeResult;
 
-                        _powerPool.InvokeWorkEndedEvent(executeResult, true, work.BaseAsyncWorkID != null);
+                        _powerPool.InvokeWorkEndedEvent(executeResult, work.BaseAsyncWorkID != null);
 
                         work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
 
@@ -246,7 +246,7 @@ namespace PowerThreadPool.Helpers.Dependency
 
                     _powerPool._resultDic[work.ID] = executeResult;
 
-                    _powerPool.InvokeWorkEndedEvent(executeResult, true, work.BaseAsyncWorkID != null);
+                    _powerPool.InvokeWorkEndedEvent(executeResult, work.BaseAsyncWorkID != null);
                     work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
                     _powerPool.WorkCallbackEnd(work, Status.Failed);
                 }
