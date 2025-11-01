@@ -460,7 +460,7 @@ namespace PowerThreadPool
                 if (Work.AllowEventsAndCallback)
                 {
                     executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
-                    runDateTime = SetStatisticsCollection(executeResult, runDateTime, baseWork);
+                    SetStatisticsCollection(executeResult, runDateTime, baseWork);
                 }
             }
             catch (ThreadInterruptedException ex)
