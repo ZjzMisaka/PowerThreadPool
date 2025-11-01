@@ -245,15 +245,16 @@ namespace PowerThreadPool
         {
             if (executeResult == null)
             {
+                // Work.AllowEventsAndCallback == false
                 return;
             }
             if (executeResult.Status == Status.Stopped)
             {
-                _powerPool.InvokeWorkStoppedEvent(executeResult, Work.AllowEventsAndCallback, Work.BaseAsyncWorkID != null);
+                _powerPool.InvokeWorkStoppedEvent(executeResult, Work.BaseAsyncWorkID != null);
             }
             else
             {
-                _powerPool.InvokeWorkEndedEvent(executeResult, Work.AllowEventsAndCallback, Work.BaseAsyncWorkID != null);
+                _powerPool.InvokeWorkEndedEvent(executeResult, Work.BaseAsyncWorkID != null);
             }
             if (Work.AllowEventsAndCallback)
             {
@@ -337,7 +338,7 @@ namespace PowerThreadPool
             {
                 executeResult.StartDateTime = Work.StartDateTime;
             }
-            _powerPool.InvokeWorkStoppedEvent(executeResult, true, Work.BaseAsyncWorkID != null);
+            _powerPool.InvokeWorkStoppedEvent(executeResult, Work.BaseAsyncWorkID != null);
 
             if (!ex.Data.Contains("ThrowedWhenExecuting"))
             {

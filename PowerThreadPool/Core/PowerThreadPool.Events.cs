@@ -29,7 +29,7 @@ namespace PowerThreadPool
         /// Invoke work end event
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult, bool allowEventsAndCallback, bool isAsync)
+        internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult, bool isAsync)
         {
             if (PowerPoolOption.EnableStatisticsCollection)
             {
@@ -37,7 +37,7 @@ namespace PowerThreadPool
                 Interlocked.Increment(ref _endCount);
                 Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
             }
-            if (allowEventsAndCallback && WorkEnded != null)
+            if (WorkEnded != null)
             {
                 WorkEndedEventArgs e = new WorkEndedEventArgs()
                 {
@@ -71,7 +71,7 @@ namespace PowerThreadPool
         /// Invoke work stopped event
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult, bool allowEventsAndCallback, bool isAsync)
+        internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult, bool isAsync)
         {
             if (PowerPoolOption.EnableStatisticsCollection)
             {
@@ -79,7 +79,7 @@ namespace PowerThreadPool
                 Interlocked.Increment(ref _endCount);
                 Interlocked.Add(ref _executeTime, (long)(executeResult.UtcEndDateTime - executeResult.UtcStartDateTime).TotalMilliseconds);
             }
-            if (allowEventsAndCallback && WorkStopped != null)
+            if (WorkStopped != null)
             {
                 WorkStoppedEventArgs e = new WorkStoppedEventArgs()
                 {
