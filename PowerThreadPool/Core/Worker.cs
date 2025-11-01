@@ -454,38 +454,13 @@ namespace PowerThreadPool
                     Interlocked.Add(ref _powerPool._queueTime, (long)(runDateTime - Work.QueueDateTime).TotalMilliseconds);
                 }
                 object result = Work.Execute();
-                WorkBase baseWork = null;
 
-                if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
-                {
-                    long duration = (long)(DateTime.UtcNow - runDateTime).TotalMilliseconds;
-                    if (Work.BaseAsyncWorkID != null && _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out baseWork))
-                    {
-                        baseWork.Duration += duration;
-                    }
-                    else
-                    {
-                        Work.Duration += duration;
-                    }
-                }
+                WorkBase baseWork = AppendDuration(runDateTime);
 
                 if (Work.AllowEventsAndCallback)
                 {
                     executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
-                    if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
-                    {
-                        if (baseWork != null)
-                        {
-                            runDateTime = baseWork.StartDateTime;
-                            executeResult.QueueDateTime = baseWork.QueueDateTime;
-                            executeResult.Duration = baseWork.Duration;
-                        }
-                        else
-                        {
-                            executeResult.Duration = Work.Duration;
-                        }
-                        executeResult.StartDateTime = runDateTime;
-                    }
+                    runDateTime = SetStatisticsCollection(executeResult, runDateTime, baseWork);
                 }
             }
             catch (ThreadInterruptedException ex)
@@ -534,6 +509,44 @@ namespace PowerThreadPool
             }
 
             return executeResult;
+        }
+
+        private void SetStatisticsCollection(ExecuteResultBase executeResult, DateTime runDateTime, WorkBase baseWork)
+        {
+            if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+            {
+                if (baseWork != null)
+                {
+                    runDateTime = baseWork.StartDateTime;
+                    executeResult.QueueDateTime = baseWork.QueueDateTime;
+                    executeResult.Duration = baseWork.Duration;
+                }
+                else
+                {
+                    executeResult.Duration = Work.Duration;
+                }
+                executeResult.StartDateTime = runDateTime;
+            }
+        }
+
+        private WorkBase AppendDuration(DateTime runDateTime)
+        {
+            WorkBase baseWork = null;
+
+            if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+            {
+                long duration = (long)(DateTime.UtcNow - runDateTime).TotalMilliseconds;
+                if (Work.BaseAsyncWorkID != null && _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out baseWork))
+                {
+                    baseWork.Duration += duration;
+                }
+                else
+                {
+                    Work.Duration += duration;
+                }
+            }
+
+            return baseWork;
         }
 
         // Due to the unreliability of Thread.Interrupt(), forced stop functionality should be avoided as much as possible.
