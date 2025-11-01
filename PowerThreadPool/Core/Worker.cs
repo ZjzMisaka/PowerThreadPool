@@ -243,16 +243,20 @@ namespace PowerThreadPool
 
         private void InvokeEventsAndCallback(ExecuteResultBase executeResult)
         {
+            if (executeResult == null)
+            {
+                return;
+            }
+            if (executeResult.Status == Status.Stopped)
+            {
+                _powerPool.InvokeWorkStoppedEvent(executeResult, Work.AllowEventsAndCallback, Work.BaseAsyncWorkID != null);
+            }
+            else
+            {
+                _powerPool.InvokeWorkEndedEvent(executeResult, Work.AllowEventsAndCallback, Work.BaseAsyncWorkID != null);
+            }
             if (Work.AllowEventsAndCallback)
             {
-                if (executeResult.Status == Status.Stopped)
-                {
-                    _powerPool.InvokeWorkStoppedEvent(executeResult);
-                }
-                else
-                {
-                    _powerPool.InvokeWorkEndedEvent(executeResult);
-                }
                 if (Work.BaseAsyncWorkID != null)
                 {
                     SetTaskCompletionSourceAfterExecute(executeResult);
@@ -329,7 +333,11 @@ namespace PowerThreadPool
 
             ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
             executeResult.ID = Work.RealWorkID;
-            _powerPool.InvokeWorkStoppedEvent(executeResult);
+            if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+            {
+                executeResult.StartDateTime = Work.StartDateTime;
+            }
+            _powerPool.InvokeWorkStoppedEvent(executeResult, true, Work.BaseAsyncWorkID != null);
 
             if (!ex.Data.Contains("ThrowedWhenExecuting"))
             {
@@ -438,14 +446,46 @@ namespace PowerThreadPool
                 if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
                 {
                     runDateTime = DateTime.UtcNow;
-                    Interlocked.Increment(ref _powerPool._startCount);
+                    Work.StartDateTime = runDateTime;
+                    if (Work.BaseAsyncWorkID == null || Work.BaseAsyncWorkID == WorkID)
+                    {
+                        Interlocked.Increment(ref _powerPool._startCount);
+                    }
                     Interlocked.Add(ref _powerPool._queueTime, (long)(runDateTime - Work.QueueDateTime).TotalMilliseconds);
                 }
                 object result = Work.Execute();
+                WorkBase baseWork = null;
+
+                if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+                {
+                    long duration = (long)(DateTime.UtcNow - runDateTime).TotalMilliseconds;
+                    if (Work.BaseAsyncWorkID != null && _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out baseWork))
+                    {
+                        baseWork.Duration += duration;
+                    }
+                    else
+                    {
+                        Work.Duration += duration;
+                    }
+                }
+
                 if (Work.AllowEventsAndCallback)
                 {
                     executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
-                    executeResult.StartDateTime = runDateTime;
+                    if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+                    {
+                        if (baseWork != null)
+                        {
+                            runDateTime = baseWork.StartDateTime;
+                            executeResult.QueueDateTime = baseWork.QueueDateTime;
+                            executeResult.Duration = baseWork.Duration;
+                        }
+                        else
+                        {
+                            executeResult.Duration = Work.Duration;
+                        }
+                        executeResult.StartDateTime = runDateTime;
+                    }
                 }
             }
             catch (ThreadInterruptedException ex)

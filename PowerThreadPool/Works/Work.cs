@@ -144,6 +144,7 @@ namespace PowerThreadPool.Works
 
                     ExecuteResultBase executeResult = SetExecuteResult(null, null, Status.Canceled);
                     executeResult.ID = ID;
+                    executeResult.StartDateTime = StartDateTime;
 
                     PowerPool.InvokeWorkCanceledEvent(executeResult);
                     InvokeCallback(executeResult, PowerPool.PowerPoolOption);

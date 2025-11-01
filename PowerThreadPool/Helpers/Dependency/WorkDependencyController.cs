@@ -61,10 +61,14 @@ namespace PowerThreadPool.Helpers.Dependency
                         InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{dependedId}' did not complete successfully.");
                         ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
                         executeResult.ID = work.ID;
+                        if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+                        {
+                            executeResult.StartDateTime = DateTime.UtcNow;
+                        }
 
                         _powerPool._resultDic[work.ID] = executeResult;
 
-                        _powerPool.InvokeWorkEndedEvent(executeResult);
+                        _powerPool.InvokeWorkEndedEvent(executeResult, true, work.BaseAsyncWorkID != null);
 
                         work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
 
@@ -235,10 +239,14 @@ namespace PowerThreadPool.Helpers.Dependency
                     InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{id}' did not complete successfully.");
                     ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
                     executeResult.ID = work.ID;
+                    if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+                    {
+                        executeResult.StartDateTime = DateTime.UtcNow;
+                    }
 
                     _powerPool._resultDic[work.ID] = executeResult;
 
-                    _powerPool.InvokeWorkEndedEvent(executeResult);
+                    _powerPool.InvokeWorkEndedEvent(executeResult, true, work.BaseAsyncWorkID != null);
                     work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
                     _powerPool.WorkCallbackEnd(work, Status.Failed);
                 }
