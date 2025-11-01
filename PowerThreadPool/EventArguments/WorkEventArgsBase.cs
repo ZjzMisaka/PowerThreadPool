@@ -41,5 +41,11 @@ namespace PowerThreadPool.EventArguments
             get => _endDateTime.ToLocalTime();
             internal set => _endDateTime = value;
         }
+
+        /// <summary>
+        /// Measures the total wall-clock time that the work’s code runs on workers,
+        /// excluding time spent awaiting external I/O or being suspended off-thread.
+        /// </summary>
+        public long Duration { get; internal set; }
     }
 }

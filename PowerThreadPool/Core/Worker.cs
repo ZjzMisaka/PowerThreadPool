@@ -479,6 +479,12 @@ namespace PowerThreadPool
                 Work.AllowEventsAndCallback = true;
 
                 executeResult = Work.SetExecuteResult(null, ex, Status.Stopped);
+                WorkBase baseWork = null;
+                if (Work.BaseAsyncWorkID != null)
+                {
+                    _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out baseWork);
+                }
+                SetStatisticsCollection(executeResult, runDateTime, baseWork);
             }
             catch (Exception ex)
             {
