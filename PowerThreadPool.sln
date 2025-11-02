@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTest", "UnitTest\UnitTe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark", "Benchmark\Benchmark.csproj", "{470FB9E9-F963-41B8-9ECB-360906ABE0CC}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Deque", "Deque\Deque.shproj", "{70448BCA-9802-46C0-9AA8-17F518A8E7B2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,5 +41,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {84E37518-9A2C-41A2-83A1-EACB915A2440}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Deque\Deque.projitems*{70448bca-9802-46c0-9aa8-17f518a8e7b2}*SharedItemsImports = 13
+		Deque\Deque.projitems*{d94dd0fd-9e6c-4817-8be4-57c23235ac2b}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

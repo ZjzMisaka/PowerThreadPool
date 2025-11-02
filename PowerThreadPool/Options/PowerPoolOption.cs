@@ -10,6 +10,7 @@ namespace PowerThreadPool.Options
     {
         FIFO,
         LIFO,
+        Deque,
     }
 
     public enum WorkIDType

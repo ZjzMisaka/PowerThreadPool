@@ -180,6 +180,10 @@ namespace PowerThreadPool
             {
                 return new ConcurrentStealablePriorityQueue<WorkItemBase>();
             }
+            else if (_powerPool.PowerPoolOption.QueueType == QueueType.LIFO)
+            {
+                return new ConcurrentStealablePriorityStack<WorkItemBase>();
+            }
             else
             {
                 return new ConcurrentStealablePriorityStack<WorkItemBase>();
