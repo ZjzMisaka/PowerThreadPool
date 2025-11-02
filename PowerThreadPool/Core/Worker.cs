@@ -186,7 +186,7 @@ namespace PowerThreadPool
             }
             else
             {
-                return new ConcurrentStealablePriorityStack<WorkItemBase>();
+                return new ConcurrentStealablePriorityDeque<WorkItemBase>();
             }
         }
 
