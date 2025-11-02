@@ -3,6 +3,18 @@ using DequeUtility;
 
 namespace System.Collections.Concurrent
 {
+    /// <summary>
+    /// A Chase–Lev (ABP) work-stealing deque for single-owner (producer/consumer at bottom)
+    /// and multiple thieves (steal from top).
+    ///
+    /// Derived from https://github.com/tejacques/Deque and adapted as follows:
+    /// - Replaced list semantics with Chase–Lev protocol (Top/Bottom indices).
+    /// - Added atomic operations: volatile reads/writes and CAS on Top.
+    /// - Implemented owner-only PushBottom/TryPopBottom and concurrent TrySteal.
+    /// - Used power-of-two circular buffer with on-demand growth.
+    /// - Exposed advisory ApproximateCount/IsEmpty (non-linearizable).
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     internal sealed class ChaseLevDeque<T>
     {
         private T[] _array;
