@@ -137,6 +137,8 @@ namespace PowerThreadPool.Options
         /// </summary>
         public bool EnableStatisticsCollection { get; set; } = false;
 
+        public bool EnableWorkInbox { get; set; } = false;
+
         internal void OnThreadCountSettingChanged()
         {
             foreach (PowerPool powerPool in PowerPoolList)
