@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;

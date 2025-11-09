@@ -355,7 +355,7 @@ namespace PowerThreadPool
 
             _powerPool.WorkCallbackEnd(Work, Status.ForceStopped);
 
-            bool hasWaitingWork = RequeueAllWaitingWork();
+            bool hasWaitingWork = RequeueAllWaitingWork(null);
             Work.AsyncDone = true;
             Work.IsDone = true;
 
@@ -374,7 +374,7 @@ namespace PowerThreadPool
             Dispose();
         }
 
-        private bool WorkerCountOutOfRange()
+        private bool WorkerCountOutOfRange(WorkBase work)
         {
             bool res = false;
             if (_powerPool._canDeleteRedundantWorker.TrySet(CanDeleteRedundantWorker.NotAllowed, CanDeleteRedundantWorker.Allowed)
@@ -402,7 +402,7 @@ namespace PowerThreadPool
 
                 _powerPool.FillWorkerQueue();
 
-                bool hasWaitingWork = RequeueAllWaitingWork();
+                bool hasWaitingWork = RequeueAllWaitingWork(work);
                 if (!hasWaitingWork)
                 {
                     _powerPool.CheckPoolIdle();
@@ -415,9 +415,14 @@ namespace PowerThreadPool
             return res;
         }
 
-        private bool RequeueAllWaitingWork()
+        private bool RequeueAllWaitingWork(WorkBase work)
         {
             bool hasWaitingWork = false;
+            if (work != null && work._canCancel.TrySet(CanCancel.Allowed, CanCancel.NotAllowed))
+            {
+                _powerPool.SetWork(work);
+                hasWaitingWork = true;
+            }
             WorkBase workBase;
             while ((workBase = GetNotCanceledWork()) != null)
             {
@@ -660,8 +665,12 @@ namespace PowerThreadPool
             {
                 if (_powerPool.AliveWorkerCount - _powerPool.LongRunningWorkerCount > _powerPool.PowerPoolOption.MaxThreads)
                 {
-                    if (WorkerCountOutOfRange())
+                    if (WorkerCountOutOfRange(work))
                     {
+                        if (work != null)
+                        {
+                            Interlocked.Decrement(ref _waitingWorkCount);
+                        }
                         return;
                     }
                 }
@@ -1084,6 +1093,14 @@ namespace PowerThreadPool
                 waitingWork = _waitingWorkPriorityCollection.Get() as WorkBase;
             }
             while (WorkCancelNotAllowed(waitingWork));
+            if (waitingWork == null)
+            {
+                do
+                {
+                    _workInbox.TryDequeue(out waitingWork);
+                }
+                while (WorkCancelNotAllowed(waitingWork));
+            }
             return waitingWork;
         }
 
