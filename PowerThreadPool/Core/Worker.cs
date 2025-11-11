@@ -690,7 +690,7 @@ namespace PowerThreadPool
                     SetStolenWorkList(ref work, stolenWorkList, false);
                 }
 
-                if (work == null)
+                if (WaitingWorkCount == 0 && work == null)
                 {
                     if (TurnToIdle(ref work))
                     {
