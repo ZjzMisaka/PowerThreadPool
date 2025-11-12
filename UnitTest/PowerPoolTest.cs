@@ -7875,7 +7875,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool(new PowerPoolOption
             {
                 QueueType = QueueType.Deque,
-                EnableWorkInbox = true,
+                EnforceDequeOwnership = true,
                 StealOneWorkOnly = true,
             });
 
@@ -7907,7 +7907,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool(new PowerPoolOption
             {
                 QueueType = QueueType.Deque,
-                EnableWorkInbox = true,
+                EnforceDequeOwnership = true,
                 StealOneWorkOnly = true,
             });
 

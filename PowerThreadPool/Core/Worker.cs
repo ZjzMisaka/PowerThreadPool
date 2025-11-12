@@ -619,7 +619,7 @@ namespace PowerThreadPool
             }
             else
             {
-                if (_powerPool.PowerPoolOption.EnableWorkInbox && Thread.CurrentThread.ManagedThreadId != _thread.ManagedThreadId)
+                if (_powerPool.PowerPoolOption.EnforceDequeOwnership && Thread.CurrentThread.ManagedThreadId != _thread.ManagedThreadId)
                 {
                     _workInbox.Enqueue(work);
                 }
@@ -1100,7 +1100,7 @@ namespace PowerThreadPool
 
         private WorkBase Get()
         {
-            if (_powerPool.PowerPoolOption.EnableWorkInbox && Thread.CurrentThread.ManagedThreadId == _thread.ManagedThreadId)
+            if (_powerPool.PowerPoolOption.EnforceDequeOwnership && Thread.CurrentThread.ManagedThreadId == _thread.ManagedThreadId)
             {
                 while (_workInbox.TryDequeue(out WorkBase work))
                 {
@@ -1143,7 +1143,7 @@ namespace PowerThreadPool
                 waitingWork = _waitingWorkPriorityCollection.Steal() as WorkBase;
             }
             while (WorkCancelNotAllowed(waitingWork));
-            if (_powerPool.PowerPoolOption.EnableWorkInbox && waitingWork == null)
+            if (_powerPool.PowerPoolOption.EnforceDequeOwnership && waitingWork == null)
             {
                 while (!_workInbox.TryDequeue(out waitingWork))
                 {
