@@ -4,22 +4,29 @@ using System.Threading;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers.LockFree;
 
+// Copyright and License
+// ChaseLevDeque adapts ideas/code from tejacques/Deque (MIT License):
+//   https://github.com/tejacques/Deque
+//
+// Acknowledgment
+// We gratefully acknowledge tejacques/Deque as an excellent foundation
+// for ChaseLevDeque.
+//
+// About ChaseLevDeque:
+//
+// A Chase–Lev (ABP) work-stealing deque for single-owner (producer/consumer at bottom)
+// and multiple thieves (steal from top).
+//
+// Derived from https://github.com/tejacques/Deque and adapted as follows:
+// - Replaced list semantics with Chase–Lev protocol (Top/Bottom indices).
+// - Added atomic operations: volatile reads/writes and CAS on Top.
+// - Implemented owner-only PushBottom/TryPopBottom and concurrent TrySteal.
+// - Used power-of-two circular buffer with on-demand growth.
+// - Exposed advisory ApproximateCount/IsEmpty (non-linearizable).
 namespace PowerThreadPool.Collections
 {
     internal class ConcurrentStealablePriorityDeque<T> : IStealablePriorityCollection<T>
     {
-        // About ChaseLevDeque:
-        // 
-        // A Chase–Lev (ABP) work-stealing deque for single-owner (producer/consumer at bottom)
-        // and multiple thieves (steal from top).
-        //
-        // Derived from https://github.com/tejacques/Deque and adapted as follows:
-        // - Replaced list semantics with Chase–Lev protocol (Top/Bottom indices).
-        // - Added atomic operations: volatile reads/writes and CAS on Top.
-        // - Implemented owner-only PushBottom/TryPopBottom and concurrent TrySteal.
-        // - Used power-of-two circular buffer with on-demand growth.
-        // - Exposed advisory ApproximateCount/IsEmpty (non-linearizable).
-
         private readonly ConcurrentDictionary<int, ChaseLevDeque<T>> _queueDic
             = new ConcurrentDictionary<int, ChaseLevDeque<T>>();
 

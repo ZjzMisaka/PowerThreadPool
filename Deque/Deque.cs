@@ -4,6 +4,16 @@ using DequeUtility;
 namespace System.Collections.Concurrent
 {
     /// <summary>
+    /// Copyright and License
+    /// ChaseLevDeque adapts ideas/code from tejacques/Deque (MIT License):
+    ///   https://github.com/tejacques/Deque
+    ///
+    /// Acknowledgment
+    /// We gratefully acknowledge tejacques/Deque as an excellent foundation
+    /// for ChaseLevDeque.
+    ///
+    /// About ChaseLevDeque:
+    ///
     /// A Chase–Lev (ABP) work-stealing deque for single-owner (producer/consumer at bottom)
     /// and multiple thieves (steal from top).
     ///
