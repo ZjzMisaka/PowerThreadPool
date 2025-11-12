@@ -871,6 +871,37 @@ namespace PowerThreadPool
 
                         WorkerState.InterlockedValue = WorkerStates.Idle;
 
+                        // There used to be a race here: a work item could be enqueued after the worker transitioned to Idle.
+                        // The "Deque update" expanded the window in which this race can happen compared to before.
+                        // Timing before the update:
+                        // Path 2: Failed to get a Work; preparing to enter Idle state
+                        // Path 2: Before entering, tries to get again; still fails
+                        // Path 1: New Work is enqueued
+                        // Path 1: Increments the waiting count
+                        // Path 1: Changes the Work state (before: Running, after: remains Running)
+                        // Path 2: Worker transitions to Idle state
+                        // Timing after the update:
+                        // Path 1: Increments the waiting count
+                        // Path 2: Failed to get a Work; preparing to enter Idle state
+                        // Path 2: Before entering, tries to get again; still fails
+                        // Path 1: Changes the Work state (before: Running, after: remains Running)
+                        // Path 2: Worker transitions to Idle state
+                        // Path 1: New Work is enqueued
+                        // Therefore, after transitioning to Idle, we must check the waiting count once more.
+                        // An ABA is acceptable: even if the count changes to 1 and back to 0 during this period,
+                        // it only means the Worker successfully processed that task.
+                        // However, if the current count is not 0, we need to re-enqueue the unprocessed Work
+                        // until the count returns to 0.
+                        while (WaitingWorkCount > 0)
+                        {
+                            while ((work = Get()) != null)
+                            {
+                                Interlocked.Decrement(ref _waitingWorkCount);
+                                work._canCancel.TrySet(CanCancel.Allowed, CanCancel.NotAllowed);
+                                _powerPool.SetWork(work);
+                            }
+                        }
+
                         CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
                         if (_powerPool._idleWorkerDic.TryAdd(ID, this))
