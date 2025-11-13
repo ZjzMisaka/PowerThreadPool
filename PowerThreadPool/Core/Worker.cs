@@ -921,8 +921,6 @@ namespace PowerThreadPool
         /// However, if the current count is not 0, we need to re-enqueue the unprocessed Work
         /// until the count returns to 0.
         /// </summary>
-        /// <param name="work"></param>
-        /// <returns></returns>
         private void ResetAllWaitingWorkWhenIdle()
         {
             WorkBase work = null;
