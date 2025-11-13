@@ -38,7 +38,7 @@ namespace PowerThreadPool
         internal InterlockedFlag<WorkHeldStates> WorkHeldState { get; } = WorkHeldStates.NotHeld;
         internal InterlockedFlag<WorkStealability> WorkStealability { get; } = Constants.WorkStealability.Allowed;
 
-        private ConcurrentQueue<WorkBase> _workInbox = new ConcurrentQueue<WorkBase>();
+        private ConcurrentQueue<WorkBase> _workInbox;
 
         private IStealablePriorityCollection<WorkItemBase> _waitingWorkPriorityCollection;
 
@@ -71,6 +71,11 @@ namespace PowerThreadPool
             _powerPool = powerPool;
             _timeSinceLastIdle.Start();
             _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
+
+            if (_powerPool.PowerPoolOption.EnforceDequeOwnership)
+            {
+                _workInbox = new ConcurrentQueue<WorkBase>();
+            }
 
             _waitingWorkPriorityCollection = QueueFactory();
 
@@ -1136,7 +1141,7 @@ namespace PowerThreadPool
                 waitingWork = _waitingWorkPriorityCollection.Get() as WorkBase;
             }
             while (WorkCancelNotAllowed(waitingWork));
-            if (waitingWork == null)
+            if (_powerPool.PowerPoolOption.EnforceDequeOwnership && waitingWork == null)
             {
                 do
                 {
