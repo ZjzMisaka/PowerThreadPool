@@ -7798,10 +7798,6 @@ namespace UnitTest
                 TestDivideAndConquerDemoHelpInPoolWaitPreferIdleThenLocal();
                 TestDivideAndConquerDemoHelpInWorkWaitPreferLocalWorker();
                 TestDivideAndConquerDemoHelpInPoolWaitPreferLocalWorker();
-                TestDivideAndConquerDemoHelpInWorkWaitPreferIdleThenLocalDeque();
-                TestDivideAndConquerDemoHelpInPoolWaitPreferIdleThenLocalDeque();
-                TestDivideAndConquerDemoHelpInWorkWaitPreferLocalWorkerDeque();
-                TestDivideAndConquerDemoHelpInPoolWaitPreferLocalWorkerDeque();
             }
         }
 
@@ -7819,7 +7815,7 @@ namespace UnitTest
             int max = 100000;
             int[] data = Enumerable.Range(0, max).ToArray();
 
-            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferIdleThenLocal, QueueType.LIFO);
+            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferIdleThenLocal);
 
             Assert.Equal(4999950000, result);
 
@@ -7832,7 +7828,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             int n = 10_000_000;
-            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferIdleThenLocal, QueueType.LIFO);
+            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferIdleThenLocal);
             Assert.Equal(10000000, res);
         }
 
@@ -7850,7 +7846,7 @@ namespace UnitTest
             int max = 100000;
             int[] data = Enumerable.Range(0, max).ToArray();
 
-            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferLocalWorker, QueueType.LIFO);
+            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferLocalWorker);
 
             Assert.Equal(4999950000, result);
 
@@ -7863,71 +7859,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             int n = 10_000_000;
-            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferLocalWorker, QueueType.LIFO);
-            Assert.Equal(10000000, res);
-        }
-
-        [Fact]
-        public void TestDivideAndConquerDemoHelpInWorkWaitPreferIdleThenLocalDeque()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            PowerPool powerPool = new PowerPool(new PowerPoolOption
-            {
-                QueueType = QueueType.Deque,
-                EnforceDequeOwnership = true,
-                StealOneWorkOnly = true,
-            });
-
-            int max = 100000;
-            int[] data = Enumerable.Range(0, max).ToArray();
-
-            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferIdleThenLocal, QueueType.Deque);
-
-            Assert.Equal(4999950000, result);
-
-            powerPool.Dispose();
-        }
-
-        [Fact]
-        public void TestDivideAndConquerDemoHelpInPoolWaitPreferIdleThenLocalDeque()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            int n = 10_000_000;
-            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferIdleThenLocal, QueueType.Deque);
-            Assert.Equal(10000000, res);
-        }
-
-        [Fact]
-        public void TestDivideAndConquerDemoHelpInWorkWaitPreferLocalWorkerDeque()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            PowerPool powerPool = new PowerPool(new PowerPoolOption
-            {
-                QueueType = QueueType.Deque,
-                EnforceDequeOwnership = true,
-                StealOneWorkOnly = true,
-            });
-
-            int max = 100000;
-            int[] data = Enumerable.Range(0, max).ToArray();
-
-            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferLocalWorker, QueueType.Deque);
-
-            Assert.Equal(4999950000, result);
-
-            powerPool.Dispose();
-        }
-
-        [Fact]
-        public void TestDivideAndConquerDemoHelpInPoolWaitPreferLocalWorkerDeque()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            int n = 10_000_000;
-            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferLocalWorker, QueueType.Deque);
+            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferLocalWorker);
             Assert.Equal(10000000, res);
         }
 
@@ -7999,7 +7931,7 @@ namespace UnitTest
                 return leftSum + rightSum;
             }
 
-            public static long Run(int[] arr, WorkPlacementPolicy workPlacementPolicy, QueueType queueType)
+            public static long Run(int[] arr, WorkPlacementPolicy workPlacementPolicy)
             {
                 PowerPoolOption options = new PowerPoolOption
                 {
@@ -8053,12 +7985,12 @@ namespace UnitTest
                 return left + rightRes.Result;
             }
 
-            public static long Run(int n, WorkPlacementPolicy workPlacementPolicy, QueueType queueType)
+            public static long Run(int n, WorkPlacementPolicy workPlacementPolicy)
             {
                 PowerPoolOption option = new PowerPoolOption
                 {
                     MaxThreads = Environment.ProcessorCount,
-                    QueueType = queueType,
+                    QueueType = QueueType.LIFO,
                     StealOneWorkOnly = true,
                     DestroyThreadOption = new DestroyThreadOption
                     {
@@ -8171,46 +8103,6 @@ namespace UnitTest
                 {
                     powerPool.QueueWorkItem(() => { Interlocked.Increment(ref done); });
                 }
-            }
-
-            powerPool.Wait();
-
-            Assert.Equal(10000, done);
-        }
-
-        [Fact(Timeout = 5 * 60 * 1000)]
-        public async void TestWorkerCountOutOfRangeDeque()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            int done = 0;
-
-            PowerPoolOption ppo = new PowerPoolOption
-            {
-                MaxThreads = 100,
-                QueueType = QueueType.Deque,
-                EnforceDequeOwnership = true,
-            };
-            PowerPool powerPool = new PowerPool(ppo);
-            List<Task> tasks = new List<Task>();
-            for (int i = 0; i < 100; ++i)
-            {
-                if (ppo.MaxThreads >= 2)
-                {
-                    ppo.MaxThreads = ppo.MaxThreads - 1;
-                }
-
-                for (int j = 0; j < 100; ++j)
-                {
-                    tasks.Add(Task.Run(() =>
-                    {
-                        powerPool.QueueWorkItem(() => { Interlocked.Increment(ref done); });
-                    }));
-                }
-            }
-            foreach (var task in tasks)
-            {
-                await task;
             }
 
             powerPool.Wait();

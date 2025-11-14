@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;
@@ -9,7 +10,6 @@ namespace PowerThreadPool.Options
     {
         FIFO,
         LIFO,
-        Deque,
     }
 
     public enum WorkIDType
@@ -135,11 +135,6 @@ namespace PowerThreadPool.Options
         /// including counts and durations.
         /// </summary>
         public bool EnableStatisticsCollection { get; set; } = false;
-
-        /// <summary>
-        /// Indicates whether the pool enforces the deque ownership discipline (owner-only bottom ops, others steal from top).
-        /// </summary>
-        public bool EnforceDequeOwnership { get; set; } = false;
 
         internal void OnThreadCountSettingChanged()
         {

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -38,8 +37,6 @@ namespace PowerThreadPool
         internal InterlockedFlag<WorkHeldStates> WorkHeldState { get; } = WorkHeldStates.NotHeld;
         internal InterlockedFlag<WorkStealability> WorkStealability { get; } = Constants.WorkStealability.Allowed;
 
-        private ConcurrentQueue<WorkBase> _workInbox;
-
         private IStealablePriorityCollection<WorkItemBase> _waitingWorkPriorityCollection;
 
         private DeferredActionTimer _timeoutTimer;
@@ -72,11 +69,6 @@ namespace PowerThreadPool
             _timeSinceLastIdle.Start();
             _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
 
-            if (_powerPool.PowerPoolOption.EnforceDequeOwnership)
-            {
-                _workInbox = new ConcurrentQueue<WorkBase>();
-            }
-
             _waitingWorkPriorityCollection = QueueFactory();
 
             _thread = new Thread(() =>
@@ -104,7 +96,7 @@ namespace PowerThreadPool
                             LongRunning = false;
                         }
 
-                        AssignWork(null);
+                        AssignWork();
                         // May be disposed at WorkerCountOutOfRange().
                         if (CanDispose == Constants.CanDispose.NotAllowed)
                         {
@@ -188,13 +180,9 @@ namespace PowerThreadPool
             {
                 return new ConcurrentStealablePriorityQueue<WorkItemBase>();
             }
-            else if (_powerPool.PowerPoolOption.QueueType == QueueType.LIFO)
-            {
-                return new ConcurrentStealablePriorityStack<WorkItemBase>();
-            }
             else
             {
-                return new ConcurrentStealablePriorityDeque<WorkItemBase>();
+                return new ConcurrentStealablePriorityStack<WorkItemBase>();
             }
         }
 
@@ -360,7 +348,7 @@ namespace PowerThreadPool
 
             _powerPool.WorkCallbackEnd(Work, Status.ForceStopped);
 
-            bool hasWaitingWork = RequeueAllWaitingWork(null);
+            bool hasWaitingWork = RequeueAllWaitingWork();
             Work.AsyncDone = true;
             Work.IsDone = true;
 
@@ -379,7 +367,7 @@ namespace PowerThreadPool
             Dispose();
         }
 
-        private bool WorkerCountOutOfRange(WorkBase work)
+        private bool WorkerCountOutOfRange()
         {
             bool res = false;
             if (_powerPool._canDeleteRedundantWorker.TrySet(CanDeleteRedundantWorker.NotAllowed, CanDeleteRedundantWorker.Allowed)
@@ -407,7 +395,7 @@ namespace PowerThreadPool
 
                 _powerPool.FillWorkerQueue();
 
-                bool hasWaitingWork = RequeueAllWaitingWork(work);
+                bool hasWaitingWork = RequeueAllWaitingWork();
                 if (!hasWaitingWork)
                 {
                     _powerPool.CheckPoolIdle();
@@ -420,14 +408,9 @@ namespace PowerThreadPool
             return res;
         }
 
-        private bool RequeueAllWaitingWork(WorkBase work)
+        private bool RequeueAllWaitingWork()
         {
             bool hasWaitingWork = false;
-            if (work != null && work._canCancel.TrySet(CanCancel.Allowed, CanCancel.NotAllowed))
-            {
-                _powerPool.SetWork(work);
-                hasWaitingWork = true;
-            }
             WorkBase workBase;
             while ((workBase = GetNotCanceledWork()) != null)
             {
@@ -595,7 +578,7 @@ namespace PowerThreadPool
         internal void SetWork(WorkBase work, bool shouldSetCanGetWork)
         {
             _powerPool.SetWorkOwner(work);
-
+            _waitingWorkPriorityCollection.Set(work, work.WorkPriority);
             work.Worker = this;
             Interlocked.Increment(ref _waitingWorkCount);
             WorkerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
@@ -614,24 +597,7 @@ namespace PowerThreadPool
             {
                 Interlocked.Increment(ref _powerPool._runningWorkerCount);
                 _powerPool.InvokeRunningWorkerCountChangedEvent(true);
-
-                if (!work._canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed))
-                {
-                    work = null;
-                }
-
-                AssignWork(work);
-            }
-            else
-            {
-                if (_powerPool.PowerPoolOption.EnforceDequeOwnership && Thread.CurrentThread.ManagedThreadId != _thread.ManagedThreadId)
-                {
-                    _workInbox.Enqueue(work);
-                }
-                else
-                {
-                    _waitingWorkPriorityCollection.Set(work, work.WorkPriority);
-                }
+                AssignWork();
             }
         }
 
@@ -663,27 +629,22 @@ namespace PowerThreadPool
             return stolenList;
         }
 
-        private void AssignWork(WorkBase work)
+        private void AssignWork()
         {
             // In most cases, the loop will not iterate more than once.
             while (true)
             {
+                WorkBase work = null;
+
                 if (_powerPool.AliveWorkerCount - _powerPool.LongRunningWorkerCount > _powerPool.PowerPoolOption.MaxThreads)
                 {
-                    if (WorkerCountOutOfRange(work))
+                    if (WorkerCountOutOfRange())
                     {
-                        if (work != null)
-                        {
-                            Interlocked.Decrement(ref _waitingWorkCount);
-                        }
                         return;
                     }
                 }
 
-                if (work == null)
-                {
-                    work = Get();
-                }
+                work = Get();
                 if (work != null)
                 {
                     Interlocked.Decrement(ref _waitingWorkCount);
@@ -695,7 +656,7 @@ namespace PowerThreadPool
                     SetStolenWorkList(ref work, stolenWorkList, false);
                 }
 
-                if (WaitingWorkCount == 0 && work == null)
+                if (work == null)
                 {
                     if (TurnToIdle(ref work))
                     {
@@ -876,8 +837,6 @@ namespace PowerThreadPool
 
                         WorkerState.InterlockedValue = WorkerStates.Idle;
 
-                        ResetAllWaitingWorkWhenIdle();
-
                         CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
                         if (_powerPool._idleWorkerDic.TryAdd(ID, this))
@@ -897,47 +856,6 @@ namespace PowerThreadPool
             else
             {
                 return false;
-            }
-        }
-
-        /// <summary>
-        /// After a Worker enters the Idle state, before allowing it to acquire a new Work,
-        /// a "draining process" is performed.
-        /// 
-        /// There used to be a race here: a work item could be enqueued after the worker transitioned to Idle.
-        /// The "Deque update" expanded the window in which this race can happen compared to before.
-        /// Timing before the update:
-        /// Path 2: Failed to get a Work; preparing to enter Idle state
-        /// Path 2: Before entering, tries to get again; still fails
-        /// Path 1: New Work is enqueued
-        /// Path 1: Increments the waiting count
-        /// Path 1: Changes the Work state (before: Running, after: remains Running)
-        /// Path 2: Worker transitions to Idle state
-        /// Timing after the update:
-        /// Path 1: Increments the waiting count
-        /// Path 2: Failed to get a Work; preparing to enter Idle state
-        /// Path 2: Before entering, tries to get again; still fails
-        /// Path 1: Changes the Work state (before: Running, after: remains Running)
-        /// Path 2: Worker transitions to Idle state
-        /// Path 1: New Work is enqueued
-        /// Therefore, after transitioning to Idle, we must check the waiting count once more.
-        /// An ABA is acceptable: even if the count changes to 1 and back to 0 during this period,
-        /// it only means the Worker successfully processed that task.
-        /// However, if the current count is not 0, we need to re-enqueue the unprocessed Work
-        /// until the count returns to 0.
-        /// </summary>
-        private void ResetAllWaitingWorkWhenIdle()
-        {
-            WorkBase work = null;
-
-            while (WaitingWorkCount > 0)
-            {
-                while ((work = Get()) != null)
-                {
-                    Interlocked.Decrement(ref _waitingWorkCount);
-                    work._canCancel.TrySet(CanCancel.Allowed, CanCancel.NotAllowed);
-                    _powerPool.SetWork(work);
-                }
             }
         }
 
@@ -1117,14 +1035,6 @@ namespace PowerThreadPool
 
         private WorkBase Get()
         {
-            if (_powerPool.PowerPoolOption.EnforceDequeOwnership && Thread.CurrentThread.ManagedThreadId == _thread.ManagedThreadId)
-            {
-                while (_workInbox.TryDequeue(out WorkBase work))
-                {
-                    _waitingWorkPriorityCollection.Set(work, work.WorkPriority);
-                }
-            }
-
             WorkBase waitingWork = _waitingWorkPriorityCollection.Get() as WorkBase;
             while (waitingWork != null && !waitingWork._canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed))
             {
@@ -1141,14 +1051,6 @@ namespace PowerThreadPool
                 waitingWork = _waitingWorkPriorityCollection.Get() as WorkBase;
             }
             while (WorkCancelNotAllowed(waitingWork));
-            if (_powerPool.PowerPoolOption.EnforceDequeOwnership && waitingWork == null)
-            {
-                do
-                {
-                    _workInbox.TryDequeue(out waitingWork);
-                }
-                while (WorkCancelNotAllowed(waitingWork));
-            }
             return waitingWork;
         }
 
@@ -1160,13 +1062,6 @@ namespace PowerThreadPool
                 waitingWork = _waitingWorkPriorityCollection.Steal() as WorkBase;
             }
             while (WorkCancelNotAllowed(waitingWork));
-            if (_powerPool.PowerPoolOption.EnforceDequeOwnership && waitingWork == null)
-            {
-                while (!_workInbox.TryDequeue(out waitingWork))
-                {
-                    break;
-                }
-            }
             return waitingWork;
         }
 
