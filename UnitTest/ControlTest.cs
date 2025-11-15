@@ -1688,6 +1688,38 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestCancelAfterSetWorkManyTimes()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            bool continueLoop = true;
+
+            Task.Run(() =>
+            {
+                while (continueLoop)
+                {
+                    powerPool.Cancel();
+                }
+            });
+            for (int i = 0; i < 10000; ++i)
+            {
+                for (int j = 0; j < 10; ++j)
+                {
+                    powerPool.QueueWorkItem(() => { });
+                }
+                powerPool.Wait();
+            }
+
+            Thread.Sleep(100);
+
+            continueLoop = false;
+
+            powerPool.Wait();
+        }
+
+        [Fact]
         public void TestCancelByID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
