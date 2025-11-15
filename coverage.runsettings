@@ -2,13 +2,10 @@
 <RunSettings>
   <DataCollectionRunSettings>
     <DataCollectors>
-      <DataCollector friendlyName="XPlat Code Coverage">
+      <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
-          <Exclude>
-            <Source>
-              .*[/\\]Deque[/\\].*
-            </Source>
-          </Exclude>
+          <Format>cobertura</Format>
+          <ExcludeByFile>**/Deque/*.cs</ExcludeByFile>
         </Configuration>
       </DataCollector>
     </DataCollectors>
