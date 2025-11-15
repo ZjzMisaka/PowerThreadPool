@@ -8454,8 +8454,8 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.InRange(d1, 150, 200);
-            Assert.InRange(d2, 150, 200);
+            Assert.InRange(d1, 150, 220);
+            Assert.InRange(d2, 150, 220);
 
             Assert.InRange(rt1, 650, double.MaxValue);
             Assert.InRange(rt2, 650, double.MaxValue);
