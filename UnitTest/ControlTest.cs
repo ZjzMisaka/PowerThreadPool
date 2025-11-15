@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics;
+using System.Reflection;
 using PowerThreadPool;
 #if DEBUG
 using PowerThreadPool.Helpers.LockFree;
@@ -1158,6 +1159,156 @@ namespace UnitTest
             await powerPool.WaitAsync();
 
             Assert.Equal(id, resID);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async Task TestDequeForceStopByID1()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 8,
+                QueueType = QueueType.Deque,
+                EnforceDequeOwnership = true,
+            });
+            List<long> logList = new List<long>();
+
+            object lockObj = new object();
+
+            int doneCount = 0;
+
+            Task[] tasks = new Task[1000];
+            var sw = Stopwatch.StartNew();
+            for (int i = 0; i < 1000; ++i)
+            {
+                tasks[i] = Task.Run(() =>
+                {
+                    powerPool.QueueWorkItem(() =>
+                    {
+                        while (sw.ElapsedMilliseconds < 1000)
+                        {
+                            Thread.Sleep(1);
+                        }
+                    }, (res) =>
+                    {
+                        if (res.Status == Status.Succeed)
+                        {
+                            Interlocked.Increment(ref doneCount);
+                        }
+                    });
+                });
+            }
+            foreach (var task in tasks)
+            {
+                await task;
+            }
+
+            powerPool.ForceStop(5);
+
+            powerPool.Wait();
+
+            Assert.Equal(999, doneCount);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async Task TestDequeForceStopByID2()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 8,
+                QueueType = QueueType.Deque,
+                EnforceDequeOwnership = true,
+            });
+            List<long> logList = new List<long>();
+
+            object lockObj = new object();
+
+            int doneCount = 0;
+
+            Task[] tasks = new Task[1000];
+            var sw = Stopwatch.StartNew();
+            for (int i = 0; i < 1000; ++i)
+            {
+                tasks[i] = Task.Run(() =>
+                {
+                    powerPool.QueueWorkItem(() =>
+                    {
+                        while (sw.ElapsedMilliseconds < 1000)
+                        {
+                            Thread.Sleep(1);
+                        }
+                    }, (res) =>
+                    {
+                        if (res.Status == Status.Succeed)
+                        {
+                            Interlocked.Increment(ref doneCount);
+                        }
+                    });
+                });
+            }
+            foreach (var task in tasks)
+            {
+                await task;
+            }
+
+            powerPool.ForceStop(5);
+
+            powerPool.Wait();
+
+            Assert.Equal(999, doneCount);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async Task TestDequeForceStopByID3()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 8,
+                QueueType = QueueType.Deque,
+                EnforceDequeOwnership = true,
+            });
+            List<long> logList = new List<long>();
+
+            object lockObj = new object();
+
+            int doneCount = 0;
+
+            Task[] tasks = new Task[1000];
+            var sw = Stopwatch.StartNew();
+            for (int i = 0; i < 1000; ++i)
+            {
+                tasks[i] = Task.Run(() =>
+                {
+                    powerPool.QueueWorkItem(() =>
+                    {
+                        while (sw.ElapsedMilliseconds < 1000)
+                        {
+                            Thread.Sleep(1);
+                        }
+                    }, (res) =>
+                    {
+                        if (res.Status == Status.Succeed)
+                        {
+                            Interlocked.Increment(ref doneCount);
+                        }
+                    });
+                });
+            }
+            foreach (var task in tasks)
+            {
+                await task;
+            }
+
+            powerPool.ForceStop(5);
+
+            powerPool.Wait();
+
+            Assert.Equal(999, doneCount);
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]

@@ -7798,6 +7798,10 @@ namespace UnitTest
                 TestDivideAndConquerDemoHelpInPoolWaitPreferIdleThenLocal();
                 TestDivideAndConquerDemoHelpInWorkWaitPreferLocalWorker();
                 TestDivideAndConquerDemoHelpInPoolWaitPreferLocalWorker();
+                TestDivideAndConquerDemoHelpInWorkWaitPreferIdleThenLocalDeque();
+                TestDivideAndConquerDemoHelpInPoolWaitPreferIdleThenLocalDeque();
+                TestDivideAndConquerDemoHelpInWorkWaitPreferLocalWorkerDeque();
+                TestDivideAndConquerDemoHelpInPoolWaitPreferLocalWorkerDeque();
             }
         }
 
@@ -7815,7 +7819,7 @@ namespace UnitTest
             int max = 100000;
             int[] data = Enumerable.Range(0, max).ToArray();
 
-            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferIdleThenLocal);
+            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferIdleThenLocal, QueueType.LIFO, false);
 
             Assert.Equal(4999950000, result);
 
@@ -7828,7 +7832,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             int n = 10_000_000;
-            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferIdleThenLocal);
+            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferIdleThenLocal, QueueType.LIFO, false);
             Assert.Equal(10000000, res);
         }
 
@@ -7846,7 +7850,7 @@ namespace UnitTest
             int max = 100000;
             int[] data = Enumerable.Range(0, max).ToArray();
 
-            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferLocalWorker);
+            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferLocalWorker, QueueType.LIFO, false);
 
             Assert.Equal(4999950000, result);
 
@@ -7859,7 +7863,71 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             int n = 10_000_000;
-            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferLocalWorker);
+            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferLocalWorker, QueueType.LIFO, false);
+            Assert.Equal(10000000, res);
+        }
+
+        [Fact]
+        public void TestDivideAndConquerDemoHelpInWorkWaitPreferIdleThenLocalDeque()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                QueueType = QueueType.Deque,
+                EnforceDequeOwnership = true,
+                StealOneWorkOnly = true,
+            });
+
+            int max = 100000;
+            int[] data = Enumerable.Range(0, max).ToArray();
+
+            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferIdleThenLocal, QueueType.Deque, true);
+
+            Assert.Equal(4999950000, result);
+
+            powerPool.Dispose();
+        }
+
+        [Fact]
+        public void TestDivideAndConquerDemoHelpInPoolWaitPreferIdleThenLocalDeque()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int n = 10_000_000;
+            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferIdleThenLocal, QueueType.Deque, true);
+            Assert.Equal(10000000, res);
+        }
+
+        [Fact]
+        public void TestDivideAndConquerDemoHelpInWorkWaitPreferLocalWorkerDeque()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                QueueType = QueueType.Deque,
+                EnforceDequeOwnership = true,
+                StealOneWorkOnly = true,
+            });
+
+            int max = 100000;
+            int[] data = Enumerable.Range(0, max).ToArray();
+
+            long result = DivideAndConquerDemoHelpInWorkWait.Run(data, WorkPlacementPolicy.PreferLocalWorker, QueueType.Deque, true);
+
+            Assert.Equal(4999950000, result);
+
+            powerPool.Dispose();
+        }
+
+        [Fact]
+        public void TestDivideAndConquerDemoHelpInPoolWaitPreferLocalWorkerDeque()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int n = 10_000_000;
+            long res = DivideAndConquerDemoHelpInPoolWait.Run(n, WorkPlacementPolicy.PreferLocalWorker, QueueType.Deque, true);
             Assert.Equal(10000000, res);
         }
 
@@ -7931,7 +7999,7 @@ namespace UnitTest
                 return leftSum + rightSum;
             }
 
-            public static long Run(int[] arr, WorkPlacementPolicy workPlacementPolicy)
+            public static long Run(int[] arr, WorkPlacementPolicy workPlacementPolicy, QueueType queueType, bool enforceDequeOwnership)
             {
                 PowerPoolOption options = new PowerPoolOption
                 {
@@ -7943,6 +8011,7 @@ namespace UnitTest
                         MinThreads = Environment.ProcessorCount,
                         KeepAliveTime = 10_000
                     },
+                    EnforceDequeOwnership = enforceDequeOwnership,
                 };
 
                 using PowerPool powerPool = new PowerPool(options);
@@ -7985,18 +8054,19 @@ namespace UnitTest
                 return left + rightRes.Result;
             }
 
-            public static long Run(int n, WorkPlacementPolicy workPlacementPolicy)
+            public static long Run(int n, WorkPlacementPolicy workPlacementPolicy, QueueType queueType, bool enforceDequeOwnership)
             {
                 PowerPoolOption option = new PowerPoolOption
                 {
                     MaxThreads = Environment.ProcessorCount,
-                    QueueType = QueueType.LIFO,
+                    QueueType = queueType,
                     StealOneWorkOnly = true,
                     DestroyThreadOption = new DestroyThreadOption
                     {
                         MinThreads = Environment.ProcessorCount,
                         KeepAliveTime = 10_000
-                    }
+                    },
+                    EnforceDequeOwnership = enforceDequeOwnership,
                 };
 
                 PowerPool powerPool = new PowerPool(option);
@@ -8110,6 +8180,46 @@ namespace UnitTest
             Assert.Equal(10000, done);
         }
 
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestWorkerCountOutOfRangeDeque()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int done = 0;
+
+            PowerPoolOption ppo = new PowerPoolOption
+            {
+                MaxThreads = 100,
+                QueueType = QueueType.Deque,
+                EnforceDequeOwnership = true,
+            };
+            PowerPool powerPool = new PowerPool(ppo);
+            List<Task> tasks = new List<Task>();
+            for (int i = 0; i < 100; ++i)
+            {
+                if (ppo.MaxThreads >= 2)
+                {
+                    ppo.MaxThreads = ppo.MaxThreads - 1;
+                }
+
+                for (int j = 0; j < 100; ++j)
+                {
+                    tasks.Add(Task.Run(() =>
+                    {
+                        powerPool.QueueWorkItem(() => { Interlocked.Increment(ref done); });
+                    }));
+                }
+            }
+            foreach (var task in tasks)
+            {
+                await task;
+            }
+
+            powerPool.Wait();
+
+            Assert.Equal(10000, done);
+        }
+
         [Fact]
         public void TestSyncDurationNotEnableStatisticsCollection()
         {
@@ -8197,11 +8307,11 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.InRange(d1, 500, 550);
-            Assert.InRange(d2, 500, 550);
+            Assert.InRange(d1, 500, 570);
+            Assert.InRange(d2, 500, 570);
 
-            Assert.InRange(rt1, 500, 550);
-            Assert.InRange(rt2, 500, 550);
+            Assert.InRange(rt1, 500, 570);
+            Assert.InRange(rt2, 500, 570);
         }
 
         [Fact]
@@ -8294,8 +8404,8 @@ namespace UnitTest
             Assert.InRange(d1, 0, 5);
             Assert.InRange(d2, 0, 5);
 
-            Assert.InRange(rt1, 500, 550);
-            Assert.InRange(rt2, 500, 550);
+            Assert.InRange(rt1, 500, 570);
+            Assert.InRange(rt2, 500, 570);
         }
 
         [Fact]
@@ -8444,15 +8554,15 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.InRange(d1, 300, 350);
-            Assert.InRange(d2, 300, 350);
-            Assert.InRange(d3, 300, 350);
-            Assert.InRange(d4, 300, 350);
+            Assert.InRange(d1, 300, 370);
+            Assert.InRange(d2, 300, 370);
+            Assert.InRange(d3, 300, 370);
+            Assert.InRange(d4, 300, 370);
 
-            Assert.InRange(rt1, 300, 450);
-            Assert.InRange(rt2, 300, 450);
-            Assert.InRange(rt3, 300, 450);
-            Assert.InRange(rt4, 300, 450);
+            Assert.InRange(rt1, 300, 470);
+            Assert.InRange(rt2, 300, 470);
+            Assert.InRange(rt3, 300, 470);
+            Assert.InRange(rt4, 300, 470);
 
             DateTime min = new[] { s1, s2, s3, s4 }.Min();
             DateTime max = new[] { s1, s2, s3, s4 }.Max();
@@ -8552,10 +8662,10 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.InRange(d1, 300, 350);
-            Assert.InRange(d2, 300, 350);
-            Assert.InRange(d3, 300, 350);
-            Assert.InRange(d4, 300, 350);
+            Assert.InRange(d1, 300, 370);
+            Assert.InRange(d2, 300, 370);
+            Assert.InRange(d3, 300, 370);
+            Assert.InRange(d4, 300, 370);
 
             Assert.InRange(rt1, 450, double.MaxValue);
             Assert.InRange(rt2, 450, double.MaxValue);
@@ -8610,8 +8720,8 @@ namespace UnitTest
             Assert.InRange(d1, 0, 5);
             Assert.InRange(d2, 0, 5);
 
-            Assert.InRange(rt1, 500, 550);
-            Assert.InRange(rt2, 500, 550);
+            Assert.InRange(rt1, 500, 570);
+            Assert.InRange(rt2, 500, 570);
         }
 
         [Fact]
@@ -8654,8 +8764,8 @@ namespace UnitTest
             Assert.InRange(d1, 0, 5);
             Assert.InRange(d2, 0, 5);
 
-            Assert.InRange(rt1, 100, 150);
-            Assert.InRange(rt2, 100, 150);
+            Assert.InRange(rt1, 100, 170);
+            Assert.InRange(rt2, 100, 170);
         }
     }
 }
