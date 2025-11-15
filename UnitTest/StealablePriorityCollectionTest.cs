@@ -68,6 +68,62 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestConcurrentStealablePriorityDequeGet()
+        {
+            var deque = new ConcurrentStealablePriorityDeque<int>();
+            deque.Set(1, 2);
+            deque.Set(2, 2);
+            deque.Set(3, 4);
+            deque.Set(4, 4);
+            deque.Set(5, 6);
+            deque.Set(6, 6);
+            deque.Set(7, 5);
+            deque.Set(8, 5);
+            deque.Set(9, 3);
+            deque.Set(10, 3);
+            deque.Set(11, 1);
+            deque.Set(12, 1);
+
+            Assert.Equal(6, deque.Get());
+            Assert.Equal(5, deque.Get());
+            Assert.Equal(8, deque.Get());
+            Assert.Equal(7, deque.Get());
+            Assert.Equal(4, deque.Get());
+            Assert.Equal(3, deque.Get());
+            Assert.Equal(10, deque.Get());
+            Assert.Equal(9, deque.Get());
+            Assert.Equal(2, deque.Get());
+            Assert.Equal(1, deque.Get());
+            Assert.Equal(12, deque.Get());
+            Assert.Equal(11, deque.Get());
+        }
+
+        [Fact]
+        public void TestConcurrentStealablePriorityDequeStealOnlyZeroPriority()
+        {
+            var deque = new ConcurrentStealablePriorityDeque<int>();
+            deque.Set(1, 0);
+            deque.Set(2, 0);
+
+            Assert.Equal(1, deque.Steal());
+            Assert.Equal(2, deque.Steal());
+        }
+
+        [Fact]
+        public void TestConcurrentStealablePriorityDequeStealWithMultiplePriorities()
+        {
+            var deque = new ConcurrentStealablePriorityDeque<int>();
+            deque.Set(1, 0);
+            deque.Set(2, 0);
+            deque.Set(999, 5);
+
+            Assert.Equal(999, deque.Get());
+
+            Assert.Equal(1, deque.Steal());
+            Assert.Equal(2, deque.Steal());
+        }
+
+        [Fact]
         public void TestConcurrentStealablePriorityQueueDiscard()
         {
             ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
@@ -84,6 +140,14 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestConcurrentStealablePriorityDequeDiscard()
+        {
+            var deque = new ConcurrentStealablePriorityDeque<int>();
+            deque.Set(1, 0);
+            Assert.Equal(1, deque.Discard());
+        }
+
+        [Fact]
         public void TestConcurrentStealablePriorityQueueNotInserted()
         {
             ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
@@ -97,6 +161,14 @@ namespace UnitTest
             ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>();
             queue.Set(1, -1);
             Assert.Equal(1, queue.Discard());
+        }
+
+        [Fact]
+        public void TestConcurrentStealablePriorityDequeNotInserted()
+        {
+            var deque = new ConcurrentStealablePriorityDeque<int>();
+            deque.Set(1, -1);
+            Assert.Equal(1, deque.Discard());
         }
 
         [Fact]
@@ -163,6 +235,65 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestGetDequeReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
+        {
+            var dq = new ConcurrentStealablePriorityDeque<int>();
+
+            var type = typeof(ConcurrentStealablePriorityDeque<int>);
+            var sortedField = type.GetField("_sortedPriorityList", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(sortedField);
+
+            var newList = new List<int> { 0, 1 };
+            sortedField!.SetValue(dq, newList);
+
+            var result = dq.Get();
+            Assert.Equal(default, result);
+
+            dq.Set(42, 2);
+            var got = dq.Get();
+            Assert.Equal(42, got);
+        }
+
+        [Fact]
+        public void TestStealDequeReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
+        {
+            var dq = new ConcurrentStealablePriorityDeque<int>();
+
+            var type = typeof(ConcurrentStealablePriorityDeque<int>);
+            var sortedField = type.GetField("_sortedPriorityList", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(sortedField);
+
+            sortedField!.SetValue(dq, new List<int> { 0, 1 });
+
+            var result = dq.Steal();
+            Assert.Equal(default, result);
+
+            dq.Set(42, 2);
+            var got = dq.Steal();
+            Assert.Equal(42, got);
+        }
+
+        [Fact]
+        public void TestDiscardDequeReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
+        {
+            var dq = new ConcurrentStealablePriorityDeque<int>();
+
+            var type = typeof(ConcurrentStealablePriorityDeque<int>);
+            var sortedField = type.GetField("_sortedPriorityList", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(sortedField);
+
+            sortedField!.SetValue(dq, new List<int> { 0, 1 });
+
+            var result = dq.Discard();
+            Assert.Equal(default, result);
+
+            dq.Set(7, 2);
+
+            var got = dq.Discard();
+            Assert.Equal(7, got);
+        }
+
+        [Fact]
         public void ConcurrentStealablePriorityQueueDiscardShouldIterateAllPrioritiesAndReturnDefaultWhenAllQueuesEmpty()
         {
             ConcurrentStealablePriorityQueue<object> q = new ConcurrentStealablePriorityQueue<object>();
@@ -204,6 +335,113 @@ namespace UnitTest
             object result = q.Discard();
 
             Assert.Null(result);
+        }
+
+        [Fact]
+        public void ConcurrentStealablePriorityDequeDiscardShouldIterateAllPrioritiesAndReturnDefaultWhenAllQueuesEmpty()
+        {
+            var dq = new ConcurrentStealablePriorityDeque<object>();
+
+            var marker = new object();
+            dq.Set(marker, priority: 10);
+
+            var got = dq.Get();
+            Assert.Same(marker, got);
+
+            var zero = dq.Discard();
+            for (int i = 0; i < 3; i++)
+            {
+                _ = dq.Discard();
+            }
+
+            var result = dq.Discard();
+
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void TestConcurrentStealablePriorityDequeGetFallsBackFromEmptyHigherPriorityToZero()
+        {
+            var d = new ConcurrentStealablePriorityDeque<int>();
+            d.Set(100, 5);
+            d.Set(1, 0);
+            d.Set(2, 0);
+
+            Assert.Equal(100, d.Get());
+            Assert.Equal(2, d.Get());
+            Assert.Equal(1, d.Get());
+        }
+
+        [Fact]
+        public void TestGetOnEmptyDequeReturnsDefault()
+        {
+            var d = new ConcurrentStealablePriorityDeque<int>();
+            var result = d.Get();
+            Assert.Equal(default, result);
+        }
+
+        [Fact]
+        public void TestDequeGetOnlyZeroPrioritySucceed()
+        {
+            var d = new ConcurrentStealablePriorityDeque<int>();
+            d.Set(1, 0);
+            d.Set(2, 0);
+
+            Assert.Equal(2, d.Get());
+            Assert.Equal(1, d.Get());
+            Assert.Equal(default, d.Get());
+        }
+
+        [Fact]
+        public void TestDequeStealPrefersHigherPriorityOverZero()
+        {
+            var d = new ConcurrentStealablePriorityDeque<int>();
+            d.Set(1, 0);
+            d.Set(100, 2);
+            d.Set(200, 1);
+
+            Assert.Equal(100, d.Steal());
+            Assert.Equal(200, d.Steal());
+            Assert.Equal(1, d.Steal());
+            Assert.Equal(default, d.Steal());
+        }
+
+        [Fact]
+        public void TestDequeDiscardPrefersLowestPriorityFirst()
+        {
+            var d = new ConcurrentStealablePriorityDeque<int>();
+            d.Set(300, 3);
+            d.Set(200, 2);
+            d.Set(10, 0);
+            d.Set(-5, -1);
+
+            Assert.Equal(-5, d.Discard());
+            Assert.Equal(10, d.Discard());
+            Assert.Equal(200, d.Discard());
+            Assert.Equal(300, d.Discard());
+            Assert.Equal(default, d.Discard());
+        }
+
+        [Fact]
+        public void TestDequeDiscardIsLifoWithinPriority()
+        {
+            var d = new ConcurrentStealablePriorityDeque<int>();
+            d.Set(1, -1);
+            d.Set(2, -1);
+
+            Assert.Equal(2, d.Discard());
+            Assert.Equal(1, d.Discard());
+        }
+
+        [Fact]
+        public void TestDequeStealIsFifoWithinPriorityForNonZero()
+        {
+            var d = new ConcurrentStealablePriorityDeque<int>();
+            d.Set(1, 2);
+            d.Set(2, 2);
+
+            Assert.Equal(1, d.Steal());
+            Assert.Equal(2, d.Steal());
         }
     }
 }
