@@ -884,17 +884,19 @@ namespace PowerThreadPool
                         {
                             foreach (WorkBase workBase in waitingWorkList)
                             {
-                                _powerPool.SetWork(workBase);
+                                SetWork(workBase, false);
                             }
                         }
-
-                        if (_powerPool._idleWorkerDic.TryAdd(ID, this))
+                        else
                         {
-                            Interlocked.Increment(ref _powerPool._idleWorkerCount);
-                            _powerPool._idleWorkerQueue.Enqueue(ID);
-                        }
+                            if (_powerPool._idleWorkerDic.TryAdd(ID, this))
+                            {
+                                Interlocked.Increment(ref _powerPool._idleWorkerCount);
+                                _powerPool._idleWorkerQueue.Enqueue(ID);
+                            }
 
-                        _thread.IsBackground = true;
+                            _thread.IsBackground = true;
+                        }
                     }
 
                     _powerPool.CheckPoolIdle();
