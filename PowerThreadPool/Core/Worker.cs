@@ -695,7 +695,7 @@ namespace PowerThreadPool
                     SetStolenWorkList(ref work, stolenWorkList, false);
                 }
 
-                if (WaitingWorkCount == 0 && work == null)
+                if (work == null)
                 {
                     if (TurnToIdle(ref work))
                     {
@@ -876,9 +876,17 @@ namespace PowerThreadPool
 
                         WorkerState.InterlockedValue = WorkerStates.Idle;
 
-                        ResetAllWaitingWorkWhenIdle();
+                        List<WorkBase> waitingWorkList = ResetAllWaitingWorkWhenIdle();
 
                         CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
+
+                        if (waitingWorkList != null)
+                        {
+                            foreach (WorkBase workBase in waitingWorkList)
+                            {
+                                _powerPool.SetWork(workBase);
+                            }
+                        }
 
                         if (_powerPool._idleWorkerDic.TryAdd(ID, this))
                         {
@@ -926,19 +934,26 @@ namespace PowerThreadPool
         /// However, if the current count is not 0, we need to re-enqueue the unprocessed Work
         /// until the count returns to 0.
         /// </summary>
-        private void ResetAllWaitingWorkWhenIdle()
+        private List<WorkBase> ResetAllWaitingWorkWhenIdle()
         {
+            List<WorkBase> workList = null;
             WorkBase work = null;
 
             while (WaitingWorkCount > 0)
             {
                 while ((work = Get()) != null)
                 {
+                    if (workList == null)
+                    {
+                        workList = new List<WorkBase>();
+                    }
                     Interlocked.Decrement(ref _waitingWorkCount);
                     work._canCancel.TrySet(CanCancel.Allowed, CanCancel.NotAllowed);
-                    _powerPool.SetWork(work);
+                    workList.Add(work);
                 }
             }
+
+            return workList;
         }
 
         private WorkBase TryGetWorkAgainOnPingedPong()
