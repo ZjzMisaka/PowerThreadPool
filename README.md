@@ -59,7 +59,7 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
 - [Events](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Events)
 - [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Runtime-Status)
 - [Running Timer](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Running-Timer)
-- [Queue Type (FIFO | LIFO | Custom)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Queue-Type)
+- [Queue Type (FIFO | LIFO | Deque | Custom)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Queue-Type)
 - [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
 - [Low-Contention Design](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
 
