@@ -364,7 +364,8 @@ namespace PowerThreadPool
         {
             return new WorkOption
             {
-                Group = groupID
+                Group = groupID,
+                AutoCheckStopOnAsyncTask = false,
             };
         }
 

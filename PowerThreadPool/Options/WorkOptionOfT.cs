@@ -82,5 +82,10 @@ namespace PowerThreadPool.Options
         /// Indicates whether the work should be placed in the local worker's queue if possible.
         /// </summary>
         public WorkPlacementPolicy WorkPlacementPolicy { get; set; } = WorkPlacementPolicy.PreferIdleThenLeastLoaded;
+
+        /// <summary>
+        /// Indicates whether to automatically check for task stop when posting an async continuation.
+        /// </summary>
+        public bool AutoCheckStopOnAsyncTask { get; set; } = true;
     }
 }

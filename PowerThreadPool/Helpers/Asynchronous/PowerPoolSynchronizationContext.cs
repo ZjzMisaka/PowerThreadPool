@@ -36,11 +36,18 @@ namespace PowerThreadPool.Helpers.Asynchronous
                 _powerPool.QueueWorkItemInnerAsync(() =>
                 {
                     SetSynchronizationContext(this);
-                    _powerPool.StopIfRequested(() =>
+                    if (_workOption.AutoCheckStopOnAsyncTask)
                     {
-                        _asyncWorkInfo.AllowEventsAndCallback = true;
-                    });
+                        _powerPool.StopIfRequested(() =>
+                        {
+                            _asyncWorkInfo.AllowEventsAndCallback = true;
+                        });
+                    }
                     d(state);
+                    if (_originalTask.IsFaulted)
+                    {
+                        throw _originalTask.Exception.InnerException;
+                    }
                     if (_originalTask.IsCompleted &&
                     Interlocked.Exchange(ref _done, 1) == 0)
                     {

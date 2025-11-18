@@ -370,14 +370,6 @@ namespace PowerThreadPool.Works
 
         internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status)
         {
-            // In theory, the program should ensure that ExecuteResult is set only when it is really necessary.
-            // Whether it is a synchronous work or an asynchronous work, ExecuteResult should only be set once in its life cycle.
-            // However, since `ThreadInterruptedException` will be thrown in various strange places (such as callback functions) when forced to stop,
-            // it is specially allowed to reset ExecuteResult when the work is forced to stop.
-            if (status != Status.ForceStopped && ExecuteResult != null)
-            {
-                return ExecuteResult;
-            }
             Status = status;
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
             executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, ExecuteCount);
