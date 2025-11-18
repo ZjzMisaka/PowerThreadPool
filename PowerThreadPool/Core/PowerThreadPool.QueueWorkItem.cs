@@ -180,7 +180,12 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public WorkID QueueWorkItem(Action action, WorkOption option)
         {
-            return QueueWorkItemCore(action, null, option);
+            return QueueWorkItemCore(action, null, option, null);
+        }
+
+        internal WorkID QueueWorkItemInnerAsync(Action action, WorkOption option, AsyncWorkInfo asyncWorkInfo)
+        {
+            return QueueWorkItemCore(action, null, option, asyncWorkInfo);
         }
 
         /// <summary>
@@ -383,7 +388,12 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public WorkID QueueWorkItem<TResult>(Func<TResult> function, WorkOption<TResult> option)
         {
-            return QueueWorkItemCore(null, function, option);
+            return QueueWorkItemCore(null, function, option, null);
+        }
+
+        internal WorkID QueueWorkItemInnerAsync<TResult>(Func<TResult> function, WorkOption<TResult> option, AsyncWorkInfo asyncWorkInfo)
+        {
+            return QueueWorkItemCore(null, function, option, asyncWorkInfo);
         }
 
         /// <summary>
@@ -408,13 +418,13 @@ namespace PowerThreadPool
         public WorkID QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, WorkOption<TResult> option)
             => QueueWorkItem<TResult>(DelegateHelper.ToNormalFunc<TResult>(function, param), option);
 
-        private WorkID QueueWorkItemCore<TResult>(Action action, Func<TResult> function, WorkOption<TResult> option)
+        private WorkID QueueWorkItemCore<TResult>(Action action, Func<TResult> function, WorkOption<TResult> option, AsyncWorkInfo asyncWorkInfo)
         {
             CheckDisposed();
             CheckPowerPoolOption();
 
-            WorkID workID = GetWorkID(option);
-            WorkBase work = GetWork(workID, action, function, option);
+            WorkID workID = GetWorkID(option, asyncWorkInfo);
+            WorkBase work = GetWork(workID, action, function, option, asyncWorkInfo);
 
             bool registeredDependents = _workDependencyController.Register(work, option.Dependents, out bool workNotSuccessfullyCompleted);
             if (work._dependencyStatus.InterlockedValue == DependencyStatus.Failed)
@@ -430,7 +440,7 @@ namespace PowerThreadPool
                 }
             }
 
-            bool startSuspended = CheckStartSuspended(option);
+            bool startSuspended = CheckStartSuspended(asyncWorkInfo);
             if (!startSuspended && PoolStopping && work.BaseAsyncWorkID == null)
             {
                 _stopSuspendedWork[workID] = work;
@@ -448,11 +458,11 @@ namespace PowerThreadPool
             return workID;
         }
 
-        private WorkID GetWorkID<TResult>(WorkOption<TResult> option)
+        private WorkID GetWorkID<TResult>(WorkOption<TResult> option, AsyncWorkInfo asyncWorkInfo)
         {
-            if (option.AsyncWorkID != null)
+            if (asyncWorkInfo != null && asyncWorkInfo.AsyncWorkID != null)
             {
-                return option.AsyncWorkID;
+                return asyncWorkInfo.AsyncWorkID;
             }
             else
             {
@@ -460,22 +470,22 @@ namespace PowerThreadPool
             }
         }
 
-        private WorkBase GetWork<TResult>(WorkID workID, Action action, Func<TResult> function, WorkOption<TResult> option)
+        private WorkBase GetWork<TResult>(WorkID workID, Action action, Func<TResult> function, WorkOption<TResult> option, AsyncWorkInfo asyncWorkInfo)
         {
             if (action != null)
             {
-                return new WorkAction<TResult>(this, workID, action, option);
+                return new WorkAction<TResult>(this, workID, action, option, asyncWorkInfo);
             }
             else
             {
-                return new WorkFunc<TResult>(this, workID, function, option);
+                return new WorkFunc<TResult>(this, workID, function, option, asyncWorkInfo);
             }
         }
 
-        private bool CheckStartSuspended<TResult>(WorkOption<TResult> option)
+        private bool CheckStartSuspended(AsyncWorkInfo asyncWorkInfo)
         {
             bool startSuspended = PowerPoolOption.StartSuspended;
-            if (option.BaseAsyncWorkID != null && option.BaseAsyncWorkID != option.AsyncWorkID)
+            if (asyncWorkInfo != null && asyncWorkInfo.BaseAsyncWorkID != null && asyncWorkInfo.BaseAsyncWorkID != asyncWorkInfo.AsyncWorkID)
             {
                 startSuspended = false;
             }
