@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
@@ -27,6 +28,22 @@ namespace PowerThreadPool
             return For<object>(start, end, null, (_, index) => { body(index); }, step, groupName);
         }
 
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        /// <summary>
+        /// Creates a parallel loop that executes iterations from start to end.
+        /// </summary>
+        /// <param name="start">The start index of the loop.</param>
+        /// <param name="end">The end index of the loop.</param>
+        /// <param name="body">The action to execute for each loop iteration.</param>
+        /// <param name="step">The step value for each loop iteration. Default is 1.</param>
+        /// <param name="groupName">The optional name for the group. Default is null.</param>
+        /// <returns>Returns a group object.</returns>
+        public Group ForAsync(int start, int end, Func<int, Task> body, int step = 1, string groupName = null)
+        {
+            return ForAsync<object>(start, end, null, async (_, index) => { await body(index); }, step, groupName);
+        }
+#endif
+
         /// <summary>
         /// Creates a parallel loop that executes iterations from start to end.
         /// </summary>
@@ -43,6 +60,24 @@ namespace PowerThreadPool
             return For(start, end, source, (item, _) => { body(item); }, step, groupName);
         }
 
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        /// <summary>
+        /// Creates a parallel loop that executes iterations from start to end.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements in the source collection.</typeparam>
+        /// <param name="start">The start index of the loop.</param>
+        /// <param name="end">The end index of the loop.</param>
+        /// <param name="source">The source collection of elements to be processed in the loop.</param>
+        /// <param name="body">The action to execute for each loop iteration, receiving an element from the source collection.</param>
+        /// <param name="step">The step value for each loop iteration. Default is 1.</param>
+        /// <param name="groupName">The optional name for the group. Default is null.</param>
+        /// <returns>Returns a group object.</returns>
+        public Group ForAsync<TSource>(int start, int end, IList<TSource> source, Func<TSource, Task> body, int step = 1, string groupName = null)
+        {
+            return ForAsync(start, end, source, async (item, _) => { await body(item); }, step, groupName);
+        }
+#endif
+
         /// <summary>
         /// Creates a parallel loop that executes iterations from start to end.
         /// </summary>
@@ -56,6 +91,46 @@ namespace PowerThreadPool
         /// <returns>Returns a group object.</returns>
         /// <exception cref="ArgumentException">Thrown when the step is zero or the loop configuration is invalid.</exception>
         public Group For<TSource>(int start, int end, IList<TSource> source, Action<TSource, int> body, int step = 1, string groupName = null)
+        {
+            string groupID;
+            WorkOption workOption;
+            step = PrepareFor(start, end, step, groupName, out groupID, out workOption);
+            for (int i = start; start <= end ? i < end : i > end; i += step)
+            {
+                int localI = i;
+                QueueWorkItem(() => { body(source != null ? source[localI] : default, localI); }, workOption);
+            }
+            return GetGroup(groupID);
+        }
+
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        /// <summary>
+        /// Creates a parallel loop that executes iterations from start to end.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements in the source collection.</typeparam>
+        /// <param name="start">The start index of the loop.</param>
+        /// <param name="end">The end index of the loop.</param>
+        /// <param name="source">The source collection of elements to be processed in the loop.</param>
+        /// <param name="body">The action to execute for each loop iteration, receiving an element from the source collection and the iteration index.</param>
+        /// <param name="step">The step value for each loop iteration. Default is 1.</param>
+        /// <param name="groupName">The optional name for the group. Default is null.</param>
+        /// <returns>Returns a group object.</returns>
+        /// <exception cref="ArgumentException">Thrown when the step is zero or the loop configuration is invalid.</exception>
+        public Group ForAsync<TSource>(int start, int end, IList<TSource> source, Func<TSource, int, Task> body, int step = 1, string groupName = null)
+        {
+            string groupID;
+            WorkOption workOption;
+            step = PrepareFor(start, end, step, groupName, out groupID, out workOption);
+            for (int i = start; start <= end ? i < end : i > end; i += step)
+            {
+                int localI = i;
+                QueueWorkItemAsync(async () => { await body(source != null ? source[localI] : default, localI); }, workOption);
+            }
+            return GetGroup(groupID);
+        }
+#endif
+
+        private int PrepareFor(int start, int end, int step, string groupName, out string groupID, out WorkOption workOption)
         {
             if (start > end && step == 1)
             {
@@ -71,7 +146,7 @@ namespace PowerThreadPool
                 throw new ArgumentException("Invalid start, end, and step combination. The loop will never terminate.", nameof(step));
             }
 
-            string groupID = null;
+            groupID = null;
             if (string.IsNullOrEmpty(groupName))
             {
                 groupID = Guid.NewGuid().ToString();
@@ -80,16 +155,11 @@ namespace PowerThreadPool
             {
                 groupID = groupName;
             }
-            WorkOption workOption = new WorkOption()
+            workOption = new WorkOption()
             {
                 Group = groupID,
             };
-            for (int i = start; start <= end ? i < end : i > end; i += step)
-            {
-                int localI = i;
-                QueueWorkItem(() => { body(source != null ? source[localI] : default, localI); }, workOption);
-            }
-            return GetGroup(groupID);
+            return step;
         }
 
         /// <summary>
@@ -105,6 +175,21 @@ namespace PowerThreadPool
             return ForEach(source, (item, _) => body(item), groupName);
         }
 
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        /// <summary>
+        /// Creates a parallel loop that executes a specified action for each element in the source collection.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements in the source collection.</typeparam>
+        /// <param name="source">The source collection of elements to be processed.</param>
+        /// <param name="body">The action to execute for each element in the source collection.</param>
+        /// <param name="groupName">The optional name for the group. Default is null.</param>
+        /// <returns>Returns a group object.</returns>
+        public Group ForEachAsync<TSource>(IEnumerable<TSource> source, Func<TSource, Task> body, string groupName = null)
+        {
+            return ForEachAsync(source, async (item, _) => await body(item), groupName);
+        }
+#endif
+
         /// <summary>
         /// Creates a parallel loop that executes a specified action for each element in the source collection.
         /// </summary>
@@ -115,7 +200,45 @@ namespace PowerThreadPool
         /// <returns>Returns a group object.</returns>
         public Group ForEach<TSource>(IEnumerable<TSource> source, Action<TSource, int> body, string groupName = null)
         {
-            string groupID = null;
+            string groupID;
+            WorkOption workOption;
+            PrepareForEach(groupName, out groupID, out workOption);
+            int i = 0;
+            foreach (TSource item in source)
+            {
+                int localI = i++;
+                QueueWorkItem(() => { body(item, localI); }, workOption);
+            }
+            return GetGroup(groupID);
+        }
+
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        /// <summary>
+        /// Creates a parallel loop that executes a specified action for each element in the source collection.
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements in the source collection.</typeparam>
+        /// <param name="source">The source collection of elements to be processed.</param>
+        /// <param name="body">The action to execute for each element in the source collection and its index.</param>
+        /// <param name="groupName">The optional name for the group. Default is null.</param>
+        /// <returns>Returns a group object.</returns>
+        public Group ForEachAsync<TSource>(IEnumerable<TSource> source, Func<TSource, int, Task> body, string groupName = null)
+        {
+            string groupID;
+            WorkOption workOption;
+            PrepareForEach(groupName, out groupID, out workOption);
+            int i = 0;
+            foreach (TSource item in source)
+            {
+                int localI = i++;
+                QueueWorkItemAsync(async () => { await body(item, localI); }, workOption);
+            }
+            return GetGroup(groupID);
+        }
+#endif
+
+        private static void PrepareForEach(string groupName, out string groupID, out WorkOption workOption)
+        {
+            groupID = null;
             if (string.IsNullOrEmpty(groupName))
             {
                 groupID = Guid.NewGuid().ToString();
@@ -125,17 +248,10 @@ namespace PowerThreadPool
                 groupID = groupName;
             }
 
-            WorkOption workOption = new WorkOption()
+            workOption = new WorkOption()
             {
                 Group = groupID,
             };
-            int i = 0;
-            foreach (TSource item in source)
-            {
-                int localI = i++;
-                QueueWorkItem(() => { body(item, localI); }, workOption);
-            }
-            return GetGroup(groupID);
         }
 
         /// <summary>
@@ -170,7 +286,54 @@ namespace PowerThreadPool
 
             EventHandler onCollectionChanged = null;
             onCollectionChanged = (s, e) =>
-                OnCollectionChangedHandler(source, body, workOption, idDict, onCollectionChanged);
+                OnCollectionChangedHandler(source, body, null, workOption, idDict, onCollectionChanged);
+
+            if (!StartWatching(source, onCollectionChanged))
+            {
+                return null;
+            }
+
+            Group group = GetGroup(groupID);
+            source._group = group;
+
+            onCollectionChanged(null, null);
+
+            return group;
+        }
+
+        /// <summary>
+        /// Watches an observable collection for changes and processes each element in the collection using the specified action. 
+        /// </summary>
+        /// <typeparam name="TSource">The type of the elements in the source collection.</typeparam>
+        /// <param name="source">The source collection of elements to be processed.</param>
+        /// <param name="body">The action to execute for each element in the source collection and its index.</param>
+        /// <param name="addBackWhenWorkCanceled">If the work is canceled, the elements will be added back to the collection.</param>
+        /// <param name="addBackWhenWorkStopped">If the work is stopped, the elements will be added back to the collection.</param>
+        /// <param name="addBackWhenWorkFailed">If an exception occurs, the elements will be added back to the collection.</param>
+        /// <param name="groupName">The optional name for the group. Default is null.</param>
+        /// <returns>Returns a group object.</returns>
+        public Group WatchAsync<TSource>(
+            ConcurrentObservableCollection<TSource> source,
+            Func<TSource, Task> body,
+            bool addBackWhenWorkCanceled = true,
+            bool addBackWhenWorkStopped = true,
+            bool addBackWhenWorkFailed = true,
+            string groupName = null)
+        {
+            string groupID = CreateGroupId(groupName);
+            WorkOption workOption = CreateWorkOption(groupID);
+            ConcurrentDictionary<WorkID, TSource> idDict = new ConcurrentDictionary<WorkID, TSource>();
+
+            RegisterAddBackEvents(
+                source,
+                idDict,
+                addBackWhenWorkCanceled,
+                addBackWhenWorkStopped,
+                addBackWhenWorkFailed);
+
+            EventHandler onCollectionChanged = null;
+            onCollectionChanged = (s, e) =>
+                OnCollectionChangedHandler(source, null, body, workOption, idDict, onCollectionChanged);
 
             if (!StartWatching(source, onCollectionChanged))
             {
@@ -259,7 +422,8 @@ namespace PowerThreadPool
 
         private void OnCollectionChangedHandler<TSource>(
             ConcurrentObservableCollection<TSource> source,
-            Action<TSource> body,
+            Action<TSource> bodyAction,
+            Func<TSource, Task> bodyFunc,
             WorkOption workOption,
             ConcurrentDictionary<WorkID, TSource> idDict,
             EventHandler onCollectionChanged)
@@ -270,7 +434,19 @@ namespace PowerThreadPool
             {
                 while (source.TryTake(out TSource item))
                 {
-                    WorkID id = QueueWorkItem(() => body(item), workOption);
+                    WorkID id = null;
+                    if (bodyAction != null)
+                    {
+                        id = QueueWorkItem(() => bodyAction(item), workOption);
+                    }
+                    else
+                    {
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+                        id = QueueWorkItemAsync(async () => await bodyFunc(item), workOption);
+#else
+                        throw new InvalidOperationException("Asynchronous body function is not supported in this framework version.");
+#endif
+                    }
                     idDict[id] = item;
                 }
 

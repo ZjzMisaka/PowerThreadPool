@@ -4427,6 +4427,24 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestParallelForAsync()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+
+            powerPool.ForAsync(1, 10, async (i) =>
+            {
+                await Task.Delay(1);
+                result.Add(i);
+            }).Wait();
+
+            Assert.Equal(9, result.Count);
+        }
+
+        [Fact]
         public void TestParallelForWithSource()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -4445,6 +4463,28 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestParallelForAsyncWithSource()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            List<int> source = new List<int>();
+            source.Add(1);
+            source.Add(2);
+            source.Add(3);
+
+            powerPool.ForAsync<int>(0, 3, source, async (item) =>
+            {
+                await Task.Delay(1);
+                result.Add(item);
+            }).Wait();
+
+            Assert.Equal(3, result.Count);
+        }
+
+        [Fact]
         public void TestParallelForWithSourceAndIndex()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -4458,6 +4498,30 @@ namespace UnitTest
             source.Add(3);
 
             powerPool.For<int>(0, 3, source, (item, index) => result.Add(index)).Wait();
+
+            Assert.Contains(0, result);
+            Assert.Contains(1, result);
+            Assert.Contains(2, result);
+        }
+
+        [Fact]
+        public void TestParallelForAsyncWithSourceAndIndex()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            List<int> source = new List<int>();
+            source.Add(1);
+            source.Add(2);
+            source.Add(3);
+
+            powerPool.ForAsync<int>(0, 3, source, async (item, index) =>
+            {
+                await Task.Delay(1);
+                result.Add(index);
+            }).Wait();
 
             Assert.Contains(0, result);
             Assert.Contains(1, result);
@@ -4487,6 +4551,32 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestParallelForAsyncWithSourceAndIndexReverse()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 1 });
+
+            ConcurrentDictionary<int, int> result = new ConcurrentDictionary<int, int>();
+            List<int> source = new List<int>();
+            source.Add(1);
+            source.Add(2);
+            source.Add(3);
+
+            int i = 0;
+
+            powerPool.ForAsync<int>(2, -1, source, async (item, index) =>
+            {
+                result[i++] = item;
+                await Task.Delay(1);
+            }).Wait();
+
+            Assert.Equal(3, result[0]);
+            Assert.Equal(2, result[1]);
+            Assert.Equal(1, result[2]);
+        }
+
+        [Fact]
         public void TestParallelForGroupName()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -4496,6 +4586,24 @@ namespace UnitTest
             ConcurrentSet<int> result = new ConcurrentSet<int>();
 
             string name = powerPool.For(1, 10, (i) => result.Add(i), 1, "Group1").Name;
+
+            Assert.Equal("Group1", name);
+        }
+
+        [Fact]
+        public void TestParallelForAsyncGroupName()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+
+            string name = powerPool.ForAsync(1, 10, async (i) =>
+            {
+                await Task.Delay(1);
+                result.Add(i);
+            }, 1, "Group1").Name;
 
             Assert.Equal("Group1", name);
         }
@@ -4517,6 +4625,36 @@ namespace UnitTest
             try
             {
                 powerPool.For<int>(0, 3, source, (item, index) => result.Add(index), 0).Wait();
+            }
+            catch (ArgumentException e)
+            {
+                ex = e;
+            }
+            Assert.Equal("Step cannot be zero. (Parameter 'step')", ex.Message);
+            Assert.Equal("step", ex.ParamName);
+        }
+
+        [Fact]
+        public void TestParallelForAsyncError1()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            List<int> source = new List<int>();
+            source.Add(1);
+            source.Add(2);
+            source.Add(3);
+
+            ArgumentException ex = null;
+            try
+            {
+                powerPool.ForAsync<int>(0, 3, source, async (item, index) =>
+                {
+                    await Task.Delay(1);
+                    result.Add(index);
+                }, 0).Wait();
             }
             catch (ArgumentException e)
             {
@@ -4553,6 +4691,36 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestParallelForAsyncError2()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            List<int> source = new List<int>();
+            source.Add(1);
+            source.Add(2);
+            source.Add(3);
+
+            ArgumentException ex = null;
+            try
+            {
+                powerPool.ForAsync<int>(0, 3, source, async (item, index) =>
+                {
+                    await Task.Delay(1);
+                    result.Add(index);
+                }, -10).Wait();
+            }
+            catch (ArgumentException e)
+            {
+                ex = e;
+            }
+            Assert.Equal("Invalid start, end, and step combination. The loop will never terminate. (Parameter 'step')", ex.Message);
+            Assert.Equal("step", ex.ParamName);
+        }
+
+        [Fact]
         public void TestParallelForError3()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -4569,6 +4737,36 @@ namespace UnitTest
             try
             {
                 powerPool.For<int>(3, 0, source, (item, index) => result.Add(index), 10).Wait();
+            }
+            catch (ArgumentException e)
+            {
+                ex = e;
+            }
+            Assert.Equal("Invalid start, end, and step combination. The loop will never terminate. (Parameter 'step')", ex.Message);
+            Assert.Equal("step", ex.ParamName);
+        }
+
+        [Fact]
+        public void TestParallelForAsyncError3()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            List<int> source = new List<int>();
+            source.Add(1);
+            source.Add(2);
+            source.Add(3);
+
+            ArgumentException ex = null;
+            try
+            {
+                powerPool.ForAsync<int>(3, 0, source, async (item, index) =>
+                {
+                    await Task.Delay(1);
+                    result.Add(index);
+                }, 10).Wait();
             }
             catch (ArgumentException e)
             {
@@ -4597,6 +4795,28 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestParallelForEachAsync()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            List<int> list = new List<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.Add(1);
+            list.Add(2);
+            list.Add(3);
+
+            powerPool.ForEachAsync(list, async (i) =>
+            {
+                await Task.Delay(1);
+                result.Add(i);
+            }).Wait();
+
+            Assert.Equal(3, result.Count);
+        }
+
+        [Fact]
         public void TestParallelForEachWithIndex()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -4610,6 +4830,30 @@ namespace UnitTest
             list.Add(3);
 
             powerPool.ForEach(list, (i, index) => result.Add(index)).Wait();
+
+            Assert.Contains(0, result);
+            Assert.Contains(1, result);
+            Assert.Contains(2, result);
+        }
+
+        [Fact]
+        public void TestParallelForEachAsyncWithIndex()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            List<int> list = new List<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.Add(1);
+            list.Add(2);
+            list.Add(3);
+
+            powerPool.ForEachAsync(list, async (i, index) =>
+            {
+                await Task.Delay(1);
+                result.Add(index);
+            }).Wait();
 
             Assert.Contains(0, result);
             Assert.Contains(1, result);
@@ -4635,6 +4879,28 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestParallelForEachAsyncGroupID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            List<int> list = new List<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.Add(1);
+            list.Add(2);
+            list.Add(3);
+
+            string groupName = powerPool.ForEachAsync(list, async (i) =>
+            {
+                await Task.Delay(1);
+                result.Add(i);
+            }, "Group1").Name;
+
+            Assert.Equal("Group1", groupName);
+        }
+
+        [Fact]
         public void TestParallelWatch()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -4648,6 +4914,34 @@ namespace UnitTest
             list.TryAdd(3);
 
             powerPool.Watch(list, (i) => result.Add(i));
+
+            list.TryAdd(4);
+            list.TryAdd(5);
+            list.TryAdd(6);
+
+            powerPool.Wait();
+
+            Assert.Equal(6, result.Count);
+        }
+
+        [Fact]
+        public void TestParallelWatchAsync()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(1);
+            list.TryAdd(2);
+            list.TryAdd(3);
+
+            powerPool.WatchAsync(list, async (i) =>
+            {
+                await Task.Delay(1);
+                result.Add(i);
+            });
 
             list.TryAdd(4);
             list.TryAdd(5);
@@ -4685,6 +4979,36 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestParallelWatchAsyncConcurrentBag()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentBag<int> bag = new ConcurrentBag<int>();
+            bag.Add(1);
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>(bag);
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(2);
+            list.TryAdd(3);
+
+            powerPool.WatchAsync(list, async (i) =>
+            {
+                await Task.Delay(1);
+                result.Add(i);
+            });
+
+            list.TryAdd(4);
+            list.TryAdd(5);
+            list.TryAdd(6);
+
+            powerPool.Wait();
+
+            Assert.Equal(6, result.Count);
+            Assert.Equal(0, list.Count);
+        }
+
+        [Fact]
         public void TestParallelWatchBlockingCollection()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -4710,6 +5034,35 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestParallelWatchAsyncBlockingCollection()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            BlockingCollection<int> bag = new BlockingCollection<int>();
+            bag.Add(1);
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>(bag);
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(2);
+            list.TryAdd(3);
+
+            powerPool.WatchAsync(list, async (i) =>
+            {
+                await Task.Delay(1);
+                result.Add(i);
+            });
+
+            list.TryAdd(4);
+            list.TryAdd(5);
+            list.TryAdd(6);
+
+            powerPool.Wait();
+
+            Assert.Equal(6, result.Count);
+        }
+
+        [Fact]
         public void TestParallelWatchGroupID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -4723,6 +5076,28 @@ namespace UnitTest
             list.TryAdd(3);
 
             string groupName = powerPool.Watch(list, (i) => result.Add(i), true, true, true, "Group1").Name;
+
+            Assert.Equal("Group1", groupName);
+        }
+
+        [Fact]
+        public void TestParallelWatchAsyncGroupID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>(new ConcurrentBag<int>());
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(1);
+            list.TryAdd(2);
+            list.TryAdd(3);
+
+            string groupName = powerPool.WatchAsync(list, async (i) =>
+            {
+                await Task.Delay(1);
+                result.Add(i);
+            }, true, true, true, "Group1").Name;
 
             Assert.Equal("Group1", groupName);
         }
