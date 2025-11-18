@@ -37,8 +37,18 @@ namespace PowerThreadPool.Works
         internal volatile bool _asyncDone;
         internal bool AsyncDone
         {
-            get => _asyncDone;
-            set => _asyncDone = value;
+            get
+            {
+                return AsyncWorkInfo.AsyncDone;
+            }
+            set
+            {
+                if (AsyncWorkInfo == null)
+                {
+                    return;
+                }
+                AsyncWorkInfo.AsyncDone = value;
+            }
         }
         internal volatile bool _isPausing;
         internal bool SyncOrAsyncWorkDone

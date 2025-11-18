@@ -4567,8 +4567,8 @@ namespace UnitTest
 
             powerPool.ForAsync<int>(2, -1, source, async (item, index) =>
             {
-                await Task.Delay(1);
                 result[i++] = item;
+                await Task.Delay(1);
             }).Wait();
 
             Assert.Equal(3, result[0]);
