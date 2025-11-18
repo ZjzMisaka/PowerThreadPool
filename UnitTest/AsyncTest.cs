@@ -46,8 +46,8 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.IsType<DivideByZeroException>(e.InnerException);
-            Assert.IsType<DivideByZeroException>((eventObj as Exception).InnerException);
+            Assert.IsType<DivideByZeroException>(e);
+            Assert.IsType<DivideByZeroException>(eventObj);
             Assert.Equal(id, eventObj1);
         }
 
@@ -376,7 +376,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal("1", e.InnerException.Message);
+            Assert.Equal("1", e.Message);
         }
 
         [Fact]
@@ -1563,7 +1563,7 @@ namespace UnitTest
             },
             out Task<ExecuteResult<string>> task);
 
-            await Assert.ThrowsAsync<AggregateException>(async () => { await task; });
+            await Assert.ThrowsAsync<AbandonedMutexException>(async () => { await task; });
         }
 
         [Fact]
