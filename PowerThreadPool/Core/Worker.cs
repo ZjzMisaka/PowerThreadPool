@@ -878,17 +878,17 @@ namespace PowerThreadPool
 
                         List<WorkBase> waitingWorkList = ResetAllWaitingWorkWhenIdle();
 
-                        CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
-
                         if (waitingWorkList != null)
                         {
                             foreach (WorkBase workBase in waitingWorkList)
                             {
                                 SetWork(workBase, false);
                             }
+                            CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
                         }
                         else
                         {
+                            CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
                             if (_powerPool._idleWorkerDic.TryAdd(ID, this))
                             {
                                 Interlocked.Increment(ref _powerPool._idleWorkerCount);
