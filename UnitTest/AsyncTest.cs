@@ -1844,6 +1844,36 @@ namespace UnitTest
             Assert.Equal(100, retryCount);
         }
 
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestDiferentAsyncWorkItemUseSameWorkOption()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object c = null;
+
+            int doneCount = 0;
+
+            PowerPool powerPool = new PowerPool();
+            WorkOption workOption = new WorkOption();
+            for (int i = 0; i < 50; ++i)
+            {
+                powerPool.QueueWorkItemAsync(async () =>
+                {
+                    p = "1";
+                    await Task.Delay(10);
+                    await Task.Delay(10);
+                    await Task.Delay(10);
+                    c = "2";
+                    Interlocked.Increment(ref doneCount);
+                }, workOption);
+            }
+
+            await powerPool.WaitAsync();
+
+            Assert.Equal(50, doneCount);
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();
