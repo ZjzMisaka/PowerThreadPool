@@ -1,6 +1,6 @@
 ﻿namespace PowerThreadPool.Works
 {
-    internal class AsyncWorkInfo
+    internal sealed class AsyncWorkInfo
     {
         internal WorkID AsyncWorkID { get; set; }
 
