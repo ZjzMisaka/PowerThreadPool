@@ -44,7 +44,8 @@ namespace PowerThreadPool.Works
         internal override ConcurrentSet<WorkID> Dependents => _workOption.Dependents;
         internal override bool AllowEventsAndCallback
         {
-            get => AsyncWorkInfo != null ? AsyncWorkInfo.AllowEventsAndCallback : true;
+            get => AsyncWorkInfo != null ?
+                (AsyncWorkInfo.AllowEventsAndCallback && ID == AsyncWorkInfo.AsyncWorkID) : true;
             set
             {
                 if (AsyncWorkInfo == null)
