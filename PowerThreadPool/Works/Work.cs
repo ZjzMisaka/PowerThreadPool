@@ -44,26 +44,27 @@ namespace PowerThreadPool.Works
         internal override ConcurrentSet<WorkID> Dependents => _workOption.Dependents;
         internal override bool AllowEventsAndCallback
         {
-            get => _workOption.AllowEventsAndCallback;
+            get => AsyncWorkInfo != null ? AsyncWorkInfo.AllowEventsAndCallback : true;
             set
             {
-                if (_workOption.IsDefaultInstance)
+                if (AsyncWorkInfo == null)
                 {
-                    _workOption = new WorkOption<TResult>();
+                    return;
                 }
-                _workOption.AllowEventsAndCallback = value;
+                AsyncWorkInfo.AllowEventsAndCallback = value;
             }
         }
-        internal override WorkID AsyncWorkID => _workOption.AsyncWorkID;
-        internal override WorkID BaseAsyncWorkID => _workOption.BaseAsyncWorkID;
-        internal override WorkID RealWorkID => _workOption.BaseAsyncWorkID == null ? ID : _workOption.BaseAsyncWorkID;
+        internal override WorkID AsyncWorkID => AsyncWorkInfo?.AsyncWorkID;
+        internal override WorkID BaseAsyncWorkID => AsyncWorkInfo?.BaseAsyncWorkID;
+        internal override WorkID RealWorkID => AsyncWorkInfo?.BaseAsyncWorkID == null ? ID : AsyncWorkInfo.BaseAsyncWorkID;
 
-        internal Work(PowerPool powerPool, WorkID id, WorkOption<TResult> option)
+        internal Work(PowerPool powerPool, WorkID id, WorkOption<TResult> option, AsyncWorkInfo asyncWorkInfo)
         {
             PowerPool = powerPool;
             ID = id;
             ExecuteCount = 0;
             _workOption = option;
+            AsyncWorkInfo = asyncWorkInfo;
             ShouldStop = false;
             IsPausing = false;
         }

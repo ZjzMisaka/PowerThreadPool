@@ -10,13 +10,15 @@ namespace PowerThreadPool.Helpers.Asynchronous
     {
         private readonly PowerPool _powerPool;
         private readonly WorkOption _workOption;
+        private readonly AsyncWorkInfo _asyncWorkInfo;
         private Task _originalTask;
         private int _done = 0;
 
-        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkOption workOption)
+        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkOption workOption, AsyncWorkInfo asyncWorkInfo)
         {
             _powerPool = powerPool;
             _workOption = workOption;
+            _asyncWorkInfo = asyncWorkInfo;
         }
 
         internal void SetTask(Task originalTask)
@@ -26,26 +28,26 @@ namespace PowerThreadPool.Helpers.Asynchronous
 
         public override void Post(SendOrPostCallback d, object state)
         {
-            if (_powerPool._asyncWorkIDDict.TryGetValue(_workOption.BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet))
+            if (_powerPool._asyncWorkIDDict.TryGetValue(_asyncWorkInfo.BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet))
             {
-                _workOption.AsyncWorkID = _powerPool.CreateID<object>();
-                idSet.Add(_workOption.AsyncWorkID);
+                _asyncWorkInfo.AsyncWorkID = _powerPool.CreateID<object>();
+                idSet.Add(_asyncWorkInfo.AsyncWorkID);
 
-                _powerPool.QueueWorkItem(() =>
+                _powerPool.QueueWorkItemInnerAsync(() =>
                 {
                     SetSynchronizationContext(this);
                     _powerPool.StopIfRequested(() =>
                     {
-                        _workOption.AllowEventsAndCallback = true;
+                        _asyncWorkInfo.AllowEventsAndCallback = true;
                     });
                     d(state);
                     if (_originalTask.IsCompleted &&
                     Interlocked.Exchange(ref _done, 1) == 0)
                     {
-                        _workOption.AllowEventsAndCallback = true;
+                        _asyncWorkInfo.AllowEventsAndCallback = true;
                     }
                     return default;
-                }, _workOption);
+                }, _workOption, _asyncWorkInfo);
             }
         }
     }

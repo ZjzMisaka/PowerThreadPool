@@ -27,12 +27,6 @@ namespace PowerThreadPool.Options
         /// </summary>
         public string CustomWorkID { get; set; } = null;
 
-        internal WorkID AsyncWorkID { get; set; }
-
-        internal WorkID BaseAsyncWorkID { get; set; }
-
-        internal bool AllowEventsAndCallback { get; set; } = true;
-
         /// <summary>
         /// The group name of the work.
         /// </summary>

@@ -13,6 +13,7 @@ namespace PowerThreadPool.Works
     {
         internal Worker Worker { get; set; }
         internal PowerPool PowerPool { get; set; }
+        internal AsyncWorkInfo AsyncWorkInfo { get; set; }
         internal volatile int _executeCount;
         internal int ExecuteCount
         {

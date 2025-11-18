@@ -11,16 +11,16 @@ namespace PowerThreadPool
 {
     public partial class PowerPool
     {
-        private void PrepareAsyncWork<T>(WorkOption<T> option)
+        private void PrepareAsyncWork<T>(WorkOption<T> option, AsyncWorkInfo asyncWorkInfo)
         {
             CheckPowerPoolOption();
 
-            option.AsyncWorkID = CreateID(option);
-            option.BaseAsyncWorkID = option.AsyncWorkID;
-            option.AllowEventsAndCallback = false;
+            asyncWorkInfo.AsyncWorkID = CreateID(option);
+            asyncWorkInfo.BaseAsyncWorkID = asyncWorkInfo.AsyncWorkID;
+            asyncWorkInfo.AllowEventsAndCallback = false;
 
             Interlocked.Increment(ref _asyncWorkCount);
-            _asyncWorkIDDict[option.AsyncWorkID] = new ConcurrentSet<WorkID>();
+            _asyncWorkIDDict[asyncWorkInfo.AsyncWorkID] = new ConcurrentSet<WorkID>();
         }
 
         private static void ThrowInnerIfNeeded(Task task)
@@ -148,20 +148,21 @@ namespace PowerThreadPool
             TaskCompletionSourceBox<ExecuteResult<object>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<object>>();
             task = taskCompletionSource.Task;
 
-            PrepareAsyncWork(option);
+            AsyncWorkInfo asyncWorkInfo = new AsyncWorkInfo();
+            PrepareAsyncWork(option, asyncWorkInfo);
 
-            WorkID id = QueueWorkItem(() =>
+            WorkID id = QueueWorkItemInnerAsync(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
-                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, option);
+                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, option, asyncWorkInfo);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task taskFunc = asyncFunc();
                 ThrowInnerIfNeeded(taskFunc);
 
                 ctx.SetTask(taskFunc);
-                RegisterCompletion(taskFunc, prevCtx, option.BaseAsyncWorkID);
-            }, option);
+                RegisterCompletion(taskFunc, prevCtx, asyncWorkInfo.BaseAsyncWorkID);
+            }, option, asyncWorkInfo);
 
             _tcsDict[id] = taskCompletionSource;
 
@@ -195,22 +196,23 @@ namespace PowerThreadPool
             TaskCompletionSourceBox<ExecuteResult<TResult>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<TResult>>();
             task = taskCompletionSource.TypedTask;
 
-            PrepareAsyncWork(option);
+            AsyncWorkInfo asyncWorkInfo = new AsyncWorkInfo();
+            PrepareAsyncWork(option, asyncWorkInfo);
 
-            WorkID id = QueueWorkItem(() =>
+            WorkID id = QueueWorkItemInnerAsync(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
-                PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, option);
+                PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, option, asyncWorkInfo);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task<TResult> taskFunc = asyncFunc();
                 ThrowInnerIfNeeded(taskFunc);
 
                 ctx.SetTask(taskFunc);
-                RegisterCompletionWithResult(taskFunc, prevCtx, option.BaseAsyncWorkID);
+                RegisterCompletionWithResult(taskFunc, prevCtx, asyncWorkInfo.BaseAsyncWorkID);
 
                 return default;
-            }, option);
+            }, option, asyncWorkInfo);
 
             _tcsDict[id] = taskCompletionSource;
 
