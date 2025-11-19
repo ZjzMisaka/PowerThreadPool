@@ -295,7 +295,9 @@ namespace PowerThreadPool
 
             if (Work.AllowEventsAndCallback && Work.BaseAsyncWorkID != null)
             {
-                if (_powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork) && !asyncBaseWork.ShouldStoreResult)
+                Debug.Assert(_powerPool._aliveWorkDic.ContainsKey(Work.BaseAsyncWorkID));
+                WorkBase asyncBaseWork = _powerPool._aliveWorkDic[Work.BaseAsyncWorkID];
+                if (!asyncBaseWork.ShouldStoreResult)
                 {
                     if (asyncBaseWork.WaitSignal != null)
                     {
