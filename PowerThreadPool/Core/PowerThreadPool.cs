@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
 using System.Runtime.CompilerServices;
@@ -11,6 +12,7 @@ using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.EventArguments;
 using PowerThreadPool.Exceptions;
+using PowerThreadPool.Helpers;
 using PowerThreadPool.Helpers.Asynchronous;
 using PowerThreadPool.Helpers.Dependency;
 using PowerThreadPool.Helpers.LockFree;
@@ -28,6 +30,13 @@ namespace PowerThreadPool
     {
         internal bool _disposed = false;
         internal bool _disposing = false;
+
+        private int _pingPongThresholdDivisor = 20000;
+        private bool _hasPingedPong = false;
+        private Stopwatch _timeSinceLastIdle = new Stopwatch();
+        private Stopwatch _spinWatch = new Stopwatch();
+        private HitChecker _hitChecker = new HitChecker(10);
+        private long _statusPingPongThresholdTicks;
 
         private WorkDependencyController _workDependencyController;
 
@@ -279,6 +288,8 @@ namespace PowerThreadPool
                 };
                 PowerPoolOption.RunningTimerOption.Elapsed(runningTimerElapsedEventArgs);
             }, true);
+            _timeSinceLastIdle.Start();
+            _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
         }
 
         public PowerPool(PowerPoolOption powerPoolOption) : this()
@@ -741,6 +752,8 @@ namespace PowerThreadPool
         {
             if (_poolState == PoolStates.NotRunning && _poolState.TrySet(PoolStates.Running, PoolStates.NotRunning))
             {
+                CheckIsPingedPong();
+
                 if (PoolStarted != null)
                 {
                     SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted, null);
@@ -787,7 +800,7 @@ namespace PowerThreadPool
         /// <summary>
         /// Check if thread pool is idle
         /// </summary>
-        internal void CheckPoolIdle()
+        internal void CheckPoolIdle(bool checkPingedPong = true)
         {
             if (_disposing || _disposed)
             {
@@ -796,6 +809,12 @@ namespace PowerThreadPool
 
             if (!EnablePoolIdleCheck)
             {
+                return;
+            }
+
+            if (checkPingedPong && _hasPingedPong && _runningWorkerCount == 0 && _waitingWorkCount == 0 && _asyncWorkCount == 0)
+            {
+                TryCheckAgainOnPingedPong();
                 return;
             }
 
@@ -811,6 +830,7 @@ namespace PowerThreadPool
             _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
                 )
             {
+                _timeSinceLastIdle.Restart();
                 if (PowerPoolOption.EnableStatisticsCollection)
                 {
                     _endDateTime = DateTime.UtcNow;
@@ -826,6 +846,47 @@ namespace PowerThreadPool
                 }
                 IdleSetting();
             }
+        }
+
+        private void TryCheckAgainOnPingedPong()
+        {
+            _spinWatch.Restart();
+            bool restarted = false;
+            for (int i = 0; _spinWatch.ElapsedTicks < _statusPingPongThresholdTicks; ++i)
+            {
+                if (i > 100)
+                {
+                    Thread.Yield();
+                }
+                if (_runningWorkerCount != 0 || _waitingWorkCount != 0 || _asyncWorkCount != 0)
+                {
+                    restarted = true;
+                    break;
+                }
+            }
+            if (!restarted)
+            {
+                _hasPingedPong = false;
+                _hitChecker.Missed();
+            }
+            else
+            {
+                _hitChecker.Hit();
+            }
+            if (_hitChecker.Count == 10)
+            {
+                if (_hitChecker.MissCount > 2)
+                {
+                    _pingPongThresholdDivisor += 500;
+                    _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
+                }
+                else if (_hitChecker.MissCount <= 1 && _pingPongThresholdDivisor > 2000)
+                {
+                    _pingPongThresholdDivisor -= 500;
+                    _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
+                }
+            }
+            CheckPoolIdle(false);
         }
 
         /// <summary>
@@ -941,6 +1002,11 @@ namespace PowerThreadPool
                     }
                 }
             }
+        }
+
+        internal void CheckIsPingedPong()
+        {
+            _hasPingedPong = _timeSinceLastIdle.ElapsedTicks < _statusPingPongThresholdTicks;
         }
 
         private void CheckDisposed()
