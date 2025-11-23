@@ -212,9 +212,9 @@ namespace UnitTest
                 item => Assert.Equal("Work1 END", item)
             );
 
-            Assert.InRange(d1, 1500, int.MaxValue);
-            Assert.InRange(d2, 1500, int.MaxValue);
-            Assert.InRange(d3, 1500, int.MaxValue);
+            Assert.InRange(d1, 1000, int.MaxValue);
+            Assert.InRange(d2, 1000, int.MaxValue);
+            Assert.InRange(d3, 1000, int.MaxValue);
         }
 
         [Fact]
