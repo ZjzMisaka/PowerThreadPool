@@ -293,16 +293,13 @@ namespace PowerThreadPool
                 Work.WaitSignal.Set();
             }
 
-            if (Work.AllowEventsAndCallback && Work.BaseAsyncWorkID != null)
+            if (Work.AllowEventsAndCallback && Work.BaseAsyncWorkID != null && _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork) && !asyncBaseWork.ShouldStoreResult)
             {
-                if (_powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork) && !asyncBaseWork.ShouldStoreResult)
+                if (asyncBaseWork.WaitSignal != null)
                 {
-                    if (asyncBaseWork.WaitSignal != null)
-                    {
-                        asyncBaseWork.WaitSignal.Set();
-                    }
-                    _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true);
+                    asyncBaseWork.WaitSignal.Set();
                 }
+                _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true);
             }
         }
 
