@@ -33,7 +33,7 @@ namespace UnitTest
             AsyncManualResetEvent evt = new AsyncManualResetEvent(true);
 
             Assert.True(evt.IsSet);
-            Assert.True(evt.WaitAsync().IsCompleted); 
+            Assert.True(evt.WaitAsync().IsCompleted);
         }
 
         [Fact]
