@@ -290,6 +290,110 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestPauseTwiceByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                EnableStatisticsCollection = true
+            });
+            List<string> logList = new List<string>();
+
+            long d1 = -1;
+            double t1 = -1;
+
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(300);
+                powerPool.PauseIfRequested();
+                Thread.Sleep(300);
+                powerPool.PauseIfRequested();
+            }, (res) =>
+            {
+                logList.Add("Work0 END");
+                d1 = res.Duration;
+                t1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+
+            bool pauseRes = powerPool.Pause(id);
+            Assert.True(pauseRes);
+            Thread.Sleep(1000);
+            bool resumeRes = powerPool.Resume(id);
+            Assert.True(resumeRes);
+            pauseRes = powerPool.Pause(id);
+            Assert.True(pauseRes);
+            Thread.Sleep(1000);
+            resumeRes = powerPool.Resume(id);
+            Assert.True(resumeRes);
+            pauseRes = powerPool.Pause(id);
+            Assert.True(pauseRes);
+            Thread.Sleep(1000);
+            resumeRes = powerPool.Resume(id);
+            Assert.False(resumeRes);
+            powerPool.Wait();
+
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("Work0 END", item)
+            );
+
+            Assert.InRange(d1, 2000, 2050);
+            Assert.InRange(t1, 2000, 2050);
+        }
+
+        [Fact]
+        public void TestPauseAsyncTwiceByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                EnableStatisticsCollection = true
+            });
+            List<string> logList = new List<string>();
+
+            long d1 = -1;
+            double t1 = -1;
+
+            WorkID id = powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(300);
+                await powerPool.PauseIfRequestedAsync();
+                await Task.Delay(300);
+                await powerPool.PauseIfRequestedAsync();
+            }, (res) =>
+            {
+                logList.Add("Work0 END");
+                d1 = res.Duration;
+                t1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
+            });
+
+            bool pauseRes = powerPool.Pause(id);
+            Assert.True(pauseRes);
+            Thread.Sleep(1000);
+            bool resumeRes = powerPool.Resume(id);
+            Assert.True(resumeRes);
+            pauseRes = powerPool.Pause(id);
+            Assert.True(pauseRes);
+            Thread.Sleep(1000);
+            resumeRes = powerPool.Resume(id);
+            Assert.True(resumeRes);
+            pauseRes = powerPool.Pause(id);
+            Assert.True(pauseRes);
+            Thread.Sleep(1000);
+            resumeRes = powerPool.Resume(id);
+            Assert.False(resumeRes);
+            powerPool.Wait();
+
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("Work0 END", item)
+            );
+
+            Assert.InRange(d1, 0, 20);
+            Assert.InRange(t1, 2000, 2050);
+        }
+
+        [Fact]
         public void TestPauseByIDList()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
