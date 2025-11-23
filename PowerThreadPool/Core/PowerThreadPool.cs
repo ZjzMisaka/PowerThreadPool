@@ -486,17 +486,7 @@ namespace PowerThreadPool
             }
             else if (rejectType == RejectType.CallerRunsPolicy)
             {
-                Interlocked.Increment(ref _runningWorkerCount);
-                InvokeRunningWorkerCountChangedEvent(true);
-                Worker newWorker = null;
-                if (!_helperWorkerQueue.TryDequeue(out newWorker))
-                {
-                    newWorker = new Worker();
-                }
-                newWorker.RunHelp(this, work);
-                _helperWorkerQueue.Enqueue(newWorker);
-                Interlocked.Decrement(ref _runningWorkerCount);
-                InvokeRunningWorkerCountChangedEvent(false);
+                HelpWhileWaitingCore(work);
 
                 CheckPoolIdle();
 

@@ -75,8 +75,6 @@ namespace PowerThreadPool
         }
 #endif
 
-
-
         private void GetPauseWork(out Worker worker, out WorkBase pauseWork)
         {
             // Directly get current thread worker since it is guaranteed to exist
@@ -1414,17 +1412,7 @@ namespace PowerThreadPool
             {
                 WorkBase work = works[0];
 
-                Interlocked.Increment(ref _runningWorkerCount);
-                InvokeRunningWorkerCountChangedEvent(true);
-                Worker newWorker = null;
-                if (!_helperWorkerQueue.TryDequeue(out newWorker))
-                {
-                    newWorker = new Worker();
-                }
-                newWorker.RunHelp(this, work);
-                _helperWorkerQueue.Enqueue(newWorker);
-                Interlocked.Decrement(ref _runningWorkerCount);
-                InvokeRunningWorkerCountChangedEvent(false);
+                HelpWhileWaitingCore(work);
 
                 CheckPoolIdle();
 
@@ -1434,6 +1422,21 @@ namespace PowerThreadPool
             {
                 return false;
             }
+        }
+
+        private void HelpWhileWaitingCore(WorkBase work)
+        {
+            Interlocked.Increment(ref _runningWorkerCount);
+            InvokeRunningWorkerCountChangedEvent(true);
+            Worker newWorker = null;
+            if (!_helperWorkerQueue.TryDequeue(out newWorker))
+            {
+                newWorker = new Worker();
+            }
+            newWorker.RunHelp(this, work);
+            _helperWorkerQueue.Enqueue(newWorker);
+            Interlocked.Decrement(ref _runningWorkerCount);
+            InvokeRunningWorkerCountChangedEvent(false);
         }
 
         private bool TryGetSuspendOrAliveWork(WorkID id, out WorkBase work)
