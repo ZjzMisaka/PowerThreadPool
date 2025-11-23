@@ -23,13 +23,69 @@ namespace PowerThreadPool
         {
             _pauseSignal.WaitOne();
 
+            Worker worker;
+            WorkBase pauseWork;
+            GetPauseWork(out worker, out pauseWork);
+
+            if (pauseWork != null)
+            {
+                worker.PauseTimer();
+                pauseWork.PauseSignal.WaitOne();
+                worker.ResumeTimer();
+            }
+        }
+
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        /// <summary>
+        /// Call this function inside the work logic where you want to pause when user call Pause(...)
+        /// </summary>
+        public async Task PauseIfRequestedAsync()
+        {
+            await _pauseAsyncSignal.WaitAsync();
+
+            Worker worker;
+            WorkBase pauseWork;
+            GetPauseWork(out worker, out pauseWork);
+
+            if (pauseWork != null)
+            {
+                worker.PauseTimer();
+                await pauseWork.PauseAsyncSignal.WaitAsync();
+                worker.ResumeTimer();
+            }
+        }
+#else
+        /// <summary>
+        /// Call this function inside the work logic where you want to pause when user call Pause(...)
+        /// </summary>
+        public void PauseIfRequestedAsync()
+        {
+            _pauseAsyncSignal.WaitAsync().Wait();
+
+            Worker worker;
+            WorkBase pauseWork;
+            GetPauseWork(out worker, out pauseWork);
+
+            if (pauseWork != null)
+            {
+                worker.PauseTimer();
+                pauseWork.PauseAsyncSignal.WaitAsync().Wait();
+                worker.ResumeTimer();
+            }
+        }
+#endif
+
+
+
+        private void GetPauseWork(out Worker worker, out WorkBase pauseWork)
+        {
             // Directly get current thread worker since it is guaranteed to exist
             // If not, just let Work execute failed
-            if (!GetCurrentThreadWorker(out Worker worker))
+            if (!GetCurrentThreadWorker(out worker))
             {
                 throw new InvalidOperationException("PauseIfRequested must be called on a PowerPool worker thread.");
             }
-            WorkBase pauseWork = null;
+            pauseWork = null;
             if (worker.Work.IsPausing)
             {
                 pauseWork = worker.Work;
@@ -37,13 +93,6 @@ namespace PowerThreadPool
             else if (worker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase work) && work.IsPausing)
             {
                 pauseWork = work;
-            }
-
-            if (pauseWork != null)
-            {
-                worker.PauseTimer();
-                pauseWork.PauseSignal.WaitOne();
-                worker.ResumeTimer();
             }
         }
 
@@ -1116,6 +1165,7 @@ namespace PowerThreadPool
         {
             _timeoutTimer.Pause();
             _pauseSignal.Reset();
+            _pauseAsyncSignal.Reset();
         }
 
         /// <summary>
@@ -1168,6 +1218,7 @@ namespace PowerThreadPool
         {
             _timeoutTimer.Resume();
             _pauseSignal.Set();
+            _pauseAsyncSignal.Set();
 
             if (resumeWorkPausedByID)
             {

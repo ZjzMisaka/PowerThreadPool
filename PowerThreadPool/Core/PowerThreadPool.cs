@@ -33,6 +33,7 @@ namespace PowerThreadPool
 
         private readonly ManualResetEvent _waitAllSignal = new ManualResetEvent(true);
         private readonly ManualResetEvent _pauseSignal = new ManualResetEvent(true);
+        private readonly AsyncManualResetEvent _pauseAsyncSignal = new AsyncManualResetEvent(true);
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         internal ConcurrentSet<WorkID> _failedWorkSet = new ConcurrentSet<WorkID>();

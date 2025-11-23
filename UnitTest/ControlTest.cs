@@ -86,11 +86,79 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestPauseByID()
+        public void TestPauseAsyncAll()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
+            List<long> logList = new List<long>();
+            object lockObj = new object();
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                long start = GetNowSs();
+                await Task.Delay(1000);
+                await powerPool.PauseIfRequestedAsync();
+                return GetNowSs() - start;
+            }, (res) =>
+            {
+                lock (lockObj)
+                {
+                    logList.Add(res.Result);
+                }
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                long start = GetNowSs();
+                await Task.Delay(1000);
+                await powerPool.PauseIfRequestedAsync();
+                return GetNowSs() - start;
+            }, (res) =>
+            {
+                lock (lockObj)
+                {
+                    logList.Add(res.Result);
+                }
+            });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                long start = GetNowSs();
+                await Task.Delay(1000);
+                await powerPool.PauseIfRequestedAsync();
+                return GetNowSs() - start;
+            }, (res) =>
+            {
+                lock (lockObj)
+                {
+                    logList.Add(res.Result);
+                }
+            });
+            Thread.Sleep(500);
+            powerPool.Pause();
+            Thread.Sleep(1000);
+            powerPool.Resume();
+            powerPool.Wait();
+
+            Assert.Collection<long>(logList,
+                item => Assert.True(item >= 1490),
+                item => Assert.True(item >= 1490),
+                item => Assert.True(item >= 1490)
+            );
+        }
+
+        [Fact]
+        public void TestPauseByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                EnableStatisticsCollection = true
+            });
+
+            long d1 = -1;
+            long d2 = -1;
+            long d3 = -1;
+
             List<string> logList = new List<string>();
             powerPool.QueueWorkItem(() =>
             {
@@ -102,6 +170,7 @@ namespace UnitTest
             }, (res) =>
             {
                 logList.Add("Work0 END");
+                d1 = res.Duration;
             });
             Thread.Sleep(200);
             WorkID id = powerPool.QueueWorkItem(() =>
@@ -114,6 +183,7 @@ namespace UnitTest
             }, (res) =>
             {
                 logList.Add("Work1 END");
+                d2 = res.Duration;
             });
             Thread.Sleep(200);
             powerPool.QueueWorkItem(() =>
@@ -126,6 +196,7 @@ namespace UnitTest
             }, (res) =>
             {
                 logList.Add("Work2 END");
+                d3 = res.Duration;
             });
             Thread.Sleep(50);
             bool pauseRes = powerPool.Pause(id);
@@ -140,6 +211,82 @@ namespace UnitTest
                 item => Assert.Equal("Work2 END", item),
                 item => Assert.Equal("Work1 END", item)
             );
+
+            Assert.InRange(d1, 1500, int.MaxValue);
+            Assert.InRange(d2, 1500, int.MaxValue);
+            Assert.InRange(d3, 1500, int.MaxValue);
+        }
+
+        [Fact]
+        public void TestPauseAsyncByID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                EnableStatisticsCollection = true
+            });
+            List<string> logList = new List<string>();
+
+            long d1 = -1;
+            long d2 = -1;
+            long d3 = -1;
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await powerPool.PauseIfRequestedAsync();
+                    await Task.Delay(10);
+                }
+            }, (res) =>
+            {
+                logList.Add("Work0 END");
+                d1 = res.Duration;
+            });
+            Thread.Sleep(200);
+            WorkID id = powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await powerPool.PauseIfRequestedAsync();
+                    await Task.Delay(10);
+                }
+            }, (res) =>
+            {
+                logList.Add("Work1 END");
+                d2 = res.Duration;
+            });
+            Thread.Sleep(200);
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                for (int i = 0; i < 100; ++i)
+                {
+                    await powerPool.PauseIfRequestedAsync();
+                    await Task.Delay(10);
+                }
+            }, (res) =>
+            {
+                logList.Add("Work2 END");
+                d3 = res.Duration;
+            });
+            Thread.Sleep(50);
+            bool pauseRes = powerPool.Pause(id);
+            Assert.True(pauseRes);
+            Thread.Sleep(1000);
+            bool resumeRes = powerPool.Resume(id);
+            Assert.True(resumeRes);
+            powerPool.Wait();
+
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("Work0 END", item),
+                item => Assert.Equal("Work2 END", item),
+                item => Assert.Equal("Work1 END", item)
+            );
+
+            Assert.InRange(d1, 0, 20);
+            Assert.InRange(d2, 0, 20);
+            Assert.InRange(d3, 0, 20);
         }
 
         [Fact]
@@ -5048,6 +5195,33 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestPauseAsyncWorkTimer()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 2000, ForceStop = true } });
+            List<long> logList = new List<long>();
+            object lockObj = new object();
+            long start = GetNowSs();
+            WorkID id = powerPool.QueueWorkItemAsync(async () =>
+            {
+                while (true)
+                {
+                    await powerPool.PauseIfRequestedAsync();
+                    Thread.Sleep(100);
+                }
+            });
+
+            powerPool.Pause(id);
+            Thread.Sleep(1000);
+            powerPool.Resume(id);
+            powerPool.Wait();
+            long duration = GetNowSs() - start;
+
+            Assert.True(duration >= 2800);
+        }
+
+        [Fact]
         public void TestPauseThreadTimer()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -5061,6 +5235,33 @@ namespace UnitTest
                 while (true)
                 {
                     powerPool.PauseIfRequested();
+                    Thread.Sleep(100);
+                }
+            });
+
+            powerPool.Pause();
+            Thread.Sleep(1000);
+            powerPool.Resume();
+            powerPool.Wait();
+            long duration = GetNowSs() - start;
+
+            Assert.True(duration >= 2900);
+        }
+
+        [Fact]
+        public void TestPauseAsyncThreadTimer()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { TimeoutOption = new TimeoutOption() { Duration = 2000, ForceStop = true } });
+            List<long> logList = new List<long>();
+            object lockObj = new object();
+            long start = GetNowSs();
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                while (true)
+                {
+                    await powerPool.PauseIfRequestedAsync();
                     Thread.Sleep(100);
                 }
             });
