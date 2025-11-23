@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
+using PowerThreadPool.Helpers.Asynchronous;
 using PowerThreadPool.Helpers.LockFree;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
@@ -64,6 +65,7 @@ namespace PowerThreadPool.Works
         internal bool ShouldStop { get; set; }
         internal InterlockedFlag<CanCancel> _canCancel = CanCancel.Allowed;
         internal ManualResetEvent PauseSignal { get; set; }
+        internal AsyncManualResetEvent PauseAsyncSignal { get; set; }
         /// <summary>
         /// Queue datetime (UTC).
         /// </summary>

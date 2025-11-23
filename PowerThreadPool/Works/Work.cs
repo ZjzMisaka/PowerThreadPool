@@ -334,13 +334,18 @@ namespace PowerThreadPool.Works
 
         internal override bool Pause()
         {
-            if (PauseSignal == null)
+            if (BaseAsyncWorkID == null && PauseSignal == null)
             {
                 PauseSignal = new ManualResetEvent(true);
             }
+            if (BaseAsyncWorkID != null && PauseAsyncSignal == null)
+            {
+                PauseAsyncSignal = new AsyncManualResetEvent(true);
+            }
 
             IsPausing = true;
-            PauseSignal.Reset();
+            PauseSignal?.Reset();
+            PauseAsyncSignal?.Reset();
             return true;
         }
 
@@ -350,7 +355,8 @@ namespace PowerThreadPool.Works
             if (IsPausing)
             {
                 IsPausing = false;
-                PauseSignal.Set();
+                PauseSignal?.Set();
+                PauseAsyncSignal?.Set();
                 res = true;
             }
             return res;
