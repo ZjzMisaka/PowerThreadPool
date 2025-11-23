@@ -5415,7 +5415,7 @@ namespace UnitTest
             list.TryAdd(9);
 
             powerPool.Wait();
-            Thread.Sleep(1);
+            Thread.Sleep(5);
             powerPool.Wait();
 
             Assert.Equal(3, result.Count);
