@@ -556,6 +556,53 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestDependentsDoubleFailed()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int doneCount = 0;
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
+            };
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            };
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(700);
+                throw new Exception();
+            });
+
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                throw new Exception();
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+            },
+           new WorkOption()
+           {
+               Dependents = new ConcurrentSet<WorkID>() { id0, id1 }
+           });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, doneCount);
+            Assert.Equal(3, powerPool.FailedWorkCount);
+            Assert.Equal(id0, powerPool.FailedWorkList.First());
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
         public void TestDependentsSucceeded()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
