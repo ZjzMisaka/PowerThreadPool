@@ -50,32 +50,7 @@ namespace PowerThreadPool.Helpers.Dependency
                 {
                     if (PrecedingWorkNotSuccessfullyCompleted(dependedId))
                     {
-                        work._dependencyStatus.InterlockedValue = DependencyStatus.Failed;
-                        _workDict.TryRemove(work.ID, out _);
-
-                        if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
-                        {
-                            work.QueueDateTime = DateTime.UtcNow;
-                        }
-
-                        InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{dependedId}' did not complete successfully.");
-                        ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
-                        executeResult.ID = work.ID;
-                        if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
-                        {
-                            executeResult.StartDateTime = DateTime.UtcNow;
-                        }
-
-                        _powerPool._resultDic[work.ID] = executeResult;
-
-                        _powerPool.InvokeWorkEndedEvent(executeResult, work.BaseAsyncWorkID != null);
-
-                        work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
-
-                        _powerPool.WorkCallbackEnd(work, Status.Failed);
-
-                        _powerPool.CheckPoolIdle();
-                        workNotSuccessfullyCompleted = true;
+                        workNotSuccessfullyCompleted = OnPrecedingWorkNotSuccessfullyCompletedWhenRegister(work, dependedId);
                         return true;
                     }
                     else
@@ -120,6 +95,38 @@ namespace PowerThreadPool.Helpers.Dependency
             }
 
             return false;
+        }
+
+        private bool OnPrecedingWorkNotSuccessfullyCompletedWhenRegister(WorkBase work, WorkID dependedId)
+        {
+            bool workNotSuccessfullyCompleted;
+            work._dependencyStatus.InterlockedValue = DependencyStatus.Failed;
+            _workDict.TryRemove(work.ID, out _);
+
+            if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+            {
+                work.QueueDateTime = DateTime.UtcNow;
+            }
+
+            InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{dependedId}' did not complete successfully.");
+            ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
+            executeResult.ID = work.ID;
+            if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+            {
+                executeResult.StartDateTime = DateTime.UtcNow;
+            }
+
+            _powerPool._resultDic[work.ID] = executeResult;
+
+            _powerPool.InvokeWorkEndedEvent(executeResult, work.BaseAsyncWorkID != null);
+
+            work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
+
+            _powerPool.WorkCallbackEnd(work, Status.Failed);
+
+            _powerPool.CheckPoolIdle();
+            workNotSuccessfullyCompleted = true;
+            return workNotSuccessfullyCompleted;
         }
 
         private void SetWorkIfDependencySolved(ConcurrentSet<WorkID> dependents, WorkBase work)
@@ -213,64 +220,7 @@ namespace PowerThreadPool.Helpers.Dependency
 
             if (status == Status.Failed || status == Status.Canceled)
             {
-                Stack<WorkID> stack = new Stack<WorkID>();
-                HashSet<WorkID> visited = new HashSet<WorkID>();
-                List<WorkBase> newlyFailed = new List<WorkBase>();
-
-                stack.Push(id);
-                visited.Add(id);
-
-                while (stack.Count > 0)
-                {
-                    WorkID failedId = stack.Pop();
-
-                    if (_workChildrenDict.TryGetValue(failedId, out ConcurrentSet<WorkID> failedChildWorkSet))
-                    {
-                        foreach (WorkID workID in failedChildWorkSet)
-                        {
-                            if (_workDict.TryGetValue(workID, out WorkBase work) && work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
-                            {
-                                Interlocked.Decrement(ref _powerPool._waitingWorkCount);
-                                newlyFailed.Add(work);
-
-                                if (visited.Add(work.RealWorkID))
-                                {
-                                    stack.Push(work.RealWorkID);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                foreach (WorkBase work in newlyFailed)
-                {
-                    if (_powerPool.PowerPoolOption.EnableStatisticsCollection && work.QueueDateTime == default)
-                    {
-                        work.QueueDateTime = DateTime.UtcNow;
-                    }
-
-                    InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{id}' did not complete successfully.");
-                    ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
-                    executeResult.ID = work.ID;
-                    if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
-                    {
-                        executeResult.StartDateTime = DateTime.UtcNow;
-                    }
-
-                    _powerPool._resultDic[work.ID] = executeResult;
-
-                    _powerPool.InvokeWorkEndedEvent(executeResult, work.BaseAsyncWorkID != null);
-                    work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
-                    _powerPool.WorkCallbackEnd(work, Status.Failed);
-                }
-
-                _workChildrenDict.TryRemove(id, out _);
-                foreach (var failedWork in newlyFailed)
-                {
-                    _workChildrenDict.TryRemove(failedWork.RealWorkID, out _);
-                }
-
-                _powerPool.CheckPoolIdle();
+                OnCallbackFailed(id);
                 return;
             }
 
@@ -286,6 +236,77 @@ namespace PowerThreadPool.Helpers.Dependency
             }
 
             _workChildrenDict.TryRemove(id, out _);
+        }
+
+        private void OnCallbackFailed(WorkID id)
+        {
+            Stack<WorkID> stack = new Stack<WorkID>();
+            HashSet<WorkID> visited = new HashSet<WorkID>();
+            List<WorkBase> newlyFailed = new List<WorkBase>();
+
+            stack.Push(id);
+            visited.Add(id);
+
+            GetAllFailedChildren(stack, visited, newlyFailed);
+            CauseAcquiredWorksToFail(id, newlyFailed);
+
+            _workChildrenDict.TryRemove(id, out _);
+            foreach (var failedWork in newlyFailed)
+            {
+                _workChildrenDict.TryRemove(failedWork.RealWorkID, out _);
+            }
+
+            _powerPool.CheckPoolIdle();
+        }
+
+        private void CauseAcquiredWorksToFail(WorkID id, List<WorkBase> newlyFailed)
+        {
+            foreach (WorkBase work in newlyFailed)
+            {
+                if (_powerPool.PowerPoolOption.EnableStatisticsCollection && work.QueueDateTime == default)
+                {
+                    work.QueueDateTime = DateTime.UtcNow;
+                }
+
+                InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{id}' did not complete successfully.");
+                ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
+                executeResult.ID = work.ID;
+                if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+                {
+                    executeResult.StartDateTime = DateTime.UtcNow;
+                }
+
+                _powerPool._resultDic[work.ID] = executeResult;
+
+                _powerPool.InvokeWorkEndedEvent(executeResult, work.BaseAsyncWorkID != null);
+                work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
+                _powerPool.WorkCallbackEnd(work, Status.Failed);
+            }
+        }
+
+        private void GetAllFailedChildren(Stack<WorkID> stack, HashSet<WorkID> visited, List<WorkBase> newlyFailed)
+        {
+            while (stack.Count > 0)
+            {
+                WorkID failedId = stack.Pop();
+
+                if (_workChildrenDict.TryGetValue(failedId, out ConcurrentSet<WorkID> failedChildWorkSet))
+                {
+                    foreach (WorkID workID in failedChildWorkSet)
+                    {
+                        if (_workDict.TryGetValue(workID, out WorkBase work) && work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
+                        {
+                            Interlocked.Decrement(ref _powerPool._waitingWorkCount);
+                            newlyFailed.Add(work);
+
+                            if (visited.Add(work.RealWorkID))
+                            {
+                                stack.Push(work.RealWorkID);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private bool PrecedingWorkNotSuccessfullyCompleted(WorkID dependedId)
