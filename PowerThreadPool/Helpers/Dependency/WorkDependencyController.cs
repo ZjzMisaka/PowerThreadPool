@@ -294,7 +294,8 @@ namespace PowerThreadPool.Helpers.Dependency
                 {
                     foreach (WorkID workID in failedChildWorkSet)
                     {
-                        if (_workDict.TryGetValue(workID, out WorkBase work) && work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
+                        WorkBase work = _workDict[workID];
+                        if (work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
                         {
                             Interlocked.Decrement(ref _powerPool._waitingWorkCount);
                             newlyFailed.Add(work);
