@@ -15,6 +15,7 @@ namespace PowerThreadPool.Helpers.Dependency
     internal class WorkDependencyController
     {
         internal ConcurrentDictionary<WorkID, WorkBase> _workDict = new ConcurrentDictionary<WorkID, WorkBase>();
+        internal ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>> _workChildrenDict = new ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>>();
         private CallbackEndEventHandler _callbackEndHandler;
         private PowerPool _powerPool;
         private int _firstRegister = 0;
@@ -45,7 +46,6 @@ namespace PowerThreadPool.Helpers.Dependency
                 }
 
                 _workDict[work.ID] = work;
-
                 foreach (WorkID dependedId in dependents)
                 {
                     if (PrecedingWorkNotSuccessfullyCompleted(dependedId))
@@ -77,6 +77,21 @@ namespace PowerThreadPool.Helpers.Dependency
                         _powerPool.CheckPoolIdle();
                         workNotSuccessfullyCompleted = true;
                         return true;
+                    }
+                    else
+                    {
+                        _workChildrenDict.AddOrUpdate(dependedId,
+                        (id) =>
+                        {
+                            ConcurrentSet<WorkID> set = new ConcurrentSet<WorkID>();
+                            set.Add(work.ID);
+                            return set;
+                        },
+                        (id, existingSet) =>
+                        {
+                            existingSet.Add(work.ID);
+                            return existingSet;
+                        });
                     }
                 }
 
@@ -210,12 +225,11 @@ namespace PowerThreadPool.Helpers.Dependency
                 {
                     WorkID failedId = stack.Pop();
 
-                    foreach (WorkBase work in _workDict.Values)
+                    if (_workChildrenDict.TryGetValue(failedId, out ConcurrentSet<WorkID> failedChildWorkSet))
                     {
-                        if (work._dependencyStatus.InterlockedValue == DependencyStatus.Normal &&
-                            work.Dependents.Contains(failedId))
+                        foreach (WorkID workID in failedChildWorkSet)
                         {
-                            if (work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
+                            if (_workDict.TryGetValue(workID, out WorkBase work) && work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
                             {
                                 Interlocked.Decrement(ref _powerPool._waitingWorkCount);
                                 newlyFailed.Add(work);
@@ -255,11 +269,14 @@ namespace PowerThreadPool.Helpers.Dependency
                 return;
             }
 
-            foreach (WorkBase work in _workDict.Values)
+            if (_workChildrenDict.TryGetValue(id, out ConcurrentSet<WorkID> childWorkSet))
             {
-                if (work.Dependents.Remove(id))
+                foreach (WorkID workID in childWorkSet)
                 {
-                    SetWorkIfDependencySolved(work.Dependents, work);
+                    if (_workDict.TryGetValue(workID, out WorkBase work) && work.Dependents.Remove(id))
+                    {
+                        SetWorkIfDependencySolved(work.Dependents, work);
+                    }
                 }
             }
         }
