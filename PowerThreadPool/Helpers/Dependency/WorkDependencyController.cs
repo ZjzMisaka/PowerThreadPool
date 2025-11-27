@@ -167,44 +167,43 @@ namespace PowerThreadPool.Helpers.Dependency
 
         private bool CheckHasCycle(WorkID id, ConcurrentSet<WorkID> dependents)
         {
-            Dictionary<WorkID, HashSet<WorkID>> dependencyGraph = new Dictionary<WorkID, HashSet<WorkID>>();
-            dependencyGraph[id] = new HashSet<WorkID>(dependents);
-
-            foreach (KeyValuePair<WorkID, WorkBase> kvp in _workDict)
+            foreach (WorkID dep in dependents)
             {
-                dependencyGraph[kvp.Key] = new HashSet<WorkID>(kvp.Value.Dependents);
+                if (dep.Equals(id))
+                {
+                    return true;
+                }
             }
+
+            HashSet<WorkID> dependentsSet = new HashSet<WorkID>(dependents);
 
             HashSet<WorkID> visited = new HashSet<WorkID>();
-            HashSet<WorkID> recursionStack = new HashSet<WorkID>();
+            Stack<WorkID> stack = new Stack<WorkID>();
 
-            return DetectCycleDFS(id, dependencyGraph, visited, recursionStack);
-        }
+            visited.Add(id);
+            stack.Push(id);
 
-        private bool DetectCycleDFS(WorkID current, Dictionary<WorkID, HashSet<WorkID>> graph, HashSet<WorkID> visited, HashSet<WorkID> recursionStack)
-        {
-            if (!graph.ContainsKey(current))
+            while (stack.Count > 0)
             {
-                return false;
-            }
+                WorkID current = stack.Pop();
 
-            visited.Add(current);
-            recursionStack.Add(current);
-
-            foreach (WorkID dependent in graph[current])
-            {
-                if (recursionStack.Contains(dependent))
+                if (!_workChildrenDict.TryGetValue(current, out ConcurrentSet<WorkID> children))
                 {
-                    return true;
+                    continue;
                 }
 
-                if (!visited.Contains(dependent) && DetectCycleDFS(dependent, graph, visited, recursionStack))
+                foreach (WorkID childId in children)
                 {
-                    return true;
+                    if (dependentsSet.Contains(childId))
+                    {
+                        return true;
+                    }
+
+                    visited.Add(childId);
+                    stack.Push(childId);
                 }
             }
 
-            recursionStack.Remove(current);
             return false;
         }
 
@@ -265,6 +264,12 @@ namespace PowerThreadPool.Helpers.Dependency
                     _powerPool.WorkCallbackEnd(work, Status.Failed);
                 }
 
+                _workChildrenDict.TryRemove(id, out _);
+                foreach (var failedWork in newlyFailed)
+                {
+                    _workChildrenDict.TryRemove(failedWork.RealWorkID, out _);
+                }
+
                 _powerPool.CheckPoolIdle();
                 return;
             }
@@ -279,6 +284,8 @@ namespace PowerThreadPool.Helpers.Dependency
                     }
                 }
             }
+
+            _workChildrenDict.TryRemove(id, out _);
         }
 
         private bool PrecedingWorkNotSuccessfullyCompleted(WorkID dependedId)
