@@ -18,7 +18,7 @@ namespace PowerThreadPool
 {
     internal class Worker : IDisposable
     {
-        private StatusPingPongChecker _statusPingPongChecker = new StatusPingPongChecker(10);
+        private StatusPingPongChecker _statusPingPongChecker = new StatusPingPongChecker();
 
         internal InterlockedFlag<CanDispose> CanDispose { get; } = Constants.CanDispose.Allowed;
         internal InterlockedFlag<CanForceStop> CanForceStop { get; } = Constants.CanForceStop.Allowed;
