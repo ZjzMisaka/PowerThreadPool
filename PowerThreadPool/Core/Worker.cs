@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
@@ -19,12 +18,7 @@ namespace PowerThreadPool
 {
     internal class Worker : IDisposable
     {
-        private int _pingPongThresholdDivisor = 20000;
-        private bool _hasPingedPong = false;
-        private Stopwatch _timeSinceLastIdle = new Stopwatch();
-        private Stopwatch _spinWatch = new Stopwatch();
-        private HitChecker _hitChecker = new HitChecker(10);
-        private long _statusPingPongThresholdTicks;
+        private StatusPingPongChecker _statusPingPongChecker = new StatusPingPongChecker(10);
 
         internal InterlockedFlag<CanDispose> CanDispose { get; } = Constants.CanDispose.Allowed;
         internal InterlockedFlag<CanForceStop> CanForceStop { get; } = Constants.CanForceStop.Allowed;
@@ -69,8 +63,6 @@ namespace PowerThreadPool
         internal Worker(PowerPool powerPool)
         {
             _powerPool = powerPool;
-            _timeSinceLastIdle.Start();
-            _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
 
             if (_powerPool.PowerPoolOption.EnforceDequeOwnership)
             {
@@ -133,7 +125,7 @@ namespace PowerThreadPool
 
         internal void CheckIsPingedPong()
         {
-            _hasPingedPong = _timeSinceLastIdle.ElapsedTicks < _statusPingPongThresholdTicks;
+            _statusPingPongChecker.CheckIsPingedPong();
         }
 
         internal void RunHelp(PowerPool powerPool, WorkBase work)
@@ -824,7 +816,7 @@ namespace PowerThreadPool
 
         private bool TurnToIdle(ref WorkBase work)
         {
-            if (_hasPingedPong)
+            if (_statusPingPongChecker.HasPingedPong)
             {
                 work = TryGetWorkAgainOnPingedPong();
 
@@ -865,7 +857,7 @@ namespace PowerThreadPool
                     }
                     else
                     {
-                        _timeSinceLastIdle.Restart();
+                        _statusPingPongChecker.StartNewCheck();
                         if (destroyThreadOption != null && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
                         {
                             SetKillTimer();
@@ -963,8 +955,8 @@ namespace PowerThreadPool
             // (i.e., the time interval since it last entered the Idle state and was then awakened is less than the threshold),
             // perform a limited number of spins to fetch Work before transitioning to Idle.
             WorkBase work = null;
-            _spinWatch.Restart();
-            for (int i = 0; _spinWatch.ElapsedTicks < _statusPingPongThresholdTicks && work == null; ++i)
+            _statusPingPongChecker.StartSpin();
+            for (int i = 0; _statusPingPongChecker.CanSpin && work == null; ++i)
             {
                 if (i > 100)
                 {
@@ -972,28 +964,8 @@ namespace PowerThreadPool
                 }
                 work = Get();
             }
-            if (work == null)
-            {
-                _hasPingedPong = false;
-                _hitChecker.Missed();
-            }
-            else
-            {
-                _hitChecker.Hit();
-            }
-            if (_hitChecker.Count == 10)
-            {
-                if (_hitChecker.MissCount > 2)
-                {
-                    _pingPongThresholdDivisor += 500;
-                    _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
-                }
-                else if (_hitChecker.MissCount <= 1 && _pingPongThresholdDivisor > 2000)
-                {
-                    _pingPongThresholdDivisor -= 500;
-                    _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
-                }
-            }
+
+            _statusPingPongChecker.HandleSpinRes(work != null);
 
             return work;
         }
