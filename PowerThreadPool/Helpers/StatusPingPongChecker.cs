@@ -7,17 +7,15 @@ namespace PowerThreadPool.Helpers
         private int _pingPongThresholdDivisor = 20000;
         private Stopwatch _timeSinceLastIdle = new Stopwatch();
         private Stopwatch _spinWatch = new Stopwatch();
-        private HitChecker _hitChecker;
+        private HitChecker _hitChecker = new HitChecker(10);
         private long _statusPingPongThresholdTicks;
 
         internal bool HasPingedPong { get; set; }
 
         internal bool CanSpin => _spinWatch.ElapsedTicks < _statusPingPongThresholdTicks;
 
-        internal StatusPingPongChecker(int hitCount)
+        internal StatusPingPongChecker()
         {
-            _hitChecker = new HitChecker(hitCount);
-
             _timeSinceLastIdle.Start();
             _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
         }
