@@ -29,7 +29,7 @@ namespace PowerThreadPool.Collections
         private readonly ConcurrentDictionary<int, ChaseLevDeque<T>> _queueDic
             = new ConcurrentDictionary<int, ChaseLevDeque<T>>();
 
-        private volatile List<int> _sortedPriorityList = new List<int>();
+        internal volatile List<int> _sortedPriorityList = new List<int>();
 
         // Dedicated queue for zero-priority items to optimize access without dictionary lookup.
         private readonly ChaseLevDeque<T> _zeroQueue = new ChaseLevDeque<T>();
