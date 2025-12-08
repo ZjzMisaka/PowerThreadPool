@@ -1,7 +1,9 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using PowerThreadPool.Helpers;
+using PowerThreadPool.Constants;
+using PowerThreadPool.Helpers.LockFree;
+
 namespace PowerThreadPool.Collections
 {
     internal class ConcurrentStealablePriorityQueue<T> : IStealablePriorityCollection<T>
@@ -9,9 +11,10 @@ namespace PowerThreadPool.Collections
         private readonly ConcurrentDictionary<int, ConcurrentQueue<T>> _queueDic
             = new ConcurrentDictionary<int, ConcurrentQueue<T>>();
 
-        internal volatile List<int> _sortedPriorityList = new List<int>();
+        private volatile List<int> _sortedPriorityList = new List<int>();
 
-        // Dedicated queue for zero-priority items to optimize access without dictionary lookup.
+        private InterlockedFlag<CanInsertPriority> _canInsertPriority = CanInsertPriority.Allowed;
+
         private readonly ConcurrentQueue<T> _zeroQueue = new ConcurrentQueue<T>();
 
         public ConcurrentStealablePriorityQueue()
@@ -40,25 +43,50 @@ namespace PowerThreadPool.Collections
                 return;
             }
 
-            ConcurrentQueue<T> queue = _queueDic.GetOrAdd(priority, _ => new ConcurrentQueue<T>());
-
-            while (true)
+            ConcurrentQueue<T> queue = _queueDic.GetOrAdd(priority, _ =>
             {
-                List<int> oldList = _sortedPriorityList;
-                if (oldList.Contains(priority))
+#if DEBUG
+                Spinner.Start(() => _canInsertPriority.TrySet(CanInsertPriority.NotAllowed, CanInsertPriority.Allowed));
+#else
+                while (true)
                 {
-                    break;
+                    if (_canInsertPriority.TrySet(CanInsertPriority.NotAllowed, CanInsertPriority.Allowed))
+                    {
+                        break;
+                    }
+                    Thread.Yield();
                 }
-
-                List<int> newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);
-
-                List<int> orig = Interlocked.CompareExchange(ref _sortedPriorityList, newList, oldList);
-
-                if (ReferenceEquals(orig, oldList))
+#endif
+                try
                 {
-                    break;
+                    List<int> oldList = _sortedPriorityList;
+                    List<int> newList = new List<int>(oldList.Count + 1);
+
+                    bool inserted = false;
+                    for (int i = 0; i < oldList.Count; ++i)
+                    {
+                        int p = oldList[i];
+                        if (!inserted && priority > p)
+                        {
+                            newList.Add(priority);
+                            inserted = true;
+                        }
+                        newList.Add(p);
+                    }
+                    if (!inserted)
+                    {
+                        newList.Add(priority);
+                    }
+
+                    Interlocked.Exchange(ref _sortedPriorityList, newList);
+
+                    return new ConcurrentQueue<T>();
                 }
-            }
+                finally
+                {
+                    _canInsertPriority.InterlockedValue = CanInsertPriority.Allowed;
+                }
+            });
 
             queue.Enqueue(item);
         }
