@@ -9,7 +9,7 @@ namespace PowerThreadPool.Collections
         private readonly ConcurrentDictionary<int, ConcurrentStack<T>> _queueDic
             = new ConcurrentDictionary<int, ConcurrentStack<T>>();
 
-        private volatile List<int> _sortedPriorityList = new List<int>();
+        internal volatile List<int> _sortedPriorityList = new List<int>();
 
         // Dedicated queue for zero-priority items to optimize access without dictionary lookup.
         private readonly ConcurrentStack<T> _zeroStack = new ConcurrentStack<T>();
