@@ -44,7 +44,7 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - name: Run Tests and Generate TRX Report
-        run: dotnet test UnitTest/UnitTest.csproj --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --settings coverage.runsettings
+        run: dotnet test UnitTest/UnitTest.csproj --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --settings coverage.runsettings -- MaxParallelThreads=1
       - name: Publish Unit Test Results
         uses: dorny/test-reporter@v1
         with:
