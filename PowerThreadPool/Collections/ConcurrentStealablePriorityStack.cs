@@ -40,18 +40,18 @@ namespace PowerThreadPool.Collections
                 return;
             }
 
-            ConcurrentStack<T> stack = null;
-            lock (this)
-            {
-                stack = _queueDic.GetOrAdd(priority, _ => new ConcurrentStack<T>());
-            }
+            ConcurrentStack<T> stack = _queueDic.GetOrAdd(priority, _ => new ConcurrentStack<T>());
 
             while (true)
             {
                 List<int> oldList = _sortedPriorityList;
-                if (oldList.Contains(priority))
+
+                lock (this)
                 {
-                    break;
+                    if (oldList.Contains(priority))
+                    {
+                        break;
+                    }
                 }
 
                 List<int> newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);

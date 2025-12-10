@@ -40,18 +40,18 @@ namespace PowerThreadPool.Collections
                 return;
             }
 
-            ConcurrentQueue<T> queue = null;
-            lock (this)
-            {
-                queue = _queueDic.GetOrAdd(priority, _ => new ConcurrentQueue<T>());
-            }
+            ConcurrentQueue<T> queue = _queueDic.GetOrAdd(priority, _ => new ConcurrentQueue<T>());
 
             while (true)
             {
                 List<int> oldList = _sortedPriorityList;
-                if (oldList.Contains(priority))
+                
+                lock (this)
                 {
-                    break;
+                    if (oldList.Contains(priority))
+                    {
+                        break;
+                    }
                 }
 
                 List<int> newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);
