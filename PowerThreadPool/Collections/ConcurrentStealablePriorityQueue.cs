@@ -42,7 +42,9 @@ namespace PowerThreadPool.Collections
 
             ConcurrentQueue<T> queue = _queueDic.GetOrAdd(priority, _ => new ConcurrentQueue<T>());
 
-            while (true)
+            SpinWait spinWait = new SpinWait();
+
+            while (!_sortedPriorityList.Contains(priority))
             {
                 List<int> oldList = _sortedPriorityList;
                 if (oldList.Contains(priority))
@@ -58,6 +60,8 @@ namespace PowerThreadPool.Collections
                 {
                     break;
                 }
+
+                spinWait.SpinOnce();
             }
 
             queue.Enqueue(item);
