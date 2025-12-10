@@ -64,19 +64,22 @@ namespace PowerThreadPool.Collections
 
             while (true)
             {
-                List<int> oldList = _sortedPriorityList;
-                if (oldList.Contains(priority))
+                lock (this)
                 {
-                    break;
-                }
+                    List<int> oldList = _sortedPriorityList;
+                    if (oldList.Contains(priority))
+                    {
+                        break;
+                    }
 
-                List<int> newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);
+                    List<int> newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);
 
-                List<int> orig = Interlocked.CompareExchange(ref _sortedPriorityList, newList, oldList);
+                    List<int> orig = Interlocked.CompareExchange(ref _sortedPriorityList, newList, oldList);
 
-                if (ReferenceEquals(orig, oldList))
-                {
-                    break;
+                    if (ReferenceEquals(orig, oldList))
+                    {
+                        break;
+                    }
                 }
             }
 
