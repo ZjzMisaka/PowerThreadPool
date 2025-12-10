@@ -60,7 +60,11 @@ namespace PowerThreadPool.Collections
                 return;
             }
 
-            ChaseLevDeque<T> queue = _queueDic.GetOrAdd(priority, _ => new ChaseLevDeque<T>());
+            ChaseLevDeque<T> queue = null;
+            lock (this)
+            {
+                queue = _queueDic.GetOrAdd(priority, _ => new ChaseLevDeque<T>());
+            }
 
             while (true)
             {
@@ -69,8 +73,6 @@ namespace PowerThreadPool.Collections
                 {
                     break;
                 }
-
-                lock (this) { }
 
                 List<int> newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);
 
