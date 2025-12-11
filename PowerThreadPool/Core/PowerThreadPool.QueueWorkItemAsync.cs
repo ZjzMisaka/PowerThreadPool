@@ -62,7 +62,7 @@ namespace PowerThreadPool
             task.ContinueWith(_ =>
 #endif
             {
-                SynchronizationContext.SetSynchronizationContext(prevCtx);
+                //SynchronizationContext.SetSynchronizationContext(prevCtx);
 
                 if (_aliveWorkDic.TryGetValue(baseAsyncWorkId, out WorkBase work))
                 {
