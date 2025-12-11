@@ -71,12 +71,7 @@ namespace PowerThreadPool.Collections
                     break;
                 }
 
-                List<int> newList = null;
-
-                lock (this)
-                {
-                    newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);
-                }
+                List<int> newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);
 
                 List<int> orig = Interlocked.CompareExchange(ref _sortedPriorityList, newList, oldList);
 
