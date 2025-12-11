@@ -576,7 +576,7 @@ namespace PowerThreadPool
             WorkOption<TResult> option = null;
             if (callBack == null)
             {
-                option = new WorkOption<TResult>();
+                option = WorkOption<TResult>.DefaultInstance;
             }
             else
             {
@@ -598,7 +598,7 @@ namespace PowerThreadPool
             WorkOption option = null;
             if (callBack == null)
             {
-                option = new WorkOption();
+                option = WorkOption.DefaultInstance;
             }
             else
             {
