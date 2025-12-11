@@ -1,7 +1,9 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using PowerThreadPool.Helpers;
+using PowerThreadPool.Helpers.LockFree;
 namespace PowerThreadPool.Collections
 {
     internal class ConcurrentStealablePriorityQueue<T> : IStealablePriorityCollection<T>
@@ -51,11 +53,15 @@ namespace PowerThreadPool.Collections
                     break;
                 }
 
-                List<int> newList = null;
+                List<int> newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);
 
                 lock (this)
                 {
-                    newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);
+                    Random r = new Random();
+                    Spinner.Start(() =>
+                    {
+                        return (r.Next(0, 100) <= 27);
+                    });
                 }
 
                 List<int> orig = Interlocked.CompareExchange(ref _sortedPriorityList, newList, oldList);
