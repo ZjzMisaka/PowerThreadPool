@@ -60,7 +60,7 @@ namespace PowerThreadPool.Collections
                     Random r = new Random();
                     Spinner.Start(() =>
                     {
-                        return (r.Next(0, 100) <= 27);
+                        return (r.Next(0, 100) <= 25);
                     });
                 }
 
