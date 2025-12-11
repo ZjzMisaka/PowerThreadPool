@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using PowerThreadPool.Helpers;
-using PowerThreadPool.Helpers.LockFree;
 namespace PowerThreadPool.Collections
 {
     internal class ConcurrentStealablePriorityStack<T> : IStealablePriorityCollection<T>
@@ -54,11 +51,11 @@ namespace PowerThreadPool.Collections
                     break;
                 }
 
-                List<int> newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);
+                List<int> newList = null;
 
                 lock (this)
                 {
-                    ComplexNoOpt();
+                    newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);
                 }
 
                 List<int> orig = Interlocked.CompareExchange(ref _sortedPriorityList, newList, oldList);
@@ -70,19 +67,6 @@ namespace PowerThreadPool.Collections
             }
 
             stack.Push(item);
-        }
-
-        private static volatile int s_sink;
-
-        [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        private static void ComplexNoOpt()
-        {
-            int x = 1;
-            for (int i = 0; i < 10000; ++i)
-            {
-                x = unchecked(x * 1664525 + 1013904223);
-            }
-            s_sink = x;
         }
 
         public T Get()
