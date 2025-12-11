@@ -96,10 +96,6 @@ namespace PowerThreadPool
                     _powerPoolOption.PowerPoolList.Remove(this);
                 }
 
-                if (value.PowerPoolList.Count > 0)
-                {
-                    throw new Exception("The PowerPoolOption instance is already associated with another PowerPool.");
-                }
                 value.PowerPoolList.Add(this);
 
                 _powerPoolOption = value;
