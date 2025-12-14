@@ -66,7 +66,7 @@ namespace PowerThreadPool.Collections
             {
                 List<int> oldList = _sortedPriorityList;
 
-                if (oldList.Contains(priority))
+                if (oldList.BinarySearch(priority) >= 0)
                 {
                     break;
                 }
