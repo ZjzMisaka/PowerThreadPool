@@ -445,64 +445,64 @@ namespace UnitTest
             Assert.Equal(2, d.Steal());
         }
 
-        //[Fact]
-        //public void TestInsertPriorityRaceQueue()
-        //{
-        //    var d = new ConcurrentStealablePriorityQueue<int>();
-        //    PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
-        //    {
-        //        MaxThreads = 100,
-        //        StartSuspended = true,
-        //    });
-        //    for (int i = 0; i < 10000; ++i)
-        //    {
-        //        int localI = i;
-        //        powerPool.QueueWorkItem(() => { d.Set(localI, localI); });
-        //    }
-        //    powerPool.Start();
-        //    powerPool.Wait();
+        [Fact]
+        public void TestInsertPriorityRaceQueue()
+        {
+            var d = new ConcurrentStealablePriorityQueue<int>();
+            PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
+            {
+                MaxThreads = 100,
+                StartSuspended = true,
+            });
+            for (int i = 0; i < 10000; ++i)
+            {
+                int localI = i;
+                powerPool.QueueWorkItem(() => { d.Set(localI, localI); });
+            }
+            powerPool.Start();
+            powerPool.Wait();
 
-        //    Assert.Equal(10000, d._sortedPriorityList.Count);
-        //}
+            Assert.Equal(10000, d._sortedPriorityList.Count);
+        }
 
-        //[Fact]
-        //public void TestInsertPriorityRaceStack()
-        //{
-        //    var d = new ConcurrentStealablePriorityStack<int>();
-        //    PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
-        //    {
-        //        MaxThreads = 100,
-        //        StartSuspended = true,
-        //    });
-        //    for (int i = 0; i < 10000; ++i)
-        //    {
-        //        int localI = i;
-        //        powerPool.QueueWorkItem(() => { d.Set(localI, localI); });
-        //    }
-        //    powerPool.Start();
-        //    powerPool.Wait();
+        [Fact]
+        public void TestInsertPriorityRaceStack()
+        {
+            var d = new ConcurrentStealablePriorityStack<int>();
+            PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
+            {
+                MaxThreads = 100,
+                StartSuspended = true,
+            });
+            for (int i = 0; i < 10000; ++i)
+            {
+                int localI = i;
+                powerPool.QueueWorkItem(() => { d.Set(localI, localI); });
+            }
+            powerPool.Start();
+            powerPool.Wait();
 
-        //    Assert.Equal(10000, d._sortedPriorityList.Count);
-        //}
+            Assert.Equal(10000, d._sortedPriorityList.Count);
+        }
 
-        //[Fact]
-        //public void TestInsertPriorityRaceDeque()
-        //{
-        //    var d = new ConcurrentStealablePriorityDeque<int>();
-        //    PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
-        //    {
-        //        MaxThreads = 100,
-        //        StartSuspended = true,
-        //    });
-        //    for (int i = 0; i < 10000; ++i)
-        //    {
-        //        int localI = i;
-        //        powerPool.QueueWorkItem(() => { d.Set(localI, localI); });
-        //    }
-        //    powerPool.Start();
-        //    powerPool.Wait();
+        [Fact]
+        public void TestInsertPriorityRaceDeque()
+        {
+            var d = new ConcurrentStealablePriorityDeque<int>();
+            PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
+            {
+                MaxThreads = 100,
+                StartSuspended = true,
+            });
+            for (int i = 0; i < 10000; ++i)
+            {
+                int localI = i;
+                powerPool.QueueWorkItem(() => { d.Set(localI, localI); });
+            }
+            powerPool.Start();
+            powerPool.Wait();
 
-        //    Assert.Equal(10000, d._sortedPriorityList.Count);
-        //}
+            Assert.Equal(10000, d._sortedPriorityList.Count);
+        }
     }
 }
