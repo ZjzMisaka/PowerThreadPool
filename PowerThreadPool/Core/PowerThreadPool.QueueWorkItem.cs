@@ -368,7 +368,6 @@ namespace PowerThreadPool
         public WorkID QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, TResult> function, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption<TResult> option)
             => QueueWorkItem<TResult>(DelegateHelper.ToNormalFunc<T1, T2, T3, T4, T5, TResult>(function, param1, param2, param3, param4, param5), option);
 
-
         /// <summary>
         /// Queues a work for execution. 
         /// </summary>
@@ -542,7 +541,6 @@ namespace PowerThreadPool
                 PowerPoolOption = new PowerPoolOption();
             }
         }
-
 
         /// <summary>
         /// Queues a work for execution.
