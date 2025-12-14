@@ -161,11 +161,11 @@ namespace PowerThreadPool
         {
             if (status == Status.Failed)
             {
-                _failedWorkSet.Add(work.ID);
+                _failedWorkSet.Add(work.RealWorkID);
             }
             else if (status == Status.Canceled)
             {
-                _canceledWorkSet.Add(work.ID);
+                _canceledWorkSet.Add(work.RealWorkID);
             }
 
             if (CallbackEnd != null)

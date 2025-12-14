@@ -9601,5 +9601,30 @@ namespace UnitTest
             Assert.InRange(rt1, 100, 170);
             Assert.InRange(rt2, 100, 170);
         }
+
+        [Fact]
+        public void TestRecordRealWorkIDWhenFailed()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { EnableStatisticsCollection = true });
+
+            bool b = true;
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(1);
+                await Task.Delay(1);
+                if (b)
+                {
+                    throw new Exception("Test Exception");
+                }
+                await Task.Delay(1);
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(1, powerPool.FailedWorkList.FirstOrDefault());
+        }
     }
 }
