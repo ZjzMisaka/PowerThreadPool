@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using PowerThreadPool.Helpers.Asynchronous;
 using Xunit.Abstractions;
 
