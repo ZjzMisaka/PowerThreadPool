@@ -64,12 +64,12 @@ namespace PowerThreadPool
         {
             _powerPool = powerPool;
 
-            if (_powerPool.PowerPoolOption.EnforceDequeOwnership)
+            _waitingWorkPriorityCollection = QueueFactory();
+
+            if (_waitingWorkPriorityCollection.EnforceDequeOwnership)
             {
                 _workInbox = new ConcurrentQueue<WorkBase>();
             }
-
-            _waitingWorkPriorityCollection = QueueFactory();
 
             _thread = new Thread(() =>
             {
@@ -178,15 +178,15 @@ namespace PowerThreadPool
             }
             else if (_powerPool.PowerPoolOption.QueueType == QueueType.FIFO)
             {
-                return new ConcurrentStealablePriorityQueue<WorkItemBase>();
+                return new ConcurrentStealablePriorityQueue<WorkItemBase>(false);
             }
             else if (_powerPool.PowerPoolOption.QueueType == QueueType.LIFO)
             {
-                return new ConcurrentStealablePriorityStack<WorkItemBase>();
+                return new ConcurrentStealablePriorityStack<WorkItemBase>(false);
             }
             else
             {
-                return new ConcurrentStealablePriorityDeque<WorkItemBase>();
+                return new ConcurrentStealablePriorityDeque<WorkItemBase>(true);
             }
         }
 
@@ -613,7 +613,7 @@ namespace PowerThreadPool
             }
             else
             {
-                if (_powerPool.PowerPoolOption.EnforceDequeOwnership && Thread.CurrentThread.ManagedThreadId != _thread.ManagedThreadId)
+                if (_waitingWorkPriorityCollection.EnforceDequeOwnership && Thread.CurrentThread.ManagedThreadId != _thread.ManagedThreadId)
                 {
                     _workInbox.Enqueue(work);
                 }
@@ -1105,7 +1105,7 @@ namespace PowerThreadPool
 
         private WorkBase Get()
         {
-            if (_powerPool.PowerPoolOption.EnforceDequeOwnership && Thread.CurrentThread.ManagedThreadId == _thread.ManagedThreadId)
+            if (_waitingWorkPriorityCollection.EnforceDequeOwnership && Thread.CurrentThread.ManagedThreadId == _thread.ManagedThreadId)
             {
                 while (_workInbox.TryDequeue(out WorkBase work))
                 {
@@ -1129,7 +1129,7 @@ namespace PowerThreadPool
                 waitingWork = _waitingWorkPriorityCollection.Get() as WorkBase;
             }
             while (WorkCancelNotAllowed(waitingWork));
-            if (_powerPool.PowerPoolOption.EnforceDequeOwnership && waitingWork == null)
+            if (_waitingWorkPriorityCollection.EnforceDequeOwnership && waitingWork == null)
             {
                 do
                 {
@@ -1148,7 +1148,7 @@ namespace PowerThreadPool
                 waitingWork = _waitingWorkPriorityCollection.Steal() as WorkBase;
             }
             while (WorkCancelNotAllowed(waitingWork));
-            if (_powerPool.PowerPoolOption.EnforceDequeOwnership && waitingWork == null)
+            if (_waitingWorkPriorityCollection.EnforceDequeOwnership && waitingWork == null)
             {
                 while (!_workInbox.TryDequeue(out waitingWork))
                 {
