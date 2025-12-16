@@ -14,7 +14,7 @@ namespace PowerThreadPool.Collections
         // Dedicated queue for zero-priority items to optimize access without dictionary lookup.
         private readonly ConcurrentStack<T> _zeroStack = new ConcurrentStack<T>();
 
-        public bool EnforceDequeOwnership { get; set; }
+        public bool EnforceDequeOwnership { get; }
 
         public ConcurrentStealablePriorityStack(bool enforceDequeOwnership)
         {
