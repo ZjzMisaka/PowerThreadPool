@@ -3,6 +3,11 @@
     public interface IStealablePriorityCollection<T>
     {
         /// <summary>
+        /// Indicates whether the pool enforces the deque ownership discipline (owner-only bottom ops, others steal from top).
+        /// </summary>
+        bool EnforceDequeOwnership { get; set; }
+
+        /// <summary>
         /// Sets an item with a specified priority in the collection.
         /// </summary>
         /// <param name="item">The item to be added to the collection.</param>

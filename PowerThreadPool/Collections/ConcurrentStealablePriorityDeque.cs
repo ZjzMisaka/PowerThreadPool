@@ -34,9 +34,12 @@ namespace PowerThreadPool.Collections
         // Dedicated queue for zero-priority items to optimize access without dictionary lookup.
         private readonly ChaseLevDeque<T> _zeroQueue = new ChaseLevDeque<T>();
 
-        public ConcurrentStealablePriorityDeque()
+        public bool EnforceDequeOwnership { get; set; }
+
+        public ConcurrentStealablePriorityDeque(bool enforceDequeOwnership)
         {
             _sortedPriorityList.Add(0);
+            EnforceDequeOwnership = enforceDequeOwnership;
         }
 
         private bool TryGetQueue(int priority, out ChaseLevDeque<T> queue)

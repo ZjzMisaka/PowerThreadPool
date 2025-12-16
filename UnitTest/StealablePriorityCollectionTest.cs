@@ -9,7 +9,7 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityQueue()
         {
-            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
+            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>(false);
             queue.Set(1, 2);
             queue.Set(2, 2);
             queue.Set(3, 4);
@@ -40,7 +40,7 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityStack()
         {
-            ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>();
+            ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>(false);
             queue.Set(1, 2);
             queue.Set(2, 2);
             queue.Set(3, 4);
@@ -71,7 +71,7 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityDequeGet()
         {
-            var deque = new ConcurrentStealablePriorityDeque<int>();
+            var deque = new ConcurrentStealablePriorityDeque<int>(true);
             deque.Set(1, 2);
             deque.Set(2, 2);
             deque.Set(3, 4);
@@ -102,7 +102,7 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityDequeStealOnlyZeroPriority()
         {
-            var deque = new ConcurrentStealablePriorityDeque<int>();
+            var deque = new ConcurrentStealablePriorityDeque<int>(true);
             deque.Set(1, 0);
             deque.Set(2, 0);
 
@@ -113,7 +113,7 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityDequeStealWithMultiplePriorities()
         {
-            var deque = new ConcurrentStealablePriorityDeque<int>();
+            var deque = new ConcurrentStealablePriorityDeque<int>(true);
             deque.Set(1, 0);
             deque.Set(2, 0);
             deque.Set(999, 5);
@@ -127,7 +127,7 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityQueueDiscard()
         {
-            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
+            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>(false);
             queue.Set(1, 0);
             Assert.Equal(1, queue.Discard());
         }
@@ -135,7 +135,7 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityStackDiscard()
         {
-            ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>();
+            ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>(false);
             queue.Set(1, 0);
             Assert.Equal(1, queue.Discard());
         }
@@ -143,7 +143,7 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityDequeDiscard()
         {
-            var deque = new ConcurrentStealablePriorityDeque<int>();
+            var deque = new ConcurrentStealablePriorityDeque<int>(true);
             deque.Set(1, 0);
             Assert.Equal(1, deque.Discard());
         }
@@ -151,7 +151,7 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityQueueNotInserted()
         {
-            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
+            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>(false);
             queue.Set(1, -1);
             Assert.Equal(1, queue.Discard());
         }
@@ -159,7 +159,7 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityStackNotInserted()
         {
-            ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>();
+            ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>(false);
             queue.Set(1, -1);
             Assert.Equal(1, queue.Discard());
         }
@@ -167,7 +167,7 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityDequeNotInserted()
         {
-            var deque = new ConcurrentStealablePriorityDeque<int>();
+            var deque = new ConcurrentStealablePriorityDeque<int>(true);
             deque.Set(1, -1);
             Assert.Equal(1, deque.Discard());
         }
@@ -175,7 +175,7 @@ namespace UnitTest
         [Fact]
         public void TestGetQueueReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
-            var q = new ConcurrentStealablePriorityQueue<int>();
+            var q = new ConcurrentStealablePriorityQueue<int>(false);
 
             var type = typeof(ConcurrentStealablePriorityQueue<int>);
             var sortedField = type.GetField("_sortedPriorityList", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -196,7 +196,7 @@ namespace UnitTest
         [Fact]
         public void TestGetStackReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
-            ConcurrentStealablePriorityQueue<int> q = new ConcurrentStealablePriorityQueue<int>();
+            ConcurrentStealablePriorityQueue<int> q = new ConcurrentStealablePriorityQueue<int>(false);
 
             Type type = typeof(ConcurrentStealablePriorityQueue<int>);
             FieldInfo sortedField = type.GetField("_sortedPriorityList", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -217,7 +217,7 @@ namespace UnitTest
         [Fact]
         public void TryGetStackReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
-            ConcurrentStealablePriorityStack<int> s = new ConcurrentStealablePriorityStack<int>();
+            ConcurrentStealablePriorityStack<int> s = new ConcurrentStealablePriorityStack<int>(false);
 
             Type type = typeof(ConcurrentStealablePriorityStack<int>);
             FieldInfo sortedField = type.GetField("_sortedPriorityList", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -238,7 +238,7 @@ namespace UnitTest
         [Fact]
         public void TestGetDequeReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
-            var dq = new ConcurrentStealablePriorityDeque<int>();
+            var dq = new ConcurrentStealablePriorityDeque<int>(true);
 
             var type = typeof(ConcurrentStealablePriorityDeque<int>);
             var sortedField = type.GetField("_sortedPriorityList", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -258,7 +258,7 @@ namespace UnitTest
         [Fact]
         public void TestStealDequeReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
-            var dq = new ConcurrentStealablePriorityDeque<int>();
+            var dq = new ConcurrentStealablePriorityDeque<int>(true);
 
             var type = typeof(ConcurrentStealablePriorityDeque<int>);
             var sortedField = type.GetField("_sortedPriorityList", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -277,7 +277,7 @@ namespace UnitTest
         [Fact]
         public void TestDiscardDequeReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
-            var dq = new ConcurrentStealablePriorityDeque<int>();
+            var dq = new ConcurrentStealablePriorityDeque<int>(true);
 
             var type = typeof(ConcurrentStealablePriorityDeque<int>);
             var sortedField = type.GetField("_sortedPriorityList", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -297,7 +297,7 @@ namespace UnitTest
         [Fact]
         public void ConcurrentStealablePriorityQueueDiscardShouldIterateAllPrioritiesAndReturnDefaultWhenAllQueuesEmpty()
         {
-            ConcurrentStealablePriorityQueue<object> q = new ConcurrentStealablePriorityQueue<object>();
+            ConcurrentStealablePriorityQueue<object> q = new ConcurrentStealablePriorityQueue<object>(false);
 
             object marker = new object();
             q.Set(marker, priority: 10);
@@ -319,7 +319,7 @@ namespace UnitTest
         [Fact]
         public void ConcurrentStealablePriorityStackDiscardShouldIterateAllPrioritiesAndReturnDefaultWhenAllQueuesEmpty()
         {
-            ConcurrentStealablePriorityStack<object> q = new ConcurrentStealablePriorityStack<object>();
+            ConcurrentStealablePriorityStack<object> q = new ConcurrentStealablePriorityStack<object>(false);
 
             object marker = new object();
             q.Set(marker, priority: 10);
@@ -341,7 +341,7 @@ namespace UnitTest
         [Fact]
         public void ConcurrentStealablePriorityDequeDiscardShouldIterateAllPrioritiesAndReturnDefaultWhenAllQueuesEmpty()
         {
-            var dq = new ConcurrentStealablePriorityDeque<object>();
+            var dq = new ConcurrentStealablePriorityDeque<object>(true);
 
             var marker = new object();
             dq.Set(marker, priority: 10);
@@ -363,7 +363,7 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityDequeGetFallsBackFromEmptyHigherPriorityToZero()
         {
-            var d = new ConcurrentStealablePriorityDeque<int>();
+            var d = new ConcurrentStealablePriorityDeque<int>(true);
             d.Set(100, 5);
             d.Set(1, 0);
             d.Set(2, 0);
@@ -376,7 +376,7 @@ namespace UnitTest
         [Fact]
         public void TestGetOnEmptyDequeReturnsDefault()
         {
-            var d = new ConcurrentStealablePriorityDeque<int>();
+            var d = new ConcurrentStealablePriorityDeque<int>(true);
             var result = d.Get();
             Assert.Equal(default, result);
         }
@@ -384,7 +384,7 @@ namespace UnitTest
         [Fact]
         public void TestDequeGetOnlyZeroPrioritySucceed()
         {
-            var d = new ConcurrentStealablePriorityDeque<int>();
+            var d = new ConcurrentStealablePriorityDeque<int>(true);
             d.Set(1, 0);
             d.Set(2, 0);
 
@@ -396,7 +396,7 @@ namespace UnitTest
         [Fact]
         public void TestDequeStealPrefersHigherPriorityOverZero()
         {
-            var d = new ConcurrentStealablePriorityDeque<int>();
+            var d = new ConcurrentStealablePriorityDeque<int>(true);
             d.Set(1, 0);
             d.Set(100, 2);
             d.Set(200, 1);
@@ -410,7 +410,7 @@ namespace UnitTest
         [Fact]
         public void TestDequeDiscardPrefersLowestPriorityFirst()
         {
-            var d = new ConcurrentStealablePriorityDeque<int>();
+            var d = new ConcurrentStealablePriorityDeque<int>(true);
             d.Set(300, 3);
             d.Set(200, 2);
             d.Set(10, 0);
@@ -426,7 +426,7 @@ namespace UnitTest
         [Fact]
         public void TestDequeDiscardIsLifoWithinPriority()
         {
-            var d = new ConcurrentStealablePriorityDeque<int>();
+            var d = new ConcurrentStealablePriorityDeque<int>(true);
             d.Set(1, -1);
             d.Set(2, -1);
 
@@ -437,7 +437,7 @@ namespace UnitTest
         [Fact]
         public void TestDequeStealIsFifoWithinPriorityForNonZero()
         {
-            var d = new ConcurrentStealablePriorityDeque<int>();
+            var d = new ConcurrentStealablePriorityDeque<int>(true);
             d.Set(1, 2);
             d.Set(2, 2);
 
@@ -448,7 +448,7 @@ namespace UnitTest
         [Fact]
         public void TestInsertPriorityRaceQueue()
         {
-            var d = new ConcurrentStealablePriorityQueue<int>();
+            var d = new ConcurrentStealablePriorityQueue<int>(false);
             PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
             {
                 MaxThreads = 100,
@@ -468,7 +468,7 @@ namespace UnitTest
         [Fact]
         public void TestInsertPriorityRaceStack()
         {
-            var d = new ConcurrentStealablePriorityStack<int>();
+            var d = new ConcurrentStealablePriorityStack<int>(false);
             PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
             {
                 MaxThreads = 100,
@@ -488,7 +488,7 @@ namespace UnitTest
         [Fact]
         public void TestInsertPriorityRaceDeque()
         {
-            var d = new ConcurrentStealablePriorityDeque<int>();
+            var d = new ConcurrentStealablePriorityDeque<int>(true);
             PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
             {
                 MaxThreads = 100,

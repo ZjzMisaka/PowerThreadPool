@@ -136,11 +136,6 @@ namespace PowerThreadPool.Options
         /// </summary>
         public bool EnableStatisticsCollection { get; set; } = false;
 
-        /// <summary>
-        /// Indicates whether the pool enforces the deque ownership discipline (owner-only bottom ops, others steal from top).
-        /// </summary>
-        public bool EnforceDequeOwnership { get; set; } = false;
-
         internal void OnThreadCountSettingChanged()
         {
             foreach (PowerPool powerPool in PowerPoolList)

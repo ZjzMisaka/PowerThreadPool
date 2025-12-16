@@ -1421,7 +1421,6 @@ namespace UnitTest
             {
                 MaxThreads = 8,
                 QueueType = QueueType.Deque,
-                EnforceDequeOwnership = true,
             });
             List<long> logList = new List<long>();
 
@@ -1471,7 +1470,6 @@ namespace UnitTest
             {
                 MaxThreads = 8,
                 QueueType = QueueType.Deque,
-                EnforceDequeOwnership = true,
             });
             List<long> logList = new List<long>();
 
@@ -1521,7 +1519,6 @@ namespace UnitTest
             {
                 MaxThreads = 8,
                 QueueType = QueueType.Deque,
-                EnforceDequeOwnership = true,
             });
             List<long> logList = new List<long>();
 
