@@ -5,7 +5,7 @@
         /// <summary>
         /// Indicates whether the pool enforces the deque ownership discipline (owner-only bottom ops, others steal from top).
         /// </summary>
-        bool EnforceDequeOwnership { get; set; }
+        bool EnforceDequeOwnership { get; }
 
         /// <summary>
         /// Sets an item with a specified priority in the collection.
