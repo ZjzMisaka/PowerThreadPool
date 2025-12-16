@@ -1253,7 +1253,7 @@ namespace UnitTest
                 }
             }, new WorkOption()
             {
-                WorkPriority = 1
+                WorkPriority = -1
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -1264,7 +1264,7 @@ namespace UnitTest
                 }
             }, new WorkOption()
             {
-                WorkPriority = 1
+                WorkPriority = -1
             });
             powerPool.EnablePoolIdleCheck = true;
             powerPool.Wait();
@@ -8058,46 +8058,46 @@ namespace UnitTest
             };
             PowerPool powerPool = new PowerPool(powerPoolOption);
 
-            powerPool.QueueWorkItem(() => { }, new WorkOption { WorkPriority = 0 });
+            powerPool.QueueWorkItem(() => { }, new WorkOption { WorkPriority = 1 });
 
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
 
             bool done = false;
             powerPool.QueueWorkItem(() =>
             {
                 done = true;
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             Assert.False(done);
             Assert.True(powerPool.WaitingWorkCount > 0);
 
@@ -8125,46 +8125,46 @@ namespace UnitTest
             };
             PowerPool powerPool = new PowerPool(powerPoolOption);
 
-            powerPool.QueueWorkItem(() => { }, new WorkOption { WorkPriority = 0 });
+            powerPool.QueueWorkItem(() => { }, new WorkOption { WorkPriority = 1 });
 
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(100);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(100);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(100);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(100);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(100);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(100);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(100);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(100);
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
 
             bool done = false;
             powerPool.QueueWorkItem(() =>
             {
                 done = true;
-            }, new WorkOption { WorkPriority = 1 });
+            }, new WorkOption { WorkPriority = 0 });
             Assert.False(done);
             Assert.True(powerPool.WaitingWorkCount > 0);
 
