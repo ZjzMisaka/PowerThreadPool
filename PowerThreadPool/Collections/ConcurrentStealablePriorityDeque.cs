@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using PowerThreadPool.Collections.Comparer;
@@ -36,6 +37,12 @@ namespace PowerThreadPool.Collections
         private readonly ChaseLevDeque<T> _zeroQueue = new ChaseLevDeque<T>();
 
         public bool EnforceDequeOwnership { get; }
+
+        [ObsoleteAttribute]
+        public ConcurrentStealablePriorityDeque()
+        {
+            _sortedPriorityList.Add(0);
+        }
 
         public ConcurrentStealablePriorityDeque(bool enforceDequeOwnership)
         {
