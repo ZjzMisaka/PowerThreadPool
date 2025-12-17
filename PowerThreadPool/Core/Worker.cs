@@ -60,13 +60,17 @@ namespace PowerThreadPool
 
         internal int WaitingWorkCount => _waitingWorkCount;
 
+#pragma warning disable CS0618
+        private bool EnforceDequeOwnership => _powerPool.PowerPoolOption.EnforceDequeOwnership || _waitingWorkPriorityCollection.EnforceDequeOwnership;
+#pragma warning restore CS0618
+
         internal Worker(PowerPool powerPool)
         {
             _powerPool = powerPool;
 
             _waitingWorkPriorityCollection = QueueFactory();
 
-            if (_waitingWorkPriorityCollection.EnforceDequeOwnership)
+            if (EnforceDequeOwnership)
             {
                 _workInbox = new ConcurrentQueue<WorkBase>();
             }
@@ -613,7 +617,7 @@ namespace PowerThreadPool
             }
             else
             {
-                if (_waitingWorkPriorityCollection.EnforceDequeOwnership && Thread.CurrentThread.ManagedThreadId != _thread.ManagedThreadId)
+                if (EnforceDequeOwnership && Thread.CurrentThread.ManagedThreadId != _thread.ManagedThreadId)
                 {
                     _workInbox.Enqueue(work);
                 }
@@ -1105,7 +1109,7 @@ namespace PowerThreadPool
 
         private WorkBase Get()
         {
-            if (_waitingWorkPriorityCollection.EnforceDequeOwnership && Thread.CurrentThread.ManagedThreadId == _thread.ManagedThreadId)
+            if (EnforceDequeOwnership && Thread.CurrentThread.ManagedThreadId == _thread.ManagedThreadId)
             {
                 while (_workInbox.TryDequeue(out WorkBase work))
                 {
@@ -1129,7 +1133,7 @@ namespace PowerThreadPool
                 waitingWork = _waitingWorkPriorityCollection.Get() as WorkBase;
             }
             while (WorkCancelNotAllowed(waitingWork));
-            if (_waitingWorkPriorityCollection.EnforceDequeOwnership && waitingWork == null)
+            if (EnforceDequeOwnership && waitingWork == null)
             {
                 do
                 {
@@ -1148,7 +1152,7 @@ namespace PowerThreadPool
                 waitingWork = _waitingWorkPriorityCollection.Steal() as WorkBase;
             }
             while (WorkCancelNotAllowed(waitingWork));
-            if (_waitingWorkPriorityCollection.EnforceDequeOwnership && waitingWork == null)
+            if (EnforceDequeOwnership && waitingWork == null)
             {
                 while (!_workInbox.TryDequeue(out waitingWork))
                 {
