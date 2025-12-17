@@ -43,7 +43,7 @@ namespace PowerThreadPool.Options
         public Action<ExecuteResult<TResult>> Callback { get; set; } = null;
 
         /// <summary>
-        /// The priority level of the work. Works with higher priority (represented by lower numerical values) are executed first.
+        /// The priority level of the work. Works with higher priority (represented by higher numerical values) are executed first.
         /// </summary>
         public int WorkPriority { get; set; } = 0;
 

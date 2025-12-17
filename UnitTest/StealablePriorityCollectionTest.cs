@@ -10,18 +10,18 @@ namespace UnitTest
         public void TestConcurrentStealablePriorityQueue()
         {
             ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>(false);
-            queue.Set(1, 5);
-            queue.Set(2, 5);
-            queue.Set(3, 3);
-            queue.Set(4, 3);
-            queue.Set(5, 1);
-            queue.Set(6, 1);
-            queue.Set(7, 2);
-            queue.Set(8, 2);
-            queue.Set(9, 4);
-            queue.Set(10, 4);
-            queue.Set(11, 6);
-            queue.Set(12, 6);
+            queue.Set(1, 2);
+            queue.Set(2, 2);
+            queue.Set(3, 4);
+            queue.Set(4, 4);
+            queue.Set(5, 6);
+            queue.Set(6, 6);
+            queue.Set(7, 5);
+            queue.Set(8, 5);
+            queue.Set(9, 3);
+            queue.Set(10, 3);
+            queue.Set(11, 1);
+            queue.Set(12, 1);
 
             Assert.Equal(5, queue.Get());
             Assert.Equal(6, queue.Get());
@@ -41,18 +41,18 @@ namespace UnitTest
         public void TestConcurrentStealablePriorityStack()
         {
             ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>(false);
-            queue.Set(1, 5);
-            queue.Set(2, 5);
-            queue.Set(3, 3);
-            queue.Set(4, 3);
-            queue.Set(5, 1);
-            queue.Set(6, 1);
-            queue.Set(7, 2);
-            queue.Set(8, 2);
-            queue.Set(9, 4);
-            queue.Set(10, 4);
-            queue.Set(11, 6);
-            queue.Set(12, 6);
+            queue.Set(1, 2);
+            queue.Set(2, 2);
+            queue.Set(3, 4);
+            queue.Set(4, 4);
+            queue.Set(5, 6);
+            queue.Set(6, 6);
+            queue.Set(7, 5);
+            queue.Set(8, 5);
+            queue.Set(9, 3);
+            queue.Set(10, 3);
+            queue.Set(11, 1);
+            queue.Set(12, 1);
 
             Assert.Equal(6, queue.Get());
             Assert.Equal(5, queue.Get());
@@ -72,18 +72,18 @@ namespace UnitTest
         public void TestConcurrentStealablePriorityDequeGet()
         {
             var deque = new ConcurrentStealablePriorityDeque<int>(true);
-            deque.Set(1, 5);
-            deque.Set(2, 5);
-            deque.Set(3, 3);
-            deque.Set(4, 3);
-            deque.Set(5, 1);
-            deque.Set(6, 1);
-            deque.Set(7, 2);
-            deque.Set(8, 2);
-            deque.Set(9, 4);
-            deque.Set(10, 4);
-            deque.Set(11, 6);
-            deque.Set(12, 6);
+            deque.Set(1, 2);
+            deque.Set(2, 2);
+            deque.Set(3, 4);
+            deque.Set(4, 4);
+            deque.Set(5, 6);
+            deque.Set(6, 6);
+            deque.Set(7, 5);
+            deque.Set(8, 5);
+            deque.Set(9, 3);
+            deque.Set(10, 3);
+            deque.Set(11, 1);
+            deque.Set(12, 1);
 
             Assert.Equal(6, deque.Get());
             Assert.Equal(5, deque.Get());
@@ -114,9 +114,9 @@ namespace UnitTest
         public void TestConcurrentStealablePriorityDequeStealWithMultiplePriorities()
         {
             var deque = new ConcurrentStealablePriorityDeque<int>(true);
-            deque.Set(1, 5);
-            deque.Set(2, 5);
-            deque.Set(999, 0);
+            deque.Set(1, 0);
+            deque.Set(2, 0);
+            deque.Set(999, 5);
 
             Assert.Equal(999, deque.Get());
 
@@ -364,9 +364,9 @@ namespace UnitTest
         public void TestConcurrentStealablePriorityDequeGetFallsBackFromEmptyHigherPriorityToZero()
         {
             var d = new ConcurrentStealablePriorityDeque<int>(true);
-            d.Set(100, 0);
-            d.Set(1, 5);
-            d.Set(2, 5);
+            d.Set(100, 5);
+            d.Set(1, 0);
+            d.Set(2, 0);
 
             Assert.Equal(100, d.Get());
             Assert.Equal(2, d.Get());
@@ -397,8 +397,8 @@ namespace UnitTest
         public void TestDequeStealPrefersHigherPriorityOverZero()
         {
             var d = new ConcurrentStealablePriorityDeque<int>(true);
-            d.Set(1, 2);
-            d.Set(100, 0);
+            d.Set(1, 0);
+            d.Set(100, 2);
             d.Set(200, 1);
 
             Assert.Equal(100, d.Steal());
@@ -411,10 +411,10 @@ namespace UnitTest
         public void TestDequeDiscardPrefersLowestPriorityFirst()
         {
             var d = new ConcurrentStealablePriorityDeque<int>(true);
-            d.Set(300, 0);
-            d.Set(200, 1);
-            d.Set(10, 2);
-            d.Set(-5, 3);
+            d.Set(300, 3);
+            d.Set(200, 2);
+            d.Set(10, 0);
+            d.Set(-5, -1);
 
             Assert.Equal(-5, d.Discard());
             Assert.Equal(10, d.Discard());

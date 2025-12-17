@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using PowerThreadPool.Collections.Comparer;
 using PowerThreadPool.Helpers;
 
 // Copyright and License
@@ -69,12 +70,12 @@ namespace PowerThreadPool.Collections
             {
                 List<int> oldList = _sortedPriorityList;
 
-                if (oldList.BinarySearch(priority) >= 0)
+                if (oldList.BinarySearch(priority, DescendingIntComparer.Instance) >= 0)
                 {
                     break;
                 }
 
-                List<int> newList = ConcurrentStealablePriorityCollectionHelper.InsertPriority(oldList, priority);
+                List<int> newList = ConcurrentStealablePriorityCollectionHelper.InsertPriorityDescending(oldList, priority);
 
                 List<int> orig = Interlocked.CompareExchange(ref _sortedPriorityList, newList, oldList);
 
