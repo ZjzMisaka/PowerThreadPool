@@ -4,14 +4,14 @@ namespace PowerThreadPool.Helpers
 {
     internal class ConcurrentStealablePriorityCollectionHelper
     {
-        internal static List<int> InsertPriority(List<int> oldList, int priority)
+        internal static List<int> InsertPriorityDescending(List<int> oldList, int priority)
         {
             var newList = new List<int>(oldList.Count + 1);
             bool inserted = false;
             for (int i = 0; i < oldList.Count; ++i)
             {
                 int p = oldList[i];
-                if (!inserted && priority < p)
+                if (!inserted && priority > p)
                 {
                     newList.Add(priority);
                     inserted = true;
