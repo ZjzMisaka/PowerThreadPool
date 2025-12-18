@@ -61,7 +61,8 @@ namespace PowerThreadPool
         internal int WaitingWorkCount => _waitingWorkCount;
 
 #pragma warning disable CS0618
-        private bool EnforceDequeOwnership => _powerPool.PowerPoolOption.EnforceDequeOwnership || _waitingWorkPriorityCollection.EnforceDequeOwnership;
+        private bool EnforceDequeOwnership
+            => _powerPool.PowerPoolOption.EnforceDequeOwnership || _waitingWorkPriorityCollection.EnforceDequeOwnership;
 #pragma warning restore CS0618
 
         internal Worker(PowerPool powerPool)
