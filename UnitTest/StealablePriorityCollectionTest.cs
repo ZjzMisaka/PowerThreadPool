@@ -504,5 +504,27 @@ namespace UnitTest
 
             Assert.Equal(10000, d._sortedPriorityList.Count);
         }
+
+        [Fact]
+        public void TestObsoleteAttributeEnforceDequeOwnership1()
+        {
+            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
+            ConcurrentStealablePriorityStack<int> stack = new ConcurrentStealablePriorityStack<int>();
+            ConcurrentStealablePriorityDeque<int> deque = new ConcurrentStealablePriorityDeque<int>();
+            PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption { QueueType = PowerThreadPool.Options.QueueType.Deque, EnforceDequeOwnership = true });
+            powerPool.QueueWorkItem(() => { });
+            powerPool.Wait();
+        }
+
+        [Fact]
+        public void TestObsoleteAttributeEnforceDequeOwnership2()
+        {
+            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
+            ConcurrentStealablePriorityStack<int> stack = new ConcurrentStealablePriorityStack<int>();
+            ConcurrentStealablePriorityDeque<int> deque = new ConcurrentStealablePriorityDeque<int>();
+            PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption { QueueType = PowerThreadPool.Options.QueueType.FIFO, EnforceDequeOwnership = true });
+            powerPool.QueueWorkItem(() => { });
+            powerPool.Wait();
+        }
     }
 }
