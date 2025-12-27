@@ -140,8 +140,13 @@ WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, *);
 WorkID QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, *);
 WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, *);
 ```
-- Asterisk (*) denotes an optional parameter, either a WorkOption or a delegate (`Action<ExecuteResult<object>>` or `Action<ExecuteResult<TResult>>`), depending on whether the first parameter is an Action or a Func. 
-- In places where you see ellipses (...), you can provide up to five generic type parameters.
+
+#### Asterisk`*`
+1. `WorkOption` | `WorkOption<T>`: The work option to customize the behavior of the work. 
+2. `Action<ExecuteResult<T>>`: The callback to be invoked when the work is completed. 
+
+#### ellipses`...`
+1. Up to 5 type parameters are supported.
 
 ## More
 [Testing And Performance Analysis](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Testing-And-Performance-Analysis) | [Feature Comparison](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Feature-Comparison)  
