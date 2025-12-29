@@ -396,5 +396,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-PowerThreadPool.psd
 PowerThreadPool.snk
