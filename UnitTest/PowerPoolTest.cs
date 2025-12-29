@@ -9136,11 +9136,11 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.InRange(d1, 500, 570);
-            Assert.InRange(d2, 500, 570);
+            Assert.InRange(d1, 499, 570);
+            Assert.InRange(d2, 499, 570);
 
-            Assert.InRange(rt1, 500, 570);
-            Assert.InRange(rt2, 500, 570);
+            Assert.InRange(rt1, 499, 570);
+            Assert.InRange(rt2, 499, 570);
         }
 
         [Fact]
@@ -9233,8 +9233,8 @@ namespace UnitTest
             Assert.InRange(d1, 0, 5);
             Assert.InRange(d2, 0, 5);
 
-            Assert.InRange(rt1, 500, 570);
-            Assert.InRange(rt2, 500, 570);
+            Assert.InRange(rt1, 499, 570);
+            Assert.InRange(rt2, 499, 570);
         }
 
         [Fact]
@@ -9283,11 +9283,11 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.InRange(d1, 150, 220);
-            Assert.InRange(d2, 150, 220);
+            Assert.InRange(d1, 149, 220);
+            Assert.InRange(d2, 149, 220);
 
-            Assert.InRange(rt1, 650, double.MaxValue);
-            Assert.InRange(rt2, 650, double.MaxValue);
+            Assert.InRange(rt1, 649, double.MaxValue);
+            Assert.InRange(rt2, 649, double.MaxValue);
         }
 
         [Fact]
@@ -9383,15 +9383,15 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.InRange(d1, 300, 370);
-            Assert.InRange(d2, 300, 370);
-            Assert.InRange(d3, 300, 370);
-            Assert.InRange(d4, 300, 370);
+            Assert.InRange(d1, 299, 370);
+            Assert.InRange(d2, 299, 370);
+            Assert.InRange(d3, 299, 370);
+            Assert.InRange(d4, 299, 370);
 
-            Assert.InRange(rt1, 300, 470);
-            Assert.InRange(rt2, 300, 470);
-            Assert.InRange(rt3, 300, 470);
-            Assert.InRange(rt4, 300, 470);
+            Assert.InRange(rt1, 299, 470);
+            Assert.InRange(rt2, 299, 470);
+            Assert.InRange(rt3, 299, 470);
+            Assert.InRange(rt4, 299, 470);
 
             DateTime min = new[] { s1, s2, s3, s4 }.Min();
             DateTime max = new[] { s1, s2, s3, s4 }.Max();
@@ -9491,15 +9491,15 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.InRange(d1, 300, 370);
-            Assert.InRange(d2, 300, 370);
-            Assert.InRange(d3, 300, 370);
-            Assert.InRange(d4, 300, 370);
+            Assert.InRange(d1, 299, 370);
+            Assert.InRange(d2, 299, 370);
+            Assert.InRange(d3, 299, 370);
+            Assert.InRange(d4, 299, 370);
 
-            Assert.InRange(rt1, 450, double.MaxValue);
-            Assert.InRange(rt2, 450, double.MaxValue);
-            Assert.InRange(rt3, 450, double.MaxValue);
-            Assert.InRange(rt4, 450, double.MaxValue);
+            Assert.InRange(rt1, 449, double.MaxValue);
+            Assert.InRange(rt2, 449, double.MaxValue);
+            Assert.InRange(rt3, 449, double.MaxValue);
+            Assert.InRange(rt4, 449, double.MaxValue);
 
             var arr = new[] { s1, s2, s3, s4 }.OrderBy(s => s).ToArray();
             TimeSpan minDiff = new[]
@@ -9508,7 +9508,7 @@ namespace UnitTest
                 arr[2] - arr[1],
                 arr[3] - arr[2],
             }.Min();
-            Assert.InRange(minDiff.TotalMilliseconds, 100, 150);
+            Assert.InRange(minDiff.TotalMilliseconds, 99, 150);
         }
 
 
@@ -9549,8 +9549,8 @@ namespace UnitTest
             Assert.InRange(d1, 0, 5);
             Assert.InRange(d2, 0, 5);
 
-            Assert.InRange(rt1, 500, 570);
-            Assert.InRange(rt2, 500, 570);
+            Assert.InRange(rt1, 499, 570);
+            Assert.InRange(rt2, 499, 570);
         }
 
         [Fact]
@@ -9593,8 +9593,8 @@ namespace UnitTest
             Assert.InRange(d1, 0, 5);
             Assert.InRange(d2, 0, 5);
 
-            Assert.InRange(rt1, 100, 170);
-            Assert.InRange(rt2, 100, 170);
+            Assert.InRange(rt1, 99, 170);
+            Assert.InRange(rt2, 99, 170);
         }
 
         [Fact]

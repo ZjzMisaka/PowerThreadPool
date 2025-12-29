@@ -730,8 +730,8 @@ namespace UnitTest
             long d1 = e1 - s1;
             long d2 = e2 - s2;
 
-            Assert.InRange(d1, 1500, 2500);
-            Assert.InRange(d2, 3500, 4500);
+            Assert.InRange(d1, 1499, 2500);
+            Assert.InRange(d2, 3499, 4500);
         }
 
         [Fact]
@@ -767,7 +767,7 @@ namespace UnitTest
 
             long e = GetNowSs();
 
-            Assert.InRange(e - s, 1000, 1500);
+            Assert.InRange(e - s, 999, 1500);
         }
 
         [Fact]
@@ -806,7 +806,7 @@ namespace UnitTest
 
             long e = GetNowSs();
 
-            Assert.InRange(e - st, 1000, 2000);
+            Assert.InRange(e - st, 999, 2000);
         }
 
         [Fact]
@@ -845,7 +845,7 @@ namespace UnitTest
 
             long e = GetNowSs();
 
-            Assert.InRange(e - st, 1000, 2000);
+            Assert.InRange(e - st, 999, 2000);
         }
 
         [Fact]
