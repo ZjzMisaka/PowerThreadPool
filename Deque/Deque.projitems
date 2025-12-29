@@ -12,4 +12,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Deque.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)tejacques.Deque.LICENSE" />
+  </ItemGroup>
 </Project>
