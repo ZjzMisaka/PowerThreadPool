@@ -2,8 +2,10 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using PowerThreadPool;
+using PowerThreadPool.Collections;
 using PowerThreadPool.Options;
 
 namespace PowerThreadPoolTest
@@ -45,15 +47,31 @@ namespace PowerThreadPoolTest
             {
                 int runCount = _random.Next(10, 200);
                 _doneCount = 0;
+                ConcurrentSet<int> cases = new ConcurrentSet<int>();
                 for (int i = 0; i < runCount; ++i)
                 {
                     int r = _random.Next(0, 101);
                     if (r == 100)
                     {
+                        cases.Add(1);
                         _powerPool.QueueWorkItem(() => { throw new Exception(); });
                     }
-                    else if (r >= 95 && r <= 99)
+                    else if (r >= 98 && r <= 99)
                     {
+                        cases.Add(2);
+                        _powerPool.QueueWorkItemAsync(async () =>
+                        {
+                            await Task.Delay(10000);
+                            int r1 = _random.Next(0, 101);
+                            if (r1 >= 100 && r1 <= 100)
+                            {
+                                await Task.Delay(1);
+                            }
+                        });
+                    }
+                    else if (r >= 95 && r <= 97)
+                    {
+                        cases.Add(3);
                         _powerPool.QueueWorkItem(() =>
                         {
                             Sleep(10000);
@@ -66,6 +84,20 @@ namespace PowerThreadPoolTest
                     }
                     else if (r >= 94 && r <= 94)
                     {
+                        cases.Add(4);
+                        _powerPool.QueueWorkItemAsync(async () =>
+                        {
+                            await Task.Delay(30000);
+                            int r1 = _random.Next(0, 101);
+                            if (r1 >= 100 && r1 <= 100)
+                            {
+                                await Task.Delay(1);
+                            }
+                        });
+                    }
+                    else if (r >= 93 && r <= 93)
+                    {
+                        cases.Add(5);
                         _powerPool.QueueWorkItem(() =>
                         {
                             Sleep(30000);
@@ -76,8 +108,22 @@ namespace PowerThreadPoolTest
                             }
                         });
                     }
+                    else if (r >= 40 && r <= 92)
+                    {
+                        cases.Add(6);
+                        _powerPool.QueueWorkItemAsync(async () =>
+                        {
+                            await Task.Delay(_random.Next(500, 1000));
+                            int r1 = _random.Next(0, 101);
+                            if (r1 >= 100 && r1 <= 100)
+                            {
+                                await Task.Delay(1);
+                            }
+                        });
+                    }
                     else
                     {
+                        cases.Add(7);
                         _powerPool.QueueWorkItem(() =>
                         {
                             Sleep(_random.Next(500, 1000));
@@ -89,7 +135,8 @@ namespace PowerThreadPoolTest
                         });
                     }
                 }
-                OutputMsg("Run count: " + runCount);
+                string caseString = string.Join(", ", cases);
+                OutputMsg("Run count: " + runCount + ", Case: " + caseString);
                 OutputMsg("WaitingWorkCount: " + _powerPool.WaitingWorkCount);
                 if (runCount != _powerPool.WaitingWorkCount)
                 {
