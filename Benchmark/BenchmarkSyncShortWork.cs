@@ -1,6 +1,7 @@
 ﻿using Amib.Threading;
 using BenchmarkDotNet.Attributes;
 using PowerThreadPool;
+using PowerThreadPool.Options;
 
 namespace Benchmark
 {
@@ -16,7 +17,10 @@ namespace Benchmark
             _smartThreadPool = new SmartThreadPool();
             _smartThreadPool.MinThreads = 8;
             _smartThreadPool.MaxThreads = 8;
-            _powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption { MaxThreads = 8 });
+            _powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 8
+            });
             ThreadPool.SetMinThreads(8, 8);
             ThreadPool.SetMaxThreads(8, 8);
         }
