@@ -141,11 +141,11 @@ WorkID QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, *);
 WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, *);
 ```
 
-#### Asterisk`*`
+#### Asterisk `*`
 1. `WorkOption` | `WorkOption<T>`: The work option to customize the behavior of the work. 
 2. `Action<ExecuteResult<T>>`: The callback to be invoked when the work is completed. 
 
-#### ellipses`...`
+#### ellipses `...`
 1. Up to 5 type parameters are supported.
 
 ## More
