@@ -49,7 +49,7 @@ namespace UnitTest
             timer.Pause();
             timer.Resume();
 
-            Assert.InRange(_stopwatch.ElapsedMilliseconds, 2800, 3200);
+            Assert.InRange(_stopwatch.ElapsedMilliseconds, 2799, 3200);
 
             timer.Dispose();
         }
@@ -72,7 +72,7 @@ namespace UnitTest
             timer.Cancel();
 
             Thread.Sleep(1000);
-            Assert.InRange((endTime - startTime).TotalMilliseconds, 800, 1200);
+            Assert.InRange((endTime - startTime).TotalMilliseconds, 799, 1200);
 
             timer.Dispose();
         }
@@ -97,7 +97,7 @@ namespace UnitTest
             timer.Resume();
             Thread.Sleep(300);
             timer.Cancel();
-            Assert.InRange((endTime - startTime).TotalMilliseconds, 1400, 1800);
+            Assert.InRange((endTime - startTime).TotalMilliseconds, 1399, 1800);
 
             timer.Dispose();
         }

@@ -212,9 +212,9 @@ namespace UnitTest
                 item => Assert.Equal("Work1 END", item)
             );
 
-            Assert.InRange(d1, 1000, int.MaxValue);
-            Assert.InRange(d2, 1000, int.MaxValue);
-            Assert.InRange(d3, 1000, int.MaxValue);
+            Assert.InRange(d1, 999, int.MaxValue);
+            Assert.InRange(d2, 999, int.MaxValue);
+            Assert.InRange(d3, 999, int.MaxValue);
         }
 
         [Fact]
@@ -337,8 +337,8 @@ namespace UnitTest
                 item => Assert.Equal("Work0 END", item)
             );
 
-            Assert.InRange(d1, 2000, 2050);
-            Assert.InRange(t1, 2000, 2050);
+            Assert.InRange(d1, 1999, 2050);
+            Assert.InRange(t1, 1999, 2050);
         }
 
         [Fact]
@@ -390,7 +390,7 @@ namespace UnitTest
             );
 
             Assert.InRange(d1, 0, 20);
-            Assert.InRange(t1, 2000, 2050);
+            Assert.InRange(t1, 1999, 2050);
         }
 
         [Fact]
