@@ -754,6 +754,107 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestForceStopCallback()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            int count = 0;
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                Interlocked.Increment(ref count);
+            });
+            Thread.Sleep(100);
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                Interlocked.Increment(ref count);
+            });
+            Thread.Sleep(100);
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            }, (res) =>
+            {
+                Interlocked.Increment(ref count);
+            });
+            long start = GetNowSs();
+
+            bool res = powerPool.ForceStop();
+            powerPool.Wait();
+            long end = GetNowSs() - start;
+
+            if (res)
+            {
+                Assert.Equal(3, count);
+            }
+        }
+
+        [Fact]
+        public void TestForceStopDefaultCallback()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int count = 0;
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                DefaultCallback = (res) =>
+                {
+                    Interlocked.Increment(ref count);
+                }
+            });
+
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            });
+            Thread.Sleep(100);
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            });
+            Thread.Sleep(100);
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                }
+            });
+            long start = GetNowSs();
+
+            bool res = powerPool.ForceStop();
+            powerPool.Wait();
+            long end = GetNowSs() - start;
+
+            if (res)
+            {
+                Assert.Equal(3, count);
+            }
+        }
+
+        [Fact]
         public void TestForceStopManyTimes1()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
