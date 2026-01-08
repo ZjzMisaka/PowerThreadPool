@@ -1,14 +1,24 @@
 ﻿using System.Reflection;
 using PowerThreadPool;
 using PowerThreadPool.Collections;
+using Xunit.Abstractions;
 
 namespace UnitTest
 {
     public class StealablePriorityCollectionTest
     {
+        private readonly ITestOutputHelper _output;
+
+        public StealablePriorityCollectionTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [Fact]
         public void TestConcurrentStealablePriorityQueue()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>(false);
             queue.Set(1, 2);
             queue.Set(2, 2);
@@ -40,6 +50,8 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityStack()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>(false);
             queue.Set(1, 2);
             queue.Set(2, 2);
@@ -71,6 +83,8 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityDequeGet()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var deque = new ConcurrentStealablePriorityDeque<int>(true);
             deque.Set(1, 2);
             deque.Set(2, 2);
@@ -102,6 +116,8 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityDequeStealOnlyZeroPriority()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var deque = new ConcurrentStealablePriorityDeque<int>(true);
             deque.Set(1, 0);
             deque.Set(2, 0);
@@ -113,6 +129,8 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityDequeStealWithMultiplePriorities()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var deque = new ConcurrentStealablePriorityDeque<int>(true);
             deque.Set(1, 0);
             deque.Set(2, 0);
@@ -127,6 +145,8 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityQueueDiscard()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>(false);
             queue.Set(1, 0);
             Assert.Equal(1, queue.Discard());
@@ -135,6 +155,8 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityStackDiscard()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             ConcurrentStealablePriorityStack<int> queue = new ConcurrentStealablePriorityStack<int>(false);
             queue.Set(1, 0);
             Assert.Equal(1, queue.Discard());
@@ -151,6 +173,8 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityQueueNotInserted()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>(false);
             queue.Set(1, -1);
             Assert.Equal(1, queue.Discard());
@@ -167,6 +191,8 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityDequeNotInserted()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var deque = new ConcurrentStealablePriorityDeque<int>(true);
             deque.Set(1, -1);
             Assert.Equal(1, deque.Discard());
@@ -175,6 +201,8 @@ namespace UnitTest
         [Fact]
         public void TestGetQueueReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var q = new ConcurrentStealablePriorityQueue<int>(false);
 
             var type = typeof(ConcurrentStealablePriorityQueue<int>);
@@ -196,6 +224,8 @@ namespace UnitTest
         [Fact]
         public void TestGetStackReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             ConcurrentStealablePriorityQueue<int> q = new ConcurrentStealablePriorityQueue<int>(false);
 
             Type type = typeof(ConcurrentStealablePriorityQueue<int>);
@@ -217,6 +247,8 @@ namespace UnitTest
         [Fact]
         public void TryGetStackReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             ConcurrentStealablePriorityStack<int> s = new ConcurrentStealablePriorityStack<int>(false);
 
             Type type = typeof(ConcurrentStealablePriorityStack<int>);
@@ -238,6 +270,8 @@ namespace UnitTest
         [Fact]
         public void TestGetDequeReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var dq = new ConcurrentStealablePriorityDeque<int>(true);
 
             var type = typeof(ConcurrentStealablePriorityDeque<int>);
@@ -258,6 +292,8 @@ namespace UnitTest
         [Fact]
         public void TestStealDequeReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var dq = new ConcurrentStealablePriorityDeque<int>(true);
 
             var type = typeof(ConcurrentStealablePriorityDeque<int>);
@@ -277,6 +313,8 @@ namespace UnitTest
         [Fact]
         public void TestDiscardDequeReturnsFalseWhenPriorityNotZeroAndNotInDictionary()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var dq = new ConcurrentStealablePriorityDeque<int>(true);
 
             var type = typeof(ConcurrentStealablePriorityDeque<int>);
@@ -297,6 +335,8 @@ namespace UnitTest
         [Fact]
         public void ConcurrentStealablePriorityQueueDiscardShouldIterateAllPrioritiesAndReturnDefaultWhenAllQueuesEmpty()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             ConcurrentStealablePriorityQueue<object> q = new ConcurrentStealablePriorityQueue<object>(false);
 
             object marker = new object();
@@ -319,6 +359,8 @@ namespace UnitTest
         [Fact]
         public void ConcurrentStealablePriorityStackDiscardShouldIterateAllPrioritiesAndReturnDefaultWhenAllQueuesEmpty()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             ConcurrentStealablePriorityStack<object> q = new ConcurrentStealablePriorityStack<object>(false);
 
             object marker = new object();
@@ -341,6 +383,8 @@ namespace UnitTest
         [Fact]
         public void ConcurrentStealablePriorityDequeDiscardShouldIterateAllPrioritiesAndReturnDefaultWhenAllQueuesEmpty()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var dq = new ConcurrentStealablePriorityDeque<object>(true);
 
             var marker = new object();
@@ -363,6 +407,8 @@ namespace UnitTest
         [Fact]
         public void TestConcurrentStealablePriorityDequeGetFallsBackFromEmptyHigherPriorityToZero()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var d = new ConcurrentStealablePriorityDeque<int>(true);
             d.Set(100, 5);
             d.Set(1, 0);
@@ -384,6 +430,8 @@ namespace UnitTest
         [Fact]
         public void TestDequeGetOnlyZeroPrioritySucceed()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var d = new ConcurrentStealablePriorityDeque<int>(true);
             d.Set(1, 0);
             d.Set(2, 0);
@@ -396,6 +444,8 @@ namespace UnitTest
         [Fact]
         public void TestDequeStealPrefersHigherPriorityOverZero()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var d = new ConcurrentStealablePriorityDeque<int>(true);
             d.Set(1, 0);
             d.Set(100, 2);
@@ -410,6 +460,8 @@ namespace UnitTest
         [Fact]
         public void TestDequeDiscardPrefersLowestPriorityFirst()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var d = new ConcurrentStealablePriorityDeque<int>(true);
             d.Set(300, 3);
             d.Set(200, 2);
@@ -426,6 +478,8 @@ namespace UnitTest
         [Fact]
         public void TestDequeDiscardIsLifoWithinPriority()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var d = new ConcurrentStealablePriorityDeque<int>(true);
             d.Set(1, -1);
             d.Set(2, -1);
@@ -437,6 +491,8 @@ namespace UnitTest
         [Fact]
         public void TestDequeStealIsFifoWithinPriorityForNonZero()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var d = new ConcurrentStealablePriorityDeque<int>(true);
             d.Set(1, 2);
             d.Set(2, 2);
@@ -448,6 +504,8 @@ namespace UnitTest
         [Fact]
         public void TestInsertPriorityRaceQueue()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var d = new ConcurrentStealablePriorityQueue<int>(false);
             PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
             {
@@ -468,6 +526,8 @@ namespace UnitTest
         [Fact]
         public void TestInsertPriorityRaceStack()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var d = new ConcurrentStealablePriorityStack<int>(false);
             PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
             {
@@ -488,6 +548,8 @@ namespace UnitTest
         [Fact]
         public void TestInsertPriorityRaceDeque()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             var d = new ConcurrentStealablePriorityDeque<int>(true);
             PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
             {
@@ -503,28 +565,6 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(10000, d._sortedPriorityList.Count);
-        }
-
-        [Fact]
-        public void TestObsoleteAttributeEnforceDequeOwnership1()
-        {
-            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
-            ConcurrentStealablePriorityStack<int> stack = new ConcurrentStealablePriorityStack<int>();
-            ConcurrentStealablePriorityDeque<int> deque = new ConcurrentStealablePriorityDeque<int>();
-            PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption { QueueType = PowerThreadPool.Options.QueueType.Deque, EnforceDequeOwnership = true });
-            powerPool.QueueWorkItem(() => { });
-            powerPool.Wait();
-        }
-
-        [Fact]
-        public void TestObsoleteAttributeEnforceDequeOwnership2()
-        {
-            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
-            ConcurrentStealablePriorityStack<int> stack = new ConcurrentStealablePriorityStack<int>();
-            ConcurrentStealablePriorityDeque<int> deque = new ConcurrentStealablePriorityDeque<int>();
-            PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption { QueueType = PowerThreadPool.Options.QueueType.FIFO, EnforceDequeOwnership = true });
-            powerPool.QueueWorkItem(() => { });
-            powerPool.Wait();
         }
     }
 }

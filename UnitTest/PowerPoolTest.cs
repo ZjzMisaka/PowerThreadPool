@@ -7507,7 +7507,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestRejectDiscardOldestPolicyDiscardOneWorkFail()
+        public void TestRejectDiscardQueuedPolicyDiscardOneWorkFail()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -7516,7 +7516,7 @@ namespace UnitTest
                 MaxThreads = 4,
                 RejectOption = new RejectOption
                 {
-                    RejectType = RejectType.DiscardOldestPolicy,
+                    RejectType = RejectType.DiscardQueuedPolicy,
                     ThreadQueueLimit = 0,
                 }
             };
@@ -8043,7 +8043,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestRejectDiscardOldestPolicyGetPriorityLoop()
+        public void TestRejectDiscardQueuedPolicyGetPriorityLoop()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -8052,7 +8052,7 @@ namespace UnitTest
                 MaxThreads = 4,
                 RejectOption = new RejectOption
                 {
-                    RejectType = RejectType.DiscardOldestPolicy,
+                    RejectType = RejectType.DiscardQueuedPolicy,
                     ThreadQueueLimit = 1,
                 },
             };
@@ -8109,7 +8109,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestRejectDiscardOldestPolicyGetPriorityLoopLIFO()
+        public void TestRejectDiscardQueuedPolicyGetPriorityLoopLIFO()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -8118,7 +8118,7 @@ namespace UnitTest
                 MaxThreads = 4,
                 RejectOption = new RejectOption
                 {
-                    RejectType = RejectType.DiscardOldestPolicy,
+                    RejectType = RejectType.DiscardQueuedPolicy,
                     ThreadQueueLimit = 1,
                 },
                 QueueType = QueueType.LIFO,
@@ -8176,7 +8176,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestRejectDiscardOldestPolicyWithDependents()
+        public void TestRejectDiscardQueuedPolicyWithDependents()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -8185,7 +8185,7 @@ namespace UnitTest
                 MaxThreads = 4,
                 RejectOption = new RejectOption
                 {
-                    RejectType = RejectType.DiscardOldestPolicy,
+                    RejectType = RejectType.DiscardQueuedPolicy,
                     ThreadQueueLimit = 1,
                 },
                 EnableStatisticsCollection = true,
@@ -8285,7 +8285,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestRejectDiscardOldestPolicyDiscardAsyncWork1()
+        public void TestRejectDiscardQueuedPolicyDiscardAsyncWork1()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -8294,7 +8294,7 @@ namespace UnitTest
                 MaxThreads = 1,
                 RejectOption = new RejectOption
                 {
-                    RejectType = RejectType.DiscardOldestPolicy,
+                    RejectType = RejectType.DiscardQueuedPolicy,
                     ThreadQueueLimit = 2,
                 }
             };
@@ -8338,7 +8338,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestRejectDiscardOldestPolicyDiscardAsyncWork2()
+        public void TestRejectDiscardQueuedPolicyDiscardAsyncWork2()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -8347,7 +8347,7 @@ namespace UnitTest
                 MaxThreads = 1,
                 RejectOption = new RejectOption
                 {
-                    RejectType = RejectType.DiscardOldestPolicy,
+                    RejectType = RejectType.DiscardQueuedPolicy,
                     ThreadQueueLimit = 2,
                 }
             };
@@ -8391,7 +8391,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestRejectDiscardOldestPolicyDiscardAsyncWork3()
+        public void TestRejectDiscardQueuedPolicyDiscardAsyncWork3()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -8400,7 +8400,7 @@ namespace UnitTest
                 MaxThreads = 1,
                 RejectOption = new RejectOption
                 {
-                    RejectType = RejectType.DiscardOldestPolicy,
+                    RejectType = RejectType.DiscardQueuedPolicy,
                     ThreadQueueLimit = 2,
                 }
             };
@@ -8444,7 +8444,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestRejectDiscardOldestPolicyDiscardAsyncWork4()
+        public void TestRejectDiscardQueuedPolicyDiscardAsyncWork4()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -8453,7 +8453,7 @@ namespace UnitTest
                 MaxThreads = 1,
                 RejectOption = new RejectOption
                 {
-                    RejectType = RejectType.DiscardOldestPolicy,
+                    RejectType = RejectType.DiscardQueuedPolicy,
                     ThreadQueueLimit = 2,
                 }
             };
@@ -8497,7 +8497,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestRejectDiscardOldestPolicyDiscardAsyncWork5()
+        public void TestRejectDiscardQueuedPolicyDiscardAsyncWork5()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -8506,7 +8506,7 @@ namespace UnitTest
                 MaxThreads = 1,
                 RejectOption = new RejectOption
                 {
-                    RejectType = RejectType.DiscardOldestPolicy,
+                    RejectType = RejectType.DiscardQueuedPolicy,
                     ThreadQueueLimit = 2,
                 }
             };
