@@ -20,7 +20,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             ConcurrentSet<int> set = new ConcurrentSet<int>();
-            Assert.Equal(0, set.Count);
+            Assert.Empty(set);
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace UnitTest
             set.Add(2);
             set.Remove(1);
 
-            Assert.Equal(1, set.Count);
+            Assert.Single(set);
             Assert.DoesNotContain(1, set);
         }
 
@@ -95,6 +95,47 @@ namespace UnitTest
             }
 
             Assert.Equal(items, enumeratedItems);
+        }
+
+        [Fact]
+        public void TestICollectionAdd()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            IEnumerable<int> items = Enumerable.Range(1, 2);
+            ICollection<int> set = new ConcurrentSet<int>(items);
+
+            set.Add(3);
+
+            Assert.Equal(3, set.Count);
+        }
+
+        [Fact]
+        public void TestICollectionIsReadOnly()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            ICollection<int> set = new ConcurrentSet<int>();
+
+            Assert.False(set.IsReadOnly);
+        }
+
+        [Fact]
+        public void TestICollectionCopyTo()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            IEnumerable<int> items = Enumerable.Range(1, 2);
+            ICollection<int> set = new ConcurrentSet<int>(items);
+
+            int[] array = new int[5];
+            set.CopyTo(array, 2);
+
+            Assert.Equal(0, array[0]);
+            Assert.Equal(0, array[1]);
+            Assert.Equal(1, array[2]);
+            Assert.Equal(2, array[3]);
+            Assert.Equal(0, array[4]);
         }
     }
 }
