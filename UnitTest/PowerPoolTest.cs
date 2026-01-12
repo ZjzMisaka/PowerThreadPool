@@ -4248,7 +4248,7 @@ namespace UnitTest
             bool res = powerPool.AddWorkToGroup("AAA", id);
             Assert.True(res);
 
-            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Contains(id, powerPool.GetGroupMemberSet("AAA"));
             Assert.Equal(1, powerPool.RunningWorkerCount);
 
             powerPool.GetGroup("AAA").Stop();
@@ -4276,7 +4276,7 @@ namespace UnitTest
             bool res = powerPool.AddWorkToGroup("AAA", WorkID.FromString("AAA"));
             Assert.False(res);
 
-            Assert.DoesNotContain(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.DoesNotContain(id, powerPool.GetGroupMemberSet("AAA"));
             Assert.Equal(1, powerPool.RunningWorkerCount);
 
             powerPool.GetGroup("AAA").Stop();
@@ -4306,12 +4306,12 @@ namespace UnitTest
                 Group = "AAA"
             });
 
-            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Contains(id, powerPool.GetGroupMemberSet("AAA"));
 
             bool res = powerPool.RemoveWorkFromGroup("AAA", id);
             Assert.True(res);
 
-            Assert.DoesNotContain(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.DoesNotContain(id, powerPool.GetGroupMemberSet("AAA"));
             Assert.Equal(1, powerPool.RunningWorkerCount);
 
             powerPool.GetGroup("AAA").Stop();
@@ -4341,12 +4341,12 @@ namespace UnitTest
                 Group = "AAA"
             });
 
-            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Contains(id, powerPool.GetGroupMemberSet("AAA"));
 
             bool res = powerPool.RemoveWorkFromGroup("AAA", WorkID.FromString("AAA"));
             Assert.False(res);
 
-            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Contains(id, powerPool.GetGroupMemberSet("AAA"));
             Assert.Equal(1, powerPool.RunningWorkerCount);
 
             powerPool.GetGroup("AAA").Stop();
@@ -4374,12 +4374,12 @@ namespace UnitTest
                 Group = "AAA"
             });
 
-            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Contains(id, powerPool.GetGroupMemberSet("AAA"));
 
             bool res = powerPool.RemoveWorkFromGroup("BBB", id);
             Assert.False(res);
 
-            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Contains(id, powerPool.GetGroupMemberSet("AAA"));
             Assert.Equal(1, powerPool.RunningWorkerCount);
 
             powerPool.GetGroup("AAA").Stop();
@@ -4407,14 +4407,14 @@ namespace UnitTest
                 Group = "AAA"
             });
 
-            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Contains(id, powerPool.GetGroupMemberSet("AAA"));
 
             bool res = powerPool.RemoveWorkFromGroup("AAA", id);
             Assert.True(res);
             res = powerPool.RemoveWorkFromGroup("AAA", id);
             Assert.False(res);
 
-            Assert.DoesNotContain(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.DoesNotContain(id, powerPool.GetGroupMemberSet("AAA"));
             Assert.Equal(1, powerPool.RunningWorkerCount);
 
             powerPool.GetGroup("AAA").Stop();
@@ -4444,7 +4444,7 @@ namespace UnitTest
             bool res = powerPool.GetGroup("AAA").Add(id);
             Assert.True(res);
 
-            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Contains(id, powerPool.GetGroupMemberSet("AAA"));
             Assert.Equal(1, powerPool.RunningWorkerCount);
 
             powerPool.GetGroup("AAA").Stop();
@@ -4472,12 +4472,12 @@ namespace UnitTest
                 Group = "AAA"
             });
 
-            Assert.Contains(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.Contains(id, powerPool.GetGroupMemberSet("AAA"));
 
             bool res = powerPool.GetGroup("AAA").Remove(id);
             Assert.True(res);
 
-            Assert.DoesNotContain(id, powerPool.GetGroupMemberList("AAA"));
+            Assert.DoesNotContain(id, powerPool.GetGroupMemberSet("AAA"));
             Assert.Equal(1, powerPool.RunningWorkerCount);
 
             powerPool.GetGroup("AAA").Stop();

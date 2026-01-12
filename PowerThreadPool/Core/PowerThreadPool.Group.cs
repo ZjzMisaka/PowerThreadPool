@@ -18,6 +18,7 @@ namespace PowerThreadPool
             return new Group(this, groupName);
         }
 
+        [ObsoleteAttribute("Use GetGroupMemberSet instead.", false)]
         /// <summary>
         /// Get all members of a group
         /// </summary>
@@ -25,15 +26,25 @@ namespace PowerThreadPool
         /// <returns>Work id collection</returns>
         public IEnumerable<WorkID> GetGroupMemberList(string groupName)
         {
+            return GetGroupMemberSet(groupName);
+        }
+
+        /// <summary>
+        /// Get all members of a group
+        /// </summary>
+        /// <param name="groupName"></param>
+        /// <returns>Work id collection</returns>
+        public ConcurrentSet<WorkID> GetGroupMemberSet(string groupName)
+        {
             List<string> groupList = new List<string>() { groupName };
             GetChildGroupList(groupName, groupList);
 
             ConcurrentSet<WorkID> memberSet = new ConcurrentSet<WorkID>();
             foreach (string group in groupList)
             {
-                if (_workGroupDic.TryGetValue(group, out ConcurrentSet<WorkID> groupMemberList))
+                if (_workGroupDic.TryGetValue(group, out ConcurrentSet<WorkID> members))
                 {
-                    foreach (WorkID member in groupMemberList)
+                    foreach (WorkID member in members)
                     {
                         memberSet.Add(member);
                     }

@@ -504,10 +504,10 @@ namespace UnitTest
                 }
             });
             Thread.Sleep(50);
-            List<WorkID> pauseRes = powerPool.Pause(powerPool.GetGroupMemberList("A"));
+            List<WorkID> pauseRes = powerPool.Pause(powerPool.GetGroupMemberSet("A"));
             Assert.Empty(pauseRes);
             Thread.Sleep(1000);
-            List<WorkID> resumeRes = powerPool.Resume(powerPool.GetGroupMemberList("A"));
+            List<WorkID> resumeRes = powerPool.Resume(powerPool.GetGroupMemberSet("A"));
             Assert.Empty(resumeRes);
             powerPool.Wait();
 
@@ -1709,7 +1709,7 @@ namespace UnitTest
             WorkID resID = default;
             powerPool.WorkStarted += (s, e) =>
             {
-                powerPool.Stop(powerPool.GetGroupMemberList("A"));
+                powerPool.Stop(powerPool.GetGroupMemberSet("A"));
             };
 
             id = powerPool.QueueWorkItem(() =>
@@ -1730,7 +1730,7 @@ namespace UnitTest
                 Group = "A"
             });
 
-            await powerPool.WaitAsync(powerPool.GetGroupMemberList("A"));
+            await powerPool.WaitAsync(powerPool.GetGroupMemberSet("A"));
             await powerPool.WaitAsync();
 
             Assert.Equal(id, resID);
@@ -2403,7 +2403,7 @@ namespace UnitTest
                 Group = "A"
             });
 
-            powerPool.Cancel(powerPool.GetGroupMemberList("A"));
+            powerPool.Cancel(powerPool.GetGroupMemberSet("A"));
             powerPool.Wait();
 
             Assert.Equal(2, logList.Count);
@@ -2963,7 +2963,7 @@ namespace UnitTest
                 Group = "A"
             });
 
-            powerPool.Wait(powerPool.GetGroupMemberList("A"));
+            powerPool.Wait(powerPool.GetGroupMemberSet("A"));
 
             Assert.True(GetNowSs() - start >= 1000);
         }
@@ -2990,7 +2990,7 @@ namespace UnitTest
                 Thread.Sleep(100);
                 cts.Cancel();
             });
-            Assert.Throws<OperationCanceledException>(() => powerPool.Wait(powerPool.GetGroupMemberList("A"), cts.Token));
+            Assert.Throws<OperationCanceledException>(() => powerPool.Wait(powerPool.GetGroupMemberSet("A"), cts.Token));
 
             Assert.True(powerPool.PoolRunning);
             Assert.True(GetNowSs() - start <= 400);
@@ -3020,7 +3020,7 @@ namespace UnitTest
 
             CancellationTokenSource cts = new CancellationTokenSource();
 
-            powerPool.Wait(powerPool.GetGroupMemberList("A"), cts.Token);
+            powerPool.Wait(powerPool.GetGroupMemberSet("A"), cts.Token);
 
             Assert.True(GetNowSs() - start >= 1000);
         }
@@ -5734,26 +5734,14 @@ namespace UnitTest
                 Group = "BBB"
             });
 
-            Assert.Equal(3, powerPool.GetGroupMemberList("AAA").Count());
-            Assert.Equal(4, powerPool.GetGroupMemberList("BBB").Count());
+            Assert.Equal(3, powerPool.GetGroupMemberSet("AAA").Count());
+            Assert.Equal(4, powerPool.GetGroupMemberSet("BBB").Count());
 
-            powerPool.Stop(powerPool.GetGroupMemberList("AAA"));
-            powerPool.Wait(powerPool.GetGroupMemberList("AAA"));
+            powerPool.Stop(powerPool.GetGroupMemberSet("AAA"));
+            powerPool.Wait(powerPool.GetGroupMemberSet("AAA"));
 
-            Assert.Empty(powerPool.GetGroupMemberList("AAA"));
-            Assert.Equal(4, powerPool.GetGroupMemberList("BBB").Count());
-
-            powerPool.QueueWorkItem(() =>
-            {
-                while (true)
-                {
-                    Thread.Sleep(10);
-                    powerPool.StopIfRequested();
-                }
-            }, new WorkOption<object>()
-            {
-                Group = "AAA"
-            });
+            Assert.Empty(powerPool.GetGroupMemberSet("AAA"));
+            Assert.Equal(4, powerPool.GetGroupMemberSet("BBB").Count());
 
             powerPool.QueueWorkItem(() =>
             {
@@ -5767,14 +5755,26 @@ namespace UnitTest
                 Group = "AAA"
             });
 
-            Assert.Equal(2, powerPool.GetGroupMemberList("AAA").Count());
-            Assert.Equal(4, powerPool.GetGroupMemberList("BBB").Count());
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption<object>()
+            {
+                Group = "AAA"
+            });
+
+            Assert.Equal(2, powerPool.GetGroupMemberSet("AAA").Count());
+            Assert.Equal(4, powerPool.GetGroupMemberSet("BBB").Count());
 
             powerPool.Stop();
             powerPool.Wait();
 
-            Assert.Empty(powerPool.GetGroupMemberList("AAA"));
-            Assert.Empty(powerPool.GetGroupMemberList("BBB"));
+            Assert.Empty(powerPool.GetGroupMemberSet("AAA"));
+            Assert.Empty(powerPool.GetGroupMemberSet("BBB"));
         }
 
         [Fact]

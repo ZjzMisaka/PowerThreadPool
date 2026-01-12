@@ -1442,7 +1442,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Empty(powerPool.GetGroupMemberList("AAA"));
+            Assert.Empty(powerPool.GetGroupMemberSet("AAA"));
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]
