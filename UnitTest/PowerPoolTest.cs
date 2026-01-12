@@ -5270,7 +5270,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal(0, result.Count);
+            Assert.Empty(result);
             Assert.Equal(9, list.Count);
         }
 
@@ -5599,7 +5599,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal(0, result.Count);
+            Assert.Empty(result);
             Assert.Equal(9, list.Count);
         }
 
@@ -5635,7 +5635,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal(0, result.Count);
+            Assert.Empty(result);
             Assert.Equal(9, list.Count);
         }
 
@@ -5824,7 +5824,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal(0, result.Count);
+            Assert.Empty(result);
             Assert.Equal(3, list.Count);
         }
 
@@ -5860,7 +5860,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal(0, result.Count);
+            Assert.Empty(result);
             Assert.Equal(3, list.Count);
         }
 
@@ -5901,7 +5901,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal(0, result.Count);
+            Assert.Empty(result);
             Assert.Equal(9, list.Count);
             Assert.NotNull(group1);
             Assert.Null(group2);
@@ -5946,7 +5946,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal(0, result.Count);
+            Assert.Empty(result);
             Assert.Equal(9, list.Count);
             Assert.NotNull(group1);
             Assert.Null(group2);
