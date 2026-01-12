@@ -52,7 +52,7 @@ namespace PowerThreadPool.Groups
         /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         public void Wait(bool helpWhileWaiting = false)
         {
-            _powerPool.Wait(_powerPool.GetGroupMemberList(Name), helpWhileWaiting);
+            _powerPool.Wait(_powerPool.GetGroupMemberSet(Name), helpWhileWaiting);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace PowerThreadPool.Groups
         /// <param name="helpWhileWaiting">When a caller is blocked waiting, they can "help" the pool progress by executing available work.</param>
         public void Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
         {
-            _powerPool.Wait(_powerPool.GetGroupMemberList(Name), cancellationToken, helpWhileWaiting);
+            _powerPool.Wait(_powerPool.GetGroupMemberSet(Name), cancellationToken, helpWhileWaiting);
         }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace PowerThreadPool.Groups
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task WaitAsync()
         {
-            await _powerPool.WaitAsync(_powerPool.GetGroupMemberList(Name));
+            await _powerPool.WaitAsync(_powerPool.GetGroupMemberSet(Name));
         }
 #else
         public Task WaitAsync()
@@ -92,7 +92,7 @@ namespace PowerThreadPool.Groups
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task WaitAsync(CancellationToken cancellationToken)
         {
-            await _powerPool.WaitAsync(_powerPool.GetGroupMemberList(Name), cancellationToken);
+            await _powerPool.WaitAsync(_powerPool.GetGroupMemberSet(Name), cancellationToken);
         }
 #else
         public Task WaitAsync(CancellationToken cancellationToken)
@@ -112,7 +112,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of work result</returns>
         public List<ExecuteResult<TResult>> Fetch<TResult>(bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
-            return _powerPool.Fetch<TResult>(_powerPool.GetGroupMemberList(Name), removeAfterFetch, helpWhileWaiting);
+            return _powerPool.Fetch<TResult>(_powerPool.GetGroupMemberSet(Name), removeAfterFetch, helpWhileWaiting);
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of work result</returns>
         public List<ExecuteResult<TResult>> Fetch<TResult>(CancellationToken cancellationToken, bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
-            return _powerPool.Fetch<TResult>(_powerPool.GetGroupMemberList(Name), cancellationToken, removeAfterFetch, helpWhileWaiting);
+            return _powerPool.Fetch<TResult>(_powerPool.GetGroupMemberSet(Name), cancellationToken, removeAfterFetch, helpWhileWaiting);
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of work result</returns>
         public List<ExecuteResult<object>> Fetch(bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
-            return _powerPool.Fetch<object>(_powerPool.GetGroupMemberList(Name), removeAfterFetch, helpWhileWaiting);
+            return _powerPool.Fetch<object>(_powerPool.GetGroupMemberSet(Name), removeAfterFetch, helpWhileWaiting);
         }
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of work result</returns>
         public List<ExecuteResult<object>> Fetch(CancellationToken cancellationToken, bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
-            return _powerPool.Fetch<object>(_powerPool.GetGroupMemberList(Name), cancellationToken, removeAfterFetch, helpWhileWaiting);
+            return _powerPool.Fetch<object>(_powerPool.GetGroupMemberSet(Name), cancellationToken, removeAfterFetch, helpWhileWaiting);
         }
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of work result</returns>
         public List<ExecuteResult<TResult>> Fetch<TResult>(Func<ExecuteResult<TResult>, bool> predicate, bool removeAfterFetch = false, bool helpWhileWaiting = false)
         {
-            ConcurrentSet<WorkID> idList = (ConcurrentSet<WorkID>)_powerPool.GetGroupMemberList(Name);
+            ConcurrentSet<WorkID> idList = _powerPool.GetGroupMemberSet(Name);
             Func<ExecuteResult<TResult>, bool> predicateID = e => idList.Contains(e.ID);
             return _powerPool.Fetch(predicate, predicateID, removeAfterFetch, helpWhileWaiting);
         }
@@ -173,7 +173,7 @@ namespace PowerThreadPool.Groups
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false)
         {
-            return await _powerPool.FetchAsync<TResult>(_powerPool.GetGroupMemberList(Name), removeAfterFetch);
+            return await _powerPool.FetchAsync<TResult>(_powerPool.GetGroupMemberSet(Name), removeAfterFetch);
         }
 #else
         public Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(bool removeAfterFetch = false)
@@ -194,7 +194,7 @@ namespace PowerThreadPool.Groups
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(CancellationToken cancellationToken, bool removeAfterFetch = false)
         {
-            return await _powerPool.FetchAsync<TResult>(_powerPool.GetGroupMemberList(Name), cancellationToken, removeAfterFetch);
+            return await _powerPool.FetchAsync<TResult>(_powerPool.GetGroupMemberSet(Name), cancellationToken, removeAfterFetch);
         }
 #else
         public Task<List<ExecuteResult<TResult>>> FetchAsync<TResult>(CancellationToken cancellationToken, bool removeAfterFetch = false)
@@ -214,7 +214,7 @@ namespace PowerThreadPool.Groups
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false)
         {
-            return await _powerPool.FetchAsync<object>(_powerPool.GetGroupMemberList(Name), removeAfterFetch);
+            return await _powerPool.FetchAsync<object>(_powerPool.GetGroupMemberSet(Name), removeAfterFetch);
         }
 #else
         public Task<List<ExecuteResult<object>>> FetchAsync(bool removeAfterFetch = false)
@@ -235,7 +235,7 @@ namespace PowerThreadPool.Groups
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         public async Task<List<ExecuteResult<object>>> FetchAsync(CancellationToken cancellationToken, bool removeAfterFetch = false)
         {
-            return await _powerPool.FetchAsync<object>(_powerPool.GetGroupMemberList(Name), cancellationToken, removeAfterFetch);
+            return await _powerPool.FetchAsync<object>(_powerPool.GetGroupMemberSet(Name), cancellationToken, removeAfterFetch);
         }
 #else
         public Task<List<ExecuteResult<object>>> FetchAsync(CancellationToken cancellationToken, bool removeAfterFetch = false)
@@ -275,7 +275,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return false if no thread running</returns>
         internal List<WorkID> Stop(bool forceStop)
         {
-            return _powerPool.Stop(_powerPool.GetGroupMemberList(Name), forceStop);
+            return _powerPool.Stop(_powerPool.GetGroupMemberSet(Name), forceStop);
         }
 
         /// <summary>
@@ -284,7 +284,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
         public List<WorkID> Pause()
         {
-            return _powerPool.Pause(_powerPool.GetGroupMemberList(Name));
+            return _powerPool.Pause(_powerPool.GetGroupMemberSet(Name));
         }
 
         /// <summary>
@@ -293,7 +293,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
         public List<WorkID> Resume()
         {
-            return _powerPool.Resume(_powerPool.GetGroupMemberList(Name));
+            return _powerPool.Resume(_powerPool.GetGroupMemberSet(Name));
         }
 
         /// <summary>
@@ -302,7 +302,7 @@ namespace PowerThreadPool.Groups
         /// <returns>Return a list of IDs for work that doesn't exist</returns>
         public List<WorkID> Cancel()
         {
-            return _powerPool.Cancel(_powerPool.GetGroupMemberList(Name));
+            return _powerPool.Cancel(_powerPool.GetGroupMemberSet(Name));
         }
     }
 }

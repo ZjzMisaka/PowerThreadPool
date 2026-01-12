@@ -8,6 +8,8 @@ namespace UnitTest
 {
     public class ObsoleteFeaturesTest
     {
+#pragma warning disable CS0612
+#pragma warning disable CS0618
         private readonly ITestOutputHelper _output;
 
         public ObsoleteFeaturesTest(ITestOutputHelper output)
@@ -19,6 +21,7 @@ namespace UnitTest
         public void TestObsoleteAttributeEnforceDequeOwnership1()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
 
             ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>();
             ConcurrentStealablePriorityStack<int> stack = new ConcurrentStealablePriorityStack<int>();
@@ -105,5 +108,43 @@ namespace UnitTest
 
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
+
+        [Fact]
+        public void TestGetGroupMemberList()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int count = 0;
+
+            PowerPool powerPool = new PowerPool();
+
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                Interlocked.Increment(ref count);
+            }, new WorkOption { Group = "AAA" });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                Interlocked.Increment(ref count);
+            }, new WorkOption { Group = "AAA" });
+            powerPool.QueueWorkItemAsync(async () =>
+            {
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+                Interlocked.Increment(ref count);
+            }, new WorkOption { Group = "AAA" });
+
+            powerPool.Wait();
+
+            Assert.Empty(powerPool.GetGroupMemberList("AAA"));
+        }
+#pragma warning restore CS0612
+#pragma warning restore CS0618
     }
 }
