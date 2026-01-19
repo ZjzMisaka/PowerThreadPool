@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 
 namespace PowerThreadPool.Options
 {
@@ -9,6 +10,7 @@ namespace PowerThreadPool.Options
         DiscardPolicy,
         DiscardQueuedPolicy,
         [ObsoleteAttribute("Use DiscardQueuedPolicy instead.", false)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         DiscardOldestPolicy,
     }
 

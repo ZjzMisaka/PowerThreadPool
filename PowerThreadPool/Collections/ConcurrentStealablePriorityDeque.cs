@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using PowerThreadPool.Collections.Comparer;
@@ -41,6 +42,7 @@ namespace PowerThreadPool.Collections
 
         [ObsoleteAttribute]
         [ExcludeFromCodeCoverage]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public ConcurrentStealablePriorityDeque()
         {
             _sortedPriorityList.Add(0);

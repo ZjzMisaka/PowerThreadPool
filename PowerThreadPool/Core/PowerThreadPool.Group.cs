@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Groups;
@@ -21,6 +22,7 @@ namespace PowerThreadPool
 
         [ObsoleteAttribute("Use GetGroupMemberSet instead.", false)]
         [ExcludeFromCodeCoverage]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         /// <summary>
         /// Get all members of a group
         /// </summary>

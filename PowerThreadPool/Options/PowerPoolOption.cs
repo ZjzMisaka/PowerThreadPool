@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Results;
@@ -146,6 +147,7 @@ namespace PowerThreadPool.Options
             "EnforceDequeOwnership property (IStealablePriorityCollection.EnforceDequeOwnership).",
             false)]
         [ExcludeFromCodeCoverage]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public bool EnforceDequeOwnership { get; set; } = false;
 
         internal void OnThreadCountSettingChanged()

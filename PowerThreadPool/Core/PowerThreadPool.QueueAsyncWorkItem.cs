@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,6 +80,7 @@ namespace PowerThreadPool
 
         [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
         [ExcludeFromCodeCoverage]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
         {
             return QueueWorkItem(asyncFunc, callBack);
@@ -97,6 +99,7 @@ namespace PowerThreadPool
 
         [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
         [ExcludeFromCodeCoverage]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, WorkOption option)
         {
             return QueueWorkItem(asyncFunc, option);
@@ -115,6 +118,7 @@ namespace PowerThreadPool
 
         [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
         [ExcludeFromCodeCoverage]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
         {
             return QueueWorkItem(asyncFunc, callBack);
@@ -134,6 +138,7 @@ namespace PowerThreadPool
 
         [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
         [ExcludeFromCodeCoverage]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc,
                                                   WorkOption<TResult> option)
         {
@@ -155,6 +160,7 @@ namespace PowerThreadPool
 
         [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
         [ExcludeFromCodeCoverage]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, Action<ExecuteResult<object>> callBack = null)
         {
             return QueueWorkItem(asyncFunc, out task, callBack);
@@ -175,6 +181,7 @@ namespace PowerThreadPool
 
         [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
         [ExcludeFromCodeCoverage]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, WorkOption option)
         {
             return QueueWorkItem(asyncFunc, out task, option);
@@ -215,6 +222,7 @@ namespace PowerThreadPool
 
         [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
         [ExcludeFromCodeCoverage]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, Action<ExecuteResult<TResult>> callBack = null)
         {
             return QueueWorkItem(asyncFunc, out task, callBack);
@@ -236,6 +244,7 @@ namespace PowerThreadPool
 
         [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
         [ExcludeFromCodeCoverage]
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, WorkOption<TResult> option)
         {
             return QueueWorkItem(asyncFunc, out task, option);
