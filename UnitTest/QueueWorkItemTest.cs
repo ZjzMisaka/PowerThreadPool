@@ -360,13 +360,13 @@ namespace UnitTest
             object l = null;
             object c = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItemAsync(async () =>
+            powerPool.QueueWorkItem(async () =>
             {
                 p = "1";
                 await Task.Delay(100);
                 await Task.Delay(100);
                 l = "2";
-            }, (res) =>
+            }, (PowerThreadPool.Results.ExecuteResult<object> res) =>
             {
                 c = "3";
             });
@@ -387,7 +387,7 @@ namespace UnitTest
             object c = null;
             object r = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItemAsync<string>(async () =>
+            powerPool.QueueWorkItem<string>(async () =>
             {
                 p = "1";
                 await Task.Delay(100);

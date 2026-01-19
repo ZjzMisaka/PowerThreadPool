@@ -54,12 +54,12 @@ namespace PowerThreadPoolTest
                     if (r == 100)
                     {
                         cases.Add(1);
-                        _powerPool.QueueWorkItem(() => { throw new Exception(); });
+                        _powerPool.QueueWorkItem((Action)(() => { throw new Exception(); }));
                     }
                     else if (r >= 98 && r <= 99)
                     {
                         cases.Add(2);
-                        _powerPool.QueueWorkItemAsync(async () =>
+                        _powerPool.QueueWorkItem(async () =>
                         {
                             await Task.Delay(10000);
                             int r1 = _random.Next(0, 101);
@@ -85,7 +85,7 @@ namespace PowerThreadPoolTest
                     else if (r >= 94 && r <= 94)
                     {
                         cases.Add(4);
-                        _powerPool.QueueWorkItemAsync(async () =>
+                        _powerPool.QueueWorkItem(async () =>
                         {
                             await Task.Delay(30000);
                             int r1 = _random.Next(0, 101);
@@ -111,7 +111,7 @@ namespace PowerThreadPoolTest
                     else if (r >= 40 && r <= 92)
                     {
                         cases.Add(6);
-                        _powerPool.QueueWorkItemAsync(async () =>
+                        _powerPool.QueueWorkItem(async () =>
                         {
                             await Task.Delay(_random.Next(500, 1000));
                             int r1 = _random.Next(0, 101);

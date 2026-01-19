@@ -77,7 +77,7 @@ namespace Benchmark
                 int powerThreadPoolRunCount = 0;
                 for (int i = 0; i < 10000; ++i)
                 {
-                    _powerPool.QueueWorkItemAsync(async () =>
+                    _powerPool.QueueWorkItem(async () =>
                     {
                         await Task.Delay(0);
                         await Task.Delay(0);

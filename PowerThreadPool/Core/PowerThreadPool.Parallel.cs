@@ -124,7 +124,7 @@ namespace PowerThreadPool
             for (int i = start; start <= end ? i < end : i > end; i += step)
             {
                 int localI = i;
-                QueueWorkItemAsync(async () => { await body(source != null ? source[localI] : default, localI); }, workOption);
+                QueueWorkItem(async () => { await body(source != null ? source[localI] : default, localI); }, workOption);
             }
             return GetGroup(groupID);
         }
@@ -230,7 +230,7 @@ namespace PowerThreadPool
             foreach (TSource item in source)
             {
                 int localI = i++;
-                QueueWorkItemAsync(async () => { await body(item, localI); }, workOption);
+                QueueWorkItem(async () => { await body(item, localI); }, workOption);
             }
             return GetGroup(groupID);
         }
@@ -443,7 +443,7 @@ namespace PowerThreadPool
                     else
                     {
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-                        id = QueueWorkItemAsync(async () => await bodyFunc(item), workOption);
+                        id = QueueWorkItem(async () => await bodyFunc(item), workOption);
 #else
                         throw new InvalidOperationException("Asynchronous body function is not supported in this framework version.");
 #endif

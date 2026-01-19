@@ -149,7 +149,7 @@ namespace UnitTest
                         }
                         else if (r >= 70 && r <= 93)
                         {
-                            WorkID id = powerPool.QueueWorkItemAsync(async () =>
+                            WorkID id = powerPool.QueueWorkItem(async () =>
                             {
                                 await Task.Delay(random.Next(200, 600));
                                 int r1 = random.Next(0, 101);
@@ -346,7 +346,7 @@ namespace UnitTest
                         }
                         else if (r >= 70 && r <= 93)
                         {
-                            WorkID id = powerPool.QueueWorkItemAsync(async () =>
+                            WorkID id = powerPool.QueueWorkItem(async () =>
                             {
                                 await Task.Delay(random.Next(200, 600));
                                 int r1 = random.Next(0, 101);

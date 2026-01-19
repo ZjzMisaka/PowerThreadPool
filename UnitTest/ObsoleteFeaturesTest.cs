@@ -118,21 +118,21 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            powerPool.QueueWorkItemAsync(async () =>
+            powerPool.QueueWorkItem(async () =>
             {
                 await Task.Delay(10);
                 await Task.Delay(10);
                 await Task.Delay(10);
                 Interlocked.Increment(ref count);
             }, new WorkOption { Group = "AAA" });
-            powerPool.QueueWorkItemAsync(async () =>
+            powerPool.QueueWorkItem(async () =>
             {
                 await Task.Delay(10);
                 await Task.Delay(10);
                 await Task.Delay(10);
                 Interlocked.Increment(ref count);
             }, new WorkOption { Group = "AAA" });
-            powerPool.QueueWorkItemAsync(async () =>
+            powerPool.QueueWorkItem(async () =>
             {
                 await Task.Delay(10);
                 await Task.Delay(10);
