@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;
@@ -144,6 +145,7 @@ namespace PowerThreadPool.Options
             "If you are using a custom collection, please set it in the constructor and use the collection's " +
             "EnforceDequeOwnership property (IStealablePriorityCollection.EnforceDequeOwnership).",
             false)]
+        [ExcludeFromCodeCoverage]
         public bool EnforceDequeOwnership { get; set; } = false;
 
         internal void OnThreadCountSettingChanged()

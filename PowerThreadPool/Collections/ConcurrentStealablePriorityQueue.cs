@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using PowerThreadPool.Collections.Comparer;
 using PowerThreadPool.Helpers;
@@ -19,6 +20,7 @@ namespace PowerThreadPool.Collections
         public bool EnforceDequeOwnership { get; }
 
         [ObsoleteAttribute]
+        [ExcludeFromCodeCoverage]
         public ConcurrentStealablePriorityQueue()
         {
             _sortedPriorityList.Add(0);
