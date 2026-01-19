@@ -29,6 +29,12 @@ namespace PowerThreadPool
         }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        [ObsoleteAttribute("Use For instead.", false)]
+        public Group ForAsync(int start, int end, Func<int, Task> body, int step = 1, string groupName = null)
+        {
+            return For(start, end, body, step, groupName);
+        }
+
         /// <summary>
         /// Creates a parallel loop that executes iterations from start to end.
         /// </summary>
@@ -38,9 +44,9 @@ namespace PowerThreadPool
         /// <param name="step">The step value for each loop iteration. Default is 1.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
-        public Group ForAsync(int start, int end, Func<int, Task> body, int step = 1, string groupName = null)
+        public Group For(int start, int end, Func<int, Task> body, int step = 1, string groupName = null)
         {
-            return ForAsync<object>(start, end, null, async (_, index) => { await body(index); }, step, groupName);
+            return For<object>(start, end, null, async (_, index) => { await body(index); }, step, groupName);
         }
 #endif
 
@@ -61,6 +67,12 @@ namespace PowerThreadPool
         }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        [ObsoleteAttribute("Use For instead.", false)]
+        public Group ForAsync<TSource>(int start, int end, IList<TSource> source, Func<TSource, Task> body, int step = 1, string groupName = null)
+        {
+            return For(start, end, source, body, step, groupName);
+        }
+
         /// <summary>
         /// Creates a parallel loop that executes iterations from start to end.
         /// </summary>
@@ -72,9 +84,9 @@ namespace PowerThreadPool
         /// <param name="step">The step value for each loop iteration. Default is 1.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
-        public Group ForAsync<TSource>(int start, int end, IList<TSource> source, Func<TSource, Task> body, int step = 1, string groupName = null)
+        public Group For<TSource>(int start, int end, IList<TSource> source, Func<TSource, Task> body, int step = 1, string groupName = null)
         {
-            return ForAsync(start, end, source, async (item, _) => { await body(item); }, step, groupName);
+            return For(start, end, source, async (item, _) => { await body(item); }, step, groupName);
         }
 #endif
 
@@ -104,6 +116,12 @@ namespace PowerThreadPool
         }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        [ObsoleteAttribute("Use For instead.", false)]
+        public Group ForAsync<TSource>(int start, int end, IList<TSource> source, Func<TSource, int, Task> body, int step = 1, string groupName = null)
+        {
+            return For(start, end, source, body, step, groupName);
+        }
+
         /// <summary>
         /// Creates a parallel loop that executes iterations from start to end.
         /// </summary>
@@ -116,7 +134,7 @@ namespace PowerThreadPool
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
         /// <exception cref="ArgumentException">Thrown when the step is zero or the loop configuration is invalid.</exception>
-        public Group ForAsync<TSource>(int start, int end, IList<TSource> source, Func<TSource, int, Task> body, int step = 1, string groupName = null)
+        public Group For<TSource>(int start, int end, IList<TSource> source, Func<TSource, int, Task> body, int step = 1, string groupName = null)
         {
             string groupID;
             WorkOption workOption;
@@ -176,6 +194,12 @@ namespace PowerThreadPool
         }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        [ObsoleteAttribute("Use ForEach instead.", false)]
+        public Group ForEachAsync<TSource>(IEnumerable<TSource> source, Func<TSource, Task> body, string groupName = null)
+        {
+            return ForEach(source, body, groupName);
+        }
+
         /// <summary>
         /// Creates a parallel loop that executes a specified action for each element in the source collection.
         /// </summary>
@@ -184,9 +208,9 @@ namespace PowerThreadPool
         /// <param name="body">The action to execute for each element in the source collection.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
-        public Group ForEachAsync<TSource>(IEnumerable<TSource> source, Func<TSource, Task> body, string groupName = null)
+        public Group ForEach<TSource>(IEnumerable<TSource> source, Func<TSource, Task> body, string groupName = null)
         {
-            return ForEachAsync(source, async (item, _) => await body(item), groupName);
+            return ForEach(source, async (item, _) => await body(item), groupName);
         }
 #endif
 
@@ -213,6 +237,12 @@ namespace PowerThreadPool
         }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        [ObsoleteAttribute("Use ForEach instead.", false)]
+        public Group ForEachAsync<TSource>(IEnumerable<TSource> source, Func<TSource, int, Task> body, string groupName = null)
+        {
+            return ForEach(source, body, groupName);
+        }
+
         /// <summary>
         /// Creates a parallel loop that executes a specified action for each element in the source collection.
         /// </summary>
@@ -221,7 +251,7 @@ namespace PowerThreadPool
         /// <param name="body">The action to execute for each element in the source collection and its index.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
-        public Group ForEachAsync<TSource>(IEnumerable<TSource> source, Func<TSource, int, Task> body, string groupName = null)
+        public Group ForEach<TSource>(IEnumerable<TSource> source, Func<TSource, int, Task> body, string groupName = null)
         {
             string groupID;
             WorkOption workOption;
@@ -301,6 +331,24 @@ namespace PowerThreadPool
             return group;
         }
 
+        [ObsoleteAttribute("Use Watch instead.", false)]
+        public Group WatchAsync<TSource>(
+            ConcurrentObservableCollection<TSource> source,
+            Func<TSource, Task> body,
+            bool addBackWhenWorkCanceled = true,
+            bool addBackWhenWorkStopped = true,
+            bool addBackWhenWorkFailed = true,
+            string groupName = null)
+        {
+            return Watch(
+                source,
+                body,
+                addBackWhenWorkCanceled,
+                addBackWhenWorkStopped,
+                addBackWhenWorkFailed,
+                groupName);
+        }
+
         /// <summary>
         /// Watches an observable collection for changes and processes each element in the collection using the specified action. 
         /// </summary>
@@ -312,7 +360,7 @@ namespace PowerThreadPool
         /// <param name="addBackWhenWorkFailed">If an exception occurs, the elements will be added back to the collection.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
-        public Group WatchAsync<TSource>(
+        public Group Watch<TSource>(
             ConcurrentObservableCollection<TSource> source,
             Func<TSource, Task> body,
             bool addBackWhenWorkCanceled = true,

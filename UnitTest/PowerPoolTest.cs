@@ -4512,7 +4512,7 @@ namespace UnitTest
 
             ConcurrentSet<int> result = new ConcurrentSet<int>();
 
-            powerPool.ForAsync(1, 10, async (i) =>
+            powerPool.For(1, 10, async (i) =>
             {
                 await Task.Delay(1);
                 result.Add(i);
@@ -4552,7 +4552,7 @@ namespace UnitTest
             source.Add(2);
             source.Add(3);
 
-            powerPool.ForAsync<int>(0, 3, source, async (item) =>
+            powerPool.For<int>(0, 3, source, async (item) =>
             {
                 await Task.Delay(1);
                 result.Add(item);
@@ -4594,7 +4594,7 @@ namespace UnitTest
             source.Add(2);
             source.Add(3);
 
-            powerPool.ForAsync<int>(0, 3, source, async (item, index) =>
+            powerPool.For<int>(0, 3, source, async (item, index) =>
             {
                 await Task.Delay(1);
                 result.Add(index);
@@ -4642,7 +4642,7 @@ namespace UnitTest
 
             int i = 0;
 
-            powerPool.ForAsync<int>(2, -1, source, async (item, index) =>
+            powerPool.For<int>(2, -1, source, async (item, index) =>
             {
                 result[i++] = item;
                 await Task.Delay(1);
@@ -4676,7 +4676,7 @@ namespace UnitTest
 
             ConcurrentSet<int> result = new ConcurrentSet<int>();
 
-            string name = powerPool.ForAsync(1, 10, async (i) =>
+            string name = powerPool.For(1, 10, async (i) =>
             {
                 await Task.Delay(1);
                 result.Add(i);
@@ -4727,7 +4727,7 @@ namespace UnitTest
             ArgumentException ex = null;
             try
             {
-                powerPool.ForAsync<int>(0, 3, source, async (item, index) =>
+                powerPool.For<int>(0, 3, source, async (item, index) =>
                 {
                     await Task.Delay(1);
                     result.Add(index);
@@ -4783,7 +4783,7 @@ namespace UnitTest
             ArgumentException ex = null;
             try
             {
-                powerPool.ForAsync<int>(0, 3, source, async (item, index) =>
+                powerPool.For<int>(0, 3, source, async (item, index) =>
                 {
                     await Task.Delay(1);
                     result.Add(index);
@@ -4839,7 +4839,7 @@ namespace UnitTest
             ArgumentException ex = null;
             try
             {
-                powerPool.ForAsync<int>(3, 0, source, async (item, index) =>
+                powerPool.For<int>(3, 0, source, async (item, index) =>
                 {
                     await Task.Delay(1);
                     result.Add(index);
@@ -4884,7 +4884,7 @@ namespace UnitTest
             list.Add(2);
             list.Add(3);
 
-            powerPool.ForEachAsync(list, async (i) =>
+            powerPool.ForEach(list, async (i) =>
             {
                 await Task.Delay(1);
                 result.Add(i);
@@ -4926,7 +4926,7 @@ namespace UnitTest
             list.Add(2);
             list.Add(3);
 
-            powerPool.ForEachAsync(list, async (i, index) =>
+            powerPool.ForEach(list, async (i, index) =>
             {
                 await Task.Delay(1);
                 result.Add(index);
@@ -4968,7 +4968,7 @@ namespace UnitTest
             list.Add(2);
             list.Add(3);
 
-            string groupName = powerPool.ForEachAsync(list, async (i) =>
+            string groupName = powerPool.ForEach(list, async (i) =>
             {
                 await Task.Delay(1);
                 result.Add(i);
@@ -5014,7 +5014,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            powerPool.WatchAsync(list, async (i) =>
+            powerPool.Watch(list, async (i) =>
             {
                 await Task.Delay(1);
                 result.Add(i);
@@ -5069,7 +5069,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            powerPool.WatchAsync(list, async (i) =>
+            powerPool.Watch(list, async (i) =>
             {
                 await Task.Delay(1);
                 result.Add(i);
@@ -5124,7 +5124,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            powerPool.WatchAsync(list, async (i) =>
+            powerPool.Watch(list, async (i) =>
             {
                 await Task.Delay(1);
                 result.Add(i);
@@ -5170,7 +5170,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            string groupName = powerPool.WatchAsync(list, async (i) =>
+            string groupName = powerPool.Watch(list, async (i) =>
             {
                 await Task.Delay(1);
                 result.Add(i);
@@ -5223,7 +5223,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            powerPool.WatchAsync(list, async (i) =>
+            powerPool.Watch(list, async (i) =>
             {
                 await Task.Delay(1);
                 result.Add(i);
@@ -5320,7 +5320,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            powerPool.WatchAsync(list, async (i) =>
+            powerPool.Watch(list, async (i) =>
             {
                 await Task.Delay(1);
                 result.Add(i);
@@ -5390,7 +5390,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            powerPool.WatchAsync(list, async (i) =>
+            powerPool.Watch(list, async (i) =>
             {
                 await Task.Delay(1);
                 result.Add(i);
@@ -5468,7 +5468,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            powerPool.WatchAsync(list, async (i) =>
+            powerPool.Watch(list, async (i) =>
             {
                 await Task.Delay(1);
                 if (i % 2 == 1)
@@ -5545,7 +5545,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            powerPool.WatchAsync(list, async (i) =>
+            powerPool.Watch(list, async (i) =>
             {
                 Thread.Sleep(1000);
                 await Task.Delay(1);
@@ -5616,7 +5616,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            powerPool.WatchAsync(list, async (i) =>
+            powerPool.Watch(list, async (i) =>
             {
                 Thread.Sleep(1000000);
                 await Task.Delay(1);
@@ -5693,7 +5693,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            powerPool.WatchAsync(list, async (i) =>
+            powerPool.Watch(list, async (i) =>
             {
                 await Task.Delay(1);
                 if (i % 2 == 1)
@@ -5770,7 +5770,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            powerPool.WatchAsync(list, async (i) =>
+            powerPool.Watch(list, async (i) =>
             {
                 Thread.Sleep(1000);
                 await Task.Delay(1);
@@ -5841,7 +5841,7 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            powerPool.WatchAsync(list, async (i) =>
+            powerPool.Watch(list, async (i) =>
             {
                 Thread.Sleep(1000000);
                 await Task.Delay(1);
@@ -5920,14 +5920,14 @@ namespace UnitTest
             list.TryAdd(2);
             list.TryAdd(3);
 
-            Group group1 = powerPool.WatchAsync(list, async (i) =>
+            Group group1 = powerPool.Watch(list, async (i) =>
             {
                 Thread.Sleep(1000000);
                 await Task.Delay(1);
                 result.Add(i);
             });
 
-            Group group2 = powerPool.WatchAsync(list, async (i) =>
+            Group group2 = powerPool.Watch(list, async (i) =>
             {
                 Thread.Sleep(1000000);
                 await Task.Delay(1);
