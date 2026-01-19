@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers;
