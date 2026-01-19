@@ -76,6 +76,12 @@ namespace PowerThreadPool
             });
         }
 
+        [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
+        public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
+        {
+            return QueueWorkItem(asyncFunc, callBack);
+        }
+
         /// <summary>
         /// Queues a async work for execution. 
         /// </summary>
@@ -85,6 +91,12 @@ namespace PowerThreadPool
         public WorkID QueueWorkItem(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
         {
             return QueueWorkItem(asyncFunc, out _, callBack);
+        }
+
+        [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
+        public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, WorkOption option)
+        {
+            return QueueWorkItem(asyncFunc, option);
         }
 
         /// <summary>
@@ -98,6 +110,12 @@ namespace PowerThreadPool
             return QueueWorkItem(asyncFunc, out _, option);
         }
 
+        [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
+        public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
+        {
+            return QueueWorkItem(asyncFunc, callBack);
+        }
+
         /// <summary>
         /// Queues a async work for execution. 
         /// </summary>
@@ -108,6 +126,13 @@ namespace PowerThreadPool
         public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
         {
             return QueueWorkItem<TResult>(asyncFunc, out _, callBack);
+        }
+
+        [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
+        public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc,
+                                                  WorkOption<TResult> option)
+        {
+            return QueueWorkItem(asyncFunc, option);
         }
 
         /// <summary>
@@ -123,6 +148,12 @@ namespace PowerThreadPool
             return QueueWorkItem<TResult>(asyncFunc, out _, option);
         }
 
+        [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
+        public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, Action<ExecuteResult<object>> callBack = null)
+        {
+            return QueueWorkItem(asyncFunc, out task, callBack);
+        }
+
         /// <summary>
         /// Queues a async work for execution. 
         /// </summary>
@@ -134,6 +165,12 @@ namespace PowerThreadPool
         {
             WorkOption workOption = new WorkOption { Callback = callBack };
             return QueueWorkItem(asyncFunc, out task, workOption);
+        }
+
+        [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
+        public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, WorkOption option)
+        {
+            return QueueWorkItem(asyncFunc, out task, option);
         }
 
         /// <summary>
@@ -169,6 +206,12 @@ namespace PowerThreadPool
             return id;
         }
 
+        [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
+        public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, Action<ExecuteResult<TResult>> callBack = null)
+        {
+            return QueueWorkItem(asyncFunc, out task, callBack);
+        }
+
         /// <summary>
         /// Queues a async work for execution. 
         /// </summary>
@@ -181,6 +224,12 @@ namespace PowerThreadPool
         {
             WorkOption<TResult> workOption = new WorkOption<TResult> { Callback = callBack };
             return QueueWorkItem(asyncFunc, out task, workOption);
+        }
+
+        [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
+        public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, WorkOption<TResult> option)
+        {
+            return QueueWorkItem(asyncFunc, out task, option);
         }
 
         /// <summary>
