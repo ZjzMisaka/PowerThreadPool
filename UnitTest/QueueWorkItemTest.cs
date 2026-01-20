@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using PowerThreadPool;
 using PowerThreadPool.Options;
+using PowerThreadPool.Results;
 using PowerThreadPool.Works;
 using Xunit.Abstractions;
 
@@ -366,7 +367,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 l = "2";
-            }, (PowerThreadPool.Results.ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 c = "3";
             });

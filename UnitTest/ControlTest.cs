@@ -239,7 +239,7 @@ namespace UnitTest
                     await powerPool.PauseIfRequestedAsync();
                     await Task.Delay(10);
                 }
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 logList.Add("Work0 END");
                 d1 = res.Duration;
@@ -252,7 +252,7 @@ namespace UnitTest
                     await powerPool.PauseIfRequestedAsync();
                     await Task.Delay(10);
                 }
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 logList.Add("Work1 END");
                 d2 = res.Duration;
@@ -265,7 +265,7 @@ namespace UnitTest
                     await powerPool.PauseIfRequestedAsync();
                     await Task.Delay(10);
                 }
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 logList.Add("Work2 END");
                 d3 = res.Duration;
@@ -361,7 +361,7 @@ namespace UnitTest
                 await powerPool.PauseIfRequestedAsync();
                 await Task.Delay(300);
                 await powerPool.PauseIfRequestedAsync();
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 logList.Add("Work0 END");
                 d1 = res.Duration;
@@ -1720,7 +1720,7 @@ namespace UnitTest
                     powerPool.StopIfRequested();
                     Thread.Sleep(1);
                 }
-            }), new WorkOption<object>()
+            }), new WorkOption()
             {
                 Callback = (res) =>
                 {
@@ -1761,7 +1761,7 @@ namespace UnitTest
                     powerPool.StopIfRequested();
                     Thread.Sleep(1);
                 }
-            }), new WorkOption<object>()
+            }), new WorkOption()
             {
                 Callback = (res) =>
                 {
@@ -1801,7 +1801,7 @@ namespace UnitTest
                 {
                     Thread.Sleep(1);
                 }
-            }), new WorkOption<object>()
+            }), new WorkOption()
             {
                 Callback = (res) =>
                 {

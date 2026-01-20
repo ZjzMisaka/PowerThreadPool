@@ -15,6 +15,8 @@ namespace PowerThreadPool.Results
 
     public abstract class ExecuteResultBase
     {
+        public object Result => GetResult();
+
         /// <summary>
         /// Work id.
         /// </summary>

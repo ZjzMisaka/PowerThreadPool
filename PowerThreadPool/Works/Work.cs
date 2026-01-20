@@ -12,7 +12,7 @@ namespace PowerThreadPool.Works
 {
     internal abstract class Work<TResult> : WorkBase
     {
-        private WorkOption<TResult> _workOption;
+        private WorkOption _workOption;
 
         internal ExecuteResult<TResult> _executeResult;
         internal ExecuteResult<TResult> ExecuteResult
@@ -28,7 +28,7 @@ namespace PowerThreadPool.Works
             {
                 if (_workOption.IsDefaultInstance)
                 {
-                    _workOption = new WorkOption<TResult>();
+                    _workOption = new WorkOption();
                 }
                 _workOption.Group = value;
             }
@@ -59,7 +59,7 @@ namespace PowerThreadPool.Works
         internal override WorkID BaseAsyncWorkID => AsyncWorkInfo?.BaseAsyncWorkID;
         internal override WorkID RealWorkID => AsyncWorkInfo?.BaseAsyncWorkID == null ? ID : AsyncWorkInfo.BaseAsyncWorkID;
 
-        internal Work(PowerPool powerPool, WorkID id, WorkOption<TResult> option, AsyncWorkInfo asyncWorkInfo)
+        internal Work(PowerPool powerPool, WorkID id, WorkOption option, AsyncWorkInfo asyncWorkInfo)
         {
             PowerPool = powerPool;
             ID = id;
@@ -366,7 +366,7 @@ namespace PowerThreadPool.Works
         {
             if (_workOption.Callback != null)
             {
-                PowerPool.SafeCallback(_workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
+                PowerPool.SafeCallback<TResult>(_workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
             }
             else if (powerPoolOption.DefaultCallback != null)
             {

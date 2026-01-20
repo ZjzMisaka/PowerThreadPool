@@ -13,7 +13,7 @@ namespace PowerThreadPool
 {
     public partial class PowerPool
     {
-        private void PrepareAsyncWork<T>(WorkOption<T> option, AsyncWorkInfo asyncWorkInfo)
+        private void PrepareAsyncWork(WorkOption option, AsyncWorkInfo asyncWorkInfo)
         {
             CheckPowerPoolOption();
 
@@ -81,7 +81,7 @@ namespace PowerThreadPool
         [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
         [ExcludeFromCodeCoverage]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, Action<ExecuteResultBase> callBack = null)
         {
             return QueueWorkItem(asyncFunc, callBack);
         }
@@ -92,7 +92,7 @@ namespace PowerThreadPool
         /// <param name="asyncFunc"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem(Func<Task> asyncFunc, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItem(Func<Task> asyncFunc, Action<ExecuteResultBase> callBack = null)
         {
             return QueueWorkItem(asyncFunc, out _, callBack);
         }
@@ -140,7 +140,7 @@ namespace PowerThreadPool
         [ExcludeFromCodeCoverage]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc,
-                                                  WorkOption<TResult> option)
+                                                  WorkOption option)
         {
             return QueueWorkItem(asyncFunc, option);
         }
@@ -153,7 +153,7 @@ namespace PowerThreadPool
         /// <param name="option"></param>
         /// <returns></returns>
         public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc,
-                                                  WorkOption<TResult> option)
+                                                  WorkOption option)
         {
             return QueueWorkItem<TResult>(asyncFunc, out _, option);
         }
@@ -161,7 +161,7 @@ namespace PowerThreadPool
         [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
         [ExcludeFromCodeCoverage]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, Action<ExecuteResultBase> callBack = null)
         {
             return QueueWorkItem(asyncFunc, out task, callBack);
         }
@@ -173,7 +173,7 @@ namespace PowerThreadPool
         /// <param name="task"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem(Func<Task> asyncFunc, out Task task, Action<ExecuteResult<object>> callBack = null)
+        public WorkID QueueWorkItem(Func<Task> asyncFunc, out Task task, Action<ExecuteResultBase> callBack = null)
         {
             WorkOption workOption = new WorkOption { Callback = callBack };
             return QueueWorkItem(asyncFunc, out task, workOption);
@@ -238,14 +238,15 @@ namespace PowerThreadPool
         /// <returns></returns>
         public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, Action<ExecuteResult<TResult>> callBack = null)
         {
-            WorkOption<TResult> workOption = new WorkOption<TResult> { Callback = callBack };
+            WorkOption workOption = new WorkOption();
+            workOption.SetCallback(callBack);
             return QueueWorkItem(asyncFunc, out task, workOption);
         }
 
         [ObsoleteAttribute("Use QueueWorkItem instead.", false)]
         [ExcludeFromCodeCoverage]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, WorkOption<TResult> option)
+        public WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, WorkOption option)
         {
             return QueueWorkItem(asyncFunc, out task, option);
         }
@@ -258,7 +259,7 @@ namespace PowerThreadPool
         /// <param name="task"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, WorkOption<TResult> option)
+        public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, WorkOption option)
         {
             TaskCompletionSourceBox<ExecuteResult<TResult>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<TResult>>();
             task = taskCompletionSource.TypedTask;
@@ -266,7 +267,7 @@ namespace PowerThreadPool
             AsyncWorkInfo asyncWorkInfo = new AsyncWorkInfo();
             PrepareAsyncWork(option, asyncWorkInfo);
 
-            WorkID id = QueueWorkItemInnerAsync(() =>
+            WorkID id = QueueWorkItemInnerAsync<TResult>(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
                 PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, option, asyncWorkInfo);

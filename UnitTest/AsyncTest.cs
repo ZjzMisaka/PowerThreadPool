@@ -72,7 +72,7 @@ namespace UnitTest
                     await Task.Delay(100);
                 }
                 a = 1;
-            }, (ExecuteResult<object> res) =>
+            }, (res) =>
             {
                 b = 2;
             });
@@ -583,7 +583,7 @@ namespace UnitTest
                 powerPool.StopIfRequested();
                 await Task.Delay(100);
                 c = "3";
-            }, (ExecuteResult<object> res) =>
+            }, (res) =>
             {
                 r = res.Result;
             });

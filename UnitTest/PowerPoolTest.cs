@@ -9163,7 +9163,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 await Task.Delay(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9175,7 +9175,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 await Task.Delay(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d2 = res.Duration;
                 rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9210,7 +9210,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 await Task.Delay(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9222,7 +9222,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 await Task.Delay(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d2 = res.Duration;
                 rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9260,7 +9260,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 Thread.Sleep(50);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9275,7 +9275,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 Thread.Sleep(50);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d2 = res.Duration;
                 rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9326,7 +9326,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9342,7 +9342,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d2 = res.Duration;
                 rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9358,7 +9358,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d3 = res.Duration;
                 rt3 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9374,7 +9374,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d4 = res.Duration;
                 rt4 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9434,7 +9434,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9450,7 +9450,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d2 = res.Duration;
                 rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9466,7 +9466,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d3 = res.Duration;
                 rt3 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9482,7 +9482,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d4 = res.Duration;
                 rt4 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9538,7 +9538,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 await Task.Delay(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9579,7 +9579,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 await Task.Delay(100);
-            }, (ExecuteResult<object> res) =>
+            }, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
