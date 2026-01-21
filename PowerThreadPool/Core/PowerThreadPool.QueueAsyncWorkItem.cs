@@ -84,70 +84,70 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, out _, option);
 
         public WorkID QueueWorkItem<T1>(Func<T1, Task> asyncFunc, T1 param1, Action<ExecuteResultBase> callBack = null)
-            => QueueWorkItem(asyncFunc, out _, param1, callBack);
+            => QueueWorkItem(asyncFunc, param1, out _, callBack);
 
         public WorkID QueueWorkItem<T1>(Func<T1, Task> asyncFunc, T1 param1, WorkOption option)
-            => QueueWorkItem(asyncFunc, out _, param1, option);
+            => QueueWorkItem(asyncFunc, param1, out _, option);
 
         public WorkID QueueWorkItem<T1, T2>(Func<T1, T2, Task> asyncFunc, T1 param1, T2 param2, Action<ExecuteResultBase> callBack = null)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, callBack);
+            => QueueWorkItem(asyncFunc, param1, param2, out _, callBack);
 
         public WorkID QueueWorkItem<T1, T2>(Func<T1, T2, Task> asyncFunc, T1 param1, T2 param2, WorkOption option)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, option);
+            => QueueWorkItem(asyncFunc, param1, param2, out _, option);
 
         public WorkID QueueWorkItem<T1, T2, T3>(Func<T1, T2, T3, Task> asyncFunc, T1 param1, T2 param2, T3 param3, Action<ExecuteResultBase> callBack = null)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, param3, callBack);
+            => QueueWorkItem(asyncFunc, param1, param2, param3, out _, callBack);
 
         public WorkID QueueWorkItem<T1, T2, T3>(Func<T1, T2, T3, Task> asyncFunc, T1 param1, T2 param2, T3 param3, WorkOption option)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, param3, option);
+            => QueueWorkItem(asyncFunc, param1, param2, param3, out _, option);
 
         public WorkID QueueWorkItem<T1, T2, T3, T4>(Func<T1, T2, T3, T4, Task> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResultBase> callBack = null)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, param3, param4, callBack);
+            => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, callBack);
 
         public WorkID QueueWorkItem<T1, T2, T3, T4>(Func<T1, T2, T3, T4, Task> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption option)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, param3, param4, option);
+            => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, option);
 
         public WorkID QueueWorkItem<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, Task> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResultBase> callBack = null)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, param3, param4, param5, callBack);
+            => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, callBack);
 
         public WorkID QueueWorkItem<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, Task> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption option)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, param3, param4, param5, option);
+            => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, option);
 
         public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
-            => QueueWorkItem(asyncFunc, out _, callBack);
+            => QueueWorkItem(asyncFunc, callBack);
 
         public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, WorkOption option)
-            => QueueWorkItem(asyncFunc, out _, option);
+            => QueueWorkItem(asyncFunc, option);
 
         public WorkID QueueWorkItem<T1, TResult>(Func<T1, Task<TResult>> asyncFunc, T1 param1, Action<ExecuteResult<TResult>> callBack = null)
-            => QueueWorkItem(asyncFunc, out _, param1, callBack);
+            => QueueWorkItem(asyncFunc, param1, out _, callBack);
 
         public WorkID QueueWorkItem<T1, TResult>(Func<T1, Task<TResult>> asyncFunc, T1 param1, WorkOption option)
-            => QueueWorkItem(asyncFunc, out _, param1, option);
+            => QueueWorkItem(asyncFunc, param1, out _, option);
 
         public WorkID QueueWorkItem<T1, T2, TResult>(Func<T1, T2, Task<TResult>> asyncFunc, T1 param1, T2 param2, Action<ExecuteResult<TResult>> callBack = null)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, callBack);
+            => QueueWorkItem(asyncFunc, param1, param2, out _, callBack);
 
         public WorkID QueueWorkItem<T1, T2, TResult>(Func<T1, T2, Task<TResult>> asyncFunc, T1 param1, T2 param2, WorkOption option)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, option);
+            => QueueWorkItem(asyncFunc, param1, param2, out _, option);
 
         public WorkID QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<TResult>> callBack = null)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, param3, callBack);
+            => QueueWorkItem(asyncFunc, param1, param2, param3, out _, callBack);
 
         public WorkID QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, WorkOption option)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, param3, option);
+            => QueueWorkItem(asyncFunc, param1, param2, param3, out _, option);
 
         public WorkID QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<TResult>> callBack = null)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, param3, param4, callBack);
+            => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, callBack);
 
         public WorkID QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption option)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, param3, param4, option);
+            => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, option);
 
         public WorkID QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<TResult>> callBack = null)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, param3, param4, param5, callBack);
+            => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, callBack);
 
         public WorkID QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption option)
-            => QueueWorkItem(asyncFunc, out _, param1, param2, param3, param4, param5, option);
+            => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, option);
 
         /// <summary>
         /// Queues a async work for execution. 
@@ -204,7 +204,7 @@ namespace PowerThreadPool
         /// <param name="param1"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1>(Func<T1, Task> asyncFunc, out Task task, T1 param1, Action<ExecuteResultBase> callBack = null)
+        public WorkID QueueWorkItem<T1>(Func<T1, Task> asyncFunc, T1 param1, out Task task, Action<ExecuteResultBase> callBack = null)
         {
             WorkOption workOption = new WorkOption { Callback = callBack };
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1), out task, workOption);
@@ -219,7 +219,7 @@ namespace PowerThreadPool
         /// <param name="param1"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1>(Func<T1, Task> asyncFunc, out Task task, T1 param1, WorkOption option)
+        public WorkID QueueWorkItem<T1>(Func<T1, Task> asyncFunc, T1 param1, out Task task, WorkOption option)
         {
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1), out task, option);
         }
@@ -235,7 +235,7 @@ namespace PowerThreadPool
         /// <param name="param2"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2>(Func<T1, T2, Task> asyncFunc, out Task task, T1 param1, T2 param2, Action<ExecuteResultBase> callBack = null)
+        public WorkID QueueWorkItem<T1, T2>(Func<T1, T2, Task> asyncFunc, T1 param1, T2 param2, out Task task, Action<ExecuteResultBase> callBack = null)
         {
             WorkOption workOption = new WorkOption { Callback = callBack };
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1, param2), out task, workOption);
@@ -252,7 +252,7 @@ namespace PowerThreadPool
         /// <param name="param2"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2>(Func<T1, T2, Task> asyncFunc, out Task task, T1 param1, T2 param2, WorkOption option)
+        public WorkID QueueWorkItem<T1, T2>(Func<T1, T2, Task> asyncFunc, T1 param1, T2 param2, out Task task, WorkOption option)
         {
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1, param2), out task, option);
         }
@@ -270,7 +270,7 @@ namespace PowerThreadPool
         /// <param name="param3"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, T3>(Func<T1, T2, T3, Task> asyncFunc, out Task task, T1 param1, T2 param2, T3 param3, Action<ExecuteResultBase> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, T3>(Func<T1, T2, T3, Task> asyncFunc, T1 param1, T2 param2, T3 param3, out Task task, Action<ExecuteResultBase> callBack = null)
         {
             WorkOption workOption = new WorkOption { Callback = callBack };
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1, param2, param3), out task, workOption);
@@ -289,7 +289,7 @@ namespace PowerThreadPool
         /// <param name="param3"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, T3>(Func<T1, T2, T3, Task> asyncFunc, out Task task, T1 param1, T2 param2, T3 param3, WorkOption option)
+        public WorkID QueueWorkItem<T1, T2, T3>(Func<T1, T2, T3, Task> asyncFunc, T1 param1, T2 param2, T3 param3, out Task task, WorkOption option)
         {
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1, param2, param3), out task, option);
         }
@@ -309,7 +309,7 @@ namespace PowerThreadPool
         /// <param name="param4"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, T3, T4>(Func<T1, T2, T3, T4, Task> asyncFunc, out Task task, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResultBase> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, T3, T4>(Func<T1, T2, T3, T4, Task> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, out Task task, Action<ExecuteResultBase> callBack = null)
         {
             WorkOption workOption = new WorkOption { Callback = callBack };
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1, param2, param3, param4), out task, workOption);
@@ -330,7 +330,7 @@ namespace PowerThreadPool
         /// <param name="param4"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, T3, T4>(Func<T1, T2, T3, T4, Task> asyncFunc, out Task task, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption option)
+        public WorkID QueueWorkItem<T1, T2, T3, T4>(Func<T1, T2, T3, T4, Task> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, out Task task, WorkOption option)
         {
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1, param2, param3, param4), out task, option);
         }
@@ -352,7 +352,7 @@ namespace PowerThreadPool
         /// <param name="param5"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, Task> asyncFunc, out Task task, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResultBase> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, Task> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, out Task task, Action<ExecuteResultBase> callBack = null)
         {
             WorkOption workOption = new WorkOption { Callback = callBack };
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1, param2, param3, param4, param5), out task, workOption);
@@ -375,7 +375,7 @@ namespace PowerThreadPool
         /// <param name="param5"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, Task> asyncFunc, out Task task, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption option)
+        public WorkID QueueWorkItem<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, Task> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, out Task task, WorkOption option)
         {
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1, param2, param3, param4, param5), out task, option);
         }
@@ -441,7 +441,7 @@ namespace PowerThreadPool
         /// <param name="param1"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, TResult>(Func<T1, Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, T1 param1, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItem<T1, TResult>(Func<T1, Task<TResult>> asyncFunc, T1 param1, out Task<ExecuteResult<TResult>> task, Action<ExecuteResult<TResult>> callBack = null)
         {
             WorkOption workOption = new WorkOption();
             workOption.SetCallback(callBack);
@@ -458,7 +458,7 @@ namespace PowerThreadPool
         /// <param name="param1"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, TResult>(Func<T1, Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, T1 param1, WorkOption option)
+        public WorkID QueueWorkItem<T1, TResult>(Func<T1, Task<TResult>> asyncFunc, T1 param1, out Task<ExecuteResult<TResult>> task, WorkOption option)
         {
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1), out task, option);
         }
@@ -475,7 +475,7 @@ namespace PowerThreadPool
         /// <param name="param2"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, TResult>(Func<T1, T2, Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, T1 param1, T2 param2, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, TResult>(Func<T1, T2, Task<TResult>> asyncFunc, T1 param1, T2 param2, out Task<ExecuteResult<TResult>> task, Action<ExecuteResult<TResult>> callBack = null)
         {
             WorkOption workOption = new WorkOption();
             workOption.SetCallback(callBack);
@@ -494,7 +494,7 @@ namespace PowerThreadPool
         /// <param name="param2"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, TResult>(Func<T1, T2, Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, T1 param1, T2 param2, WorkOption option)
+        public WorkID QueueWorkItem<T1, T2, TResult>(Func<T1, T2, Task<TResult>> asyncFunc, T1 param1, T2 param2, out Task<ExecuteResult<TResult>> task, WorkOption option)
         {
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1, param2), out task, option);
         }
@@ -513,7 +513,7 @@ namespace PowerThreadPool
         /// <param name="param3"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, out Task<ExecuteResult<TResult>> task, Action<ExecuteResult<TResult>> callBack = null)
         {
             WorkOption workOption = new WorkOption();
             workOption.SetCallback(callBack);
@@ -534,7 +534,7 @@ namespace PowerThreadPool
         /// <param name="param3"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, T1 param1, T2 param2, T3 param3, WorkOption option)
+        public WorkID QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, out Task<ExecuteResult<TResult>> task, WorkOption option)
         {
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1, param2, param3), out task, option);
         }
@@ -555,7 +555,7 @@ namespace PowerThreadPool
         /// <param name="param4"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, out Task<ExecuteResult<TResult>> task, Action<ExecuteResult<TResult>> callBack = null)
         {
             WorkOption workOption = new WorkOption();
             workOption.SetCallback(callBack);
@@ -578,7 +578,7 @@ namespace PowerThreadPool
         /// <param name="param4"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption option)
+        public WorkID QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, out Task<ExecuteResult<TResult>> task, WorkOption option)
         {
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1, param2, param3, param4), out task, option);
         }
@@ -601,7 +601,7 @@ namespace PowerThreadPool
         /// <param name="param5"></param>
         /// <param name="callBack"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<TResult>> callBack = null)
+        public WorkID QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, out Task<ExecuteResult<TResult>> task, Action<ExecuteResult<TResult>> callBack = null)
         {
             WorkOption workOption = new WorkOption();
             workOption.SetCallback(callBack);
@@ -626,7 +626,7 @@ namespace PowerThreadPool
         /// <param name="param5"></param>
         /// <param name="option"></param>
         /// <returns></returns>
-        public WorkID QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption option)
+        public WorkID QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, out Task<ExecuteResult<TResult>> task, WorkOption option)
         {
             return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param1, param2, param3, param4, param5), out task, option);
         }
