@@ -106,12 +106,6 @@ namespace PowerThreadPool.Options
                 {
                     callback(typedResult);
                 }
-                else
-                {
-                    throw new InvalidCastException(
-                        $"Callback expects ExecuteResult<{typeof(TResult).Name}>, " +
-                        $"but got {baseResult?.GetType().Name ?? "null"}.");
-                }
             };
         }
     }

@@ -368,10 +368,10 @@ namespace UnitTest
                 DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 3000, ForceStop = false },
             };
 
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 throw new Exception("custom error");
-            }), (res) =>
+            }, (res) =>
             {
                 Assert.Equal("custom error", res.Exception.Message);
                 Assert.Equal(Status.Failed, res.Status);
@@ -528,11 +528,11 @@ namespace UnitTest
                 Interlocked.Increment(ref doneCount);
             };
 
-            WorkID id0 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
                 throw new Exception();
-            }));
+            });
 
             WorkID id1 = powerPool.QueueWorkItem(() =>
             {
@@ -574,17 +574,17 @@ namespace UnitTest
                 Interlocked.Increment(ref doneCount);
             };
 
-            WorkID id0 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(700);
                 throw new Exception();
-            }));
+            });
 
-            WorkID id1 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
                 throw new Exception();
-            }));
+            });
 
             powerPool.QueueWorkItem(() =>
             {
@@ -668,11 +668,11 @@ namespace UnitTest
                 Interlocked.Increment(ref doneCount);
             };
 
-            WorkID id0 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(10);
                 throw new Exception();
-            }));
+            });
 
             powerPool.Wait();
 
@@ -722,10 +722,10 @@ namespace UnitTest
             {
             });
 
-            WorkID id1 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-            }));
+            });
 
             Thread.Sleep(2000);
 
@@ -2142,33 +2142,33 @@ namespace UnitTest
             object res0 = null;
             object res1 = null;
             object res2 = null;
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                 }
-            }), (res) =>
+            }, (res) =>
             {
                 res0 = res.Exception;
             });
-            WorkID id = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                 }
-            }), (res) =>
+            }, (res) =>
             {
                 res1 = res.Exception;
             });
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                 }
-            }), (res) =>
+            }, (res) =>
             {
                 res2 = res.Exception;
             });
@@ -2195,33 +2195,33 @@ namespace UnitTest
             object res0 = null;
             object res1 = null;
             object res2 = null;
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                 }
-            }), (res) =>
+            }, (res) =>
             {
                 res0 = res.Exception;
             });
-            WorkID id = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                 }
-            }), (res) =>
+            }, (res) =>
             {
                 res1 = res.Exception;
             });
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                 }
-            }), (res) =>
+            }, (res) =>
             {
                 res2 = res.Exception;
             });
@@ -2241,33 +2241,33 @@ namespace UnitTest
             object res0 = null;
             object res1 = null;
             object res2 = null;
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                 }
-            }), (res) =>
+            }, (res) =>
             {
                 res0 = res.Exception;
             });
-            WorkID id = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                 }
-            }), (res) =>
+            }, (res) =>
             {
                 res1 = res.Exception;
             });
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                 }
-            }), (res) =>
+            }, (res) =>
             {
                 res2 = res.Exception;
             });
@@ -2542,7 +2542,7 @@ namespace UnitTest
             {
             });
 
-            powerPool.QueueWorkItem((Func<object>)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -2552,12 +2552,12 @@ namespace UnitTest
                         throw new Exception();
                     }
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 LongRunning = true,
             });
 
-            powerPool.QueueWorkItem((Func<object>)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
@@ -2567,7 +2567,7 @@ namespace UnitTest
                         throw new Exception();
                     }
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 LongRunning = true,
             });
@@ -2832,10 +2832,10 @@ namespace UnitTest
                 Assert.Equal(RetryPolicy.Limited, e.RetryInfo.RetryPolicy);
             };
 
-            powerPool.QueueWorkItem((Func<object>)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 }
             });
@@ -2863,10 +2863,10 @@ namespace UnitTest
                 }
             };
 
-            powerPool.QueueWorkItem((Func<object>)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, RetryPolicy = RetryPolicy.Unlimited }
             });
@@ -2890,10 +2890,10 @@ namespace UnitTest
                 Interlocked.Increment(ref runCount);
             };
 
-            powerPool.QueueWorkItem((Func<object>)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
                 Callback = (res) =>
@@ -2934,10 +2934,10 @@ namespace UnitTest
                 }
             };
 
-            powerPool.QueueWorkItem((Func<object>)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
             });
@@ -2963,10 +2963,10 @@ namespace UnitTest
                 Assert.Equal(RetryPolicy.Limited, e.RetryInfo.RetryPolicy);
             };
 
-            powerPool.QueueWorkItem((Func<object>)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
                 Callback = (res) =>
@@ -3000,10 +3000,10 @@ namespace UnitTest
                 Interlocked.Increment(ref runCount);
             };
 
-            powerPool.QueueWorkItem((Func<object>)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 }
             });
@@ -3034,10 +3034,10 @@ namespace UnitTest
                 }
             };
 
-            powerPool.QueueWorkItem((Func<object>)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
             });
@@ -3065,10 +3065,10 @@ namespace UnitTest
                 }
             };
 
-            powerPool.QueueWorkItem((Func<object>)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, RetryPolicy = RetryPolicy.Unlimited }
             });
@@ -3430,14 +3430,14 @@ namespace UnitTest
                 throw new Exception();
             };
 
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(100);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             powerPool.Stop();
             powerPool.Wait();
@@ -3499,10 +3499,10 @@ namespace UnitTest
                 errorFrom = e.ErrorFrom;
             };
 
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-            }));
+            });
 
             powerPool.Wait();
 
@@ -3585,10 +3585,10 @@ namespace UnitTest
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
             };
 
-            WorkID id0 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
-            }));
+            });
 
             powerPool.Wait();
             Assert.Equal(1, powerPool.FailedWorkCount);
@@ -3730,47 +3730,47 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            WorkID id0 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id1 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id2 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
-            WorkID id3 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
@@ -3790,47 +3790,47 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            WorkID id0 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id1 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id2 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
-            WorkID id3 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
@@ -3855,47 +3855,47 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            WorkID id0 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id1 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id2 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
-            WorkID id3 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
@@ -3919,47 +3919,47 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            WorkID id0 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id1 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id2 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
-            WorkID id3 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
@@ -3982,47 +3982,47 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            WorkID id0 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id1 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id2 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
-            WorkID id3 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
@@ -4044,47 +4044,47 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            WorkID id0 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id1 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id2 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
-            WorkID id3 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
@@ -4105,47 +4105,47 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            WorkID id0 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id1 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id2 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
-            WorkID id3 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
@@ -4168,47 +4168,47 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            WorkID id0 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id1 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "A"
             });
-            WorkID id2 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
-            WorkID id3 = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "B"
             });
@@ -4236,14 +4236,14 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            WorkID id = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             bool res = powerPool.AddWorkToGroup("AAA", id);
             Assert.True(res);
@@ -4264,14 +4264,14 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            WorkID id = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             bool res = powerPool.AddWorkToGroup("AAA", WorkID.FromString("AAA"));
             Assert.False(res);
@@ -4294,14 +4294,14 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            WorkID id = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "AAA"
             });
@@ -4329,14 +4329,14 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            WorkID id = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "AAA"
             });
@@ -4362,14 +4362,14 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            WorkID id = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "AAA"
             });
@@ -4395,14 +4395,14 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            WorkID id = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "AAA"
             });
@@ -4432,14 +4432,14 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            WorkID id = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             bool res = powerPool.GetGroup("AAA").Add(id);
             Assert.True(res);
@@ -4460,14 +4460,14 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
-            WorkID id = powerPool.QueueWorkItem((Func<object>)(() =>
+            WorkID id = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }), new WorkOption<object>()
+            }, new WorkOption<object>()
             {
                 Group = "AAA"
             });
@@ -6155,23 +6155,23 @@ namespace UnitTest
             powerPool.WorkCanceled += (s, e) => { Interlocked.Increment(ref cancelCount1); };
             powerPool.PowerPoolOption.DefaultCallback = (e) => { Interlocked.Increment(ref doneCount2); };
 
-            WorkID id1 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
-            WorkID id2 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             Assert.Equal(1, powerPool.AliveWorkerCount);
             Assert.Equal(1, powerPool.RunningWorkerCount);
@@ -6183,14 +6183,14 @@ namespace UnitTest
             Assert.Equal(2, powerPool.RunningWorkerCount);
             Assert.Equal(0, powerPool.IdleWorkerCount);
 
-            WorkID id3 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             Assert.Equal(2, powerPool.AliveWorkerCount);
             Assert.Equal(2, powerPool.RunningWorkerCount);
@@ -6214,46 +6214,46 @@ namespace UnitTest
 
             powerPool.PowerPoolOption.MaxThreads = 2;
 
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             Assert.Equal(2, powerPool.AliveWorkerCount);
             Assert.Equal(2, powerPool.RunningWorkerCount);
@@ -6291,23 +6291,23 @@ namespace UnitTest
             powerPool.WorkCanceled += (s, e) => { Interlocked.Increment(ref cancelCount1); };
             powerPool.PowerPoolOption.DefaultCallback = (e) => { Interlocked.Increment(ref doneCount2); };
 
-            WorkID id1 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
-            WorkID id2 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             Assert.Equal(1, powerPool.AliveWorkerCount);
             Assert.Equal(1, powerPool.RunningWorkerCount);
@@ -6319,14 +6319,14 @@ namespace UnitTest
             Assert.Equal(2, powerPool.RunningWorkerCount);
             Assert.Equal(0, powerPool.IdleWorkerCount);
 
-            WorkID id3 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id3 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             Assert.Equal(2, powerPool.AliveWorkerCount);
             Assert.Equal(2, powerPool.RunningWorkerCount);
@@ -6350,46 +6350,46 @@ namespace UnitTest
 
             powerPool.PowerPoolOption.MaxThreads = 2;
 
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             Assert.Equal(2, powerPool.AliveWorkerCount);
             Assert.Equal(2, powerPool.RunningWorkerCount);
@@ -6429,78 +6429,78 @@ namespace UnitTest
 
             powerPool.PowerPoolOption.MaxThreads = 1;
 
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             Assert.Equal(1, powerPool.AliveWorkerCount);
             Assert.Equal(1, powerPool.RunningWorkerCount);
@@ -6565,78 +6565,78 @@ namespace UnitTest
 
             powerPool.PowerPoolOption.MaxThreads = 1;
 
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             Assert.Equal(1, powerPool.AliveWorkerCount);
             Assert.Equal(1, powerPool.RunningWorkerCount);
@@ -6670,78 +6670,78 @@ namespace UnitTest
 
             powerPool.PowerPoolOption.MaxThreads = 1;
 
-            powerPool.QueueWorkItem((Action)(() =>
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
-            powerPool.QueueWorkItem((Action)(() =>
+            });
+            powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             Assert.Equal(1, powerPool.AliveWorkerCount);
             Assert.Equal(1, powerPool.RunningWorkerCount);
@@ -6780,23 +6780,23 @@ namespace UnitTest
             powerPool.WorkCanceled += (s, e) => { Interlocked.Increment(ref cancelCount1); };
             powerPool.PowerPoolOption.DefaultCallback = (e) => { Interlocked.Increment(ref doneCount2); };
 
-            WorkID id1 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
-            WorkID id2 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             Assert.Equal(2, powerPool.AliveWorkerCount);
             Assert.Equal(2, powerPool.RunningWorkerCount);
@@ -6818,23 +6818,23 @@ namespace UnitTest
             Assert.Equal(0, powerPool.RunningWorkerCount);
             Assert.Equal(0, powerPool.IdleWorkerCount);
 
-            id1 = powerPool.QueueWorkItem((Action)(() =>
+            id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
-            id2 = powerPool.QueueWorkItem((Action)(() =>
+            id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             Assert.Equal(2, powerPool.AliveWorkerCount);
             Assert.Equal(2, powerPool.RunningWorkerCount);
@@ -6860,23 +6860,23 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 2, DestroyThreadOption = new DestroyThreadOption { KeepAliveTime = 0, MinThreads = 0 } });
 
-            WorkID id1 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
-            WorkID id2 = powerPool.QueueWorkItem((Action)(() =>
+            WorkID id2 = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
 
             powerPool.Stop();
 
@@ -7129,14 +7129,14 @@ namespace UnitTest
                         }
                     });
 
-                errID = powerPool.QueueWorkItem((Action)(() =>
+                errID = powerPool.QueueWorkItem(() =>
                 {
                     while (true)
                     {
                         powerPool.StopIfRequested();
                         Thread.Sleep(100);
                     }
-                }));
+                });
             });
             Assert.NotNull(exception);
             Assert.IsType<WorkRejectedException>(exception);
@@ -8310,7 +8310,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
             powerPool.QueueWorkItem(async () =>
             {
                 for (int i = 0; i < 100; ++i)
@@ -8319,7 +8319,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
             powerPool.QueueWorkItem(async () =>
             {
                 for (int i = 0; i < 100; ++i)
@@ -8328,7 +8328,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
 
             powerPool.Wait();
 
@@ -8363,7 +8363,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
             powerPool.QueueWorkItem(async () =>
             {
                 for (int i = 0; i < 100; ++i)
@@ -8372,7 +8372,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
             powerPool.QueueWorkItem(async () =>
             {
                 for (int i = 0; i < 100; ++i)
@@ -8381,7 +8381,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
 
             powerPool.Wait();
 
@@ -8416,7 +8416,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
             powerPool.QueueWorkItem(async () =>
             {
                 for (int i = 0; i < 100; ++i)
@@ -8425,7 +8425,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
             powerPool.QueueWorkItem(async () =>
             {
                 for (int i = 0; i < 100; ++i)
@@ -8434,7 +8434,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
 
             powerPool.Wait();
 
@@ -8469,7 +8469,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
             powerPool.QueueWorkItem(async () =>
             {
                 for (int i = 0; i < 100; ++i)
@@ -8478,7 +8478,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
             powerPool.QueueWorkItem(async () =>
             {
                 for (int i = 0; i < 100; ++i)
@@ -8487,7 +8487,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
 
             powerPool.Wait();
 
@@ -8522,7 +8522,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
             powerPool.QueueWorkItem(async () =>
             {
                 for (int i = 0; i < 100; ++i)
@@ -8531,7 +8531,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
             powerPool.QueueWorkItem(async () =>
             {
                 for (int i = 0; i < 100; ++i)
@@ -8540,7 +8540,7 @@ namespace UnitTest
                 }
 
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
 
             powerPool.Wait();
 
@@ -8565,11 +8565,11 @@ namespace UnitTest
             };
             PowerPool powerPool = new PowerPool(powerPoolOption);
 
-            WorkID aID = powerPool.QueueWorkItem((Action)(() =>
+            WorkID aID = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(100);
                 throw new InvalidOperationException("Fail A");
-            }));
+            });
 
             ConcurrentSet<WorkID> deps1 = new ConcurrentSet<WorkID>(); deps1.Add(aID);
             ConcurrentSet<WorkID> deps2 = new ConcurrentSet<WorkID>(); deps2.Add(aID);
@@ -9163,7 +9163,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 await Task.Delay(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9175,7 +9175,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 await Task.Delay(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d2 = res.Duration;
                 rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9210,7 +9210,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 await Task.Delay(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9222,7 +9222,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 await Task.Delay(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d2 = res.Duration;
                 rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9260,7 +9260,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 Thread.Sleep(50);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9275,7 +9275,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 Thread.Sleep(50);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d2 = res.Duration;
                 rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9326,7 +9326,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9342,7 +9342,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d2 = res.Duration;
                 rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9358,7 +9358,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d3 = res.Duration;
                 rt3 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9374,7 +9374,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d4 = res.Duration;
                 rt4 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9434,7 +9434,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9450,7 +9450,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d2 = res.Duration;
                 rt2 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9466,7 +9466,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d3 = res.Duration;
                 rt3 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9482,7 +9482,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 Thread.Sleep(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d4 = res.Duration;
                 rt4 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9538,7 +9538,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 await Task.Delay(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9579,7 +9579,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 await Task.Delay(100);
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 d1 = res.Duration;
                 rt1 = (res.EndDateTime - res.StartDateTime).TotalMilliseconds;
@@ -9615,7 +9615,7 @@ namespace UnitTest
                     throw new Exception("Test Exception");
                 }
                 await Task.Delay(1);
-            });
+            }, out _);
 
             powerPool.Wait();
 

@@ -159,7 +159,7 @@ namespace UnitTest
                                 }
                                 await Task.Delay(random.Next(200, 600));
                                 await Task.Delay(random.Next(200, 600));
-                            });
+                            }, out _);
                             if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
@@ -356,7 +356,7 @@ namespace UnitTest
                                 }
                                 await Task.Delay(random.Next(200, 600));
                                 await Task.Delay(random.Next(200, 600));
-                            });
+                            }, out _);
                             if (id == null)
                             {
                                 Assert.Fail("PoolStopping");

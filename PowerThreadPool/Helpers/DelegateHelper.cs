@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace PowerThreadPool.Helpers
 {
@@ -130,6 +131,136 @@ namespace PowerThreadPool.Helpers
             TResult func()
             {
                 return function(param1, param2, param3, param4, param5);
+            }
+            return func;
+        }
+
+        internal static Func<Task> ToNormalFunc<T1>(
+            Func<T1, Task> asyncFunc,
+            T1 param1)
+        {
+            Task func()
+            {
+                return asyncFunc(param1);
+            }
+            return func;
+        }
+
+        internal static Func<Task<TResult>> ToNormalFunc<T1, TResult>(
+            Func<T1, Task<TResult>> asyncFunc,
+            T1 param1)
+        {
+            Task<TResult> func()
+            {
+                return asyncFunc(param1);
+            }
+            return func;
+        }
+
+        internal static Func<Task> ToNormalFunc<T1, T2>(
+            Func<T1, T2, Task> asyncFunc,
+            T1 param1,
+            T2 param2)
+        {
+            Task func()
+            {
+                return asyncFunc(param1, param2);
+            }
+            return func;
+        }
+
+        internal static Func<Task<TResult>> ToNormalFunc<T1, T2, TResult>(
+            Func<T1, T2, Task<TResult>> asyncFunc,
+            T1 param1,
+            T2 param2)
+        {
+            Task<TResult> func()
+            {
+                return asyncFunc(param1, param2);
+            }
+            return func;
+        }
+
+        internal static Func<Task> ToNormalFunc<T1, T2, T3>(
+            Func<T1, T2, T3, Task> asyncFunc,
+            T1 param1,
+            T2 param2,
+            T3 param3)
+        {
+            Task func()
+            {
+                return asyncFunc(param1, param2, param3);
+            }
+            return func;
+        }
+
+        internal static Func<Task<TResult>> ToNormalFunc<T1, T2, T3, TResult>(
+            Func<T1, T2, T3, Task<TResult>> asyncFunc,
+            T1 param1,
+            T2 param2,
+            T3 param3)
+        {
+            Task<TResult> func()
+            {
+                return asyncFunc(param1, param2, param3);
+            }
+            return func;
+        }
+
+        internal static Func<Task> ToNormalFunc<T1, T2, T3, T4>(
+            Func<T1, T2, T3, T4, Task> asyncFunc,
+            T1 param1,
+            T2 param2,
+            T3 param3,
+            T4 param4)
+        {
+            Task func()
+            {
+                return asyncFunc(param1, param2, param3, param4);
+            }
+            return func;
+        }
+
+        internal static Func<Task<TResult>> ToNormalFunc<T1, T2, T3, T4, TResult>(
+            Func<T1, T2, T3, T4, Task<TResult>> asyncFunc,
+            T1 param1,
+            T2 param2,
+            T3 param3,
+            T4 param4)
+        {
+            Task<TResult> func()
+            {
+                return asyncFunc(param1, param2, param3, param4);
+            }
+            return func;
+        }
+
+        internal static Func<Task> ToNormalFunc<T1, T2, T3, T4, T5>(
+            Func<T1, T2, T3, T4, T5, Task> asyncFunc,
+            T1 param1,
+            T2 param2,
+            T3 param3,
+            T4 param4,
+            T5 param5)
+        {
+            Task func()
+            {
+                return asyncFunc(param1, param2, param3, param4, param5);
+            }
+            return func;
+        }
+
+        internal static Func<Task<TResult>> ToNormalFunc<T1, T2, T3, T4, T5, TResult>(
+            Func<T1, T2, T3, T4, T5, Task<TResult>> asyncFunc,
+            T1 param1,
+            T2 param2,
+            T3 param3,
+            T4 param4,
+            T5 param5)
+        {
+            Task<TResult> func()
+            {
+                return asyncFunc(param1, param2, param3, param4, param5);
             }
             return func;
         }

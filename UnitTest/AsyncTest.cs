@@ -39,7 +39,7 @@ namespace UnitTest
                 int a = 0 / z;
                 await Task.Delay(100);
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 e = res.Exception;
             });
@@ -107,7 +107,7 @@ namespace UnitTest
                 }
                 a = 1;
                 return 5;
-            }, (res) =>
+            }, out _, (res) =>
             {
                 b = 2;
                 r = res.Result;
@@ -136,7 +136,7 @@ namespace UnitTest
 #pragma warning disable CS0162
                 return await OuterAsyncE();
 #pragma warning restore CS0162
-            }, (res) =>
+            }, out _, (res) =>
             {
                 e = res.Exception;
                 r = res.Result;
@@ -172,7 +172,7 @@ namespace UnitTest
                 Task.Delay(100).Wait();
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 Assert.Equal("2", l);
                 r = res.Result;
@@ -212,7 +212,7 @@ namespace UnitTest
                 Task.Delay(100).Wait();
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 Assert.Equal("2", l);
                 r = res.Result;
@@ -256,7 +256,7 @@ namespace UnitTest
                 Thread.Sleep(200);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 Assert.Equal("2", l);
                 r = res.Result;
@@ -304,7 +304,7 @@ namespace UnitTest
                 Thread.Sleep(200);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 Assert.Equal("2", l);
                 r = res.Result;
@@ -342,7 +342,7 @@ namespace UnitTest
             WorkID id = powerPool.QueueWorkItem<string>(async () =>
             {
                 return await OuterAsync();
-            }, (res) =>
+            }, out _, (res) =>
             {
                 e = res.Exception;
                 r = res.Result;
@@ -368,7 +368,7 @@ namespace UnitTest
             powerPool.QueueWorkItem<string>(async () =>
             {
                 return await OuterAsyncE();
-            }, (res) =>
+            }, out _, (res) =>
             {
                 e = res.Exception;
                 r = res.Result;
@@ -403,7 +403,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 Assert.Equal("2", l);
                 r = res.Result;
@@ -437,7 +437,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 r = res.Result;
                 s = res.Status;
@@ -470,7 +470,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 Assert.Equal("2", l);
                 r = res.Result;
@@ -502,7 +502,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 Assert.Equal("2", l);
                 r = res.Result;
@@ -547,16 +547,16 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 return "100";
-            });
+            }, out _);
             Thread.Sleep(2);
-            nsID = powerPool.QueueWorkItem((Action)(() =>
+            nsID = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     powerPool.StopIfRequested();
                     Thread.Sleep(10);
                 }
-            }));
+            });
             Thread.Sleep(10);
             powerPool.Stop(id);
             Thread.Sleep(10);
@@ -583,7 +583,7 @@ namespace UnitTest
                 powerPool.StopIfRequested();
                 await Task.Delay(100);
                 c = "3";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 r = res.Result;
             });
@@ -623,7 +623,7 @@ namespace UnitTest
                 Thread.Sleep(200);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 Assert.Equal("2", l);
                 r = res.Result;
@@ -664,7 +664,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 r = res.Result;
                 s = res.Status;
@@ -693,7 +693,7 @@ namespace UnitTest
                 await Task.Delay(500);
                 await Task.Delay(500);
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
             powerPool.QueueWorkItem(async () =>
             {
                 await Task.Delay(500);
@@ -701,7 +701,7 @@ namespace UnitTest
                 await Task.Delay(500);
                 await Task.Delay(500);
                 Interlocked.Increment(ref doneCount);
-            });
+            }, out _);
             powerPool.Wait();
             long e1 = GetNowSs();
 
@@ -755,7 +755,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 Assert.Equal("2", l);
                 r = res.Result;
@@ -793,7 +793,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 r = res.Result;
                 s = res.Status;
@@ -832,7 +832,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 r = res.Result;
                 s = res.Status;
@@ -874,7 +874,7 @@ namespace UnitTest
                 await Task.Delay(10);
                 c = "2";
                 return "100";
-            });
+            }, out _);
             powerPool.Cancel(id);
             powerPool.Wait();
 
@@ -903,7 +903,7 @@ namespace UnitTest
                 await Task.Delay(10);
                 await Task.Delay(10);
                 c = "2";
-            });
+            }, out _);
             powerPool.Wait(id);
 
             Assert.Equal("1", p);
@@ -927,7 +927,7 @@ namespace UnitTest
                 await Task.Delay(10);
                 await Task.Delay(10);
                 c = "2";
-            });
+            }, out _);
 
             await powerPool.WaitAsync(id);
 
@@ -953,7 +953,7 @@ namespace UnitTest
                 await Task.Delay(10);
                 await Task.Delay(10);
                 c = "2";
-            });
+            }, out _);
 
             Task t1 = powerPool.WaitAsync(id);
             Task t2 = powerPool.WaitAsync(id);
@@ -980,7 +980,7 @@ namespace UnitTest
                 await Task.Delay(200);
                 await Task.Delay(200);
                 c = "2";
-            });
+            }, out _);
             Thread.Sleep(100);
 
             powerPool.Wait(id);
@@ -1024,7 +1024,7 @@ namespace UnitTest
                         await Task.Delay(200);
                         await Task.Delay(200);
                         await Task.Delay(200);
-                    });
+                    }, out _);
                     if (id == null)
                     {
                         Assert.Fail("PoolStopping");
@@ -1090,7 +1090,7 @@ namespace UnitTest
                         await Task.Delay(200);
                         Thread.Sleep(200);
                         await Task.Delay(200);
-                    });
+                    }, out _);
                     if (id == null)
                     {
                         Assert.Fail("PoolStopping");
@@ -1136,7 +1136,7 @@ namespace UnitTest
                 await Task.Delay(10);
                 c = "2";
                 return "100";
-            }, new WorkOption<string> { ShouldStoreResult = true });
+            }, out _, new WorkOption<string> { ShouldStoreResult = true });
             var res = powerPool.Fetch<string>(id, true);
             powerPool.Wait();
 
@@ -1166,7 +1166,7 @@ namespace UnitTest
                 await Task.Delay(10);
                 c = "2";
                 return "100";
-            }, new WorkOption<string> { ShouldStoreResult = true });
+            }, out _, new WorkOption<string> { ShouldStoreResult = true });
             var res = await powerPool.FetchAsync<string>(id, true);
             powerPool.Wait();
 
@@ -1196,7 +1196,7 @@ namespace UnitTest
                 await Task.Delay(10);
                 c = "2";
                 return "100";
-            }, new WorkOption<string> { ShouldStoreResult = true });
+            }, out _, new WorkOption<string> { ShouldStoreResult = true });
             var res = powerPool.Fetch<string>(new List<WorkID> { id }, true);
             powerPool.Wait();
 
@@ -1226,7 +1226,7 @@ namespace UnitTest
                 await Task.Delay(10);
                 c = "2";
                 return "100";
-            }, new WorkOption<string> { ShouldStoreResult = true });
+            }, out _, new WorkOption<string> { ShouldStoreResult = true });
             var res = await powerPool.FetchAsync<string>(new List<WorkID> { id }, true);
             powerPool.Wait();
 
@@ -1254,7 +1254,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 Assert.Equal("2", l);
                 r = res.Result;
@@ -1295,7 +1295,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 Assert.Equal("2", l);
                 r = res.Result;
@@ -1340,7 +1340,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 log.Add("5");
                 r1 = "100";
-            });
+            }, out _);
             powerPool.QueueWorkItem<string>(async () =>
             {
                 log.Add("6");
@@ -1355,7 +1355,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 log.Add("11");
                 return "200";
-            }, new WorkOption<string>
+            }, out _, new WorkOption<string>
             {
                 Dependents = new PowerThreadPool.Collections.ConcurrentSet<WorkID> { id },
                 Callback = (res) =>
@@ -1400,7 +1400,7 @@ namespace UnitTest
                     await Task.Delay(10);
                     await Task.Delay(10);
                     Interlocked.Increment(ref count);
-                });
+                }, out _);
             }
             powerPool.EnablePoolIdleCheck = true;
 
@@ -1424,21 +1424,21 @@ namespace UnitTest
                 await Task.Delay(10);
                 await Task.Delay(10);
                 Interlocked.Increment(ref count);
-            }, new WorkOption { Group = "AAA" });
+            }, out _, new WorkOption { Group = "AAA" });
             powerPool.QueueWorkItem(async () =>
             {
                 await Task.Delay(10);
                 await Task.Delay(10);
                 await Task.Delay(10);
                 Interlocked.Increment(ref count);
-            }, new WorkOption { Group = "AAA" });
+            }, out _, new WorkOption { Group = "AAA" });
             powerPool.QueueWorkItem(async () =>
             {
                 await Task.Delay(10);
                 await Task.Delay(10);
                 await Task.Delay(10);
                 Interlocked.Increment(ref count);
-            }, new WorkOption { Group = "AAA" });
+            }, out _, new WorkOption { Group = "AAA" });
 
             powerPool.Wait();
 
@@ -1529,14 +1529,14 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1 });
-            WorkID fid = powerPool.QueueWorkItem((Action)(() =>
+            WorkID fid = powerPool.QueueWorkItem(() =>
             {
                 while (true)
                 {
                     Thread.Sleep(100);
                     powerPool.StopIfRequested();
                 }
-            }));
+            });
             WorkID id = powerPool.QueueWorkItem<string>(async () =>
             {
                 await Task.Delay(500);
@@ -1587,7 +1587,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 throw new Exception();
-            }, new WorkOption<object>()
+            }, out _, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 }
             });
@@ -1620,7 +1620,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 throw new Exception();
-            }, new WorkOption<object>()
+            }, out _, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, RetryPolicy = RetryPolicy.Unlimited }
             });
@@ -1649,7 +1649,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 throw new Exception();
-            }, new WorkOption<object>()
+            }, out _, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
                 Callback = (res) =>
@@ -1695,7 +1695,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 throw new Exception();
-            }, new WorkOption<object>()
+            }, out _, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
             });
@@ -1726,7 +1726,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 throw new Exception();
-            }, new WorkOption<object>()
+            }, out _, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
                 Callback = (res) =>
@@ -1765,7 +1765,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 throw new Exception();
-            }, new WorkOption<object>()
+            }, out _, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 }
             });
@@ -1801,7 +1801,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 throw new Exception();
-            }, new WorkOption<object>()
+            }, out _, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
             });
@@ -1834,7 +1834,7 @@ namespace UnitTest
                 await Task.Delay(1);
                 await Task.Delay(1);
                 throw new Exception();
-            }, new WorkOption<object>()
+            }, out _, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, RetryPolicy = RetryPolicy.Unlimited }
             });
@@ -1866,7 +1866,7 @@ namespace UnitTest
                     await Task.Delay(10);
                     c = "2";
                     Interlocked.Increment(ref doneCount);
-                }, workOption);
+                }, out _, workOption);
             }
 
             await powerPool.WaitAsync();

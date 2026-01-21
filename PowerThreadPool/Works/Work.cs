@@ -13,6 +13,12 @@ namespace PowerThreadPool.Works
     internal abstract class Work<TResult> : WorkBase
     {
         private WorkOption _workOption;
+        private WorkOption<TResult> _workOptionResult;
+        private WorkOption WorkOption
+        {
+            get => _workOptionResult ?? _workOption;
+            set => _workOption = value;
+        }
 
         internal ExecuteResult<TResult> _executeResult;
         internal ExecuteResult<TResult> ExecuteResult
@@ -23,25 +29,25 @@ namespace PowerThreadPool.Works
 
         internal override string Group
         {
-            get => _workOption.Group;
+            get => WorkOption.Group;
             set
             {
-                if (_workOption.IsDefaultInstance)
+                if (WorkOption.IsDefaultInstance)
                 {
-                    _workOption = new WorkOption();
+                    WorkOption = new WorkOption();
                 }
-                _workOption.Group = value;
+                WorkOption.Group = value;
             }
         }
-        internal override ThreadPriority ThreadPriority => _workOption.ThreadPriority;
-        internal override bool IsBackground => _workOption.IsBackground;
-        internal override int WorkPriority => _workOption.WorkPriority;
-        internal override TimeoutOption WorkTimeoutOption => _workOption.TimeoutOption;
-        internal override RetryOption RetryOption => _workOption.RetryOption;
-        internal override bool LongRunning => _workOption.LongRunning;
-        internal override bool ShouldStoreResult => _workOption.ShouldStoreResult;
-        internal override WorkPlacementPolicy WorkPlacementPolicy => _workOption.WorkPlacementPolicy;
-        internal override ConcurrentSet<WorkID> Dependents => _workOption.Dependents;
+        internal override ThreadPriority ThreadPriority => WorkOption.ThreadPriority;
+        internal override bool IsBackground => WorkOption.IsBackground;
+        internal override int WorkPriority => WorkOption.WorkPriority;
+        internal override TimeoutOption WorkTimeoutOption => WorkOption.TimeoutOption;
+        internal override RetryOption RetryOption => WorkOption.RetryOption;
+        internal override bool LongRunning => WorkOption.LongRunning;
+        internal override bool ShouldStoreResult => WorkOption.ShouldStoreResult;
+        internal override WorkPlacementPolicy WorkPlacementPolicy => WorkOption.WorkPlacementPolicy;
+        internal override ConcurrentSet<WorkID> Dependents => WorkOption.Dependents;
         internal override bool AllowEventsAndCallback
         {
             get => AsyncWorkInfo != null ?
@@ -61,10 +67,17 @@ namespace PowerThreadPool.Works
 
         internal Work(PowerPool powerPool, WorkID id, WorkOption option, AsyncWorkInfo asyncWorkInfo)
         {
+            if (option is WorkOption<TResult> wor)
+            {
+                _workOptionResult = wor;
+            }
+            else
+            {
+                _workOption = option;
+            }
             PowerPool = powerPool;
             ID = id;
             ExecuteCount = 0;
-            _workOption = option;
             AsyncWorkInfo = asyncWorkInfo;
             ShouldStop = false;
             IsPausing = false;
@@ -364,9 +377,13 @@ namespace PowerThreadPool.Works
 
         internal override void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption)
         {
-            if (_workOption.Callback != null)
+            if (WorkOption.Callback != null)
             {
-                PowerPool.SafeCallback<TResult>(_workOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
+                PowerPool.SafeCallback<TResult>(WorkOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
+            }
+            else if (WorkOption is WorkOption<TResult> wor && wor.Callback != null)
+            {
+                PowerPool.SafeCallback<TResult>(wor.Callback, EventArguments.ErrorFrom.Callback, executeResult);
             }
             else if (powerPoolOption.DefaultCallback != null)
             {
@@ -380,7 +397,7 @@ namespace PowerThreadPool.Works
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
             executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, ExecuteCount);
             ExecuteResult = executeResult;
-            if (_workOption.ShouldStoreResult)
+            if (WorkOption.ShouldStoreResult)
             {
                 PowerPool._resultDic[ID] = ExecuteResult;
             }
@@ -393,7 +410,7 @@ namespace PowerThreadPool.Works
             {
                 return false;
             }
-            else if (_workOption.RetryOption != null && Status == Status.Failed && ((_workOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < _workOption.RetryOption.MaxRetryCount) || _workOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
+            else if (WorkOption.RetryOption != null && Status == Status.Failed && ((WorkOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < WorkOption.RetryOption.MaxRetryCount) || WorkOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
             {
                 return true;
             }
@@ -405,7 +422,7 @@ namespace PowerThreadPool.Works
 
         internal override bool ShouldImmediateRetry(ExecuteResultBase executeResult)
         {
-            bool res = ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry;
+            bool res = ShouldRetry(executeResult) && WorkOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry;
             if (res)
             {
                 ExecuteResult = null;
@@ -415,7 +432,7 @@ namespace PowerThreadPool.Works
 
         internal override bool ShouldRequeue(ExecuteResultBase executeResult)
         {
-            bool res = ShouldRetry(executeResult) && _workOption.RetryOption.RetryBehavior == RetryBehavior.Requeue;
+            bool res = ShouldRetry(executeResult) && WorkOption.RetryOption.RetryBehavior == RetryBehavior.Requeue;
             if (res)
             {
                 ExecuteResult = null;

@@ -367,7 +367,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 await Task.Delay(100);
                 l = "2";
-            }, (ExecuteResultBase res) =>
+            }, out _, (ExecuteResultBase res) =>
             {
                 c = "3";
             });
@@ -396,7 +396,7 @@ namespace UnitTest
                 await Task.Delay(100);
                 c = "3";
                 return "100";
-            }, (res) =>
+            }, out _, (res) =>
             {
                 Assert.Equal("2", l);
                 r = res.Result;
