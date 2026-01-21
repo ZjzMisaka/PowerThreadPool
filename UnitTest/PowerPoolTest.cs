@@ -371,6 +371,10 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception("custom error");
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, (res) =>
             {
                 Assert.Equal("custom error", res.Exception.Message);
@@ -532,6 +536,10 @@ namespace UnitTest
             {
                 Thread.Sleep(1000);
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             WorkID id1 = powerPool.QueueWorkItem(() =>
@@ -578,12 +586,20 @@ namespace UnitTest
             {
                 Thread.Sleep(700);
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             powerPool.QueueWorkItem(() =>
@@ -672,6 +688,10 @@ namespace UnitTest
             {
                 Thread.Sleep(10);
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             powerPool.Wait();
@@ -725,6 +745,10 @@ namespace UnitTest
             WorkID id1 = powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             Thread.Sleep(2000);
@@ -2148,6 +2172,10 @@ namespace UnitTest
                 {
                     Thread.Sleep(10);
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, (res) =>
             {
                 res0 = res.Exception;
@@ -2158,6 +2186,10 @@ namespace UnitTest
                 {
                     Thread.Sleep(10);
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, (res) =>
             {
                 res1 = res.Exception;
@@ -2168,6 +2200,10 @@ namespace UnitTest
                 {
                     Thread.Sleep(10);
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, (res) =>
             {
                 res2 = res.Exception;
@@ -2201,6 +2237,10 @@ namespace UnitTest
                 {
                     Thread.Sleep(10);
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, (res) =>
             {
                 res0 = res.Exception;
@@ -2211,6 +2251,10 @@ namespace UnitTest
                 {
                     Thread.Sleep(10);
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, (res) =>
             {
                 res1 = res.Exception;
@@ -2221,6 +2265,10 @@ namespace UnitTest
                 {
                     Thread.Sleep(10);
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, (res) =>
             {
                 res2 = res.Exception;
@@ -2247,6 +2295,10 @@ namespace UnitTest
                 {
                     Thread.Sleep(10);
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, (res) =>
             {
                 res0 = res.Exception;
@@ -2257,6 +2309,10 @@ namespace UnitTest
                 {
                     Thread.Sleep(10);
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, (res) =>
             {
                 res1 = res.Exception;
@@ -2267,6 +2323,10 @@ namespace UnitTest
                 {
                     Thread.Sleep(10);
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, (res) =>
             {
                 res2 = res.Exception;
@@ -2552,6 +2612,10 @@ namespace UnitTest
                         throw new Exception();
                     }
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 LongRunning = true,
@@ -2567,6 +2631,10 @@ namespace UnitTest
                         throw new Exception();
                     }
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 LongRunning = true,
@@ -2835,6 +2903,10 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 }
@@ -2866,6 +2938,10 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, RetryPolicy = RetryPolicy.Unlimited }
@@ -2893,6 +2969,10 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
@@ -2937,6 +3017,10 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
@@ -2966,6 +3050,10 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
@@ -3003,6 +3091,10 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 }
@@ -3037,6 +3129,10 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
@@ -3068,6 +3164,10 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, RetryPolicy = RetryPolicy.Unlimited }
@@ -3437,6 +3537,10 @@ namespace UnitTest
                     Thread.Sleep(100);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             powerPool.Stop();
@@ -3502,6 +3606,10 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             powerPool.Wait();
@@ -3588,6 +3696,10 @@ namespace UnitTest
             WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             powerPool.Wait();
@@ -3737,6 +3849,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -3748,6 +3864,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -3759,6 +3879,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -3770,6 +3894,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -3797,6 +3925,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -3808,6 +3940,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -3819,6 +3955,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -3830,6 +3970,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -3862,6 +4006,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -3873,6 +4021,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -3884,6 +4036,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -3895,6 +4051,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -3926,6 +4086,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -3937,6 +4101,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -3948,6 +4116,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -3959,6 +4131,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -3989,6 +4165,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -4000,6 +4180,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -4011,6 +4195,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -4022,6 +4210,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -4051,6 +4243,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -4062,6 +4258,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -4073,6 +4273,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -4084,6 +4288,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -4112,6 +4320,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -4123,6 +4335,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -4134,6 +4350,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -4145,6 +4365,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -4175,6 +4399,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -4186,6 +4414,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "A"
@@ -4197,6 +4429,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -4208,6 +4444,10 @@ namespace UnitTest
                     Thread.Sleep(1);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "B"
@@ -4243,6 +4483,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             bool res = powerPool.AddWorkToGroup("AAA", id);
@@ -4271,6 +4515,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             bool res = powerPool.AddWorkToGroup("AAA", WorkID.FromString("AAA"));
@@ -4301,6 +4549,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "AAA"
@@ -4336,6 +4588,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "AAA"
@@ -4369,6 +4625,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "AAA"
@@ -4402,6 +4662,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "AAA"
@@ -4439,6 +4703,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             bool res = powerPool.GetGroup("AAA").Add(id);
@@ -4467,6 +4735,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             }, new WorkOption<object>()
             {
                 Group = "AAA"
@@ -6162,6 +6434,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             WorkID id2 = powerPool.QueueWorkItem(() =>
@@ -6171,6 +6447,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             Assert.Equal(1, powerPool.AliveWorkerCount);
@@ -6190,6 +6470,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             Assert.Equal(2, powerPool.AliveWorkerCount);
@@ -6221,6 +6505,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6229,6 +6517,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6237,6 +6529,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6245,6 +6541,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6253,6 +6553,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             Assert.Equal(2, powerPool.AliveWorkerCount);
@@ -6298,6 +6602,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             WorkID id2 = powerPool.QueueWorkItem(() =>
@@ -6307,6 +6615,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             Assert.Equal(1, powerPool.AliveWorkerCount);
@@ -6326,6 +6638,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             Assert.Equal(2, powerPool.AliveWorkerCount);
@@ -6357,6 +6673,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6365,6 +6685,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6373,6 +6697,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6381,6 +6709,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6389,6 +6721,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             Assert.Equal(2, powerPool.AliveWorkerCount);
@@ -6436,6 +6772,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6444,6 +6784,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6452,6 +6796,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6460,6 +6808,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6468,6 +6820,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6476,6 +6832,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6484,6 +6844,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6492,6 +6856,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6500,6 +6868,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             Assert.Equal(1, powerPool.AliveWorkerCount);
@@ -6572,6 +6944,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6580,6 +6956,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6588,6 +6968,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6596,6 +6980,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6604,6 +6992,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6612,6 +7004,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6620,6 +7016,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6628,6 +7028,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6636,6 +7040,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             Assert.Equal(1, powerPool.AliveWorkerCount);
@@ -6677,6 +7085,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6685,6 +7097,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6693,6 +7109,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6701,6 +7121,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6709,6 +7133,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6717,6 +7145,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6725,6 +7157,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6733,6 +7169,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             powerPool.QueueWorkItem(() =>
             {
@@ -6741,6 +7181,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             Assert.Equal(1, powerPool.AliveWorkerCount);
@@ -6787,6 +7231,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             WorkID id2 = powerPool.QueueWorkItem(() =>
@@ -6796,6 +7244,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             Assert.Equal(2, powerPool.AliveWorkerCount);
@@ -6825,6 +7277,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             id2 = powerPool.QueueWorkItem(() =>
@@ -6834,6 +7290,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             Assert.Equal(2, powerPool.AliveWorkerCount);
@@ -6867,6 +7327,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             WorkID id2 = powerPool.QueueWorkItem(() =>
@@ -6876,6 +7340,10 @@ namespace UnitTest
                     Thread.Sleep(10);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             powerPool.Stop();
@@ -7136,6 +7604,10 @@ namespace UnitTest
                         powerPool.StopIfRequested();
                         Thread.Sleep(100);
                     }
+#pragma warning disable CS0162
+                    // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                    return;
+#pragma warning restore CS0162
                 });
             });
             Assert.NotNull(exception);
@@ -8569,6 +9041,10 @@ namespace UnitTest
             {
                 Thread.Sleep(100);
                 throw new InvalidOperationException("Fail A");
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
 
             ConcurrentSet<WorkID> deps1 = new ConcurrentSet<WorkID>(); deps1.Add(aID);

@@ -556,6 +556,10 @@ namespace UnitTest
                     powerPool.StopIfRequested();
                     Thread.Sleep(10);
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             Thread.Sleep(10);
             powerPool.Stop(id);
@@ -1536,6 +1540,10 @@ namespace UnitTest
                     Thread.Sleep(100);
                     powerPool.StopIfRequested();
                 }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
             });
             WorkID id = powerPool.QueueWorkItem<string>(async () =>
             {

@@ -109,7 +109,14 @@ namespace UnitTest
                         int r = random.Next(0, 101);
                         if (r == 100)
                         {
-                            WorkID id = powerPool.QueueWorkItem(() => { throw new Exception(); });
+                            WorkID id = powerPool.QueueWorkItem(() =>
+                            {
+                                throw new Exception();
+#pragma warning disable CS0162
+                                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                                return;
+#pragma warning restore CS0162
+                            });
                             if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
@@ -306,7 +313,14 @@ namespace UnitTest
                         int r = random.Next(0, 101);
                         if (r == 100)
                         {
-                            WorkID id = powerPool.QueueWorkItem(() => { throw new Exception(); });
+                            WorkID id = powerPool.QueueWorkItem(() =>
+                            {
+                                throw new Exception();
+#pragma warning disable CS0162
+                                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                                return;
+#pragma warning restore CS0162
+                            });
                             if (id == null)
                             {
                                 Assert.Fail("PoolStopping");
