@@ -296,7 +296,7 @@ namespace PowerThreadPool
                 {
                     asyncBaseWork.WaitSignal.Set();
                 }
-                _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true);
+                _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true, asyncBaseWork.ShouldStoreResult);
             }
         }
 

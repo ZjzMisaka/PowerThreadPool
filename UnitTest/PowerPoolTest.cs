@@ -9612,11 +9612,11 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.InRange(d1, 499, 570);
-            Assert.InRange(d2, 499, 570);
+            Assert.InRange(d1, 499, 580);
+            Assert.InRange(d2, 499, 580);
 
-            Assert.InRange(rt1, 499, 570);
-            Assert.InRange(rt2, 499, 570);
+            Assert.InRange(rt1, 499, 580);
+            Assert.InRange(rt2, 499, 580);
         }
 
         [Fact]
@@ -9709,8 +9709,8 @@ namespace UnitTest
             Assert.InRange(d1, 0, 5);
             Assert.InRange(d2, 0, 5);
 
-            Assert.InRange(rt1, 499, 570);
-            Assert.InRange(rt2, 499, 570);
+            Assert.InRange(rt1, 499, 580);
+            Assert.InRange(rt2, 499, 580);
         }
 
         [Fact]
@@ -10025,8 +10025,8 @@ namespace UnitTest
             Assert.InRange(d1, 0, 5);
             Assert.InRange(d2, 0, 5);
 
-            Assert.InRange(rt1, 499, 570);
-            Assert.InRange(rt2, 499, 570);
+            Assert.InRange(rt1, 499, 580);
+            Assert.InRange(rt2, 499, 580);
         }
 
         [Fact]

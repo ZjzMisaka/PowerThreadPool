@@ -912,22 +912,26 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="baseID"></param>
         /// <param name="started"></param>
-        internal void TryRemoveAsyncWork(WorkID baseID, bool started)
+        internal void TryRemoveAsyncWork(WorkID baseID, bool started, bool justGetDontRemove = false)
         {
-            if (_asyncWorkIDDict.TryRemove(baseID, out ConcurrentSet<WorkID> asyncIDList))
+            ConcurrentSet<WorkID> asyncIDList = null;
+            if (justGetDontRemove ? _asyncWorkIDDict.TryGetValue(baseID, out asyncIDList) : _asyncWorkIDDict.TryRemove(baseID, out asyncIDList))
             {
                 Interlocked.Decrement(ref _asyncWorkCount);
-                if (_aliveWorkDic.TryRemove(baseID, out WorkBase baseWork))
+                if (!justGetDontRemove)
                 {
-                    baseWork.Dispose();
-                }
-                if (started)
-                {
-                    foreach (WorkID asyncID in asyncIDList)
+                    if (_aliveWorkDic.TryRemove(baseID, out WorkBase baseWork))
                     {
-                        if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
+                        baseWork.Dispose();
+                    }
+                    if (started)
+                    {
+                        foreach (WorkID asyncID in asyncIDList)
                         {
-                            asyncWork.Dispose();
+                            if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
+                            {
+                                asyncWork.Dispose();
+                            }
                         }
                     }
                 }
