@@ -134,7 +134,6 @@ namespace PowerThreadPool
             }
             _workGroupDic.Clear();
             _asyncWorkIDDict.Clear();
-            _asyncWorkCount = 0;
             throw new WorkStopException();
         }
 
@@ -1106,7 +1105,7 @@ namespace PowerThreadPool
                 }
             }
 
-            _workDependencyController.Cancel(id);
+            _workDependencyController.Cancel(id, out _);
 
             return res;
         }
@@ -1301,23 +1300,28 @@ namespace PowerThreadPool
             }
 
             bool res = false;
+            WorkBase work = default;
+            bool isQueuedAndDidnotCallTryRemoveAsyncWorkInside = false;
 
-            if (_workDependencyController.Cancel(id))
+            if (_workDependencyController.Cancel(id, out work))
             {
                 res = true;
             }
-            else if (_suspendedWork.TryRemove(id, out _))
+            else if (_suspendedWork.TryRemove(id, out work))
             {
                 Interlocked.Decrement(ref _waitingWorkCount);
                 res = true;
+                isQueuedAndDidnotCallTryRemoveAsyncWorkInside = true;
             }
-            else if (_stopSuspendedWork.TryRemove(id, out _))
+            else if (_stopSuspendedWork.TryRemove(id, out work))
             {
                 res = true;
+                isQueuedAndDidnotCallTryRemoveAsyncWorkInside = true;
             }
-            else if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
+            else if (_aliveWorkDic.TryGetValue(id, out work))
             {
                 res = work.Cancel(true);
+                isQueuedAndDidnotCallTryRemoveAsyncWorkInside = false;
                 if (res && _aliveWorkDic.TryRemove(id, out _))
                 {
                     work.Dispose();
@@ -1328,9 +1332,9 @@ namespace PowerThreadPool
                 res = false;
             }
 
-            if (res)
+            if (res && work.BaseAsyncWorkID != null)
             {
-                TryRemoveAsyncWork(id, false);
+                TryRemoveAsyncWork(id, false, false, isQueuedAndDidnotCallTryRemoveAsyncWorkInside);
             }
 
             return res;
@@ -1360,7 +1364,7 @@ namespace PowerThreadPool
         {
             if (work.BaseAsyncWorkID != null)
             {
-                TryRemoveAsyncWork(work.ID, true);
+                TryRemoveAsyncWork(work.ID, true, false, false);
                 _resultDic.TryRemove(work.AsyncWorkID, out _);
             }
             else

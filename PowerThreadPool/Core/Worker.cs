@@ -290,13 +290,18 @@ namespace PowerThreadPool
                 Work.WaitSignal.Set();
             }
 
-            if (Work.AllowEventsAndCallback && Work.BaseAsyncWorkID != null && _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork))
+            if (Work.AllowEventsAndCallback && Work.BaseAsyncWorkID != null)
             {
-                if (asyncBaseWork.WaitSignal != null)
+                bool shouldStoreResult = false;
+                if (_powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork))
                 {
-                    asyncBaseWork.WaitSignal.Set();
+                    shouldStoreResult = asyncBaseWork.ShouldStoreResult;
+                    if (asyncBaseWork.WaitSignal != null)
+                    {
+                        asyncBaseWork.WaitSignal.Set();
+                    }
                 }
-                _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true, asyncBaseWork.ShouldStoreResult);
+                _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true, shouldStoreResult, true);
             }
         }
 
@@ -330,7 +335,7 @@ namespace PowerThreadPool
             }
             if (Work.BaseAsyncWorkID != null)
             {
-                _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true);
+                _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true, false, true);
 
                 if (_powerPool._tcsDict.TryRemove(Work.RealWorkID, out ITaskCompletionSource tcs))
                 {

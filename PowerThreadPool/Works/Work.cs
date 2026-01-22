@@ -149,7 +149,7 @@ namespace PowerThreadPool.Works
                 {
                     if (BaseAsyncWorkID != null)
                     {
-                        PowerPool.TryRemoveAsyncWork(ID, false);
+                        PowerPool.TryRemoveAsyncWork(ID, false, false, true);
 
                         if (PowerPool._tcsDict.TryRemove(RealWorkID, out ITaskCompletionSource tcs))
                         {
