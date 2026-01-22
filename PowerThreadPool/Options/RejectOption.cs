@@ -9,9 +9,6 @@ namespace PowerThreadPool.Options
         CallerRunsPolicy,
         DiscardPolicy,
         DiscardQueuedPolicy,
-        [ObsoleteAttribute("Use DiscardQueuedPolicy instead.", false)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        DiscardOldestPolicy,
     }
 
     public class RejectOption

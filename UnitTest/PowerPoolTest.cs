@@ -7923,7 +7923,7 @@ namespace UnitTest
                 MaxThreads = 4,
                 RejectOption = new RejectOption
                 {
-                    RejectType = RejectType.DiscardOldestPolicy,
+                    RejectType = RejectType.DiscardQueuedPolicy,
                     ThreadQueueLimit = 1,
                 }
             };

@@ -31,14 +31,6 @@ namespace PowerThreadPool
         }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        [ObsoleteAttribute("Use For instead.", false)]
-        [ExcludeFromCodeCoverage]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Group ForAsync(int start, int end, Func<int, Task> body, int step = 1, string groupName = null)
-        {
-            return For(start, end, body, step, groupName);
-        }
-
         /// <summary>
         /// Creates a parallel loop that executes iterations from start to end.
         /// </summary>
@@ -71,14 +63,6 @@ namespace PowerThreadPool
         }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        [ObsoleteAttribute("Use For instead.", false)]
-        [ExcludeFromCodeCoverage]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Group ForAsync<TSource>(int start, int end, IList<TSource> source, Func<TSource, Task> body, int step = 1, string groupName = null)
-        {
-            return For(start, end, source, body, step, groupName);
-        }
-
         /// <summary>
         /// Creates a parallel loop that executes iterations from start to end.
         /// </summary>
@@ -122,14 +106,6 @@ namespace PowerThreadPool
         }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        [ObsoleteAttribute("Use For instead.", false)]
-        [ExcludeFromCodeCoverage]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Group ForAsync<TSource>(int start, int end, IList<TSource> source, Func<TSource, int, Task> body, int step = 1, string groupName = null)
-        {
-            return For(start, end, source, body, step, groupName);
-        }
-
         /// <summary>
         /// Creates a parallel loop that executes iterations from start to end.
         /// </summary>
@@ -202,14 +178,6 @@ namespace PowerThreadPool
         }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        [ObsoleteAttribute("Use ForEach instead.", false)]
-        [ExcludeFromCodeCoverage]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Group ForEachAsync<TSource>(IEnumerable<TSource> source, Func<TSource, Task> body, string groupName = null)
-        {
-            return ForEach(source, body, groupName);
-        }
-
         /// <summary>
         /// Creates a parallel loop that executes a specified action for each element in the source collection.
         /// </summary>
@@ -247,14 +215,6 @@ namespace PowerThreadPool
         }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        [ObsoleteAttribute("Use ForEach instead.", false)]
-        [ExcludeFromCodeCoverage]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Group ForEachAsync<TSource>(IEnumerable<TSource> source, Func<TSource, int, Task> body, string groupName = null)
-        {
-            return ForEach(source, body, groupName);
-        }
-
         /// <summary>
         /// Creates a parallel loop that executes a specified action for each element in the source collection.
         /// </summary>
@@ -341,26 +301,6 @@ namespace PowerThreadPool
             onCollectionChanged(null, null);
 
             return group;
-        }
-
-        [ObsoleteAttribute("Use Watch instead.", false)]
-        [ExcludeFromCodeCoverage]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public Group WatchAsync<TSource>(
-            ConcurrentObservableCollection<TSource> source,
-            Func<TSource, Task> body,
-            bool addBackWhenWorkCanceled = true,
-            bool addBackWhenWorkStopped = true,
-            bool addBackWhenWorkFailed = true,
-            string groupName = null)
-        {
-            return Watch(
-                source,
-                body,
-                addBackWhenWorkCanceled,
-                addBackWhenWorkStopped,
-                addBackWhenWorkFailed,
-                groupName);
         }
 
         /// <summary>

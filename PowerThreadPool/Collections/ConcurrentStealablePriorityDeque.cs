@@ -40,14 +40,6 @@ namespace PowerThreadPool.Collections
 
         public bool EnforceDequeOwnership { get; }
 
-        [ObsoleteAttribute]
-        [ExcludeFromCodeCoverage]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public ConcurrentStealablePriorityDeque()
-        {
-            _sortedPriorityList.Add(0);
-        }
-
         public ConcurrentStealablePriorityDeque(bool enforceDequeOwnership)
         {
             _sortedPriorityList.Add(0);

@@ -501,7 +501,7 @@ namespace PowerThreadPool
 
                 return true;
             }
-            else if (rejectType == RejectType.DiscardOldestPolicy || rejectType == RejectType.DiscardQueuedPolicy)
+            else if (rejectType == RejectType.DiscardQueuedPolicy)
             {
                 foreach (Worker workerDiscard in _aliveWorkerList)
                 {
