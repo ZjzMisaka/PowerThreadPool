@@ -25,8 +25,8 @@ namespace PowerThreadPool
         // In this situation, the lambda is implicitly treated as a `Func<Task>`,
         // and `QueueWorkItem(Func<Task> asyncFunc, Action<ExecuteResultBase> callBack = null)`
         // is called instead of the intended overload.
-        // This is not a bug, and even if the “wrong” overload is chosen,
-        // its behavior still matches expectations.
+        // This is not a bug, and even if the overload resolution is "wrong", the behavior still matches expectations:
+        // the work will be executed, and its lifetime/events/callbacks will still be managed correctly.
         // Task.Run has the same issue:
         // Task.Run(() =>
         // {
