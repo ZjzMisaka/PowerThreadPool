@@ -1331,7 +1331,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
-                p = p1 + p2 + p3+ p4;
+                p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
                 await Task.Delay(100);
                 l = "2";
@@ -1375,7 +1375,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
-                p = p1 + p2 + p3+ p4;
+                p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
                 await Task.Delay(100);
                 l = "2";
@@ -1397,7 +1397,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
-                p = p1 + p2 + p3+ p4;
+                p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
                 await Task.Delay(100);
                 l = "2";
@@ -1423,7 +1423,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
-                p = p1 + p2 + p3+ p4;
+                p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
                 await Task.Delay(100);
                 l = "2";
@@ -1445,7 +1445,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
-                p = p1 + p2 + p3+ p4;
+                p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
                 await Task.Delay(100);
                 l = "2";
@@ -1495,7 +1495,7 @@ namespace UnitTest
             };
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
-                p = p1 + p2 + p3+ p4;
+                p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
                 await Task.Delay(100);
                 l = "2";
@@ -1520,7 +1520,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
-                p = p1 + p2 + p3+ p4;
+                p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
                 await Task.Delay(100);
                 l = "2";
@@ -1549,7 +1549,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool();
             var id = powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
-                p = p1 + p2 + p3+ p4;
+                p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
                 await Task.Delay(100);
                 l = "2";
