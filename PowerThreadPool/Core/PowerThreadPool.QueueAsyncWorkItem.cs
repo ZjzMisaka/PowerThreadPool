@@ -177,7 +177,7 @@ namespace PowerThreadPool
             AsyncWorkInfo asyncWorkInfo = new AsyncWorkInfo();
             PrepareAsyncWork(option, asyncWorkInfo);
 
-            WorkID id = QueueWorkItemInnerAsync(() =>
+            WorkID id = QueueAsyncWorkItemInner(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
                 PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, option, asyncWorkInfo);
@@ -411,7 +411,7 @@ namespace PowerThreadPool
             AsyncWorkInfo asyncWorkInfo = new AsyncWorkInfo();
             PrepareAsyncWork(option, asyncWorkInfo);
 
-            WorkID id = QueueWorkItemInnerAsync<TResult>(() =>
+            WorkID id = QueueAsyncWorkItemInner<TResult>(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
                 PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, option, asyncWorkInfo);

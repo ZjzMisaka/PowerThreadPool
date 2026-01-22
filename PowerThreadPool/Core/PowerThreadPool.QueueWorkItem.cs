@@ -183,7 +183,7 @@ namespace PowerThreadPool
             return QueueWorkItemCore<object>(action, null, option, null);
         }
 
-        internal WorkID QueueWorkItemInnerAsync(Action action, WorkOption option, AsyncWorkInfo asyncWorkInfo)
+        internal WorkID QueueAsyncWorkItemInner(Action action, WorkOption option, AsyncWorkInfo asyncWorkInfo)
         {
             return QueueWorkItemCore<object>(action, null, option, asyncWorkInfo);
         }
@@ -390,7 +390,7 @@ namespace PowerThreadPool
             return QueueWorkItemCore(null, function, option, null);
         }
 
-        internal WorkID QueueWorkItemInnerAsync<TResult>(Func<TResult> function, WorkOption option, AsyncWorkInfo asyncWorkInfo)
+        internal WorkID QueueAsyncWorkItemInner<TResult>(Func<TResult> function, WorkOption option, AsyncWorkInfo asyncWorkInfo)
         {
             return QueueWorkItemCore(null, function, option, asyncWorkInfo);
         }

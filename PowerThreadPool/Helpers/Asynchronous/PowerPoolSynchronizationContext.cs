@@ -33,7 +33,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
                 _asyncWorkInfo.AsyncWorkID = _powerPool.CreateID();
                 idSet.Add(_asyncWorkInfo.AsyncWorkID);
 
-                _powerPool.QueueWorkItemInnerAsync(() =>
+                _powerPool.QueueAsyncWorkItemInner(() =>
                 {
                     SetSynchronizationContext(this);
                     if (_workOption.AutoCheckStopOnAsyncTask)
