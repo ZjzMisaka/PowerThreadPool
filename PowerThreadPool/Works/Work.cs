@@ -399,7 +399,7 @@ namespace PowerThreadPool.Works
             ExecuteResult = executeResult;
             if (WorkOption.ShouldStoreResult)
             {
-                PowerPool._resultDic[ID] = ExecuteResult;
+                PowerPool._resultDic[RealWorkID] = ExecuteResult;
             }
             return executeResult;
         }

@@ -290,7 +290,7 @@ namespace PowerThreadPool
                 Work.WaitSignal.Set();
             }
 
-            if (Work.AllowEventsAndCallback && Work.BaseAsyncWorkID != null && _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork) && !asyncBaseWork.ShouldStoreResult)
+            if (Work.AllowEventsAndCallback && Work.BaseAsyncWorkID != null && _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork))
             {
                 if (asyncBaseWork.WaitSignal != null)
                 {
