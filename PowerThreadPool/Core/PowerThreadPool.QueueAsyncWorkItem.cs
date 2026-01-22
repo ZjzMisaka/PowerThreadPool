@@ -114,10 +114,10 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, option);
 
         public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
-            => QueueWorkItem(asyncFunc, callBack);
+            => QueueWorkItem(asyncFunc, out _, callBack);
 
         public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, WorkOption option)
-            => QueueWorkItem(asyncFunc, option);
+            => QueueWorkItem(asyncFunc, out _, option);
 
         public WorkID QueueWorkItem<T1, TResult>(Func<T1, Task<TResult>> asyncFunc, T1 param1, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem(asyncFunc, param1, out _, callBack);
