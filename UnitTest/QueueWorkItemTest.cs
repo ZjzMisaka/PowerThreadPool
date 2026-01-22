@@ -1805,16 +1805,20 @@ namespace UnitTest
         }
 
         [Fact]
-        public void testSugar1()
+        public void TestSugar1()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPool powerPool = new PowerPool();
             WorkID id = powerPool + (() => { });
             Assert.False(id == null);
         }
 
         [Fact]
-        public void testSugar2()
+        public void TestSugar2()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             int doneCount = 0;
             PowerPool powerPool = new PowerPool();
             _ = powerPool
@@ -1826,13 +1830,42 @@ namespace UnitTest
         }
 
         [Fact]
-        public void testSugar3()
+        public void TestSugar3()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             int doneCount = 0;
             PowerPool powerPool = new PowerPool();
             powerPool |= () => { Interlocked.Increment(ref doneCount); };
             powerPool.Wait();
             Assert.Equal(1, doneCount);
+        }
+
+        [Fact]
+        public void TestBadOverload()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            object c = null;
+            object r = null;
+            powerPool.WorkStopped += (s, e) =>
+            {
+                r = "2";
+            };
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    c = "1";
+                    powerPool.StopIfRequested();
+                }
+            });
+            Thread.Sleep(100);
+            powerPool.Stop();
+            powerPool.Wait();
+            Assert.Equal("1", c);
+            Assert.Equal("2", r);
         }
     }
 }
