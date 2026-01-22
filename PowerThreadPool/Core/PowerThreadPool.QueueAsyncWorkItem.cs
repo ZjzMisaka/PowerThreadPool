@@ -114,75 +114,351 @@ namespace PowerThreadPool
             });
         }
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <param name="asyncFunc"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem(Func<Task> asyncFunc, Action<ExecuteResultBase> callBack = null)
             => QueueWorkItem(asyncFunc, out _, callBack);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <param name="asyncFunc"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem(Func<Task> asyncFunc, WorkOption option)
             => QueueWorkItem(asyncFunc, out _, option);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1>(Func<T1, Task> asyncFunc, T1 param1, Action<ExecuteResultBase> callBack = null)
             => QueueWorkItem(asyncFunc, param1, out _, callBack);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1>(Func<T1, Task> asyncFunc, T1 param1, WorkOption option)
             => QueueWorkItem(asyncFunc, param1, out _, option);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2>(Func<T1, T2, Task> asyncFunc, T1 param1, T2 param2, Action<ExecuteResultBase> callBack = null)
             => QueueWorkItem(asyncFunc, param1, param2, out _, callBack);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2>(Func<T1, T2, Task> asyncFunc, T1 param1, T2 param2, WorkOption option)
             => QueueWorkItem(asyncFunc, param1, param2, out _, option);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, T3>(Func<T1, T2, T3, Task> asyncFunc, T1 param1, T2 param2, T3 param3, Action<ExecuteResultBase> callBack = null)
             => QueueWorkItem(asyncFunc, param1, param2, param3, out _, callBack);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, T3>(Func<T1, T2, T3, Task> asyncFunc, T1 param1, T2 param2, T3 param3, WorkOption option)
             => QueueWorkItem(asyncFunc, param1, param2, param3, out _, option);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, T3, T4>(Func<T1, T2, T3, T4, Task> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResultBase> callBack = null)
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, callBack);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, T3, T4>(Func<T1, T2, T3, T4, Task> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption option)
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, option);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="T5"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="param5"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, Task> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResultBase> callBack = null)
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, callBack);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="T5"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="param5"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, T3, T4, T5>(Func<T1, T2, T3, T4, T5, Task> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption option)
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, option);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem(asyncFunc, out _, callBack);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, WorkOption option)
             => QueueWorkItem(asyncFunc, out _, option);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, TResult>(Func<T1, Task<TResult>> asyncFunc, T1 param1, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem(asyncFunc, param1, out _, callBack);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, TResult>(Func<T1, Task<TResult>> asyncFunc, T1 param1, WorkOption option)
             => QueueWorkItem(asyncFunc, param1, out _, option);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, TResult>(Func<T1, T2, Task<TResult>> asyncFunc, T1 param1, T2 param2, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem(asyncFunc, param1, param2, out _, callBack);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, TResult>(Func<T1, T2, Task<TResult>> asyncFunc, T1 param1, T2 param2, WorkOption option)
             => QueueWorkItem(asyncFunc, param1, param2, out _, option);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem(asyncFunc, param1, param2, param3, out _, callBack);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, T3, TResult>(Func<T1, T2, T3, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, WorkOption option)
             => QueueWorkItem(asyncFunc, param1, param2, param3, out _, option);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, callBack);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, WorkOption option)
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, option);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="T5"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="param5"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, Action<ExecuteResult<TResult>> callBack = null)
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, callBack);
 
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="T1"></typeparam>
+        /// <typeparam name="T2"></typeparam>
+        /// <typeparam name="T3"></typeparam>
+        /// <typeparam name="T4"></typeparam>
+        /// <typeparam name="T5"></typeparam>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param1"></param>
+        /// <param name="param2"></param>
+        /// <param name="param3"></param>
+        /// <param name="param4"></param>
+        /// <param name="param5"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
         public WorkID QueueWorkItem<T1, T2, T3, T4, T5, TResult>(Func<T1, T2, T3, T4, T5, Task<TResult>> asyncFunc, T1 param1, T2 param2, T3 param3, T4 param4, T5 param5, WorkOption option)
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, option);
 
