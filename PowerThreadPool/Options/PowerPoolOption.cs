@@ -1,6 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;

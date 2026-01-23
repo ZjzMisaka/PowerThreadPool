@@ -1,7 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-
-namespace PowerThreadPool.Options
+﻿namespace PowerThreadPool.Options
 {
     public enum RejectType
     {

@@ -88,25 +88,4 @@ namespace PowerThreadPool.Options
         /// </summary>
         public bool AutoCheckStopOnAsyncTask { get; set; } = true;
     }
-
-    public class WorkOption<T> : WorkOption
-    {
-        public new Action<ExecuteResult<T>> Callback { get; set; } = null;
-    }
-
-    public static class WorkOptionExtensions
-    {
-        public static void SetCallback<TResult>(
-            this WorkOption option,
-            Action<ExecuteResult<TResult>> callback)
-        {
-            option.Callback = baseResult =>
-            {
-                if (baseResult is ExecuteResult<TResult> typedResult)
-                {
-                    callback(typedResult);
-                }
-            };
-        }
-    }
 }
