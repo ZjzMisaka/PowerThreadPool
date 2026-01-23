@@ -7914,7 +7914,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestRejectDiscardOldestPolicy()
+        public void TestRejectDiscardQueuedPolicy()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 

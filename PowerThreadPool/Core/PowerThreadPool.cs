@@ -505,7 +505,7 @@ namespace PowerThreadPool
             {
                 foreach (Worker workerDiscard in _aliveWorkerList)
                 {
-                    // When ThreadQueueLimit is 0 and the work rejection policy is set to "DiscardOldestPolicy",
+                    // When ThreadQueueLimit is 0 and the work rejection policy is set to "DiscardQueuedPolicy",
                     // since there are no works in the queue, the oldest work cannot be discarded.
                     // This may cause excessive spinning with no progress.
                     // However, this is due to an unreasonable user configuration, so no handling is implemented;

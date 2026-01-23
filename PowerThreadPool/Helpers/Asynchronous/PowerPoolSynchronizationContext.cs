@@ -53,7 +53,6 @@ namespace PowerThreadPool.Helpers.Asynchronous
                     {
                         _asyncWorkInfo.AllowEventsAndCallback = true;
                     }
-                    //return default;
                 }, _workOption, _asyncWorkInfo);
             }
         }
