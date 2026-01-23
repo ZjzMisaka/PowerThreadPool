@@ -133,7 +133,6 @@ namespace PowerThreadPool
                 return;
             }
             _workGroupDic.Clear();
-            _asyncWorkIDDict.Clear();
             throw new WorkStopException();
         }
 
