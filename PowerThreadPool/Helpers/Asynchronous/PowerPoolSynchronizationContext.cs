@@ -30,10 +30,10 @@ namespace PowerThreadPool.Helpers.Asynchronous
         {
             if (_powerPool._asyncWorkIDDict.TryGetValue(_asyncWorkInfo.BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet))
             {
-                _asyncWorkInfo.AsyncWorkID = _powerPool.CreateID<object>();
+                _asyncWorkInfo.AsyncWorkID = _powerPool.CreateID();
                 idSet.Add(_asyncWorkInfo.AsyncWorkID);
 
-                _powerPool.QueueWorkItemInnerAsync(() =>
+                _powerPool.QueueAsyncWorkItemInner(() =>
                 {
                     SetSynchronizationContext(this);
                     if (_workOption.AutoCheckStopOnAsyncTask)
@@ -53,7 +53,6 @@ namespace PowerThreadPool.Helpers.Asynchronous
                     {
                         _asyncWorkInfo.AllowEventsAndCallback = true;
                     }
-                    return default;
                 }, _workOption, _asyncWorkInfo);
             }
         }

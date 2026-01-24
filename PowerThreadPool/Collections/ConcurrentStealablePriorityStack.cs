@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using PowerThreadPool.Collections.Comparer;
@@ -17,12 +16,6 @@ namespace PowerThreadPool.Collections
         private readonly ConcurrentStack<T> _zeroStack = new ConcurrentStack<T>();
 
         public bool EnforceDequeOwnership { get; }
-
-        [ObsoleteAttribute]
-        public ConcurrentStealablePriorityStack()
-        {
-            _sortedPriorityList.Add(0);
-        }
 
         public ConcurrentStealablePriorityStack(bool enforceDequeOwnership)
         {

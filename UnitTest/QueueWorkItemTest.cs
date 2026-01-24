@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using PowerThreadPool;
 using PowerThreadPool.Options;
+using PowerThreadPool.Results;
 using PowerThreadPool.Works;
 using Xunit.Abstractions;
 
@@ -360,21 +361,17 @@ namespace UnitTest
             object l = null;
             object c = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItemAsync(async () =>
+            powerPool.QueueWorkItem(async () =>
             {
                 p = "1";
                 await Task.Delay(100);
                 await Task.Delay(100);
                 l = "2";
-            }, (res) =>
-            {
-                c = "3";
             });
             Thread.Sleep(1000);
             powerPool.Wait();
             Assert.Equal("1", p);
             Assert.Equal("2", l);
-            Assert.Equal("3", c);
         }
 
         [Fact]
@@ -385,19 +382,184 @@ namespace UnitTest
             object p = null;
             object l = null;
             object c = null;
-            object r = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItemAsync<string>(async () =>
+            powerPool.QueueWorkItem(async () =>
             {
                 p = "1";
                 await Task.Delay(100);
-                l = "2";
                 await Task.Delay(100);
-                c = "3";
-                return "100";
-            }, (res) =>
+                l = "2";
+            }, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test31()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async () =>
             {
-                Assert.Equal("2", l);
+                p = "1";
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, out _);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test32()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async () =>
+            {
+                p = "1";
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, out _, (res) =>
+            {
+                c = "3";
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+        }
+
+        [Fact]
+        public void Test33()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async () =>
+            {
+                p = "1";
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, out _, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test34()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async () =>
+            {
+                p = "1";
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test35()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async () =>
+            {
+                p = "1";
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test36()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.WorkEnded += (s, e) =>
+            {
+                r = e.Result;
+            };
+            powerPool.QueueWorkItem(async () =>
+            {
+                p = "1";
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, out _);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+            Assert.Equal("done", r);
+        }
+
+        [Fact]
+        public void Test37()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            string r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async () =>
+            {
+                p = "1";
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, out _, (res) =>
+            {
+                c = "3";
                 r = res.Result;
             });
             Thread.Sleep(1000);
@@ -405,20 +567,1258 @@ namespace UnitTest
             Assert.Equal("1", p);
             Assert.Equal("2", l);
             Assert.Equal("3", c);
-            Assert.Equal("100", r);
+            Assert.Equal("done", r);
         }
 
         [Fact]
-        public void testSugar1()
+        public void Test38()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            var id = powerPool.QueueWorkItem(async () =>
+            {
+                p = "1";
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, out _, new WorkOption() { ShouldStoreResult = true });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal("1", p);
+            Assert.Equal("2", l);
+            Assert.Equal("done", powerPool.Fetch<string>(id).Result);
+        }
+
+        [Fact]
+        public void Test39()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1) =>
+            {
+                p = p1;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(1, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test40()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1) =>
+            {
+                p = p1;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(1, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test41()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1) =>
+            {
+                p = p1;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, out _);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(1, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test42()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1) =>
+            {
+                p = p1;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, out _, (res) =>
+            {
+                c = "3";
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(1, p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+        }
+
+        [Fact]
+        public void Test43()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1) =>
+            {
+                p = p1;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, out _, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(1, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test44()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1) =>
+            {
+                p = p1;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(1, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test45()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1) =>
+            {
+                p = p1;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(1, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test46()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.WorkEnded += (s, e) =>
+            {
+                r = e.Result;
+            };
+            powerPool.QueueWorkItem(async (p1) =>
+            {
+                p = p1;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, out _);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(1, p);
+            Assert.Equal("2", l);
+            Assert.Equal("done", r);
+        }
+
+        [Fact]
+        public void Test47()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            string r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1) =>
+            {
+                p = p1;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, out _, (res) =>
+            {
+                c = "3";
+                r = res.Result;
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(1, p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+            Assert.Equal("done", r);
+        }
+
+        [Fact]
+        public void Test48()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            var id = powerPool.QueueWorkItem(async (p1) =>
+            {
+                p = p1;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, out _, new WorkOption() { ShouldStoreResult = true });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(1, p);
+            Assert.Equal("2", l);
+            Assert.Equal("done", powerPool.Fetch<string>(id).Result);
+        }
+
+        [Fact]
+        public void Test49()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2) =>
+            {
+                p = p1 + p2;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(3, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test50()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2) =>
+            {
+                p = p1 + p2;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(3, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test51()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2) =>
+            {
+                p = p1 + p2;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, out _);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(3, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test52()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2) =>
+            {
+                p = p1 + p2;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, out _, (res) =>
+            {
+                c = "3";
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(3, p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+        }
+
+        [Fact]
+        public void Test53()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2) =>
+            {
+                p = p1 + p2;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, out _, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(3, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test54()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2) =>
+            {
+                p = p1 + p2;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(3, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test55()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2) =>
+            {
+                p = p1 + p2;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(3, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test56()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.WorkEnded += (s, e) =>
+            {
+                r = e.Result;
+            };
+            powerPool.QueueWorkItem(async (p1, p2) =>
+            {
+                p = p1 + p2;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, out _);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(3, p);
+            Assert.Equal("2", l);
+            Assert.Equal("done", r);
+        }
+
+        [Fact]
+        public void Test57()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            string r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2) =>
+            {
+                p = p1 + p2;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, out _, (res) =>
+            {
+                c = "3";
+                r = res.Result;
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(3, p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+            Assert.Equal("done", r);
+        }
+
+        [Fact]
+        public void Test58()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            var id = powerPool.QueueWorkItem(async (p1, p2) =>
+            {
+                p = p1 + p2;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, out _, new WorkOption() { ShouldStoreResult = true });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(3, p);
+            Assert.Equal("2", l);
+            Assert.Equal("done", powerPool.Fetch<string>(id).Result);
+        }
+
+        [Fact]
+        public void Test59()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            {
+                p = p1 + p2 + p3;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(6, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test60()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            {
+                p = p1 + p2 + p3;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(6, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test61()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            {
+                p = p1 + p2 + p3;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, out _);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(6, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test62()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            {
+                p = p1 + p2 + p3;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, out _, (res) =>
+            {
+                c = "3";
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(6, p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+        }
+
+        [Fact]
+        public void Test63()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            {
+                p = p1 + p2 + p3;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, out _, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(6, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test64()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            {
+                p = p1 + p2 + p3;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(6, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test65()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            {
+                p = p1 + p2 + p3;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(6, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test66()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.WorkEnded += (s, e) =>
+            {
+                r = e.Result;
+            };
+            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            {
+                p = p1 + p2 + p3;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, out _);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(6, p);
+            Assert.Equal("2", l);
+            Assert.Equal("done", r);
+        }
+
+        [Fact]
+        public void Test67()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            string r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            {
+                p = p1 + p2 + p3;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, out _, (res) =>
+            {
+                c = "3";
+                r = res.Result;
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(6, p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+            Assert.Equal("done", r);
+        }
+
+        [Fact]
+        public void Test68()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            var id = powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            {
+                p = p1 + p2 + p3;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, out _, new WorkOption() { ShouldStoreResult = true });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(6, p);
+            Assert.Equal("2", l);
+            Assert.Equal("done", powerPool.Fetch<string>(id).Result);
+        }
+
+        [Fact]
+        public void Test69()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            {
+                p = p1 + p2 + p3 + p4;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, 4);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(10, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test70()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            {
+                p = p1 + p2 + p3 + p4;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, 4, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(10, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test71()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            {
+                p = p1 + p2 + p3 + p4;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, 4, out _);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(10, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test72()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            {
+                p = p1 + p2 + p3 + p4;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, 4, out _, (res) =>
+            {
+                c = "3";
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(10, p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+        }
+
+        [Fact]
+        public void Test73()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            {
+                p = p1 + p2 + p3 + p4;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, 4, out _, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(10, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test74()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            {
+                p = p1 + p2 + p3 + p4;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, 4);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(10, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test75()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            {
+                p = p1 + p2 + p3 + p4;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, 4, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(10, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test76()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.WorkEnded += (s, e) =>
+            {
+                r = e.Result;
+            };
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            {
+                p = p1 + p2 + p3 + p4;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, 4, out _);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(10, p);
+            Assert.Equal("2", l);
+            Assert.Equal("done", r);
+        }
+
+        [Fact]
+        public void Test77()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            string r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            {
+                p = p1 + p2 + p3 + p4;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, 4, out _, (res) =>
+            {
+                c = "3";
+                r = res.Result;
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(10, p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+            Assert.Equal("done", r);
+        }
+
+        [Fact]
+        public void Test78()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            var id = powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            {
+                p = p1 + p2 + p3 + p4;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, 4, out _, new WorkOption() { ShouldStoreResult = true });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(10, p);
+            Assert.Equal("2", l);
+            Assert.Equal("done", powerPool.Fetch<string>(id).Result);
+        }
+
+        [Fact]
+        public void Test79()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            {
+                p = p1 + p2 + p3 + p4 + p5;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, 4, 5);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(15, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test80()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            {
+                p = p1 + p2 + p3 + p4 + p5;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, 4, 5, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(15, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test81()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            {
+                p = p1 + p2 + p3 + p4 + p5;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, 4, 5, out _);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(15, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test82()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            {
+                p = p1 + p2 + p3 + p4 + p5;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, 4, 5, out _, (res) =>
+            {
+                c = "3";
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(15, p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+        }
+
+        [Fact]
+        public void Test83()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            {
+                p = p1 + p2 + p3 + p4 + p5;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+            }, 1, 2, 3, 4, 5, out _, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(15, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test84()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            {
+                p = p1 + p2 + p3 + p4 + p5;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, 4, 5);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(15, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test85()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            {
+                p = p1 + p2 + p3 + p4 + p5;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, 4, 5, new WorkOption());
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(15, p);
+            Assert.Equal("2", l);
+        }
+
+        [Fact]
+        public void Test86()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.WorkEnded += (s, e) =>
+            {
+                r = e.Result;
+            };
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            {
+                p = p1 + p2 + p3 + p4 + p5;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, 4, 5, out _);
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(15, p);
+            Assert.Equal("2", l);
+            Assert.Equal("done", r);
+        }
+
+        [Fact]
+        public void Test87()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            string r = null;
+            PowerPool powerPool = new PowerPool();
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            {
+                p = p1 + p2 + p3 + p4 + p5;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, 4, 5, out _, (res) =>
+            {
+                c = "3";
+                r = res.Result;
+            });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(15, p);
+            Assert.Equal("2", l);
+            Assert.Equal("3", c);
+            Assert.Equal("done", r);
+        }
+
+        [Fact]
+        public void Test88()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            object p = null;
+            object l = null;
+            object c = null;
+            PowerPool powerPool = new PowerPool();
+            var id = powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            {
+                p = p1 + p2 + p3 + p4 + p5;
+                await Task.Delay(100);
+                await Task.Delay(100);
+                l = "2";
+                return "done";
+            }, 1, 2, 3, 4, 5, out _, new WorkOption() { ShouldStoreResult = true });
+            Thread.Sleep(1000);
+            powerPool.Wait();
+            Assert.Equal(15, p);
+            Assert.Equal("2", l);
+            Assert.Equal("done", powerPool.Fetch<string>(id).Result);
+        }
+
+        [Fact]
+        public void TestSugar1()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             PowerPool powerPool = new PowerPool();
             WorkID id = powerPool + (() => { });
             Assert.False(id == null);
         }
 
         [Fact]
-        public void testSugar2()
+        public void TestSugar2()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             int doneCount = 0;
             PowerPool powerPool = new PowerPool();
             _ = powerPool
@@ -430,13 +1830,42 @@ namespace UnitTest
         }
 
         [Fact]
-        public void testSugar3()
+        public void TestSugar3()
         {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
             int doneCount = 0;
             PowerPool powerPool = new PowerPool();
             powerPool |= () => { Interlocked.Increment(ref doneCount); };
             powerPool.Wait();
             Assert.Equal(1, doneCount);
+        }
+
+        [Fact]
+        public void TestBadOverload()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            object c = null;
+            object r = null;
+            powerPool.WorkStopped += (s, e) =>
+            {
+                r = "2";
+            };
+            powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    c = "1";
+                    powerPool.StopIfRequested();
+                }
+            });
+            Thread.Sleep(100);
+            powerPool.Stop();
+            powerPool.Wait();
+            Assert.Equal("1", c);
+            Assert.Equal("2", r);
         }
     }
 }

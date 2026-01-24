@@ -501,11 +501,11 @@ namespace PowerThreadPool
 
                 return true;
             }
-            else if (rejectType == RejectType.DiscardOldestPolicy || rejectType == RejectType.DiscardQueuedPolicy)
+            else if (rejectType == RejectType.DiscardQueuedPolicy)
             {
                 foreach (Worker workerDiscard in _aliveWorkerList)
                 {
-                    // When ThreadQueueLimit is 0 and the work rejection policy is set to "DiscardOldestPolicy",
+                    // When ThreadQueueLimit is 0 and the work rejection policy is set to "DiscardQueuedPolicy",
                     // since there are no works in the queue, the oldest work cannot be discarded.
                     // This may cause excessive spinning with no progress.
                     // However, this is due to an unreasonable user configuration, so no handling is implemented;
@@ -912,22 +912,29 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="baseID"></param>
         /// <param name="started"></param>
-        internal void TryRemoveAsyncWork(WorkID baseID, bool started)
+        internal void TryRemoveAsyncWork(WorkID baseID, bool started, bool justGetDontRemove, bool shouldDecrementAsyncWorkCount)
         {
-            if (_asyncWorkIDDict.TryRemove(baseID, out ConcurrentSet<WorkID> asyncIDList))
+            ConcurrentSet<WorkID> asyncIDList = null;
+            if (shouldDecrementAsyncWorkCount)
             {
                 Interlocked.Decrement(ref _asyncWorkCount);
-                if (_aliveWorkDic.TryRemove(baseID, out WorkBase baseWork))
+            }
+            if (justGetDontRemove ? _asyncWorkIDDict.TryGetValue(baseID, out asyncIDList) : _asyncWorkIDDict.TryRemove(baseID, out asyncIDList))
+            {
+                if (!justGetDontRemove)
                 {
-                    baseWork.Dispose();
-                }
-                if (started)
-                {
-                    foreach (WorkID asyncID in asyncIDList)
+                    if (_aliveWorkDic.TryRemove(baseID, out WorkBase baseWork))
                     {
-                        if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
+                        baseWork.Dispose();
+                    }
+                    if (started)
+                    {
+                        foreach (WorkID asyncID in asyncIDList)
                         {
-                            asyncWork.Dispose();
+                            if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
+                            {
+                                asyncWork.Dispose();
+                            }
                         }
                     }
                 }

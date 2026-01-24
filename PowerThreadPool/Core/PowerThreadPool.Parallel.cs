@@ -38,9 +38,9 @@ namespace PowerThreadPool
         /// <param name="step">The step value for each loop iteration. Default is 1.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
-        public Group ForAsync(int start, int end, Func<int, Task> body, int step = 1, string groupName = null)
+        public Group For(int start, int end, Func<int, Task> body, int step = 1, string groupName = null)
         {
-            return ForAsync<object>(start, end, null, async (_, index) => { await body(index); }, step, groupName);
+            return For<object>(start, end, null, async (_, index) => { await body(index); }, step, groupName);
         }
 #endif
 
@@ -72,9 +72,9 @@ namespace PowerThreadPool
         /// <param name="step">The step value for each loop iteration. Default is 1.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
-        public Group ForAsync<TSource>(int start, int end, IList<TSource> source, Func<TSource, Task> body, int step = 1, string groupName = null)
+        public Group For<TSource>(int start, int end, IList<TSource> source, Func<TSource, Task> body, int step = 1, string groupName = null)
         {
-            return ForAsync(start, end, source, async (item, _) => { await body(item); }, step, groupName);
+            return For(start, end, source, async (item, _) => { await body(item); }, step, groupName);
         }
 #endif
 
@@ -116,7 +116,7 @@ namespace PowerThreadPool
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
         /// <exception cref="ArgumentException">Thrown when the step is zero or the loop configuration is invalid.</exception>
-        public Group ForAsync<TSource>(int start, int end, IList<TSource> source, Func<TSource, int, Task> body, int step = 1, string groupName = null)
+        public Group For<TSource>(int start, int end, IList<TSource> source, Func<TSource, int, Task> body, int step = 1, string groupName = null)
         {
             string groupID;
             WorkOption workOption;
@@ -124,7 +124,7 @@ namespace PowerThreadPool
             for (int i = start; start <= end ? i < end : i > end; i += step)
             {
                 int localI = i;
-                QueueWorkItemAsync(async () => { await body(source != null ? source[localI] : default, localI); }, workOption);
+                QueueWorkItem(async () => { await body(source != null ? source[localI] : default, localI); }, out _, workOption);
             }
             return GetGroup(groupID);
         }
@@ -184,9 +184,9 @@ namespace PowerThreadPool
         /// <param name="body">The action to execute for each element in the source collection.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
-        public Group ForEachAsync<TSource>(IEnumerable<TSource> source, Func<TSource, Task> body, string groupName = null)
+        public Group ForEach<TSource>(IEnumerable<TSource> source, Func<TSource, Task> body, string groupName = null)
         {
-            return ForEachAsync(source, async (item, _) => await body(item), groupName);
+            return ForEach(source, async (item, _) => await body(item), groupName);
         }
 #endif
 
@@ -221,7 +221,7 @@ namespace PowerThreadPool
         /// <param name="body">The action to execute for each element in the source collection and its index.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
-        public Group ForEachAsync<TSource>(IEnumerable<TSource> source, Func<TSource, int, Task> body, string groupName = null)
+        public Group ForEach<TSource>(IEnumerable<TSource> source, Func<TSource, int, Task> body, string groupName = null)
         {
             string groupID;
             WorkOption workOption;
@@ -230,7 +230,7 @@ namespace PowerThreadPool
             foreach (TSource item in source)
             {
                 int localI = i++;
-                QueueWorkItemAsync(async () => { await body(item, localI); }, workOption);
+                QueueWorkItem(async () => { await body(item, localI); }, out _, workOption);
             }
             return GetGroup(groupID);
         }
@@ -312,7 +312,7 @@ namespace PowerThreadPool
         /// <param name="addBackWhenWorkFailed">If an exception occurs, the elements will be added back to the collection.</param>
         /// <param name="groupName">The optional name for the group. Default is null.</param>
         /// <returns>Returns a group object.</returns>
-        public Group WatchAsync<TSource>(
+        public Group Watch<TSource>(
             ConcurrentObservableCollection<TSource> source,
             Func<TSource, Task> body,
             bool addBackWhenWorkCanceled = true,
@@ -443,7 +443,7 @@ namespace PowerThreadPool
                     else
                     {
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-                        id = QueueWorkItemAsync(async () => await bodyFunc(item), workOption);
+                        id = QueueWorkItem(async () => await bodyFunc(item), out _, workOption);
 #else
                         throw new InvalidOperationException("Asynchronous body function is not supported in this framework version.");
 #endif

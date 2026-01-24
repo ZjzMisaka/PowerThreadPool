@@ -9,12 +9,12 @@ namespace PowerThreadPool.Helpers.Asynchronous
     internal class PowerPoolSynchronizationContext<TResult> : SynchronizationContext
     {
         private readonly PowerPool _powerPool;
-        private readonly WorkOption<TResult> _workOption;
+        private readonly WorkOption _workOption;
         private readonly AsyncWorkInfo _asyncWorkInfo;
         private Task<TResult> _originalTask;
         private int _done = 0;
 
-        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkOption<TResult> workOption, AsyncWorkInfo asyncWorkInfo)
+        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkOption workOption, AsyncWorkInfo asyncWorkInfo)
         {
             _powerPool = powerPool;
             _workOption = workOption;
@@ -30,10 +30,10 @@ namespace PowerThreadPool.Helpers.Asynchronous
         {
             if (_powerPool._asyncWorkIDDict.TryGetValue(_asyncWorkInfo.BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet))
             {
-                _asyncWorkInfo.AsyncWorkID = _powerPool.CreateID<object>();
+                _asyncWorkInfo.AsyncWorkID = _powerPool.CreateID();
                 idSet.Add(_asyncWorkInfo.AsyncWorkID);
 
-                _powerPool.QueueWorkItemInnerAsync(() =>
+                _powerPool.QueueAsyncWorkItemInner(() =>
                 {
                     SetSynchronizationContext(this);
                     if (_workOption.AutoCheckStopOnAsyncTask)

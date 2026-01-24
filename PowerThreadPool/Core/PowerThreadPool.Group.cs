@@ -18,17 +18,6 @@ namespace PowerThreadPool
             return new Group(this, groupName);
         }
 
-        [ObsoleteAttribute("Use GetGroupMemberSet instead.", false)]
-        /// <summary>
-        /// Get all members of a group
-        /// </summary>
-        /// <param name="groupName"></param>
-        /// <returns>Work id collection</returns>
-        public IEnumerable<WorkID> GetGroupMemberList(string groupName)
-        {
-            return GetGroupMemberSet(groupName);
-        }
-
         /// <summary>
         /// Get all members of a group
         /// </summary>

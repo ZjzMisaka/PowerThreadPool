@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PowerThreadPool.Options
+﻿namespace PowerThreadPool.Options
 {
     public enum RejectType
     {
@@ -8,8 +6,6 @@ namespace PowerThreadPool.Options
         CallerRunsPolicy,
         DiscardPolicy,
         DiscardQueuedPolicy,
-        [ObsoleteAttribute("Use DiscardQueuedPolicy instead.", false)]
-        DiscardOldestPolicy,
     }
 
     public class RejectOption

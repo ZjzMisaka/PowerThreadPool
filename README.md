@@ -74,7 +74,7 @@ powerPool.QueueWorkItem(() =>
     // Do something
 });
 // Async
-powerPool.QueueWorkItemAsync(async () =>
+powerPool.QueueWorkItem(async () =>
 {
     // Do something
     // await ...;
@@ -94,7 +94,7 @@ powerPool.QueueWorkItem(() =>
     // Callback of the work
 });
 // Async
-powerPool.QueueWorkItemAsync(async () =>
+powerPool.QueueWorkItem(async () =>
 {
     // Do something
     // await ...;
@@ -117,7 +117,7 @@ powerPool.QueueWorkItem(() =>
     // Some options
 });
 // Async
-powerPool.QueueWorkItemAsync(async () =>
+powerPool.QueueWorkItem(async () =>
 {
     // Do something
     // await ...;
@@ -129,16 +129,18 @@ powerPool.QueueWorkItemAsync(async () =>
 
 ### Reference
 ``` csharp
+// Sync
 WorkID QueueWorkItem<T1, ...>(Action<T1, ...> action, T1 param1, ..., *);
 WorkID QueueWorkItem(Action action, *);
 WorkID QueueWorkItem(Action<object[]> action, object[] param, *);
 WorkID QueueWorkItem<T1, ..., TResult>(Func<T1, ..., TResult> function, T1 param1, ..., *);
 WorkID QueueWorkItem<TResult>(Func<TResult> function, *);
 WorkID QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, *);
-WorkID QueueWorkItemAsync(Func<Task> asyncFunc, *);
-WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, *);
-WorkID QueueWorkItemAsync(Func<Task> asyncFunc, out Task task, *);
-WorkID QueueWorkItemAsync<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, *);
+// Async
+WorkID QueueWorkItem(Func<Task> asyncFunc, *);
+WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, *);
+WorkID QueueWorkItem(Func<Task> asyncFunc, out Task task, *);
+WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, *);
 ```
 
 #### Asterisk `*`

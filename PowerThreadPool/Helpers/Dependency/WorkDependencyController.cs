@@ -160,10 +160,10 @@ namespace PowerThreadPool.Helpers.Dependency
             _powerPool.CheckPoolIdle();
         }
 
-        internal bool Cancel(WorkID id)
+        internal bool Cancel(WorkID id, out WorkBase work)
         {
             bool res = false;
-            if (_workDict.TryRemove(id, out _))
+            if (_workDict.TryRemove(id, out work))
             {
                 Interlocked.Decrement(ref _powerPool._waitingWorkCount);
                 _powerPool.CheckPoolIdle();

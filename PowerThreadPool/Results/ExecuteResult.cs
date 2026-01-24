@@ -8,7 +8,7 @@ namespace PowerThreadPool.Results
         /// <summary>
         /// Result of the work.
         /// </summary>
-        public TResult Result { get; internal set; }
+        public new TResult Result { get; internal set; }
 
         internal ExecuteResult()
         {

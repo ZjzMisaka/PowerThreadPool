@@ -7,7 +7,7 @@ namespace PowerThreadPool.Works
     {
         private Action _action;
 
-        internal WorkAction(PowerPool powerPool, WorkID id, Action action, WorkOption<TUseless> option, AsyncWorkInfo asyncWorkInfo) : base(powerPool, id, option, asyncWorkInfo)
+        internal WorkAction(PowerPool powerPool, WorkID id, Action action, WorkOption option, AsyncWorkInfo asyncWorkInfo) : base(powerPool, id, option, asyncWorkInfo)
         {
             _action = action;
         }
