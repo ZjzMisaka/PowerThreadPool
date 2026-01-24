@@ -10,47 +10,47 @@ using PowerThreadPool.Works;
 
 namespace PowerThreadPool
 {
+    // Together with `PowerPool.StopIfRequested`, you might write code like this:
+    // powerPool.QueueWorkItem(() =>
+    // {
+    //     while (true)
+    //     {
+    //         powerPool.StopIfRequested();
+    //     }
+    // });
+    // However, this is actually incorrect: from the compiler’s perspective,
+    // this lambda has no return path, so type inference fails.
+    // In this situation, the lambda is implicitly treated as a `Func<Task>`,
+    // and `QueueWorkItem(Func<Task> asyncFunc, Action<ExecuteResultBase> callBack = null)`
+    // is called instead of the intended overload.
+    // This is not a bug, and even if the overload resolution is "wrong", the behavior still matches expectations:
+    // the work will be executed, and its lifetime/events/callbacks will still be managed correctly.
+    // See unit test `TestBadOverload`:
+    // https://github.com/ZjzMisaka/PowerThreadPool/blob/c4d8a6/UnitTest/QueueWorkItemTest.cs#L2064-L2089
+    // Task.Run has the same issue:
+    // Task.Run(() =>
+    // {
+    //     while (true)
+    //     {
+    //         // ...
+    //     }
+    // });
+    // This will likewise resolve to the `Run(Func<Task?> function);` overload.
+    // The conditions that trigger this kind of misuse are:
+    // 1. Synchronous invocation
+    // 2. No return path (e.g., an infinite loop)
+    // 3. The call is made using a lambda expression
+    // 4. The type is not explicitly specified
+    // For PTP, `PowerPool.StopIfRequested` may increase the likelihood of this misuse,
+    // because it exits the function via an exception. From the compiler’s point of view,
+    // this does not count as a return path.
+    // But since such calls:
+    // 1. Require very specific conditions
+    // 2. Have no side effects
+    // 3. Match the behavior of `Task.Run`
+    // PTP chooses to tolerate this and will not add special handling or warnings.
     public partial class PowerPool
     {
-        // Together with `PowerPool.StopIfRequested`, you might write code like this:
-        // powerPool.QueueWorkItem(() =>
-        // {
-        //     while (true)
-        //     {
-        //         powerPool.StopIfRequested();
-        //     }
-        // });
-        // However, this is actually incorrect: from the compiler’s perspective,
-        // this lambda has no return path, so type inference fails.
-        // In this situation, the lambda is implicitly treated as a `Func<Task>`,
-        // and `QueueWorkItem(Func<Task> asyncFunc, Action<ExecuteResultBase> callBack = null)`
-        // is called instead of the intended overload.
-        // This is not a bug, and even if the overload resolution is "wrong", the behavior still matches expectations:
-        // the work will be executed, and its lifetime/events/callbacks will still be managed correctly.
-        // See unit test `TestBadOverload`:
-        // https://github.com/ZjzMisaka/PowerThreadPool/blob/c4d8a6/UnitTest/QueueWorkItemTest.cs#L2064-L2089
-        // Task.Run has the same issue:
-        // Task.Run(() =>
-        // {
-        //     while (true)
-        //     {
-        //         // ...
-        //     }
-        // });
-        // This will likewise resolve to the `Run(Func<Task?> function);` overload.
-        // The conditions that trigger this kind of misuse are:
-        // 1. Synchronous invocation
-        // 2. No return path (e.g., an infinite loop)
-        // 3. The call is made using a lambda expression
-        // 4. The type is not explicitly specified
-        // For PTP, `PowerPool.StopIfRequested` may increase the likelihood of this misuse,
-        // because it exits the function via an exception. From the compiler’s point of view,
-        // this does not count as a return path.
-        // But since such calls:
-        // 1. Require very specific conditions
-        // 2. Have no side effects
-        // 3. Match the behavior of `Task.Run`
-        // PTP chooses to tolerate this and will not add special handling or warnings.
         private void PrepareAsyncWork(WorkOption option, AsyncWorkInfo asyncWorkInfo)
         {
             CheckPowerPoolOption();
