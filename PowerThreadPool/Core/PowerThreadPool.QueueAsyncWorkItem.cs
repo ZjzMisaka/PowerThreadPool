@@ -27,6 +27,8 @@ namespace PowerThreadPool
         // is called instead of the intended overload.
         // This is not a bug, and even if the overload resolution is "wrong", the behavior still matches expectations:
         // the work will be executed, and its lifetime/events/callbacks will still be managed correctly.
+        // See unit test `TestBadOverload`:
+        // https://github.com/ZjzMisaka/PowerThreadPool/blob/c4d8a6/UnitTest/QueueWorkItemTest.cs#L2064-L2089
         // Task.Run has the same issue:
         // Task.Run(() =>
         // {
