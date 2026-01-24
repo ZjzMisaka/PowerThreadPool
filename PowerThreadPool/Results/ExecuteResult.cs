@@ -51,7 +51,7 @@ namespace PowerThreadPool.Results
                 {
                     Exception = Exception,
                     IsFound = true,
-                    Result = Result != null ? (TRes)(object)Result : default,
+                    Result = (TRes)(object)Result,
                     ID = ID,
                     QueueDateTime = UtcQueueDateTime,
                     StartDateTime = UtcStartDateTime,

@@ -3754,6 +3754,65 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestFetchByIDButNull()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+            });
+
+            Assert.Throws<NullReferenceException>(() => { powerPool.Fetch<bool>(id); });
+        }
+
+        [Fact]
+        public void TestFetchByIDButWrongType()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return new PowerPool();
+            });
+
+            Assert.Throws<InvalidCastException>(() => { powerPool.Fetch<Random>(id); });
+        }
+
+        [Fact]
+        public void TestFetchByIDButStructToClass()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return true;
+            });
+
+            Assert.Throws<InvalidCastException>(() => { powerPool.Fetch<PowerPool>(id); });
+        }
+
+        [Fact]
+        public void TestFetchByIDButClassToStruct()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                return new PowerPool();
+            });
+
+            Assert.Throws<InvalidCastException>(() => { powerPool.Fetch<bool>(id); });
+        }
+
+        [Fact]
         public void TestFetchByIDCancellationToken()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
