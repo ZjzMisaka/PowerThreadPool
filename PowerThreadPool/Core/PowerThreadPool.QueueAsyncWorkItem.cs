@@ -135,6 +135,26 @@ namespace PowerThreadPool
         /// <summary>
         /// Queues a async work for execution. 
         /// </summary>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
+        public WorkID QueueWorkItem(Func<object[], Task> asyncFunc, object[] param, Action<ExecuteResultBase> callBack = null)
+            => QueueWorkItem(asyncFunc, param, out _, callBack);
+
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        public WorkID QueueWorkItem(Func<object[], Task> asyncFunc, object[] param, WorkOption option)
+            => QueueWorkItem(asyncFunc, param, out _, option);
+
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="asyncFunc"></param>
         /// <param name="param1"></param>
@@ -301,6 +321,28 @@ namespace PowerThreadPool
         /// <returns></returns>
         public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, WorkOption option)
             => QueueWorkItem(asyncFunc, out _, option);
+
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
+        public WorkID QueueWorkItem<TResult>(Func<object[], Task<TResult>> asyncFunc, object[] param, Action<ExecuteResult<TResult>> callBack = null)
+            => QueueWorkItem(asyncFunc, param, out _, callBack);
+
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        public WorkID QueueWorkItem<TResult>(Func<object[], Task<TResult>> asyncFunc, object[] param, WorkOption option)
+            => QueueWorkItem(asyncFunc, param, out _, option);
 
         /// <summary>
         /// Queues a async work for execution. 
@@ -506,6 +548,33 @@ namespace PowerThreadPool
             _tcsDict[id] = taskCompletionSource;
 
             return id;
+        }
+
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param"></param>
+        /// <param name="task"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
+        public WorkID QueueWorkItem(Func<object[], Task> asyncFunc, object[] param, out Task task, Action<ExecuteResultBase> callBack = null)
+        {
+            WorkOption workOption = new WorkOption { Callback = callBack };
+            return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param), out task, workOption);
+        }
+
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param"></param>
+        /// <param name="task"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        public WorkID QueueWorkItem(Func<object[], Task> asyncFunc, object[] param, out Task task, WorkOption option)
+        {
+            return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param), out task, option);
         }
 
         /// <summary>
@@ -742,6 +811,36 @@ namespace PowerThreadPool
             _tcsDict[id] = taskCompletionSource;
 
             return id;
+        }
+
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param"></param>
+        /// <param name="task"></param>
+        /// <param name="callBack"></param>
+        /// <returns></returns>
+        public WorkID QueueWorkItem<TResult>(Func<object[], Task<TResult>> asyncFunc, object[] param, out Task<ExecuteResult<TResult>> task, Action<ExecuteResult<TResult>> callBack = null)
+        {
+            WorkOption workOption = new WorkOption();
+            workOption.SetCallback(callBack);
+            return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param), out task, workOption);
+        }
+
+        /// <summary>
+        /// Queues a async work for execution. 
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="asyncFunc"></param>
+        /// <param name="param"></param>
+        /// <param name="task"></param>
+        /// <param name="option"></param>
+        /// <returns></returns>
+        public WorkID QueueWorkItem<TResult>(Func<object[], Task<TResult>> asyncFunc, object[] param, out Task<ExecuteResult<TResult>> task, WorkOption option)
+        {
+            return QueueWorkItem(DelegateHelper.ToNormalFunc(asyncFunc, param), out task, option);
         }
 
         /// <summary>
