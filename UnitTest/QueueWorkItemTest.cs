@@ -359,7 +359,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async () =>
             {
@@ -381,7 +380,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async () =>
             {
@@ -403,7 +401,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async () =>
             {
@@ -451,7 +448,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async () =>
             {
@@ -473,7 +469,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async () =>
             {
@@ -496,7 +491,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async () =>
             {
@@ -577,7 +571,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             var id = powerPool.QueueWorkItem(async () =>
             {
@@ -601,7 +594,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1) =>
             {
@@ -623,7 +615,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1) =>
             {
@@ -645,7 +636,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1) =>
             {
@@ -693,7 +683,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1) =>
             {
@@ -715,7 +704,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1) =>
             {
@@ -738,7 +726,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1) =>
             {
@@ -819,7 +806,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             var id = powerPool.QueueWorkItem(async (p1) =>
             {
@@ -843,7 +829,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2) =>
             {
@@ -865,7 +850,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2) =>
             {
@@ -887,7 +871,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2) =>
             {
@@ -935,7 +918,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2) =>
             {
@@ -957,7 +939,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2) =>
             {
@@ -980,7 +961,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2) =>
             {
@@ -1061,7 +1041,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             var id = powerPool.QueueWorkItem(async (p1, p2) =>
             {
@@ -1085,7 +1064,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3) =>
             {
@@ -1107,7 +1085,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3) =>
             {
@@ -1129,7 +1106,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3) =>
             {
@@ -1177,7 +1153,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3) =>
             {
@@ -1199,7 +1174,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3) =>
             {
@@ -1222,7 +1196,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3) =>
             {
@@ -1303,7 +1276,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             var id = powerPool.QueueWorkItem(async (p1, p2, p3) =>
             {
@@ -1327,7 +1299,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
@@ -1349,7 +1320,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
@@ -1371,7 +1341,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
@@ -1419,7 +1388,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
@@ -1441,7 +1409,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
@@ -1464,7 +1431,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
@@ -1545,7 +1511,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             var id = powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
             {
@@ -1569,7 +1534,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
             {
@@ -1591,7 +1555,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
             {
@@ -1613,7 +1576,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
             {
@@ -1661,7 +1623,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
             {
@@ -1683,7 +1644,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
             {
@@ -1706,7 +1666,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
             {
@@ -1787,7 +1746,6 @@ namespace UnitTest
 
             object p = null;
             object l = null;
-            object c = null;
             PowerPool powerPool = new PowerPool();
             var id = powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
             {
