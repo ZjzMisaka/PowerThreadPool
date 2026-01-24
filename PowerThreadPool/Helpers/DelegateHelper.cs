@@ -135,6 +135,28 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
+        internal static Func<Task> ToNormalFunc(
+            Func<object[], Task> asyncFunc,
+            object[] param)
+        {
+            Task func()
+            {
+                return asyncFunc(param);
+            }
+            return func;
+        }
+
+        internal static Func<Task<TResult>> ToNormalFunc<TResult>(
+            Func<object[], Task<TResult>> asyncFunc,
+            object[] param)
+        {
+            Task<TResult> func()
+            {
+                return asyncFunc(param);
+            }
+            return func;
+        }
+
         internal static Func<Task> ToNormalFunc<T1>(
             Func<T1, Task> asyncFunc,
             T1 param1)
