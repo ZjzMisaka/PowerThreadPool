@@ -137,10 +137,12 @@ WorkID QueueWorkItem<T1, ..., TResult>(Func<T1, ..., TResult> function, T1 param
 WorkID QueueWorkItem<TResult>(Func<TResult> function, *);
 WorkID QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, *);
 // Async
-WorkID QueueWorkItem(Func<Task> asyncFunc, *);
-WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, *);
-WorkID QueueWorkItem(Func<Task> asyncFunc, out Task task, *);
-WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, *);
+WorkID QueueWorkItem<T1, ...>(Func<T1, ..., Task> asyncFunc, T1 param1, ..., _, *);
+WorkID QueueWorkItem(Func<Task> asyncFunc, _, *);
+WorkID QueueWorkItem(Func<object[], Task> asyncFunc, object[] param, _, *);
+WorkID QueueWorkItem<T1, ..., TResult>(Func<T1, ..., Task<TResult>> asyncFunc, T1 param1, ..., _, *);
+WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, _, *);
+WorkID QueueWorkItem<TResult>(Func<object[], Task<TResult>> asyncFunc, object[] param, _, *);
 ```
 
 #### Asterisk `*`
@@ -149,6 +151,9 @@ WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteRes
 
 #### Ellipses `...`
 1. Up to 5 type parameters are supported.
+
+#### Underscore `_`
+1. An `out` parameter (`Task` | `Task<ExecuteResult<TResult>>`) that returns a `Task` representing the asynchronous execution of `asyncFunc`.
 
 ## More
 [Testing And Performance Analysis](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Testing-And-Performance-Analysis) | [Feature Comparison](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Feature-Comparison)  
