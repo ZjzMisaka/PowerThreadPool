@@ -578,8 +578,10 @@ namespace PowerThreadPool
             }
             else
             {
-                option = new WorkOption();
-                option.SetCallback(callBack);
+                option = new WorkOption<TResult>
+                {
+                    Callback = callBack,
+                };
             }
             return option;
         }
