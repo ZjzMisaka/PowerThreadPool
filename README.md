@@ -1,19 +1,22 @@
 # PowerThreadPool
 ![icon](https://raw.githubusercontent.com/ZjzMisaka/PowerThreadPool/main/icon.png)
 
-![Nuget](https://img.shields.io/nuget/v/PowerThreadPool?style=for-the-badge)
-![Nuget](https://img.shields.io/nuget/dt/PowerThreadPool?style=for-the-badge)
-![GitHub release (with filter)](https://img.shields.io/github/v/release/ZjzMisaka/PowerThreadPool?style=for-the-badge)
-![GitHub Repo stars](https://img.shields.io/github/stars/ZjzMisaka/PowerThreadPool?style=for-the-badge)
-![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/ZjzMisaka/PowerThreadPool/test.yml?style=for-the-badge)
-[![Codecov](https://img.shields.io/codecov/c/github/ZjzMisaka/PowerThreadPool?style=for-the-badge)](https://app.codecov.io/gh/ZjzMisaka/PowerThreadPool)
-[![CodeFactor](https://www.codefactor.io/repository/github/zjzmisaka/powerthreadpool/badge?style=for-the-badge)](https://www.codefactor.io/repository/github/zjzmisaka/powerthreadpool)
+[![.NET Foundation Seed Project](https://img.shields.io/badge/.NET_Foundation-Seed_Project-512bd4?style=flat-square)](https://github.com/dotnet-foundation/projects/blob/main/readme.md#project-levels)
 
-<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+![Nuget](https://img.shields.io/nuget/v/PowerThreadPool?style=flat-square)
+![Nuget](https://img.shields.io/nuget/dt/PowerThreadPool?style=flat-square)
+![GitHub release (with filter)](https://img.shields.io/github/v/release/ZjzMisaka/PowerThreadPool?style=flat-square)
+![GitHub Repo stars](https://img.shields.io/github/stars/ZjzMisaka/PowerThreadPool?style=flat-square)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/ZjzMisaka/PowerThreadPool/test.yml?style=flat-square)
+[![Codecov](https://img.shields.io/codecov/c/github/ZjzMisaka/PowerThreadPool?style=flat-square)](https://app.codecov.io/gh/ZjzMisaka/PowerThreadPool)
+[![CodeFactor](https://www.codefactor.io/repository/github/zjzmisaka/powerthreadpool/badge?style=flat-square)](https://www.codefactor.io/repository/github/zjzmisaka/powerthreadpool)<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-7-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 A comprehensive and efficient low-contention thread pool for easily managing both sync and async workloads. It provides granular work control, flexible concurrency, and robust error handling.  
+
+## Status
+This project is currently a Seed Project within the .NET Foundation. This means it is an "up and coming" project supported by the foundation to grow its community and ecosystem.
 
 ## Documentation
 Access the Wiki in [English](https://github.com/ZjzMisaka/PowerThreadPool/wiki) | [中文](https://github.com/ZjzMisaka/PowerThreadPool.zh-CN.Wiki/wiki) | [日本語](https://github.com/ZjzMisaka/PowerThreadPool.ja-JP.Wiki/wiki).  
