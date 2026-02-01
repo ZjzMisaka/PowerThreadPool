@@ -16,16 +16,17 @@
 A comprehensive and efficient low-contention thread pool for easily managing both sync and async workloads. It provides granular work control, flexible concurrency, and robust error handling.  
 
 ## Status
-This project is currently a Seed Project within the .NET Foundation. This means it is an "up and coming" project supported by the foundation to grow its community and ecosystem.
+This project is currently a Seed Project within the .NET Foundation. This means it is an "up and coming" project within the foundation to grow its community and ecosystem.  
+
+## Why PTP
+1. Provides rich, ultra-fine-grained control primitives spanning the entire task lifecycle.
+2. Offers native async support. PTP manages all continuations of an asynchronous task directly without sacrificing async semantics and essential characteristics, rather than simply wrapping `Task.Run`.
+3. Grants asynchronous tasks the exact same control features as synchronous ones via a unified interface, allowing transparent and seamless interleaving of synchronous and asynchronous workloads.
+4. Leverages optimizations like CAS, work-stealing, and heuristic state algorithms. This maintains performance close to the native thread pool while implementing advanced functionality, thereby minimizing the overhead caused by secondary encapsulation.
 
 ## Documentation
 Access the Wiki in [English](https://github.com/ZjzMisaka/PowerThreadPool/wiki) | [中文](https://github.com/ZjzMisaka/PowerThreadPool.zh-CN.Wiki/wiki) | [日本語](https://github.com/ZjzMisaka/PowerThreadPool.ja-JP.Wiki/wiki).  
 Visit the [DeepWiki](https://deepwiki.com/ZjzMisaka/PowerThreadPool) for more information.  
-
-## Pack
-```ps1
-powershell -File build.ps1 -Version {Version}
-```
 
 ## Installation
 If you want to include PowerThreadPool in your project, you can [install it directly from NuGet](https://www.nuget.org/packages/PowerThreadPool/).  
@@ -66,7 +67,7 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
 - [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
 - [Low-Contention Design](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
 
-## Getting started
+## Getting Started
 ### Out-of-the-box: Run a simple work
 PTP is designed to be out-of-the-box. For simple works, you can get started without any complex configuration.  
 ```csharp
@@ -148,18 +149,19 @@ WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, _, *);
 WorkID QueueWorkItem<TResult>(Func<object[], Task<TResult>> asyncFunc, object[] param, _, *);
 ```
 
-#### Asterisk `*`
-1. `WorkOption` | `WorkOption<T>`: The work option to customize the behavior of the work. 
-2. `Action<ExecuteResult<T>>`: The callback to be invoked when the work is completed. 
+|Wildcard|Explanation|
+|----|----|
+|*|`WorkOption` \| `WorkOption<T>`: The work option to customize the behavior of the work.<br>`Action<ExecuteResult<T>>`: The callback to be invoked when the work is completed.|
+|...|Up to 5 type parameters are supported.|
+|_|An `out` parameter (`Task` \| `Task<ExecuteResult<TResult>>`) that returns a `Task` representing the asynchronous execution of `asyncFunc`.|
 
-#### Ellipses `...`
-1. Up to 5 type parameters are supported.
+## Pack
+```ps1
+powershell -File build.ps1 -Version {Version}
+```
 
-#### Underscore `_`
-1. An `out` parameter (`Task` | `Task<ExecuteResult<TResult>>`) that returns a `Task` representing the asynchronous execution of `asyncFunc`.
-
-## More
-[Testing And Performance Analysis](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Testing-And-Performance-Analysis) | [Feature Comparison](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Feature-Comparison)  
+## More Resources
+[Testing And Performance Analysis](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Testing-And-Performance-Analysis) | [Feature Comparison](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Feature-Comparison) | [Knowledge Base](https://github.com/ZjzMisaka/PowerThreadPool/issues?q=is%3Aissue%20label%3A%22knowledge%20base%22)  
 **Get involved**: [Join our growing community](https://github.com/ZjzMisaka/PowerThreadPool/discussions/258)  
 
 ## Contributors ✨
