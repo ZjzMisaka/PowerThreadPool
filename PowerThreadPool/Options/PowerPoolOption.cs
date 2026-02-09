@@ -95,7 +95,7 @@ namespace PowerThreadPool.Options
         public bool StartSuspended { get; set; } = false;
 
         /// <summary>
-        /// FIFO or LIFO.
+        /// FIFO, LIFO or Deque.
         /// </summary>
         public QueueType QueueType { get; set; } = QueueType.FIFO;
 
