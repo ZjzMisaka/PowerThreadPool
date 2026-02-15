@@ -113,7 +113,7 @@ namespace PowerThreadPool
         private bool _poolStopping = false;
         public bool PoolStopping { get => _poolStopping; }
 
-        private bool _enablePoolIdleCheck = true;
+        private volatile bool _enablePoolIdleCheck = true;
         /// <summary>
         /// Indicates whether to perform pool idle check.
         /// </summary>
@@ -123,7 +123,7 @@ namespace PowerThreadPool
             set
             {
                 _enablePoolIdleCheck = value;
-                if (_enablePoolIdleCheck)
+                if (value)
                 {
                     CheckPoolIdle();
                 }
