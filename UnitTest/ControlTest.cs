@@ -6047,5 +6047,24 @@ namespace UnitTest
 
             Assert.Throws<InvalidOperationException>(() => powerPool.CheckIfRequestedStop());
         }
+
+        [Fact]
+        public void TestTimedoutWhenPausing()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 1000, ForceStop = true } });
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.PauseIfRequested();
+                    Thread.Sleep(1000000000);
+                }
+            });
+            powerPool.Pause();
+            powerPool.Wait();
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
     }
 }
