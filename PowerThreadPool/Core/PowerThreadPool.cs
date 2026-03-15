@@ -454,7 +454,7 @@ namespace PowerThreadPool
             {
                 work.QueueDateTime = DateTime.UtcNow;
             }
-            worker.SetWork(work, false);
+            worker.SetWork(work, true);
         }
 
         private bool OnRejected(WorkBase work, out Worker worker)
