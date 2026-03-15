@@ -18,8 +18,11 @@ A comprehensive and efficient low-contention thread pool for easily managing bot
 ## Status
 This project is currently a Seed Project within the .NET Foundation. This means it is an "up and coming" project within the foundation to grow its community and ecosystem.  
 
+## Architecture
+<img width="3428" height="1302" alt="image" src="https://github.com/user-attachments/assets/ba16bf7e-a26c-43fb-a287-7b17a916fef8" />
+
 ## Why PTP
-1. Provides rich, ultra-fine-grained control primitives spanning the entire work lifecycle.
+1. Provides rich, fine-grained control primitives spanning the entire work lifecycle.
 2. Offers native async support. PTP manages all continuations of an asynchronous work directly without sacrificing async semantics and essential characteristics, rather than simply wrapping `Task.Run`.
 3. Grants asynchronous works the exact same control features as synchronous ones via a unified interface, allowing transparent and seamless interleaving of synchronous and asynchronous workloads.
 4. Leverages optimizations like CAS, work-stealing, and heuristic state algorithms. This maintains performance close to the native thread pool while implementing advanced functionality, thereby minimizing the overhead caused by secondary encapsulation.
