@@ -28,7 +28,7 @@ namespace PowerThreadPool
         internal int ID { get; set; }
 
         internal InterlockedFlag<WorkerStates> WorkerState { get; } = WorkerStates.Idle;
-        internal InterlockedFlag<CanGetWork> CanGetWork { get; } = Constants.CanGetWork.Allowed;
+        internal InterlockedFlag<CanGetWork> CanGetWork { get; } = Constants.CanGetWork.NotAllowed;
         internal InterlockedFlag<WorkHeldStates> WorkHeldState { get; } = WorkHeldStates.NotHeld;
         internal InterlockedFlag<WorkStealability> WorkStealability { get; } = Constants.WorkStealability.Allowed;
 

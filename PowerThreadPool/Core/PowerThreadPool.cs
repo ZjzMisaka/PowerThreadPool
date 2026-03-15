@@ -340,7 +340,6 @@ namespace PowerThreadPool
                 if (_canCreateNewWorker.TrySet(CanCreateNewWorker.NotAllowed, CanCreateNewWorker.Allowed))
                 {
                     Worker worker = new Worker(this);
-                    worker.CanGetWork.InterlockedValue = CanGetWork.NotAllowed;
 
                     if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                     {
@@ -620,7 +619,6 @@ namespace PowerThreadPool
                     if (AliveWorkerCount < PowerPoolOption.MaxThreads + LongRunningWorkerCount || longRunning)
                     {
                         worker = new Worker(this);
-                        worker.CanGetWork.InterlockedValue = CanGetWork.NotAllowed;
 
                         if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                         {
