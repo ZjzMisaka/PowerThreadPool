@@ -604,7 +604,7 @@ namespace PowerThreadPool
                 _killTimer.Cancel();
             }
 
-            if (!shouldSetCanGetWork)
+            if (shouldSetCanGetWork)
             {
                 CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
             }
@@ -817,7 +817,7 @@ namespace PowerThreadPool
                     }
                     else
                     {
-                        SetWork(stolenWork, true);
+                        SetWork(stolenWork, false);
                     }
                 }
             }
@@ -881,7 +881,7 @@ namespace PowerThreadPool
                         {
                             foreach (WorkBase workBase in waitingWorkList)
                             {
-                                SetWork(workBase, false);
+                                SetWork(workBase, true);
                             }
 
                             CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
