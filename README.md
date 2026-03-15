@@ -67,8 +67,9 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
 - [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Runtime-Status)
 - [Running Timer](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Running-Timer)
 - [Queue Type (FIFO | LIFO | Deque | Custom)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Queue-Type)
-- [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
-- [Low-Contention Design](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
+- [Internal Design: State Machine](https://github.com/ZjzMisaka/PowerThreadPool/wiki/State-Machine)
+- [Internal Design: Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
+- [Internal Design: Low-Contention Design](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
 
 ## Getting Started
 ### Out-of-the-box: Run a simple work
