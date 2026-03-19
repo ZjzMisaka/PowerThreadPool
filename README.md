@@ -25,7 +25,7 @@ This project is currently a Seed Project within the .NET Foundation. This means 
 1. Provides rich, fine-grained control primitives spanning the entire work lifecycle.
 2. Offers native async support. PTP manages all continuations of an asynchronous work directly without sacrificing async semantics and essential characteristics, rather than simply wrapping `Task.Run`.
 3. Grants asynchronous works the exact same control features as synchronous ones via a unified interface, allowing transparent and seamless interleaving of synchronous and asynchronous workloads.
-4. Leverages optimizations like CAS, work-stealing, and heuristic state algorithms. This maintains performance close to the native thread pool while implementing advanced functionality, thereby minimizing the overhead caused by secondary encapsulation.
+4. Leverages optimizations like CAS, work-stealing, and heuristic debounce algorithms. This maintains performance close to the native thread pool while implementing advanced functionality, thereby minimizing the overhead caused by secondary encapsulation.
 
 ## Documentation
 Access the Wiki in [English](https://github.com/ZjzMisaka/PowerThreadPool/wiki) | [中文](https://github.com/ZjzMisaka/PowerThreadPool.zh-CN.Wiki/wiki) | [日本語](https://github.com/ZjzMisaka/PowerThreadPool.ja-JP.Wiki/wiki).  
@@ -67,9 +67,12 @@ Support: Net40+ | Net5.0+ | netstandard2.0+
 - [Runtime Status](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Runtime-Status)
 - [Running Timer](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Running-Timer)
 - [Queue Type (FIFO | LIFO | Deque | Custom)](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Queue-Type)
-- [Internal Design: State Machine](https://github.com/ZjzMisaka/PowerThreadPool/wiki/State-Machine)
-- [Internal Design: Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
-- [Internal Design: Low-Contention Design](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
+
+### Internal Design
+- [State Machine](https://github.com/ZjzMisaka/PowerThreadPool/wiki/State-Machine)
+- [Heuristic Debounce Algorithm](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Heuristic-Debounce-Algorithm)
+- [Load Balancing](https://en.wikipedia.org/wiki/Work_stealing)
+- [Low-Contention Design](https://en.wikipedia.org/wiki/Non-blocking_algorithm)
 
 ## Getting Started
 ### Out-of-the-box: Run a simple work
