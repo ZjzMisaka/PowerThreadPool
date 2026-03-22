@@ -36,7 +36,6 @@ namespace PowerThreadPool
 
         private IStealablePriorityCollection<WorkItemBase> _waitingWorkPriorityCollection;
 
-        private DeferredActionTimer _timeoutTimer;
         private DeferredActionTimer _killTimer;
 
         private ManualResetEvent _runSignal = new ManualResetEvent(false);
@@ -990,15 +989,18 @@ namespace PowerThreadPool
 
             if (workTimeoutOption != null)
             {
-                if (_timeoutTimer == null)
+                if (work.TimeoutTimer == null && (work.BaseAsyncWorkID == null || work.BaseAsyncWorkID == work.ID))
                 {
-                    _timeoutTimer = new DeferredActionTimer();
+                    work.TimeoutTimer = new DeferredActionTimer();
                 }
-                _timeoutTimer.Set(workTimeoutOption.Duration, () =>
+                if (work.TimeoutTimer != null)
                 {
-                    _powerPool.OnWorkTimedOut(_powerPool, new WorkTimedOutEventArgs() { ID = WorkID });
-                    _powerPool.Stop(WorkID, workTimeoutOption.ForceStop);
-                });
+                    work.TimeoutTimer.Set(workTimeoutOption.Duration, () =>
+                    {
+                        _powerPool.OnWorkTimedOut(_powerPool, new WorkTimedOutEventArgs() { ID = WorkID });
+                        _powerPool.Stop(WorkID, workTimeoutOption.ForceStop);
+                    });
+                }
             }
 
             Work = work;
@@ -1077,17 +1079,17 @@ namespace PowerThreadPool
 
         internal void PauseTimer()
         {
-            if (_timeoutTimer != null)
+            if (Work.TimeoutTimer != null)
             {
-                _timeoutTimer.Pause();
+                Work.TimeoutTimer.Pause();
             }
         }
 
         internal void ResumeTimer()
         {
-            if (_timeoutTimer != null)
+            if (Work.TimeoutTimer != null)
             {
-                _timeoutTimer.Resume();
+                Work.TimeoutTimer.Resume();
             }
         }
 
@@ -1226,10 +1228,6 @@ namespace PowerThreadPool
                     }
                 }
 
-                if (_timeoutTimer != null)
-                {
-                    _timeoutTimer.Dispose();
-                }
                 if (_killTimer != null)
                 {
                     _killTimer.Dispose();
