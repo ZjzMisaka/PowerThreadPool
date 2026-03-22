@@ -446,6 +446,10 @@ namespace PowerThreadPool.Works
             {
                 PauseSignal.Dispose();
             }
+            if (TimeoutTimer != null)
+            {
+                TimeoutTimer.Dispose();
+            }
         }
     }
 }

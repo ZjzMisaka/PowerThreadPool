@@ -36,7 +36,6 @@ namespace PowerThreadPool
 
         private IStealablePriorityCollection<WorkItemBase> _waitingWorkPriorityCollection;
 
-        private DeferredActionTimer _timeoutTimer;
         private DeferredActionTimer _killTimer;
 
         private ManualResetEvent _runSignal = new ManualResetEvent(false);
@@ -223,6 +222,17 @@ namespace PowerThreadPool
                 }
                 requeueWork._canCancel.InterlockedValue = CanCancel.Allowed;
                 Interlocked.Increment(ref _powerPool._waitingWorkCount);
+                if (requeueWork.BaseAsyncWorkID != null)
+                {
+                    foreach (var oldWorkID in _powerPool._asyncWorkIDDict[requeueWork.BaseAsyncWorkID])
+                    {
+                        if (_powerPool._aliveWorkDic.TryRemove(oldWorkID, out WorkBase work))
+                        {
+                            work.Dispose();
+                        }
+                    }
+                    _powerPool._asyncWorkIDDict[requeueWork.BaseAsyncWorkID].Clear();
+                }
                 _powerPool.SetWork(requeueWork);
             }
             else
@@ -988,17 +998,22 @@ namespace PowerThreadPool
                 workTimeoutOption = _powerPool.PowerPoolOption.DefaultWorkTimeoutOption;
             }
 
-            if (workTimeoutOption != null)
+            if (workTimeoutOption != null
+                && (work.BaseAsyncWorkID == null || work.BaseAsyncWorkID == work.ID)
+                && work.ExecuteCount == 0)
             {
-                if (_timeoutTimer == null)
+                if (work.TimeoutTimer == null)
                 {
-                    _timeoutTimer = new DeferredActionTimer();
+                    work.TimeoutTimer = new DeferredActionTimer();
                 }
-                _timeoutTimer.Set(workTimeoutOption.Duration, () =>
+                if (work.TimeoutTimer != null)
                 {
-                    _powerPool.OnWorkTimedOut(_powerPool, new WorkTimedOutEventArgs() { ID = WorkID });
-                    _powerPool.Stop(WorkID, workTimeoutOption.ForceStop);
-                });
+                    work.TimeoutTimer.Set(workTimeoutOption.Duration, () =>
+                    {
+                        _powerPool.OnWorkTimedOut(_powerPool, new WorkTimedOutEventArgs() { ID = WorkID });
+                        _powerPool.Stop(WorkID, workTimeoutOption.ForceStop);
+                    });
+                }
             }
 
             Work = work;
@@ -1077,17 +1092,17 @@ namespace PowerThreadPool
 
         internal void PauseTimer()
         {
-            if (_timeoutTimer != null)
+            if (Work.TimeoutTimer != null)
             {
-                _timeoutTimer.Pause();
+                Work.TimeoutTimer.Pause();
             }
         }
 
         internal void ResumeTimer()
         {
-            if (_timeoutTimer != null)
+            if (Work.TimeoutTimer != null)
             {
-                _timeoutTimer.Resume();
+                Work.TimeoutTimer.Resume();
             }
         }
 
@@ -1226,10 +1241,6 @@ namespace PowerThreadPool
                     }
                 }
 
-                if (_timeoutTimer != null)
-                {
-                    _timeoutTimer.Dispose();
-                }
                 if (_killTimer != null)
                 {
                     _killTimer.Dispose();
