@@ -6058,6 +6058,7 @@ namespace UnitTest
             {
                 while (true)
                 {
+                    Thread.Sleep(100);
                     powerPool.PauseIfRequested();
                     Thread.Sleep(1000000000);
                 }
@@ -6065,6 +6066,60 @@ namespace UnitTest
             powerPool.Pause();
             powerPool.Wait();
             Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
+        public async void TestTimedoutWhenPausingAsync()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 1000, ForceStop = true } });
+            // Should Resume first
+            powerPool.WorkTimedOut += (sender, e) =>
+            {
+                powerPool.Resume();
+            };
+            WorkID id = powerPool.QueueWorkItem(async () =>
+            {
+                while (true)
+                {
+                    Thread.Sleep(100);
+                    await powerPool.PauseIfRequestedAsync();
+                    Thread.Sleep(1000000000);
+                }
+            });
+            powerPool.Pause();
+            powerPool.Wait();
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+        }
+
+        [Fact]
+        public async void TestHoldWorkTimeoutTimerUntilAsyncWorkDone()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 5000, ForceStop = true } });
+
+            WorkID workID = default;
+            powerPool.WorkTimedOut += (sender, e) =>
+            {
+                workID = e.ID;
+                powerPool.Resume(workID);
+            };
+
+            powerPool.QueueWorkItem(async () =>
+            {
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100000);
+            });
+
+            powerPool.Wait();
+            Assert.Equal(1, workID);
         }
     }
 }
