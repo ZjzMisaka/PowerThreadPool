@@ -6121,5 +6121,51 @@ namespace UnitTest
             powerPool.Wait();
             Assert.Equal(1, workID);
         }
+
+        [Fact]
+        public async void TestHoldWorkTimeoutTimerUntilRetryAsyncWorkDone()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption()
+            {
+                DefaultWorkTimeoutOption = new TimeoutOption() { Duration = 5000, ForceStop = true },
+            });
+
+            WorkID workID = default;
+            powerPool.WorkTimedOut += (sender, e) =>
+            {
+                workID = e.ID;
+                powerPool.Resume(workID);
+            };
+
+            bool fail = true;
+
+            powerPool.QueueWorkItem(async () =>
+            {
+                await Task.Delay(1);
+                if (fail)
+                {
+                    fail = false;
+                    throw new Exception();
+                }
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                await Task.Delay(1);
+                Thread.Sleep(100000);
+            }, new WorkOption
+            {
+                RetryOption = new RetryOption
+                {
+                    RetryBehavior = RetryBehavior.Requeue,
+                    RetryPolicy = RetryPolicy.Unlimited
+                }
+            });
+
+            powerPool.Wait();
+            Assert.Equal(1, workID);
+        }
     }
 }
