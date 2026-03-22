@@ -222,6 +222,17 @@ namespace PowerThreadPool
                 }
                 requeueWork._canCancel.InterlockedValue = CanCancel.Allowed;
                 Interlocked.Increment(ref _powerPool._waitingWorkCount);
+                if (requeueWork.BaseAsyncWorkID != null)
+                {
+                    foreach (var oldWorkID in _powerPool._asyncWorkIDDict[requeueWork.BaseAsyncWorkID])
+                    {
+                        if (_powerPool._aliveWorkDic.TryRemove(oldWorkID, out WorkBase work))
+                        {
+                            work.Dispose();
+                        }
+                    }
+                    _powerPool._asyncWorkIDDict[requeueWork.BaseAsyncWorkID].Clear();
+                }
                 _powerPool.SetWork(requeueWork);
             }
             else
@@ -987,9 +998,11 @@ namespace PowerThreadPool
                 workTimeoutOption = _powerPool.PowerPoolOption.DefaultWorkTimeoutOption;
             }
 
-            if (workTimeoutOption != null)
+            if (workTimeoutOption != null
+                && (work.BaseAsyncWorkID == null || work.BaseAsyncWorkID == work.ID)
+                && work.ExecuteCount == 0)
             {
-                if (work.TimeoutTimer == null && (work.BaseAsyncWorkID == null || work.BaseAsyncWorkID == work.ID))
+                if (work.TimeoutTimer == null)
                 {
                     work.TimeoutTimer = new DeferredActionTimer();
                 }
