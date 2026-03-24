@@ -19,7 +19,9 @@ A comprehensive and efficient low-contention thread pool for easily managing bot
 This project is currently a Seed Project within the .NET Foundation. This means it is an "up and coming" project within the foundation to grow its community and ecosystem.  
 
 ## Architecture
-<a href="https://github.com/ZjzMisaka/PowerThreadPool/wiki/Architecture" title="Architecture PlantUML Code"><img alt="image" src="https://github.com/user-attachments/assets/7bc82a85-b16a-4f8a-84cf-d13249c69586" /></a>
+<a href="https://github.com/ZjzMisaka/PowerThreadPool/wiki/Architecture" title="Architecture PlantUML Code">
+<img alt="image" src="https://github.com/user-attachments/assets/e078aaca-2b5d-4c33-b38e-cbeab4fb3408" />
+</a>
 
 ## Why PTP
 1. Provides rich, fine-grained control primitives spanning the entire work lifecycle.
