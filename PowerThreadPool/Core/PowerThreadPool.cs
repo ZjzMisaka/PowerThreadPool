@@ -39,13 +39,9 @@ namespace PowerThreadPool
         internal ConcurrentSet<WorkID> _failedWorkSet = new ConcurrentSet<WorkID>();
         internal ConcurrentSet<WorkID> _canceledWorkSet = new ConcurrentSet<WorkID>();
 
+        internal ConcurrentDictionary<int, Worker> _aliveWorkerDic = new ConcurrentDictionary<int, Worker>();
         internal ConcurrentDictionary<int, Worker> _idleWorkerDic = new ConcurrentDictionary<int, Worker>();
         internal ConcurrentQueue<int> _idleWorkerQueue = new ConcurrentQueue<int>();
-
-        internal ConcurrentDictionary<WorkID, WorkBase> _aliveWorkDic = new ConcurrentDictionary<WorkID, WorkBase>();
-        internal ConcurrentDictionary<string, ConcurrentSet<WorkID>> _workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<WorkID>>();
-        internal ConcurrentDictionary<string, ConcurrentSet<string>> _groupRelationDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
-        internal ConcurrentDictionary<int, Worker> _aliveWorkerDic = new ConcurrentDictionary<int, Worker>();
         internal volatile bool _aliveWorkerDicChanged = false;
         internal Worker[] _aliveWorkerList = new List<Worker>().ToArray();
         internal int _aliveWorkerListLoopIndex = 0;
@@ -55,6 +51,7 @@ namespace PowerThreadPool
         internal ConcurrentQueue<WorkID> _stopSuspendedWorkQueue = new ConcurrentQueue<WorkID>();
         internal ConcurrentDictionary<WorkID, WorkBase> _stopSuspendedWork = new ConcurrentDictionary<WorkID, WorkBase>();
 
+        internal ConcurrentDictionary<WorkID, WorkBase> _aliveWorkDic = new ConcurrentDictionary<WorkID, WorkBase>();
         private ConcurrentSet<WorkBase> _pausingWorkSet = new ConcurrentSet<WorkBase>();
 
         internal ConcurrentDictionary<WorkID, ExecuteResultBase> _resultDic = new ConcurrentDictionary<WorkID, ExecuteResultBase>();

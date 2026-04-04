@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Groups;
@@ -8,6 +9,9 @@ namespace PowerThreadPool
 {
     public partial class PowerPool
     {
+        internal ConcurrentDictionary<string, ConcurrentSet<WorkID>> _workGroupDic = new ConcurrentDictionary<string, ConcurrentSet<WorkID>>();
+        internal ConcurrentDictionary<string, ConcurrentSet<string>> _groupRelationDic = new ConcurrentDictionary<string, ConcurrentSet<string>>();
+
         /// <summary>
         /// Get group object
         /// </summary>
