@@ -6,11 +6,11 @@ using Xunit.Abstractions;
 
 namespace UnitTest
 {
-    public class QueueWorkItemTest
+    public class QueueWorkItemWithCtsTest
     {
         private readonly ITestOutputHelper _output;
 
-        public QueueWorkItemTest(ITestOutputHelper output)
+        public QueueWorkItemWithCtsTest(ITestOutputHelper output)
         {
             _output = output;
         }
@@ -22,7 +22,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(() => { p = "1"; }, (res) => { });
+            powerPool.QueueWorkItem((cts) => { p = "1"; }, (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -34,7 +34,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(() => { p = "1"; }, new WorkOption());
+            powerPool.QueueWorkItem((cts) => { p = "1"; }, new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -46,7 +46,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem((object[] param) => { p = param[0]; }, new[] { "1" }, (res) => { });
+            powerPool.QueueWorkItem((object[] param, CancellationTokenSource cts) => { p = param[0]; }, new[] { "1" }, (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -58,7 +58,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem((object[] param) => { p = param[0]; }, new[] { "1" }, new WorkOption());
+            powerPool.QueueWorkItem((object[] param, CancellationTokenSource cts) => { p = param[0]; }, new[] { "1" }, new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -70,7 +70,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string>((string param) => { p = param; }, "1", (res) => { });
+            powerPool.QueueWorkItem<string>((string param, CancellationTokenSource cts) => { p = param; }, "1", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -82,7 +82,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string>((string param) => { p = param; }, "1", new WorkOption());
+            powerPool.QueueWorkItem<string>((string param, CancellationTokenSource cts) => { p = param; }, "1", new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -94,7 +94,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string>((string param1, string param2) => { p = param1; }, "1", "", (res) => { });
+            powerPool.QueueWorkItem<string, string>((string param1, string param2, CancellationTokenSource cts) => { p = param1; }, "1", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -106,7 +106,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string>((string param1, string param2) => { p = param1; }, "1", "", new WorkOption());
+            powerPool.QueueWorkItem<string, string>((string param1, string param2, CancellationTokenSource cts) => { p = param1; }, "1", "", new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -118,7 +118,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string>((string param1, string param2, string param3) => { p = param1; }, "1", "", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, string>((string param1, string param2, string param3, CancellationTokenSource cts) => { p = param1; }, "1", "", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -130,7 +130,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string>((string param1, string param2, string param3) => { p = param1; }, "1", "", "", new WorkOption());
+            powerPool.QueueWorkItem<string, string, string>((string param1, string param2, string param3, CancellationTokenSource cts) => { p = param1; }, "1", "", "", new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -142,7 +142,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string>((string param1, string param2, string param3, string param4) => { p = param1; }, "1", "", "", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, string, string>((string param1, string param2, string param3, string param4, CancellationTokenSource cts) => { p = param1; }, "1", "", "", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -154,7 +154,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string>((string param1, string param2, string param3, string param4) => { p = param1; }, "1", "", "", "", new WorkOption());
+            powerPool.QueueWorkItem<string, string, string, string>((string param1, string param2, string param3, string param4, CancellationTokenSource cts) => { p = param1; }, "1", "", "", "", new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -166,7 +166,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, string>((string param1, string param2, string param3, string param4, string param5) => { p = param1; }, "1", "", "", "", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, string, string, string>((string param1, string param2, string param3, string param4, string param5, CancellationTokenSource cts) => { p = param1; }, "1", "", "", "", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -178,7 +178,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, string>((string param1, string param2, string param3, string param4, string param5) => { p = param1; }, "1", "", "", "", "", new WorkOption());
+            powerPool.QueueWorkItem<string, string, string, string, string>((string param1, string param2, string param3, string param4, string param5, CancellationTokenSource cts) => { p = param1; }, "1", "", "", "", "", new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -190,7 +190,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, int>((string param) => { p = param; return int.Parse(param); }, "1", (res) => { });
+            powerPool.QueueWorkItem<string, int>((string param, CancellationTokenSource cts) => { p = param; return int.Parse(param); }, "1", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -202,7 +202,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, int>((string param) => { p = param; return int.Parse(param); }, "1", new WorkOption<int>());
+            powerPool.QueueWorkItem<string, int>((string param, CancellationTokenSource cts) => { p = param; return int.Parse(param); }, "1", new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -214,7 +214,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, int>((string param1, string param2) => { p = param1; return 0; }, "1", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, int>((string param1, string param2, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -226,7 +226,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, int>((string param1, string param2) => { p = param1; return 0; }, "1", "", new WorkOption<int>());
+            powerPool.QueueWorkItem<string, string, int>((string param1, string param2, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -238,7 +238,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, int>((string param1, string param2, string param3) => { p = param1; return 0; }, "1", "", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, string, int>((string param1, string param2, string param3, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -250,7 +250,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, int>((string param1, string param2, string param3) => { p = param1; return 0; }, "1", "", "", new WorkOption<int>());
+            powerPool.QueueWorkItem<string, string, string, int>((string param1, string param2, string param3, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", "", new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -262,7 +262,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, int>((string param1, string param2, string param3, string param4) => { p = param1; return 0; }, "1", "", "", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, string, string, int>((string param1, string param2, string param3, string param4, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", "", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -274,7 +274,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, int>((string param1, string param2, string param3, string param4) => { p = param1; return 0; }, "1", "", "", "", new WorkOption<int>());
+            powerPool.QueueWorkItem<string, string, string, string, int>((string param1, string param2, string param3, string param4, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", "", "", new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -286,7 +286,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, string, int>((string param1, string param2, string param3, string param4, string param5) => { p = param1; return 0; }, "1", "", "", "", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, string, string, string, int>((string param1, string param2, string param3, string param4, string param5, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", "", "", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -298,7 +298,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, string, int>((string param1, string param2, string param3, string param4, string param5) => { p = param1; return 0; }, "1", "", "", "", "", new WorkOption<int>());
+            powerPool.QueueWorkItem<string, string, string, string, string, int>((string param1, string param2, string param3, string param4, string param5, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", "", "", "", new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -310,7 +310,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<int>(() => { p = "1"; return 0; }, (res) => { });
+            powerPool.QueueWorkItem<int>((CancellationTokenSource cts) => { p = "1"; return 0; }, (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -322,7 +322,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<int>(() => { p = "1"; return 0; }, new WorkOption<int>());
+            powerPool.QueueWorkItem<int>((CancellationTokenSource cts) => { p = "1"; return 0; }, new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -334,7 +334,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<int>((param) => { p = param[0]; return 0; }, new[] { "1" }, (res) => { });
+            powerPool.QueueWorkItem<int>((param, cts) => { p = param[0]; return 0; }, new[] { "1" }, (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -346,7 +346,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<int>((param) => { p = param[0]; return 0; }, new[] { "1" }, new WorkOption<int>());
+            powerPool.QueueWorkItem<int>((param, cts) => { p = param[0]; return 0; }, new[] { "1" }, new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -359,7 +359,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async () =>
+            powerPool.QueueWorkItem(async (cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -380,7 +380,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async () =>
+            powerPool.QueueWorkItem(async (cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -401,7 +401,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async () =>
+            powerPool.QueueWorkItem(async (cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -423,7 +423,7 @@ namespace UnitTest
             object l = null;
             object c = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async () =>
+            powerPool.QueueWorkItem(async (cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -448,7 +448,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async () =>
+            powerPool.QueueWorkItem(async (cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -469,7 +469,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async () =>
+            powerPool.QueueWorkItem(async (cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -491,7 +491,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async () =>
+            powerPool.QueueWorkItem(async (cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -518,7 +518,7 @@ namespace UnitTest
             {
                 r = e.Result;
             };
-            powerPool.QueueWorkItem(async () =>
+            powerPool.QueueWorkItem(async (cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -543,7 +543,7 @@ namespace UnitTest
             object c = null;
             string r = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async () =>
+            powerPool.QueueWorkItem(async (cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -571,7 +571,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            var id = powerPool.QueueWorkItem(async () =>
+            var id = powerPool.QueueWorkItem(async (cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -594,7 +594,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1) =>
+            powerPool.QueueWorkItem(async (p1, cts) =>
             {
                 p = p1;
                 await Task.Delay(100);
@@ -615,7 +615,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1) =>
+            powerPool.QueueWorkItem(async (p1, cts) =>
             {
                 p = p1;
                 await Task.Delay(100);
@@ -636,7 +636,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1) =>
+            powerPool.QueueWorkItem(async (p1, cts) =>
             {
                 p = p1;
                 await Task.Delay(100);
@@ -658,7 +658,7 @@ namespace UnitTest
             object l = null;
             object c = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1) =>
+            powerPool.QueueWorkItem(async (p1, cts) =>
             {
                 p = p1;
                 await Task.Delay(100);
@@ -683,7 +683,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1) =>
+            powerPool.QueueWorkItem(async (p1, cts) =>
             {
                 p = p1;
                 await Task.Delay(100);
@@ -704,7 +704,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1) =>
+            powerPool.QueueWorkItem(async (p1, cts) =>
             {
                 p = p1;
                 await Task.Delay(100);
@@ -726,7 +726,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1) =>
+            powerPool.QueueWorkItem(async (p1, cts) =>
             {
                 p = p1;
                 await Task.Delay(100);
@@ -753,7 +753,7 @@ namespace UnitTest
             {
                 r = e.Result;
             };
-            powerPool.QueueWorkItem(async (p1) =>
+            powerPool.QueueWorkItem(async (p1, cts) =>
             {
                 p = p1;
                 await Task.Delay(100);
@@ -778,7 +778,7 @@ namespace UnitTest
             object c = null;
             string r = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1) =>
+            powerPool.QueueWorkItem(async (p1, cts) =>
             {
                 p = p1;
                 await Task.Delay(100);
@@ -806,7 +806,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            var id = powerPool.QueueWorkItem(async (p1) =>
+            var id = powerPool.QueueWorkItem(async (p1, cts) =>
             {
                 p = p1;
                 await Task.Delay(100);
@@ -829,7 +829,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2) =>
+            powerPool.QueueWorkItem(async (p1, p2, cts) =>
             {
                 p = p1 + p2;
                 await Task.Delay(100);
@@ -850,7 +850,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2) =>
+            powerPool.QueueWorkItem(async (p1, p2, cts) =>
             {
                 p = p1 + p2;
                 await Task.Delay(100);
@@ -871,7 +871,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2) =>
+            powerPool.QueueWorkItem(async (p1, p2, cts) =>
             {
                 p = p1 + p2;
                 await Task.Delay(100);
@@ -893,7 +893,7 @@ namespace UnitTest
             object l = null;
             object c = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2) =>
+            powerPool.QueueWorkItem(async (p1, p2, cts) =>
             {
                 p = p1 + p2;
                 await Task.Delay(100);
@@ -918,7 +918,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2) =>
+            powerPool.QueueWorkItem(async (p1, p2, cts) =>
             {
                 p = p1 + p2;
                 await Task.Delay(100);
@@ -939,7 +939,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2) =>
+            powerPool.QueueWorkItem(async (p1, p2, cts) =>
             {
                 p = p1 + p2;
                 await Task.Delay(100);
@@ -961,7 +961,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2) =>
+            powerPool.QueueWorkItem(async (p1, p2, cts) =>
             {
                 p = p1 + p2;
                 await Task.Delay(100);
@@ -988,7 +988,7 @@ namespace UnitTest
             {
                 r = e.Result;
             };
-            powerPool.QueueWorkItem(async (p1, p2) =>
+            powerPool.QueueWorkItem(async (p1, p2, cts) =>
             {
                 p = p1 + p2;
                 await Task.Delay(100);
@@ -1013,7 +1013,7 @@ namespace UnitTest
             object c = null;
             string r = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2) =>
+            powerPool.QueueWorkItem(async (p1, p2, cts) =>
             {
                 p = p1 + p2;
                 await Task.Delay(100);
@@ -1041,7 +1041,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            var id = powerPool.QueueWorkItem(async (p1, p2) =>
+            var id = powerPool.QueueWorkItem(async (p1, p2, cts) =>
             {
                 p = p1 + p2;
                 await Task.Delay(100);
@@ -1064,7 +1064,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, cts) =>
             {
                 p = p1 + p2 + p3;
                 await Task.Delay(100);
@@ -1085,7 +1085,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, cts) =>
             {
                 p = p1 + p2 + p3;
                 await Task.Delay(100);
@@ -1106,7 +1106,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, cts) =>
             {
                 p = p1 + p2 + p3;
                 await Task.Delay(100);
@@ -1128,7 +1128,7 @@ namespace UnitTest
             object l = null;
             object c = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, cts) =>
             {
                 p = p1 + p2 + p3;
                 await Task.Delay(100);
@@ -1153,7 +1153,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, cts) =>
             {
                 p = p1 + p2 + p3;
                 await Task.Delay(100);
@@ -1174,7 +1174,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, cts) =>
             {
                 p = p1 + p2 + p3;
                 await Task.Delay(100);
@@ -1196,7 +1196,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, cts) =>
             {
                 p = p1 + p2 + p3;
                 await Task.Delay(100);
@@ -1223,7 +1223,7 @@ namespace UnitTest
             {
                 r = e.Result;
             };
-            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, cts) =>
             {
                 p = p1 + p2 + p3;
                 await Task.Delay(100);
@@ -1248,7 +1248,7 @@ namespace UnitTest
             object c = null;
             string r = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, cts) =>
             {
                 p = p1 + p2 + p3;
                 await Task.Delay(100);
@@ -1276,7 +1276,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            var id = powerPool.QueueWorkItem(async (p1, p2, p3) =>
+            var id = powerPool.QueueWorkItem(async (p1, p2, p3, cts) =>
             {
                 p = p1 + p2 + p3;
                 await Task.Delay(100);
@@ -1299,7 +1299,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, cts) =>
             {
                 p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
@@ -1320,7 +1320,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, cts) =>
             {
                 p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
@@ -1341,7 +1341,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, cts) =>
             {
                 p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
@@ -1363,7 +1363,7 @@ namespace UnitTest
             object l = null;
             object c = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, cts) =>
             {
                 p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
@@ -1388,7 +1388,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, cts) =>
             {
                 p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
@@ -1409,7 +1409,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, cts) =>
             {
                 p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
@@ -1431,7 +1431,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, cts) =>
             {
                 p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
@@ -1458,7 +1458,7 @@ namespace UnitTest
             {
                 r = e.Result;
             };
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, cts) =>
             {
                 p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
@@ -1483,7 +1483,7 @@ namespace UnitTest
             object c = null;
             string r = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, cts) =>
             {
                 p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
@@ -1511,7 +1511,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            var id = powerPool.QueueWorkItem(async (p1, p2, p3, p4) =>
+            var id = powerPool.QueueWorkItem(async (p1, p2, p3, p4, cts) =>
             {
                 p = p1 + p2 + p3 + p4;
                 await Task.Delay(100);
@@ -1534,7 +1534,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5, cts) =>
             {
                 p = p1 + p2 + p3 + p4 + p5;
                 await Task.Delay(100);
@@ -1555,7 +1555,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5, cts) =>
             {
                 p = p1 + p2 + p3 + p4 + p5;
                 await Task.Delay(100);
@@ -1576,7 +1576,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5, cts) =>
             {
                 p = p1 + p2 + p3 + p4 + p5;
                 await Task.Delay(100);
@@ -1598,7 +1598,7 @@ namespace UnitTest
             object l = null;
             object c = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5, cts) =>
             {
                 p = p1 + p2 + p3 + p4 + p5;
                 await Task.Delay(100);
@@ -1623,7 +1623,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5, cts) =>
             {
                 p = p1 + p2 + p3 + p4 + p5;
                 await Task.Delay(100);
@@ -1644,7 +1644,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5, cts) =>
             {
                 p = p1 + p2 + p3 + p4 + p5;
                 await Task.Delay(100);
@@ -1666,7 +1666,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5, cts) =>
             {
                 p = p1 + p2 + p3 + p4 + p5;
                 await Task.Delay(100);
@@ -1693,7 +1693,7 @@ namespace UnitTest
             {
                 r = e.Result;
             };
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5, cts) =>
             {
                 p = p1 + p2 + p3 + p4 + p5;
                 await Task.Delay(100);
@@ -1718,7 +1718,7 @@ namespace UnitTest
             object c = null;
             string r = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5, cts) =>
             {
                 p = p1 + p2 + p3 + p4 + p5;
                 await Task.Delay(100);
@@ -1746,7 +1746,7 @@ namespace UnitTest
             object p = null;
             object l = null;
             PowerPool powerPool = new PowerPool();
-            var id = powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5) =>
+            var id = powerPool.QueueWorkItem(async (p1, p2, p3, p4, p5, cts) =>
             {
                 p = p1 + p2 + p3 + p4 + p5;
                 await Task.Delay(100);
@@ -1770,7 +1770,7 @@ namespace UnitTest
             object l = null;
             object c = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (param) =>
+            powerPool.QueueWorkItem(async (param, cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -1794,7 +1794,7 @@ namespace UnitTest
             object l = null;
             object c = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (param) =>
+            powerPool.QueueWorkItem(async (param, cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -1819,7 +1819,7 @@ namespace UnitTest
             object c = null;
             string r = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (param) =>
+            powerPool.QueueWorkItem(async (param, cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -1854,7 +1854,7 @@ namespace UnitTest
             {
                 r = e.Result;
             };
-            powerPool.QueueWorkItem(async (param) =>
+            powerPool.QueueWorkItem(async (param, cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -1880,7 +1880,7 @@ namespace UnitTest
             object l = null;
             object c = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (param) =>
+            powerPool.QueueWorkItem(async (param, cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -1904,7 +1904,7 @@ namespace UnitTest
             object l = null;
             object c = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (param) =>
+            powerPool.QueueWorkItem(async (param, cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -1929,7 +1929,7 @@ namespace UnitTest
             object c = null;
             string r = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem(async (param) =>
+            powerPool.QueueWorkItem(async (param, cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -1964,7 +1964,7 @@ namespace UnitTest
             {
                 r = e.Result;
             };
-            powerPool.QueueWorkItem(async (param) =>
+            powerPool.QueueWorkItem(async (param, cts) =>
             {
                 p = "1";
                 await Task.Delay(100);
@@ -1979,70 +1979,6 @@ namespace UnitTest
             Assert.Equal("2", l);
             Assert.Equal(6, c);
             Assert.Equal("ok", r);
-        }
-
-        [Fact]
-        public void TestSugar1()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            PowerPool powerPool = new PowerPool();
-            WorkID id = powerPool + (() => { });
-            Assert.False(id == null);
-        }
-
-        [Fact]
-        public void TestSugar2()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            int doneCount = 0;
-            PowerPool powerPool = new PowerPool();
-            _ = powerPool
-                | (() => { Interlocked.Increment(ref doneCount); })
-                | (() => { Interlocked.Increment(ref doneCount); })
-                | (() => { Interlocked.Increment(ref doneCount); });
-            powerPool.Wait();
-            Assert.Equal(3, doneCount);
-        }
-
-        [Fact]
-        public void TestSugar3()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            int doneCount = 0;
-            PowerPool powerPool = new PowerPool();
-            powerPool |= () => { Interlocked.Increment(ref doneCount); };
-            powerPool.Wait();
-            Assert.Equal(1, doneCount);
-        }
-
-        [Fact]
-        public void TestBadOverload()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            PowerPool powerPool = new PowerPool();
-            object c = null;
-            object r = null;
-            powerPool.WorkStopped += (s, e) =>
-            {
-                r = "2";
-            };
-            powerPool.QueueWorkItem(() =>
-            {
-                while (true)
-                {
-                    c = "1";
-                    powerPool.StopIfRequested();
-                }
-            });
-            Thread.Sleep(100);
-            powerPool.Stop();
-            powerPool.Wait();
-            Assert.Equal("1", c);
-            Assert.Equal("2", r);
         }
     }
 }
