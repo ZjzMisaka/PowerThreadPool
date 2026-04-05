@@ -65,7 +65,7 @@ namespace PowerThreadPool.Works
         internal override WorkID BaseAsyncWorkID => AsyncWorkInfo?.BaseAsyncWorkID;
         internal override WorkID RealWorkID => AsyncWorkInfo?.BaseAsyncWorkID == null ? ID : AsyncWorkInfo.BaseAsyncWorkID;
 
-        internal Work(PowerPool powerPool, WorkID id, WorkOption option, AsyncWorkInfo asyncWorkInfo)
+        internal Work(PowerPool powerPool, WorkID id, WorkOption option, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cancellationTokenSource)
         {
             if (option is WorkOption<TResult> wor)
             {
@@ -81,6 +81,7 @@ namespace PowerThreadPool.Works
             AsyncWorkInfo = asyncWorkInfo;
             ShouldStop = false;
             IsPausing = false;
+            CancellationTokenSource = cancellationTokenSource;
         }
 
         private void EnsureWaitSignalExists()
@@ -94,6 +95,8 @@ namespace PowerThreadPool.Works
         internal override bool Stop(bool forceStop)
         {
             bool res = false;
+
+            CancellationTokenSource?.Cancel();
 
             if (forceStop)
             {
