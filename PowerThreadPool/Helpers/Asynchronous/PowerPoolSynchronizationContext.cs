@@ -11,14 +11,16 @@ namespace PowerThreadPool.Helpers.Asynchronous
         private readonly PowerPool _powerPool;
         private readonly WorkOption _workOption;
         private readonly AsyncWorkInfo _asyncWorkInfo;
+        private CancellationTokenSource _cts;
         private Task _originalTask;
         private int _done = 0;
 
-        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkOption workOption, AsyncWorkInfo asyncWorkInfo)
+        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkOption workOption, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cts)
         {
             _powerPool = powerPool;
             _workOption = workOption;
             _asyncWorkInfo = asyncWorkInfo;
+            _cts = cts;
         }
 
         internal void SetTask(Task originalTask)
@@ -53,7 +55,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
                     {
                         _asyncWorkInfo.AllowEventsAndCallback = true;
                     }
-                }, _workOption, _asyncWorkInfo);
+                }, _workOption, _asyncWorkInfo, _cts);
             }
         }
     }
