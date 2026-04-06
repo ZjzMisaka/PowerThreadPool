@@ -1882,6 +1882,48 @@ namespace UnitTest
             Assert.Equal(50, doneCount);
         }
 
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestStopInnerUseCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+            PowerPool powerPool = new PowerPool();
+
+            powerPool.QueueWorkItem(async (ct) =>
+            {
+                await Task.Delay(int.MaxValue, ct);
+            });
+
+            Thread.Sleep(100);
+
+            powerPool.Stop();
+
+            powerPool.Wait();
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestStopByIDInnerUseCancellationToken()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+            PowerPool powerPool = new PowerPool();
+
+            var id = powerPool.QueueWorkItem(async (ct) =>
+            {
+                await Task.Delay(int.MaxValue, ct);
+            });
+
+            Thread.Sleep(100);
+
+            powerPool.Stop(id);
+
+            powerPool.Wait();
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();

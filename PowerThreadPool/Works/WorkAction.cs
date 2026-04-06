@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using PowerThreadPool.Options;
 
 namespace PowerThreadPool.Works
@@ -7,7 +8,7 @@ namespace PowerThreadPool.Works
     {
         private Action _action;
 
-        internal WorkAction(PowerPool powerPool, WorkID id, Action action, WorkOption option, AsyncWorkInfo asyncWorkInfo) : base(powerPool, id, option, asyncWorkInfo)
+        internal WorkAction(PowerPool powerPool, WorkID id, Action action, WorkOption option, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cts) : base(powerPool, id, option, asyncWorkInfo, cts)
         {
             _action = action;
         }
