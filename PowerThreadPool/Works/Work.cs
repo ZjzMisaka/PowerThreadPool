@@ -453,6 +453,10 @@ namespace PowerThreadPool.Works
             {
                 TimeoutTimer.Dispose();
             }
+            if (CancellationTokenSource != null)
+            {
+                CancellationTokenSource.Dispose();
+            }
         }
     }
 }
