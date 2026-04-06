@@ -163,7 +163,7 @@ WorkID QueueWorkItem<TResult>(Func<object[], ?, Task<TResult>> asyncFunc, object
 |*|`WorkOption` \| `WorkOption<T>`: The work option to customize the behavior of the work.<br>`Action<ExecuteResult<T>>`: The callback to be invoked when the work is completed.|
 |...|Up to 5 type parameters are supported.|
 |_|An `out` parameter (`Task` \| `Task<ExecuteResult<TResult>>`) that returns a `Task` representing the asynchronous execution of `asyncFunc`.|
-|?|A `CancellationToken`. When the `Stop(...)` function is called, the notification will be correctly propagated to this CancellationToken.|
+|?|A `CancellationToken`. When the `Stop(...)` function is called, the notification will be correctly propagated to this `CancellationToken`.|
 
 ## Pack
 ```ps1
