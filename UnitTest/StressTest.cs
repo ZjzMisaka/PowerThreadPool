@@ -33,8 +33,6 @@ namespace UnitTest
                     int doneCount = 0;
                     int failedCount = 0;
 
-                    powerPool.EnablePoolIdleCheck = false;
-
                     Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
                         Task.Run(() =>
                         {
@@ -53,8 +51,6 @@ namespace UnitTest
                     ).ToArray();
 
                     await Task.WhenAll(tasks);
-
-                    powerPool.EnablePoolIdleCheck = true;
 
                     powerPool.Wait();
 
@@ -243,8 +239,6 @@ namespace UnitTest
                 int doneCount = 0;
                 for (int i = 0; i < 1000000; ++i)
                 {
-                    powerPool.EnablePoolIdleCheck = false;
-
                     Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
                         Task.Run(() =>
                         {
@@ -256,8 +250,6 @@ namespace UnitTest
                     ).ToArray();
 
                     await Task.WhenAll(tasks);
-
-                    powerPool.EnablePoolIdleCheck = true;
 
                     powerPool.Wait();
                 }
