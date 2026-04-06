@@ -28,10 +28,29 @@ namespace UnitTest
 
                 int totalTasks = 1000000;
 
+                int doneCount = 0;
+                int failedCount = 0;
+
+                bool done = false;
+
+                _ = Task.Run(async () =>
+                {
+                    while (!done)
+                    {
+                        await Task.Delay(10000);
+
+                        string log = "";
+                        log = "doneCount: " + doneCount + "/" + totalTasks + " | failedCount: " + failedCount + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
+                        _output.WriteLine(log + " | PoolRunning: " + powerPool.PoolRunning);
+                    }
+                });
+
                 for (int i = 0; i < 100; ++i)
                 {
-                    int doneCount = 0;
-                    int failedCount = 0;
+                    doneCount = 0;
+                    failedCount = 0;
+
+                    powerPool.EnablePoolIdleCheck = false;
 
                     Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
                         Task.Run(() =>
@@ -52,6 +71,8 @@ namespace UnitTest
 
                     await Task.WhenAll(tasks);
 
+                    powerPool.EnablePoolIdleCheck = true;
+
                     powerPool.Wait();
 
                     string errLog = "";
@@ -61,6 +82,8 @@ namespace UnitTest
                         Assert.Fail(errLog + " | PoolRunning: " + powerPool.PoolRunning);
                     }
                 }
+
+                done = true;
 
                 powerPool.Dispose();
             });
@@ -237,8 +260,25 @@ namespace UnitTest
 
                 int totalTasks = 100;
                 int doneCount = 0;
+
+                bool done = false;
+
+                _ = Task.Run(async () =>
+                {
+                    while (!done)
+                    {
+                        await Task.Delay(10000);
+
+                        string log = "";
+                        log = "doneCount: " + doneCount + "/" + 100 * 1000000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
+                        _output.WriteLine(log + " | PoolRunning: " + powerPool.PoolRunning);
+                    }
+                });
+
                 for (int i = 0; i < 1000000; ++i)
                 {
+                    powerPool.EnablePoolIdleCheck = false;
+
                     Task[] tasks = Enumerable.Range(0, totalTasks).Select(i =>
                         Task.Run(() =>
                         {
@@ -251,6 +291,8 @@ namespace UnitTest
 
                     await Task.WhenAll(tasks);
 
+                    powerPool.EnablePoolIdleCheck = true;
+
                     powerPool.Wait();
                 }
 
@@ -260,6 +302,8 @@ namespace UnitTest
                 {
                     Assert.Fail(errLog + " | PoolRunning: " + powerPool.PoolRunning);
                 }
+
+                done = true;
 
                 powerPool.Dispose();
             });
