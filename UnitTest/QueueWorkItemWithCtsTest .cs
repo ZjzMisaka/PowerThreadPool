@@ -46,7 +46,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem((object[] param, CancellationTokenSource cts) => { p = param[0]; }, new[] { "1" }, (res) => { });
+            powerPool.QueueWorkItem((object[] param, CancellationToken ct) => { p = param[0]; }, new[] { "1" }, (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -58,7 +58,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem((object[] param, CancellationTokenSource cts) => { p = param[0]; }, new[] { "1" }, new WorkOption());
+            powerPool.QueueWorkItem((object[] param, CancellationToken ct) => { p = param[0]; }, new[] { "1" }, new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -70,7 +70,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string>((string param, CancellationTokenSource cts) => { p = param; }, "1", (res) => { });
+            powerPool.QueueWorkItem<string>((string param, CancellationToken ct) => { p = param; }, "1", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -82,7 +82,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string>((string param, CancellationTokenSource cts) => { p = param; }, "1", new WorkOption());
+            powerPool.QueueWorkItem<string>((string param, CancellationToken ct) => { p = param; }, "1", new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -94,7 +94,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string>((string param1, string param2, CancellationTokenSource cts) => { p = param1; }, "1", "", (res) => { });
+            powerPool.QueueWorkItem<string, string>((string param1, string param2, CancellationToken ct) => { p = param1; }, "1", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -106,7 +106,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string>((string param1, string param2, CancellationTokenSource cts) => { p = param1; }, "1", "", new WorkOption());
+            powerPool.QueueWorkItem<string, string>((string param1, string param2, CancellationToken ct) => { p = param1; }, "1", "", new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -118,7 +118,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string>((string param1, string param2, string param3, CancellationTokenSource cts) => { p = param1; }, "1", "", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, string>((string param1, string param2, string param3, CancellationToken ct) => { p = param1; }, "1", "", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -130,7 +130,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string>((string param1, string param2, string param3, CancellationTokenSource cts) => { p = param1; }, "1", "", "", new WorkOption());
+            powerPool.QueueWorkItem<string, string, string>((string param1, string param2, string param3, CancellationToken ct) => { p = param1; }, "1", "", "", new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -142,7 +142,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string>((string param1, string param2, string param3, string param4, CancellationTokenSource cts) => { p = param1; }, "1", "", "", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, string, string>((string param1, string param2, string param3, string param4, CancellationToken ct) => { p = param1; }, "1", "", "", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -154,7 +154,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string>((string param1, string param2, string param3, string param4, CancellationTokenSource cts) => { p = param1; }, "1", "", "", "", new WorkOption());
+            powerPool.QueueWorkItem<string, string, string, string>((string param1, string param2, string param3, string param4, CancellationToken ct) => { p = param1; }, "1", "", "", "", new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -166,7 +166,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, string>((string param1, string param2, string param3, string param4, string param5, CancellationTokenSource cts) => { p = param1; }, "1", "", "", "", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, string, string, string>((string param1, string param2, string param3, string param4, string param5, CancellationToken ct) => { p = param1; }, "1", "", "", "", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -178,7 +178,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, string>((string param1, string param2, string param3, string param4, string param5, CancellationTokenSource cts) => { p = param1; }, "1", "", "", "", "", new WorkOption());
+            powerPool.QueueWorkItem<string, string, string, string, string>((string param1, string param2, string param3, string param4, string param5, CancellationToken ct) => { p = param1; }, "1", "", "", "", "", new WorkOption());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -190,7 +190,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, int>((string param, CancellationTokenSource cts) => { p = param; return int.Parse(param); }, "1", (res) => { });
+            powerPool.QueueWorkItem<string, int>((string param, CancellationToken ct) => { p = param; return int.Parse(param); }, "1", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -202,7 +202,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, int>((string param, CancellationTokenSource cts) => { p = param; return int.Parse(param); }, "1", new WorkOption<int>());
+            powerPool.QueueWorkItem<string, int>((string param, CancellationToken ct) => { p = param; return int.Parse(param); }, "1", new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -214,7 +214,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, int>((string param1, string param2, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, int>((string param1, string param2, CancellationToken ct) => { p = param1; return 0; }, "1", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -226,7 +226,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, int>((string param1, string param2, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", new WorkOption<int>());
+            powerPool.QueueWorkItem<string, string, int>((string param1, string param2, CancellationToken ct) => { p = param1; return 0; }, "1", "", new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -238,7 +238,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, int>((string param1, string param2, string param3, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, string, int>((string param1, string param2, string param3, CancellationToken ct) => { p = param1; return 0; }, "1", "", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -250,7 +250,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, int>((string param1, string param2, string param3, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", "", new WorkOption<int>());
+            powerPool.QueueWorkItem<string, string, string, int>((string param1, string param2, string param3, CancellationToken ct) => { p = param1; return 0; }, "1", "", "", new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -262,7 +262,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, int>((string param1, string param2, string param3, string param4, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", "", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, string, string, int>((string param1, string param2, string param3, string param4, CancellationToken ct) => { p = param1; return 0; }, "1", "", "", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -274,7 +274,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, int>((string param1, string param2, string param3, string param4, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", "", "", new WorkOption<int>());
+            powerPool.QueueWorkItem<string, string, string, string, int>((string param1, string param2, string param3, string param4, CancellationToken ct) => { p = param1; return 0; }, "1", "", "", "", new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -286,7 +286,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, string, int>((string param1, string param2, string param3, string param4, string param5, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", "", "", "", (res) => { });
+            powerPool.QueueWorkItem<string, string, string, string, string, int>((string param1, string param2, string param3, string param4, string param5, CancellationToken ct) => { p = param1; return 0; }, "1", "", "", "", "", (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -298,7 +298,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<string, string, string, string, string, int>((string param1, string param2, string param3, string param4, string param5, CancellationTokenSource cts) => { p = param1; return 0; }, "1", "", "", "", "", new WorkOption<int>());
+            powerPool.QueueWorkItem<string, string, string, string, string, int>((string param1, string param2, string param3, string param4, string param5, CancellationToken ct) => { p = param1; return 0; }, "1", "", "", "", "", new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -310,7 +310,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<int>((CancellationTokenSource cts) => { p = "1"; return 0; }, (res) => { });
+            powerPool.QueueWorkItem<int>((CancellationToken ct) => { p = "1"; return 0; }, (res) => { });
             powerPool.Wait();
             Assert.Equal("1", p);
         }
@@ -322,7 +322,7 @@ namespace UnitTest
 
             object p = null;
             PowerPool powerPool = new PowerPool();
-            powerPool.QueueWorkItem<int>((CancellationTokenSource cts) => { p = "1"; return 0; }, new WorkOption<int>());
+            powerPool.QueueWorkItem<int>((CancellationToken ct) => { p = "1"; return 0; }, new WorkOption<int>());
             powerPool.Wait();
             Assert.Equal("1", p);
         }

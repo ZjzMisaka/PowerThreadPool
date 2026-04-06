@@ -1891,9 +1891,9 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            powerPool.QueueWorkItem(async (cts) =>
+            powerPool.QueueWorkItem(async (ct) =>
             {
-                await Task.Delay(int.MaxValue, cts.Token);
+                await Task.Delay(int.MaxValue, ct);
             });
 
             Thread.Sleep(100);
@@ -1912,9 +1912,9 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool();
 
-            var id = powerPool.QueueWorkItem(async (cts) =>
+            var id = powerPool.QueueWorkItem(async (ct) =>
             {
-                await Task.Delay(int.MaxValue, cts.Token);
+                await Task.Delay(int.MaxValue, ct);
             });
 
             Thread.Sleep(100);

@@ -15,11 +15,11 @@ namespace PowerThreadPool.Helpers
             return wrapper;
         }
 
-        internal static Action<CancellationTokenSource> ToNormalAction(Action<object[], CancellationTokenSource> action, object[] param)
+        internal static Action<CancellationToken> ToNormalAction(Action<object[], CancellationToken> action, object[] param)
         {
-            void wrapper(CancellationTokenSource cts)
+            void wrapper(CancellationToken ct)
             {
-                action(param, cts);
+                action(param, ct);
             }
             return wrapper;
         }
@@ -33,11 +33,11 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, TResult> ToNormalFunc<TResult>(Func<object[], CancellationTokenSource, TResult> function, object[] param)
+        internal static Func<CancellationToken, TResult> ToNormalFunc<TResult>(Func<object[], CancellationToken, TResult> function, object[] param)
         {
-            TResult func(CancellationTokenSource cts)
+            TResult func(CancellationToken ct)
             {
-                return function(param, cts);
+                return function(param, ct);
             }
             return func;
         }
@@ -51,11 +51,11 @@ namespace PowerThreadPool.Helpers
             return wrapper;
         }
 
-        internal static Action<CancellationTokenSource> ToNormalAction<T1, CancellationTokenSource>(Action<T1, CancellationTokenSource> action, T1 param1)
+        internal static Action<CancellationToken> ToNormalAction<T1>(Action<T1, CancellationToken> action, T1 param1)
         {
-            void wrapper(CancellationTokenSource cts)
+            void wrapper(CancellationToken ct)
             {
-                action(param1, cts);
+                action(param1, ct);
             }
             return wrapper;
         }
@@ -69,11 +69,11 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, TResult> ToNormalFunc<T1, CancellationTokenSource, TResult>(Func<T1, CancellationTokenSource, TResult> function, T1 param1)
+        internal static Func<CancellationToken, TResult> ToNormalFunc<T1, CancellationToken, TResult>(Func<T1, CancellationToken, TResult> function, T1 param1)
         {
-            TResult func(CancellationTokenSource cts)
+            TResult func(CancellationToken ct)
             {
-                return function(param1, cts);
+                return function(param1, ct);
             }
             return func;
         }
@@ -87,11 +87,11 @@ namespace PowerThreadPool.Helpers
             return wrapper;
         }
 
-        internal static Action<CancellationTokenSource> ToNormalAction<T1, T2, CancellationTokenSource>(Action<T1, T2, CancellationTokenSource> action, T1 param1, T2 param2)
+        internal static Action<CancellationToken> ToNormalAction<T1, T2>(Action<T1, T2, CancellationToken> action, T1 param1, T2 param2)
         {
-            void wrapper(CancellationTokenSource cts)
+            void wrapper(CancellationToken ct)
             {
-                action(param1, param2, cts);
+                action(param1, param2, ct);
             }
             return wrapper;
         }
@@ -105,11 +105,11 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, TResult> ToNormalFunc<T1, T2, CancellationTokenSource, TResult>(Func<T1, T2, CancellationTokenSource, TResult> function, T1 param1, T2 param2)
+        internal static Func<CancellationToken, TResult> ToNormalFunc<T1, T2, CancellationToken, TResult>(Func<T1, T2, CancellationToken, TResult> function, T1 param1, T2 param2)
         {
-            TResult func(CancellationTokenSource cts)
+            TResult func(CancellationToken ct)
             {
-                return function(param1, param2, cts);
+                return function(param1, param2, ct);
             }
             return func;
         }
@@ -123,11 +123,11 @@ namespace PowerThreadPool.Helpers
             return wrapper;
         }
 
-        internal static Action<CancellationTokenSource> ToNormalAction<T1, T2, T3, CancellationTokenSource>(Action<T1, T2, T3, CancellationTokenSource> action, T1 param1, T2 param2, T3 param3)
+        internal static Action<CancellationToken> ToNormalAction<T1, T2, T3>(Action<T1, T2, T3, CancellationToken> action, T1 param1, T2 param2, T3 param3)
         {
-            void wrapper(CancellationTokenSource cts)
+            void wrapper(CancellationToken ct)
             {
-                action(param1, param2, param3, cts);
+                action(param1, param2, param3, ct);
             }
             return wrapper;
         }
@@ -141,11 +141,11 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, TResult> ToNormalFunc<T1, T2, T3, CancellationTokenSource, TResult>(Func<T1, T2, T3, CancellationTokenSource, TResult> function, T1 param1, T2 param2, T3 param3)
+        internal static Func<CancellationToken, TResult> ToNormalFunc<T1, T2, T3, CancellationToken, TResult>(Func<T1, T2, T3, CancellationToken, TResult> function, T1 param1, T2 param2, T3 param3)
         {
-            TResult func(CancellationTokenSource cts)
+            TResult func(CancellationToken ct)
             {
-                return function(param1, param2, param3, cts);
+                return function(param1, param2, param3, ct);
             }
             return func;
         }
@@ -164,16 +164,16 @@ namespace PowerThreadPool.Helpers
             return wrapper;
         }
 
-        internal static Action<CancellationTokenSource> ToNormalAction<T1, T2, T3, T4, CancellationTokenSource>(
-            Action<T1, T2, T3, T4, CancellationTokenSource> action,
+        internal static Action<CancellationToken> ToNormalAction<T1, T2, T3, T4>(
+            Action<T1, T2, T3, T4, CancellationToken> action,
             T1 param1,
             T2 param2,
             T3 param3,
             T4 param4)
         {
-            void wrapper(CancellationTokenSource cts)
+            void wrapper(CancellationToken ct)
             {
-                action(param1, param2, param3, param4, cts);
+                action(param1, param2, param3, param4, ct);
             }
             return wrapper;
         }
@@ -192,16 +192,16 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, TResult> ToNormalFunc<T1, T2, T3, T4, CancellationTokenSource, TResult>(
-            Func<T1, T2, T3, T4, CancellationTokenSource, TResult> function,
+        internal static Func<CancellationToken, TResult> ToNormalFunc<T1, T2, T3, T4, CancellationToken, TResult>(
+            Func<T1, T2, T3, T4, CancellationToken, TResult> function,
             T1 param1,
             T2 param2,
             T3 param3,
             T4 param4)
         {
-            TResult func(CancellationTokenSource cts)
+            TResult func(CancellationToken ct)
             {
-                return function(param1, param2, param3, param4, cts);
+                return function(param1, param2, param3, param4, ct);
             }
             return func;
         }
@@ -221,17 +221,17 @@ namespace PowerThreadPool.Helpers
             return wrapper;
         }
 
-        internal static Action<CancellationTokenSource> ToNormalAction<T1, T2, T3, T4, T5, CancellationTokenSource>(
-            Action<T1, T2, T3, T4, T5, CancellationTokenSource> action,
+        internal static Action<CancellationToken> ToNormalAction<T1, T2, T3, T4, T5>(
+            Action<T1, T2, T3, T4, T5, CancellationToken> action,
             T1 param1,
             T2 param2,
             T3 param3,
             T4 param4,
             T5 param5)
         {
-            void wrapper(CancellationTokenSource cts)
+            void wrapper(CancellationToken ct)
             {
-                action(param1, param2, param3, param4, param5, cts);
+                action(param1, param2, param3, param4, param5, ct);
             }
             return wrapper;
         }
@@ -251,17 +251,17 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, TResult> ToNormalFunc<T1, T2, T3, T4, T5, CancellationTokenSource, TResult>(
-            Func<T1, T2, T3, T4, T5, CancellationTokenSource, TResult> function,
+        internal static Func<CancellationToken, TResult> ToNormalFunc<T1, T2, T3, T4, T5, TResult>(
+            Func<T1, T2, T3, T4, T5, CancellationToken, TResult> function,
             T1 param1,
             T2 param2,
             T3 param3,
             T4 param4,
             T5 param5)
         {
-            TResult func(CancellationTokenSource cts)
+            TResult func(CancellationToken ct)
             {
-                return function(param1, param2, param3, param4, param5, cts);
+                return function(param1, param2, param3, param4, param5, ct);
             }
             return func;
         }
@@ -277,13 +277,13 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, Task> ToNormalFunc(
-            Func<object[], CancellationTokenSource, Task> asyncFunc,
+        internal static Func<CancellationToken, Task> ToNormalFunc(
+            Func<object[], CancellationToken, Task> asyncFunc,
             object[] param)
         {
-            Task func(CancellationTokenSource cts)
+            Task func(CancellationToken ct)
             {
-                return asyncFunc(param, cts);
+                return asyncFunc(param, ct);
             }
             return func;
         }
@@ -299,13 +299,13 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, Task<TResult>> ToNormalFuncT<CancellationTokenSource, TResult>(
-            Func<object[], CancellationTokenSource, Task<TResult>> asyncFunc,
+        internal static Func<CancellationToken, Task<TResult>> ToNormalFuncT<CancellationToken, TResult>(
+            Func<object[], CancellationToken, Task<TResult>> asyncFunc,
             object[] param)
         {
-            Task<TResult> func(CancellationTokenSource cts)
+            Task<TResult> func(CancellationToken ct)
             {
-                return asyncFunc(param, cts);
+                return asyncFunc(param, ct);
             }
             return func;
         }
@@ -321,13 +321,13 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, Task> ToNormalFunc<T1>(
-            Func<T1, CancellationTokenSource, Task> asyncFunc,
+        internal static Func<CancellationToken, Task> ToNormalFunc<T1>(
+            Func<T1, CancellationToken, Task> asyncFunc,
             T1 param1)
         {
-            Task func(CancellationTokenSource cts)
+            Task func(CancellationToken ct)
             {
-                return asyncFunc(param1, cts);
+                return asyncFunc(param1, ct);
             }
             return func;
         }
@@ -343,13 +343,13 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, Task<TResult>> ToNormalFunc<T1, TResult>(
-            Func<T1, CancellationTokenSource, Task<TResult>> asyncFunc,
+        internal static Func<CancellationToken, Task<TResult>> ToNormalFunc<T1, TResult>(
+            Func<T1, CancellationToken, Task<TResult>> asyncFunc,
             T1 param1)
         {
-            Task<TResult> func(CancellationTokenSource cts)
+            Task<TResult> func(CancellationToken ct)
             {
-                return asyncFunc(param1, cts);
+                return asyncFunc(param1, ct);
             }
             return func;
         }
@@ -366,14 +366,14 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, Task> ToNormalFunc<T1, T2, CancellationTokenSource>(
-            Func<T1, T2, CancellationTokenSource, Task> asyncFunc,
+        internal static Func<CancellationToken, Task> ToNormalFunc<T1, T2>(
+            Func<T1, T2, CancellationToken, Task> asyncFunc,
             T1 param1,
             T2 param2)
         {
-            Task func(CancellationTokenSource cts)
+            Task func(CancellationToken ct)
             {
-                return asyncFunc(param1, param2, cts);
+                return asyncFunc(param1, param2, ct);
             }
             return func;
         }
@@ -389,14 +389,14 @@ namespace PowerThreadPool.Helpers
             }
             return func;
         }
-        internal static Func<CancellationTokenSource, Task<TResult>> ToNormalFunc<T1, T2, TResult>(
-            Func<T1, T2, CancellationTokenSource, Task<TResult>> asyncFunc,
+        internal static Func<CancellationToken, Task<TResult>> ToNormalFunc<T1, T2, TResult>(
+            Func<T1, T2, CancellationToken, Task<TResult>> asyncFunc,
             T1 param1,
             T2 param2)
         {
-            Task<TResult> func(CancellationTokenSource cts)
+            Task<TResult> func(CancellationToken ct)
             {
-                return asyncFunc(param1, param2, cts);
+                return asyncFunc(param1, param2, ct);
             }
             return func;
         }
@@ -414,15 +414,15 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, Task> ToNormalFunc<T1, T2, T3>(
-           Func<T1, T2, T3, CancellationTokenSource, Task> asyncFunc,
+        internal static Func<CancellationToken, Task> ToNormalFunc<T1, T2, T3>(
+           Func<T1, T2, T3, CancellationToken, Task> asyncFunc,
            T1 param1,
            T2 param2,
            T3 param3)
         {
-            Task func(CancellationTokenSource cts)
+            Task func(CancellationToken ct)
             {
-                return asyncFunc(param1, param2, param3, cts);
+                return asyncFunc(param1, param2, param3, ct);
             }
             return func;
         }
@@ -440,15 +440,15 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, Task<TResult>> ToNormalFunc<T1, T2, T3, TResult>(
-           Func<T1, T2, T3, CancellationTokenSource, Task<TResult>> asyncFunc,
+        internal static Func<CancellationToken, Task<TResult>> ToNormalFunc<T1, T2, T3, TResult>(
+           Func<T1, T2, T3, CancellationToken, Task<TResult>> asyncFunc,
            T1 param1,
            T2 param2,
            T3 param3)
         {
-            Task<TResult> func(CancellationTokenSource cts)
+            Task<TResult> func(CancellationToken ct)
             {
-                return asyncFunc(param1, param2, param3, cts);
+                return asyncFunc(param1, param2, param3, ct);
             }
             return func;
         }
@@ -467,16 +467,16 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, Task> ToNormalFunc<T1, T2, T3, T4>(
-          Func<T1, T2, T3, T4, CancellationTokenSource, Task> asyncFunc,
+        internal static Func<CancellationToken, Task> ToNormalFunc<T1, T2, T3, T4>(
+          Func<T1, T2, T3, T4, CancellationToken, Task> asyncFunc,
           T1 param1,
           T2 param2,
           T3 param3,
           T4 param4)
         {
-            Task func(CancellationTokenSource cts)
+            Task func(CancellationToken ct)
             {
-                return asyncFunc(param1, param2, param3, param4, cts);
+                return asyncFunc(param1, param2, param3, param4, ct);
             }
             return func;
         }
@@ -495,16 +495,16 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, Task<TResult>> ToNormalFunc<T1, T2, T3, T4, TResult>(
-           Func<T1, T2, T3, T4, CancellationTokenSource, Task<TResult>> asyncFunc,
+        internal static Func<CancellationToken, Task<TResult>> ToNormalFunc<T1, T2, T3, T4, TResult>(
+           Func<T1, T2, T3, T4, CancellationToken, Task<TResult>> asyncFunc,
            T1 param1,
            T2 param2,
            T3 param3,
            T4 param4)
         {
-            Task<TResult> func(CancellationTokenSource cts)
+            Task<TResult> func(CancellationToken ct)
             {
-                return asyncFunc(param1, param2, param3, param4, cts);
+                return asyncFunc(param1, param2, param3, param4, ct);
             }
             return func;
         }
@@ -524,17 +524,17 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, Task> ToNormalFunc<T1, T2, T3, T4, T5>(
-           Func<T1, T2, T3, T4, T5, CancellationTokenSource, Task> asyncFunc,
+        internal static Func<CancellationToken, Task> ToNormalFunc<T1, T2, T3, T4, T5>(
+           Func<T1, T2, T3, T4, T5, CancellationToken, Task> asyncFunc,
            T1 param1,
            T2 param2,
            T3 param3,
            T4 param4,
            T5 param5)
         {
-            Task func(CancellationTokenSource cts)
+            Task func(CancellationToken ct)
             {
-                return asyncFunc(param1, param2, param3, param4, param5, cts);
+                return asyncFunc(param1, param2, param3, param4, param5, ct);
             }
             return func;
         }
@@ -554,17 +554,17 @@ namespace PowerThreadPool.Helpers
             return func;
         }
 
-        internal static Func<CancellationTokenSource, Task<TResult>> ToNormalFunc<T1, T2, T3, T4, T5, TResult>(
-           Func<T1, T2, T3, T4, T5, CancellationTokenSource, Task<TResult>> asyncFunc,
+        internal static Func<CancellationToken, Task<TResult>> ToNormalFunc<T1, T2, T3, T4, T5, TResult>(
+           Func<T1, T2, T3, T4, T5, CancellationToken, Task<TResult>> asyncFunc,
            T1 param1,
            T2 param2,
            T3 param3,
            T4 param4,
            T5 param5)
         {
-            Task<TResult> func(CancellationTokenSource cts)
+            Task<TResult> func(CancellationToken ct)
             {
-                return asyncFunc(param1, param2, param3, param4, param5, cts);
+                return asyncFunc(param1, param2, param3, param4, param5, ct);
             }
             return func;
         }
