@@ -339,7 +339,7 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public WorkID QueueWorkItem(Action action, WorkOption option)
         {
-            return QueueWorkItemCore<object>(action, null, option, null);
+            return QueueWorkItemCore<object>(action, null, option, null, null);
         }
 
         /// <summary>
@@ -749,7 +749,7 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public WorkID QueueWorkItem<TResult>(Func<TResult> function, WorkOption option)
         {
-            return QueueWorkItemCore(null, function, option, null);
+            return QueueWorkItemCore(null, function, option, null, null);
         }
 
         /// <summary>
@@ -815,7 +815,7 @@ namespace PowerThreadPool
         public WorkID QueueWorkItem<TResult>(Func<object[], CancellationTokenSource, TResult> function, object[] param, WorkOption option)
             => QueueWorkItem<TResult>(DelegateHelper.ToNormalFunc<TResult>(function, param), option);
 
-        private WorkID QueueWorkItemCore<TResult>(Action action, Func<TResult> function, WorkOption option, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cts = null)
+        private WorkID QueueWorkItemCore<TResult>(Action action, Func<TResult> function, WorkOption option, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cts)
         {
             CheckDisposed();
             CheckPowerPoolOption();

@@ -8,7 +8,7 @@ namespace PowerThreadPool.Works
     {
         private Func<TResult> _function;
 
-        internal WorkFunc(PowerPool powerPool, WorkID id, Func<TResult> function, WorkOption option, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cts = null) : base(powerPool, id, option, asyncWorkInfo, cts)
+        internal WorkFunc(PowerPool powerPool, WorkID id, Func<TResult> function, WorkOption option, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cts) : base(powerPool, id, option, asyncWorkInfo, cts)
         {
             _function = function;
         }
