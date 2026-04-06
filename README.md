@@ -143,19 +143,19 @@ powerPool.QueueWorkItem(async () =>
 ### Reference
 ``` csharp
 // Sync
-WorkID QueueWorkItem<T1, ...>(Action<T1, ...> action, T1 param1, ..., *);
-WorkID QueueWorkItem(Action action, *);
-WorkID QueueWorkItem(Action<object[]> action, object[] param, *);
-WorkID QueueWorkItem<T1, ..., TResult>(Func<T1, ..., TResult> function, T1 param1, ..., *);
-WorkID QueueWorkItem<TResult>(Func<TResult> function, *);
-WorkID QueueWorkItem<TResult>(Func<object[], TResult> function, object[] param, *);
+WorkID QueueWorkItem<T1, ...>(Action<T1, ..., ?> action, T1 param1, ..., *);
+WorkID QueueWorkItem(Action<?> action, *);
+WorkID QueueWorkItem(Action<object[], ?> action, object[] param, *);
+WorkID QueueWorkItem<T1, ..., TResult>(Func<T1, ..., ?, TResult> function, T1 param1, ..., *);
+WorkID QueueWorkItem<TResult>(Func<?, TResult> function, *);
+WorkID QueueWorkItem<TResult>(Func<object[], ?, TResult> function, object[] param, *);
 // Async
-WorkID QueueWorkItem<T1, ...>(Func<T1, ..., Task> asyncFunc, T1 param1, ..., _, *);
-WorkID QueueWorkItem(Func<Task> asyncFunc, _, *);
-WorkID QueueWorkItem(Func<object[], Task> asyncFunc, object[] param, _, *);
-WorkID QueueWorkItem<T1, ..., TResult>(Func<T1, ..., Task<TResult>> asyncFunc, T1 param1, ..., _, *);
-WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, _, *);
-WorkID QueueWorkItem<TResult>(Func<object[], Task<TResult>> asyncFunc, object[] param, _, *);
+WorkID QueueWorkItem<T1, ...>(Func<T1, ..., ?, Task> asyncFunc, T1 param1, ..., _, *);
+WorkID QueueWorkItem(Func<?, Task> asyncFunc, _, *);
+WorkID QueueWorkItem(Func<object[], ?, Task> asyncFunc, object[] param, _, *);
+WorkID QueueWorkItem<T1, ..., TResult>(Func<T1, ..., ?, Task<TResult>> asyncFunc, T1 param1, ..., _, *);
+WorkID QueueWorkItem<TResult>(Func<?, Task<TResult>> asyncFunc, _, *);
+WorkID QueueWorkItem<TResult>(Func<object[], ?, Task<TResult>> asyncFunc, object[] param, _, *);
 ```
 
 |Wildcard|Explanation|
@@ -163,6 +163,7 @@ WorkID QueueWorkItem<TResult>(Func<object[], Task<TResult>> asyncFunc, object[] 
 |*|`WorkOption` \| `WorkOption<T>`: The work option to customize the behavior of the work.<br>`Action<ExecuteResult<T>>`: The callback to be invoked when the work is completed.|
 |...|Up to 5 type parameters are supported.|
 |_|An `out` parameter (`Task` \| `Task<ExecuteResult<TResult>>`) that returns a `Task` representing the asynchronous execution of `asyncFunc`.|
+|?|A `CancellationToken`. When the `Stop(...)` function is called, the notification will be correctly propagated to this CancellationToken.|
 
 ## Pack
 ```ps1
