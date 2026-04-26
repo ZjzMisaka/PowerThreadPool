@@ -25,7 +25,7 @@ This project is currently a Seed Project within the .NET Foundation. This means 
 
 ## Why PTP
 1. Provides rich, fine-grained control primitives spanning the entire work lifecycle.
-2. Offers native async support. PTP manages all continuations of an asynchronous work directly without sacrificing async semantics and essential characteristics, rather than simply wrapping `Task.Run`.
+2. Offers native async support, managing continuations of asynchronous work without compromising the essence of asynchrony, rather than merely wrapping `Task.Run`, so that the scheduling semantics provided by PTP also hold for continuations.
 3. Grants asynchronous works the exact same control features as synchronous ones via a unified interface, allowing transparent and seamless interleaving of synchronous and asynchronous workloads.
 4. Leverages optimizations like CAS, work-stealing, and heuristic debounce algorithms. This maintains performance close to the native thread pool while implementing advanced functionality, thereby minimizing the overhead caused by secondary encapsulation.
 
