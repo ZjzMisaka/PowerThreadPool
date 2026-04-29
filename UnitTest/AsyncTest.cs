@@ -1924,6 +1924,128 @@ namespace UnitTest
             powerPool.Wait();
         }
 
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestConfigureAwaitFalseCallPauseIfRequestedBefore3Rd()
+        {
+            PowerPool powerPool = new PowerPool();
+            Exception ex = null;
+            powerPool.QueueWorkItem(async () =>
+            {
+                try
+                {
+                    powerPool.PauseIfRequested();
+                }
+                catch (Exception e)
+                {
+                    ex = e;
+                }
+
+                await DoSomething3Rd(() => { });
+
+                await Task.Delay(10);
+                await Task.Delay(10);
+                await Task.Delay(10);
+
+            });
+
+            powerPool.Wait();
+
+            Assert.Null(ex);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestConfigureAwaitFalseCallPauseIfRequestedAfter3Rd()
+        {
+            PowerPool powerPool = new PowerPool();
+            Exception ex = null;
+            powerPool.QueueWorkItem(async () =>
+            {
+                await Task.Delay(10);
+
+                await DoSomething3Rd(() => { });
+
+                await Task.Delay(10);
+                await Task.Delay(10);
+
+                try
+                {
+                    powerPool.PauseIfRequested();
+                }
+                catch (Exception e)
+                {
+                    ex = e;
+                }
+
+                await Task.Delay(10);
+            });
+
+            powerPool.Wait();
+
+            Assert.Null(ex);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestConfigureAwaitFalseCallPauseIfRequestedIn3Rd()
+        {
+            PowerPool powerPool = new PowerPool();
+            Exception ex = null;
+            powerPool.QueueWorkItem(async () =>
+            {
+                await Task.Delay(10);
+
+                await DoSomething3Rd(() =>
+                {
+                    try
+                    {
+                        powerPool.PauseIfRequested();
+                    }
+                    catch (Exception e)
+                    {
+                        ex = e;
+                    }
+                });
+
+                await Task.Delay(10);
+                await Task.Delay(10);
+            });
+
+            powerPool.Wait();
+
+            Assert.Null(ex);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestConfigureAwaitInUserWork()
+        {
+            PowerPool powerPool = new PowerPool();
+            Exception ex = null;
+            powerPool.QueueWorkItem(async () =>
+            {
+                await Task.Delay(10);
+
+                await Task.Delay(10).ConfigureAwait(false);
+
+                await Task.Delay(10);
+                await Task.Delay(10);
+
+                try
+                {
+                    powerPool.PauseIfRequested();
+                }
+                catch (Exception e)
+                {
+                    ex = e;
+                }
+
+                await Task.Delay(10);
+            });
+
+            powerPool.Wait();
+
+            Assert.NotNull(ex);
+            Assert.IsType<InvalidOperationException>(ex);
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();
@@ -1953,6 +2075,21 @@ namespace UnitTest
         private long GetNowSs()
         {
             return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        }
+
+        private async Task DoSomething3Rd(Action action)
+        {
+            await DoSomething().ConfigureAwait(false);
+            await DoSomething().ConfigureAwait(false);
+            await DoSomething().ConfigureAwait(false);
+            action();
+            await DoSomething().ConfigureAwait(false);
+            await DoSomething().ConfigureAwait(false);
+            await DoSomething().ConfigureAwait(false);
+        }
+
+        private async Task DoSomething()
+        {
         }
     }
 }
