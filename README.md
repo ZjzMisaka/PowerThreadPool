@@ -24,10 +24,14 @@ This project is currently a Seed Project within the .NET Foundation. This means 
 </a>
 
 ## Why PTP
-1. Provides rich, fine-grained control primitives spanning the entire work lifecycle.
-2. Offers native async support, managing continuations of asynchronous work without compromising the essence of asynchrony, rather than merely wrapping `Task.Run`, so that the scheduling semantics provided by PTP also hold for continuations.
-3. Grants asynchronous works the exact same control features as synchronous ones via a unified interface, allowing transparent and seamless interleaving of synchronous and asynchronous workloads.
-4. Leverages optimizations like CAS, work-stealing, and heuristic debounce algorithms. This maintains performance close to the native thread pool while implementing advanced functionality, thereby minimizing the overhead caused by secondary encapsulation.
+1. Provides rich, detailed, and easy-to-use control primitives.  
+2. Pool/Worker/Work have explicit states and are managed throughout their lifecycle, preventing orphan tasks.  
+3. Offers native async support rather than merely wrapping `Task.Run`, [allowing PTP's advanced features to be applied to continuations](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Sync-Async#why-this-design).  
+4. Unifies the external interface for synchronous and asynchronous features.  
+5. Leverages optimizations like CAS, work stealing, and heuristic debounce algorithms to balance functionality and performance.  
+
+PTP is suitable for scenarios with complex synchronous/asynchronous work control and management needs, such as batch/data processing pipeline tools, game engine extension tools, and desktop applications relying on user interaction.  
+However, if your product runs on very low performance devices, consists mainly of transient "fire and forget" works, requires optimizing every nanosecond, or if you and your team already have a comfortable workflow and framework, there is no need to introduce it.  
 
 ## Documentation
 Access the Wiki in [English](https://github.com/ZjzMisaka/PowerThreadPool/wiki) | [中文](https://github.com/ZjzMisaka/PowerThreadPool.zh-CN.Wiki/wiki) | [日本語](https://github.com/ZjzMisaka/PowerThreadPool.ja-JP.Wiki/wiki).  
