@@ -261,7 +261,10 @@ namespace PowerThreadPool
                 {
                     SafeInvoke(PoolTimedOut, new EventArgs(), ErrorFrom.PoolTimedOut, null);
                 }
-                Stop(PowerPoolOption.TimeoutOption.ForceStop);
+                if (PowerPoolOption.TimeoutOption.ShouldStop)
+                {
+                    Stop(PowerPoolOption.TimeoutOption.ForceStop);
+                }
             });
             _runningTimer = new DeferredActionTimer(() =>
             {
