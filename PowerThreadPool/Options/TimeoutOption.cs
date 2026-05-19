@@ -8,7 +8,12 @@
         public int Duration { get; set; }
 
         /// <summary>
-        /// If forceStop is true, Thread.Interrupt() will be called.
+        /// If ShouldStop is true, the work will be stopped when the timeout is reached.
+        /// </summary>
+        public bool ShouldStop { get; set; } = true;
+
+        /// <summary>
+        /// If ForceStop is true, Thread.Interrupt() will be called when the timeout is reached.
         /// </summary>
         public bool ForceStop { get; set; } = false;
     }

@@ -1011,7 +1011,10 @@ namespace PowerThreadPool
                     work.TimeoutTimer.Set(workTimeoutOption.Duration, () =>
                     {
                         _powerPool.OnWorkTimedOut(_powerPool, new WorkTimedOutEventArgs() { ID = work.ID });
-                        _powerPool.Stop(work.ID, workTimeoutOption.ForceStop);
+                        if (workTimeoutOption.ShouldStop)
+                        {
+                            _powerPool.Stop(work.ID, workTimeoutOption.ForceStop);
+                        }
                     });
                 }
             }

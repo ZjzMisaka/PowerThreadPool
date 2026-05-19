@@ -167,6 +167,73 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestShouldStopWorkTimeout()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            List<string> logList = new List<string>();
+            TimeoutOption timeoutOption = new TimeoutOption() { Duration = 1000, ShouldStop = true };
+
+            ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.WorkTimedOut += (s, e) =>
+            {
+                manualResetEvent.Set();
+            };
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 20000; ++i)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption() { TimeoutOption = timeoutOption });
+
+            manualResetEvent.WaitOne();
+
+            Thread.Sleep(1000);
+
+            Assert.True(powerPool.RunningWorkerCount == 0);
+        }
+
+        [Fact]
+        public void TestShouldNotStopWorkTimeout()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            List<string> logList = new List<string>();
+            TimeoutOption timeoutOption = new TimeoutOption() { Duration = 1000, ShouldStop = false };
+
+            ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.WorkTimedOut += (s, e) =>
+            {
+                manualResetEvent.Set();
+            };
+            powerPool.QueueWorkItem(() =>
+            {
+                for (int i = 0; i < 20000; ++i)
+                {
+                    Thread.Sleep(10);
+                    powerPool.StopIfRequested();
+                }
+            }, new WorkOption() { TimeoutOption = timeoutOption });
+
+            manualResetEvent.WaitOne();
+
+            Thread.Sleep(1000);
+
+            Assert.False(powerPool.RunningWorkerCount == 0);
+
+            powerPool.Stop();
+            powerPool.Wait();
+
+            Assert.True(powerPool.RunningWorkerCount == 0);
+        }
+
+        [Fact]
         public void TestThreadPoolTimeout()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
