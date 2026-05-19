@@ -10,14 +10,8 @@ using PowerThreadPool.Works;
 namespace PowerThreadPool
 {
     /// <summary>
-    /// There are a great many overloads of QueueWorkItem, but this is the conventional .NET approach.
-    /// I want to keep the API strongly typed without introducing a source generator, 
-    /// so I’m trading space for ease of use.
-    /// Considering that:
-    /// https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Tuple.cs
-    /// https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Action.cs
-    /// https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Function.cs
-    /// all use a similar brute-force overloading pattern, I think this is unavoidable.
+    /// Since we need to support .NET Framework 4.0, we can't use source generators.
+    /// Therefore, we use overloads to ensure strong typing and ease of use.
     /// </summary>
     public partial class PowerPool
     {
