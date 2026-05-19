@@ -6021,11 +6021,23 @@ namespace UnitTest
             Assert.Equal(2, powerPool.GetGroupMemberSet("AAA").Count());
             Assert.Equal(4, powerPool.GetGroupMemberSet("BBB").Count());
 
+            Assert.Equal(2, powerPool.GetGroup("AAA").MemberCount);
+            Assert.Equal(4, powerPool.GetGroup("BBB").MemberCount);
+
+            Assert.Equal(2, powerPool.GetGroup("AAA").MemberSet.Count);
+            Assert.Equal(4, powerPool.GetGroup("BBB").MemberSet.Count);
+
             powerPool.Stop();
             powerPool.Wait();
 
             Assert.Empty(powerPool.GetGroupMemberSet("AAA"));
             Assert.Empty(powerPool.GetGroupMemberSet("BBB"));
+
+            Assert.Equal(0, powerPool.GetGroup("AAA").MemberCount);
+            Assert.Equal(0, powerPool.GetGroup("BBB").MemberCount);
+
+            Assert.Empty(powerPool.GetGroup("AAA").MemberSet);
+            Assert.Empty(powerPool.GetGroup("BBB").MemberSet);
         }
 
         [Fact]
