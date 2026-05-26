@@ -408,34 +408,29 @@ namespace PowerThreadPool
                     _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
                     CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
                 }
-                else
+                else if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
                 {
                     WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
 
-                    if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
+                    Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
+                    _powerPool._aliveWorkerDicChanged = true;
+
+                    _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
+
+                    Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                    _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
+                    _powerPool.FillWorkerQueue();
+
+                    bool hasWaitingWork = RequeueAllWaitingWork(work);
+                    if (!hasWaitingWork)
                     {
-                        Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
-                        _powerPool._aliveWorkerDicChanged = true;
+                        _powerPool.CheckPoolIdle();
                     }
-                    else
-                    {
-                        _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
 
-                        Interlocked.Decrement(ref _powerPool._runningWorkerCount);
-                        _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+                    Dispose();
 
-                        _powerPool.FillWorkerQueue();
-
-                        bool hasWaitingWork = RequeueAllWaitingWork(work);
-                        if (!hasWaitingWork)
-                        {
-                            _powerPool.CheckPoolIdle();
-                        }
-
-                        Dispose();
-
-                        res = true;
-                    }
+                    res = true;
                 }
             }
 
