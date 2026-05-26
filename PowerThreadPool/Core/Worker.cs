@@ -391,40 +391,68 @@ namespace PowerThreadPool
         private bool WorkerCountOutOfRange(WorkBase work)
         {
             bool res = false;
-            if (_powerPool._canDeleteRedundantWorker.TrySet(CanDeleteRedundantWorker.NotAllowed, CanDeleteRedundantWorker.Allowed)
-                && CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.Allowed))
+
+            CanDeleteRedundantWorker origCanDeleteRedundantWorker = default;
+            bool resCanDeleteRedundantWorker = false;
+            CanGetWork origCanGetWork = default;
+            bool resCanGetWork = false;
+            WorkStealability origWorkStealability = default;
+            bool resWorkStealability = false;
+
+            if ((resCanDeleteRedundantWorker = _powerPool._canDeleteRedundantWorker.TrySet(CanDeleteRedundantWorker.NotAllowed, CanDeleteRedundantWorker.Allowed, out origCanDeleteRedundantWorker))
+                && (resCanGetWork = CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.Allowed, out origCanGetWork))
+                && (resWorkStealability = WorkStealability.TrySet(Constants.WorkStealability.NotAllowed, Constants.WorkStealability.Allowed, out origWorkStealability)))
             {
                 if (_powerPool.AliveWorkerCount - _powerPool.LongRunningWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
                 {
                     _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
                     CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
-                    return false;
                 }
-
-                WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
-
-                if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
+                else
                 {
-                    Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
-                    _powerPool._aliveWorkerDicChanged = true;
+                    WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
+
+                    if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
+                    {
+                        Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
+                        _powerPool._aliveWorkerDicChanged = true;
+                    }
+                    else
+                    {
+                        _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
+
+                        Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                        _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
+                        _powerPool.FillWorkerQueue();
+
+                        bool hasWaitingWork = RequeueAllWaitingWork(work);
+                        if (!hasWaitingWork)
+                        {
+                            _powerPool.CheckPoolIdle();
+                        }
+
+                        Dispose();
+
+                        res = true;
+                    }
                 }
+            }
 
-                _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
-
-                Interlocked.Decrement(ref _powerPool._runningWorkerCount);
-                _powerPool.InvokeRunningWorkerCountChangedEvent(false);
-
-                _powerPool.FillWorkerQueue();
-
-                bool hasWaitingWork = RequeueAllWaitingWork(work);
-                if (!hasWaitingWork)
+            if (!res)
+            {
+                if (resCanDeleteRedundantWorker)
                 {
-                    _powerPool.CheckPoolIdle();
+                    _powerPool._canDeleteRedundantWorker.InterlockedValue = origCanDeleteRedundantWorker;
                 }
-
-                Dispose();
-
-                res = true;
+                if (resCanGetWork)
+                {
+                    CanGetWork.InterlockedValue = origCanGetWork;
+                }
+                if (resWorkStealability)
+                {
+                    WorkStealability.InterlockedValue = origWorkStealability;
+                }
             }
             return res;
         }
