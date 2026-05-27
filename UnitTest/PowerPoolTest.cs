@@ -9497,6 +9497,8 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(10000, done);
+
+            powerPool.Dispose();
         }
 
         [Fact]
@@ -9524,6 +9526,8 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(10000, done);
+
+            powerPool.Dispose();
         }
 
         [Fact]
@@ -9551,6 +9555,19 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(10000, done);
+
+            powerPool.Dispose();
+        }
+
+        [Fact]
+        public void TestWorkerCountOutOfRange1000Times()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            for (int i = 0; i < 1000; ++i)
+            {
+                TestWorkerCountOutOfRange1();
+            }
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]
