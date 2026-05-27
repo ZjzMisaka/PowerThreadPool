@@ -9481,6 +9481,9 @@ namespace UnitTest
 
             PowerPoolOption ppo = new PowerPoolOption { MaxThreads = 100 };
             PowerPool powerPool = new PowerPool(ppo);
+
+            powerPool.EnablePoolIdleCheck = false;
+
             for (int i = 0; i < 100; ++i)
             {
                 if (ppo.MaxThreads >= 2)
@@ -9493,6 +9496,8 @@ namespace UnitTest
                     powerPool.QueueWorkItem(() => { Interlocked.Increment(ref done); });
                 }
             }
+
+            powerPool.EnablePoolIdleCheck = true;
 
             powerPool.Wait();
 
@@ -9510,6 +9515,9 @@ namespace UnitTest
 
             PowerPoolOption ppo = new PowerPoolOption { MaxThreads = 100 };
             PowerPool powerPool = new PowerPool(ppo);
+
+            powerPool.EnablePoolIdleCheck = false;
+
             for (int i = 0; i < 100; ++i)
             {
                 if (ppo.MaxThreads >= 2)
@@ -9522,6 +9530,8 @@ namespace UnitTest
                     powerPool.QueueWorkItem(() => { Interlocked.Increment(ref done); });
                 }
             }
+
+            powerPool.EnablePoolIdleCheck = true;
 
             powerPool.Wait();
 
@@ -9539,6 +9549,9 @@ namespace UnitTest
 
             PowerPoolOption ppo = new PowerPoolOption { MaxThreads = 100 };
             PowerPool powerPool = new PowerPool(ppo);
+
+            powerPool.EnablePoolIdleCheck = false;
+
             for (int i = 0; i < 100; ++i)
             {
                 if (ppo.MaxThreads >= 2)
@@ -9551,6 +9564,8 @@ namespace UnitTest
                     powerPool.QueueWorkItem(() => { Interlocked.Increment(ref done); });
                 }
             }
+
+            powerPool.EnablePoolIdleCheck = true;
 
             powerPool.Wait();
 
