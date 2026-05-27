@@ -455,7 +455,7 @@ namespace PowerThreadPool
         private bool RequeueAllWaitingWork(WorkBase work)
         {
             bool hasWaitingWork = false;
-            if (work != null && work._canCancel.TrySet(CanCancel.Allowed, CanCancel.NotAllowed))
+            if (work != null && !work.SyncOrAsyncWorkDone && work._canCancel.TrySet(CanCancel.Allowed, CanCancel.NotAllowed))
             {
                 _powerPool.SetWork(work);
                 hasWaitingWork = true;
@@ -664,6 +664,30 @@ namespace PowerThreadPool
                 {
                     _waitingWorkPriorityCollection.Set(work, work.WorkPriority);
                 }
+
+                CheckIfWorkerIsToBeDisposed();
+            }
+        }
+
+        /// <summary>
+        /// Although it has never occurred, the following sequence is theoretically possible:
+        /// 1. This Worker is taken out from _aliveWorkerDic and a work is enqueued.
+        /// 2. For some reason, the Worker is removed from _aliveWorkerDic and is about to be disposed.
+        /// 3. The work is actually enqueued.
+        ///
+        /// Another possible sequence:
+        /// During work enqueue, due to WorkerCountOutOfRange,
+        /// this Worker enters the pending disposal logic (WorkerState.InterlockedValue == WorkerStates.ToBeDisposed),
+        /// and after that logic completes, the work is actually enqueued.
+        /// This would cause the work to be lost and the thread pool would never terminate.
+        ///
+        /// Therefore, we perform one more check after the work is actually enqueued.
+        /// </summary>
+        private void CheckIfWorkerIsToBeDisposed()
+        {
+            if (WorkerState.InterlockedValue == WorkerStates.ToBeDisposed)
+            {
+                RequeueAllWaitingWork(Work);
             }
         }
 
