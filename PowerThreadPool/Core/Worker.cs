@@ -670,6 +670,12 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Before WorkerState is set to WorkerStates.ToBeDisposed, together with other atomic states such as CanGetWork,
+        /// it ensures the timing and thread safety along the normal execution path.
+        /// At the same time, using an idea similar to double-checked locking, after the optimistic check
+        /// and atomic state transition, it performs reverification (and draining).
+        /// The timing analysis is as follows: 
+        /// 
         /// Although it has never occurred, the following sequence is theoretically possible:
         /// 1. This Worker is taken out from _aliveWorkerDic and a work is enqueued.
         /// 2. For some reason, the Worker is removed from _aliveWorkerDic and is about to be disposed.
@@ -969,6 +975,12 @@ namespace PowerThreadPool
         }
 
         /// <summary>
+        /// Before WorkerState is set to WorkerStates.Idle, together with other atomic states such as CanGetWork,
+        /// it ensures the timing and thread safety along the normal execution path.
+        /// At the same time, using an idea similar to double-checked locking, after the optimistic check
+        /// and atomic state transition, it performs reverification (and draining).
+        /// The timing analysis is as follows: 
+        /// 
         /// After a Worker enters the Idle state, before allowing it to acquire a new Work,
         /// a "draining process" is performed.
         /// 
