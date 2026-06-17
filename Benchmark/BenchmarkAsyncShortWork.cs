@@ -4,6 +4,7 @@ using PowerThreadPool.Options;
 
 namespace Benchmark
 {
+    [MarkdownExporterAttribute.GitHub]
     [MemoryDiagnoser]
     public class BenchmarkAsyncShortWork
     {
