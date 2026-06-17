@@ -12,7 +12,7 @@ namespace Benchmark
         private SmartThreadPool _smartThreadPool;
         private PowerPool _powerPool;
 
-        [GlobalSetup]
+        [IterationSetup]
         public void Setup()
         {
             _smartThreadPool = new SmartThreadPool();
@@ -26,7 +26,7 @@ namespace Benchmark
             ThreadPool.SetMaxThreads(8, 8);
         }
 
-        [GlobalCleanup]
+        [IterationCleanup]
         public void Cleanup()
         {
             _smartThreadPool.Shutdown();

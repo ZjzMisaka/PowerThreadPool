@@ -10,7 +10,7 @@ namespace Benchmark
     {
         private PowerPool _powerPool;
 
-        [GlobalSetup]
+        [IterationSetup]
         public void Setup()
         {
             _powerPool = new PowerPool(new PowerPoolOption
@@ -21,7 +21,7 @@ namespace Benchmark
             ThreadPool.SetMaxThreads(8, 8);
         }
 
-        [GlobalCleanup]
+        [IterationCleanup]
         public void Cleanup()
         {
             _powerPool.Stop();
