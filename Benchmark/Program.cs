@@ -10,6 +10,8 @@ namespace Benchmark
             BenchmarkRunner.Run<BenchmarkAsyncWork>();
             BenchmarkRunner.Run<BenchmarkSyncShortWork>();
             BenchmarkRunner.Run<BenchmarkAsyncShortWork>();
+            BenchmarkRunner.Run<BenchmarkTotalExecutionTimeOfHighPriorityWork>();
+            BenchmarkRunner.Run<BenchmarkTotalExecutionTimeOfAllPriorityWork>();
             Console.WriteLine("OK");
             Console.ReadLine();
         }
