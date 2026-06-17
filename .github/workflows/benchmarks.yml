@@ -18,11 +18,11 @@ jobs:
         with:
           dotnet-version: '10.0.x'
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore Benchmark/Benchmark.csproj
       - name: Build
-        run: dotnet build --configuration Release
+        run: dotnet build Benchmark/Benchmark.csproj --configuration Release
       - name: Run Benchmarks
-        run: dotnet run --configuration Release --project Benchmark/Benchmark.csproj
+        run: dotnet run --project Benchmark/Benchmark.csproj --configuration Release
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4
         with:

@@ -17,11 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EditorConfigFiles Remove="F:\_programming\c#\PowerThreadPool\Benchmark\.editorconfig" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="F:\_programming\c#\PowerThreadPool\Benchmark\.editorconfig" />
+    <None Include=".editorconfig" />
   </ItemGroup>
 
 </Project>
