@@ -169,7 +169,7 @@ namespace Benchmark
             cts.Cancel();
         }
 
-        [Benchmark]
+        [Benchmark(Baseline = true)]
         public void TestPowerThreadPool()
         {
             WorkOption workOptionLow = new WorkOption { WorkPriority = 0 };
