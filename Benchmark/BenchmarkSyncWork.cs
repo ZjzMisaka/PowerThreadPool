@@ -16,14 +16,14 @@ namespace Benchmark
         public void Setup()
         {
             _smartThreadPool = new SmartThreadPool();
-            _smartThreadPool.MinThreads = 8;
-            _smartThreadPool.MaxThreads = 8;
+            _smartThreadPool.MinThreads = Environment.ProcessorCount;
+            _smartThreadPool.MaxThreads = Environment.ProcessorCount;
             _powerPool = new PowerPool(new PowerPoolOption
             {
-                MaxThreads = 8
+                MaxThreads = Environment.ProcessorCount
             });
-            ThreadPool.SetMinThreads(8, 8);
-            ThreadPool.SetMaxThreads(8, 8);
+            ThreadPool.SetMinThreads(Environment.ProcessorCount, Environment.ProcessorCount);
+            ThreadPool.SetMaxThreads(Environment.ProcessorCount, Environment.ProcessorCount);
         }
 
         [IterationCleanup]

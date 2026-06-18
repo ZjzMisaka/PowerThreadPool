@@ -15,10 +15,10 @@ namespace Benchmark
         {
             _powerPool = new PowerPool(new PowerPoolOption
             {
-                MaxThreads = 8
+                MaxThreads = Environment.ProcessorCount
             });
-            ThreadPool.SetMinThreads(8, 8);
-            ThreadPool.SetMaxThreads(8, 8);
+            ThreadPool.SetMinThreads(Environment.ProcessorCount, Environment.ProcessorCount);
+            ThreadPool.SetMaxThreads(Environment.ProcessorCount, Environment.ProcessorCount);
         }
 
         [IterationCleanup]
