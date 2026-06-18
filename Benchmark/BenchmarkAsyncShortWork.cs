@@ -136,19 +136,7 @@ namespace Benchmark
                 int count = powerThreadPoolRunCount;
                 if (count != 10000)
                 {
-                    Thread.Yield();
-                    _powerPool.Wait();
-                    if (count != 10000)
-                    {
-                        Thread.Yield();
-                        _powerPool.Wait();
-                        if (count != 10000)
-                        {
-                            Thread.Yield();
-                            _powerPool.Wait();
-                            throw new InvalidOperationException($"TestPowerThreadPool: {count} -> 10000");
-                        }
-                    }
+                    throw new InvalidOperationException($"TestPowerThreadPool: {count} -> 10000");
                 }
             }
             catch (Exception ex)

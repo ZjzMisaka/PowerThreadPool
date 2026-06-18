@@ -96,6 +96,7 @@ namespace Benchmark
                 if (count != 1000000)
                 {
                     // throw new InvalidOperationException($"TestSmartThreadPool: {count} -> 1000000");
+                    Console.WriteLine($"TestSmartThreadPool: {count} -> 1000000");
                     for (int i = count; i < 1000000; ++i)
                     {
                         DoWork();
@@ -123,6 +124,36 @@ namespace Benchmark
                         DoWork();
                     });
                 }
+                _powerPool.Wait();
+                int count = powerThreadPoolRunCount;
+                if (count != 1000000)
+                {
+                    throw new InvalidOperationException($"TestPowerThreadPool: {count} -> 1000000");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                Console.ReadLine();
+            }
+        }
+
+        [Benchmark]
+        public void TestPowerThreadPoolSetEnablePoolIdleCheck()
+        {
+            try
+            {
+                int powerThreadPoolRunCount = 0;
+                _powerPool.EnablePoolIdleCheck = false;
+                for (int i = 0; i < 1000000; ++i)
+                {
+                    _powerPool.QueueWorkItem(() =>
+                    {
+                        Interlocked.Increment(ref powerThreadPoolRunCount);
+                        DoWork();
+                    });
+                }
+                _powerPool.EnablePoolIdleCheck = true;
                 _powerPool.Wait();
                 int count = powerThreadPoolRunCount;
                 if (count != 1000000)

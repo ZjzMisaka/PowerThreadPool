@@ -29,6 +29,8 @@ namespace Benchmark
         {
             AddExporter(MarkdownExporter.GitHub);
             AddExporter(CsvExporter.Default);
+            AddExporter(AsciiDocExporter.Default);
+            AddExporter(HtmlExporter.Default);
             AddLogger(ConsoleLogger.Default);
             AddColumnProvider(DefaultColumnProviders.Instance);
             ArtifactsPath = "BenchmarkResults";
