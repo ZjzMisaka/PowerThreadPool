@@ -33,4 +33,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results-${{ matrix.os }}
-          path: BenchmarkResults
+          path: |
+            BenchmarkResults/
+            **/BenchmarkDotNet.Artifacts/
