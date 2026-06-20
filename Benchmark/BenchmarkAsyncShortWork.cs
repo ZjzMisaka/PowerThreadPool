@@ -1,5 +1,4 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
 using PowerThreadPool;
 using PowerThreadPool.Options;
 
@@ -7,7 +6,6 @@ namespace Benchmark
 {
     [MarkdownExporterAttribute.GitHub]
     [MemoryDiagnoser]
-    [EventPipeProfiler(EventPipeProfile.CpuSampling)]
     public class BenchmarkAsyncShortWork
     {
         private PowerPool _powerPool;

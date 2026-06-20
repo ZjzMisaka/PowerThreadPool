@@ -1,6 +1,5 @@
 ﻿using Amib.Threading;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
 using PowerThreadPool;
 using PowerThreadPool.Options;
@@ -9,7 +8,6 @@ namespace Benchmark
 {
     [MarkdownExporterAttribute.GitHub]
     [MemoryDiagnoser]
-    [EventPipeProfiler(EventPipeProfile.CpuSampling)]
     public class BenchmarkSyncWork
     {
         private SmartThreadPool _smartThreadPool;
