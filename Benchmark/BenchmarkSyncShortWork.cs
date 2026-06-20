@@ -1,6 +1,5 @@
 ﻿using Amib.Threading;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
 using PowerThreadPool;
 using PowerThreadPool.Options;
@@ -9,14 +8,15 @@ namespace Benchmark
 {
     [MarkdownExporterAttribute.GitHub]
     [MemoryDiagnoser]
-    [EventPipeProfiler(EventPipeProfile.CpuSampling)]
     public class BenchmarkSyncShortWork
     {
+        private SmartThreadPool _smartThreadPool;
         private PowerPool _powerPool;
 
         private readonly Consumer _consumer = new Consumer();
 
         private int _tpErrorCount = -1;
+        private int _stpErrorCount = -1;
         private int _ptpErrorCount = -1;
 
         private readonly int _maxCount = 1000000;
@@ -24,6 +24,9 @@ namespace Benchmark
         [IterationSetup]
         public void Setup()
         {
+            _smartThreadPool = new SmartThreadPool();
+            _smartThreadPool.MinThreads = Environment.ProcessorCount;
+            _smartThreadPool.MaxThreads = Environment.ProcessorCount;
             _powerPool = new PowerPool(new PowerPoolOption
             {
                 MaxThreads = Environment.ProcessorCount
@@ -32,18 +35,25 @@ namespace Benchmark
             ThreadPool.SetMaxThreads(Environment.ProcessorCount, Environment.ProcessorCount);
 
             _tpErrorCount = -1;
+            _stpErrorCount = -1;
             _ptpErrorCount = -1;
         }
 
         [IterationCleanup]
         public void Cleanup()
         {
+            _smartThreadPool.Shutdown();
+            _smartThreadPool.Dispose();
             _powerPool.Stop();
             _powerPool.Dispose();
 
             if (_tpErrorCount > 0)
             {
                 Console.WriteLine($"TestDotnetThreadPool: {_tpErrorCount} -> {_maxCount}");
+            }
+            if (_stpErrorCount > 0)
+            {
+                Console.WriteLine($"TestSmartThreadPool: {_stpErrorCount} -> {_maxCount}");
             }
             if (_ptpErrorCount > 0)
             {
@@ -80,6 +90,33 @@ namespace Benchmark
             if (count != _maxCount)
             {
                 _tpErrorCount = count;
+            }
+        }
+
+        [Benchmark]
+        public void TestSmartThreadPool()
+        {
+            int smartThreadPoolRunCount = 0;
+
+            for (int i = 0; i < _maxCount; ++i)
+            {
+                _smartThreadPool.QueueWorkItem(() =>
+                {
+                    Interlocked.Increment(ref smartThreadPoolRunCount);
+                    DoWork();
+                });
+            }
+            _smartThreadPool.WaitForIdle();
+
+            int count = smartThreadPoolRunCount;
+            if (count != _maxCount)
+            {
+                // throw new InvalidOperationException($"TestSmartThreadPool: {count} -> {_maxCount}");
+                Console.WriteLine($"TestSmartThreadPool: {count} -> {_maxCount}");
+                for (int i = count; i < _maxCount; ++i)
+                {
+                    DoWork();
+                }
             }
         }
 
