@@ -47,6 +47,7 @@ namespace PowerThreadPool.Works
         internal override bool LongRunning => WorkOption.LongRunning;
         internal override bool ShouldStoreResult => WorkOption.ShouldStoreResult;
         internal override WorkPlacementPolicy WorkPlacementPolicy => WorkOption.WorkPlacementPolicy;
+        internal override bool FireAndForget => WorkOption.FireAndForget;
         internal override ConcurrentSet<WorkID> Dependents => WorkOption.Dependents;
         internal override bool AllowEventsAndCallback
         {
