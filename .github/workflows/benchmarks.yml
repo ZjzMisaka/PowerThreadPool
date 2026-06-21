@@ -34,3 +34,6 @@ jobs:
         with:
           name: benchmark-results-${{ matrix.os }}
           path: BenchmarkResults
+          path: |
+            BenchmarkResults/
+            **/BenchmarkDotNet.Artifacts/
