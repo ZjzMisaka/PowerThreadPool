@@ -51,7 +51,7 @@ namespace PowerThreadPool
         internal ConcurrentQueue<WorkID> _stopSuspendedWorkQueue = new ConcurrentQueue<WorkID>();
         internal ConcurrentDictionary<WorkID, WorkBase> _stopSuspendedWork = new ConcurrentDictionary<WorkID, WorkBase>();
 
-        internal ConcurrentDictionary<WorkID, WorkBase> _aliveWorkDic = new ConcurrentDictionary<WorkID, WorkBase>();
+        internal ShardedWorkDictionary _aliveWorkDic = new ShardedWorkDictionary();
         private ConcurrentSet<WorkBase> _pausingWorkSet = new ConcurrentSet<WorkBase>();
 
         internal ConcurrentDictionary<WorkID, ExecuteResultBase> _resultDic = new ConcurrentDictionary<WorkID, ExecuteResultBase>();
@@ -896,7 +896,7 @@ namespace PowerThreadPool
         /// <param name="work"></param>
         internal void SetWorkOwner(WorkBase work)
         {
-            _aliveWorkDic[work.ID] = work;
+            _aliveWorkDic.TryAddValue(work.ID, work);
         }
 
         /// <summary>
