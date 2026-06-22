@@ -11,7 +11,8 @@ namespace Benchmark
     {
         static void Main(string[] args)
         {
-            Config config = new Config();
+            IConfig config = new Config();
+            config = config.WithOptions(ConfigOptions.DisableOptimizationsValidator);
             BenchmarkRunner.Run<BenchmarkSyncWork>(config);
             BenchmarkRunner.Run<BenchmarkAsyncWork>(config);
             BenchmarkRunner.Run<BenchmarkSyncShortWork>(config);
