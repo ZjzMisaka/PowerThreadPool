@@ -26,13 +26,11 @@ jobs:
       - name: Restore
         run: dotnet restore Benchmark/Benchmark.csproj
       - name: Build
-        run: dotnet build Benchmark/Benchmark.csproj --configuration Release /p:Optimize=false
+        run: dotnet build Benchmark/Benchmark.csproj --configuration Release
       - name: Run Benchmarks
-        run: dotnet run --project Benchmark/Benchmark.csproj --configuration Release /p:Optimize=false
+        run: dotnet run --project Benchmark/Benchmark.csproj --configuration Release
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-results-${{ matrix.os }}
-          path: |
-            BenchmarkResults/
-            **/BenchmarkDotNet.Artifacts/
+          path: BenchmarkResults
