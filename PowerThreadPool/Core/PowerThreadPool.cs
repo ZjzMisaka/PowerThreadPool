@@ -309,6 +309,7 @@ namespace PowerThreadPool
                         }
                         else
                         {
+                            Console.WriteLine("Start");
                             SetWork(work);
                         }
                     }
@@ -838,6 +839,7 @@ namespace PowerThreadPool
                 {
                     if (_stopSuspendedWork.TryGetValue(key, out WorkBase work))
                     {
+                        Console.WriteLine("IdleSetting");
                         SetWork(work);
                     }
                 }

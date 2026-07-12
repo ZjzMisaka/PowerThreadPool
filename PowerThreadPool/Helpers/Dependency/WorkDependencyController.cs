@@ -134,6 +134,7 @@ namespace PowerThreadPool.Helpers.Dependency
             if (dependents.Count == 0 &&
                 work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
             {
+                Console.WriteLine("SetWorkIfDependencySolved");
                 _powerPool.SetWork(work);
             }
         }

@@ -233,6 +233,7 @@ namespace PowerThreadPool
                     }
                     _powerPool._asyncWorkIDDict[requeueWork.BaseAsyncWorkID].Clear();
                 }
+                Console.WriteLine("ExecuteWork");
                 _powerPool.SetWork(requeueWork);
             }
             else
@@ -457,12 +458,14 @@ namespace PowerThreadPool
             bool hasWaitingWork = false;
             if (work != null && !work.SyncOrAsyncWorkDone && work._canCancel.TrySet(CanCancel.Allowed, CanCancel.NotAllowed))
             {
+                Console.WriteLine("RequeueAllWaitingWork1");
                 _powerPool.SetWork(work);
                 hasWaitingWork = true;
             }
             WorkBase workBase;
             while ((workBase = GetNotCanceledWork()) != null)
             {
+                Console.WriteLine("RequeueAllWaitingWork2");
                 _powerPool.SetWork(workBase);
                 hasWaitingWork = true;
             }
@@ -1178,6 +1181,7 @@ namespace PowerThreadPool
                 Interlocked.Decrement(ref _waitingWorkCount);
                 if (work.BaseAsyncWorkID != work.AsyncWorkID)
                 {
+                    Console.WriteLine("DiscardOneWork");
                     _powerPool.SetWork(work);
                     res = false;
                 }
