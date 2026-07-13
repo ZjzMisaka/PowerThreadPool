@@ -904,7 +904,6 @@ namespace PowerThreadPool
             {
                 if (!registeredDependents)
                 {
-                    Console.WriteLine("SuspendOrSetWork");
                     SetWork(work);
                 }
             }
