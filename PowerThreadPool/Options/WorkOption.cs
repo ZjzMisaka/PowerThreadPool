@@ -87,5 +87,10 @@ namespace PowerThreadPool.Options
         /// Indicates whether to automatically check for task stop when posting an async continuation.
         /// </summary>
         public bool AutoCheckStopOnAsyncTask { get; set; } = true;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool FireAndForget { get; set; } = false;
     }
 }
