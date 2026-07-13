@@ -17,7 +17,6 @@ namespace PowerThreadPool.Works
         internal PowerPool PowerPool { get; set; }
         internal AsyncWorkInfo AsyncWorkInfo { get; set; }
         internal CancellationTokenSource CancellationTokenSource { get; set; }
-        internal bool IsAlive { get; set; } = false;
         internal volatile int _executeCount;
         internal int ExecuteCount
         {

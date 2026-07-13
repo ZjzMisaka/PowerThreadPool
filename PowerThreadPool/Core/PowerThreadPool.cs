@@ -896,11 +896,7 @@ namespace PowerThreadPool
         /// <param name="work"></param>
         internal void SetWorkOwner(WorkBase work)
         {
-            if (!work.IsAlive)
-            {
-                work.IsAlive = true;
-                _aliveWorkDic[work.ID] = work;
-            }
+            _aliveWorkDic[work.ID] = work;
         }
 
         /// <summary>

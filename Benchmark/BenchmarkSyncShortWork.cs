@@ -141,6 +141,39 @@ namespace Benchmark
         }
 
         [Benchmark]
+        public void TestPowerThreadPoolCountdownEvent()
+        {
+            int powerThreadPoolRunCount = 0;
+
+            using (CountdownEvent countdown = new CountdownEvent(_maxCount))
+            {
+                for (int i = 0; i < _maxCount; ++i)
+                {
+                    _powerPool.QueueWorkItem(() =>
+                    {
+                        try
+                        {
+                            Interlocked.Increment(ref powerThreadPoolRunCount);
+                            DoWork();
+                        }
+                        finally
+                        {
+                            countdown.Signal();
+                        }
+                    });
+                }
+
+                countdown.Wait();
+            }
+
+            int count = powerThreadPoolRunCount;
+            if (count != _maxCount)
+            {
+                _ptpErrorCount = count;
+            }
+        }
+
+        [Benchmark]
         public void TestPowerThreadPoolSetEnablePoolIdleCheck()
         {
             int powerThreadPoolRunCount = 0;
