@@ -143,10 +143,13 @@ namespace Benchmark
         }
 
         [Benchmark]
-        public void TestPowerThreadPoolCountdownEvent()
+        public void TestPowerThreadPoolCountdownEventFireAndForget()
         {
             int powerThreadPoolRunCount = 0;
-
+            WorkOption workOption = new WorkOption
+            {
+                FireAndForget = true,
+            };
             using (CountdownEvent countdown = new CountdownEvent(_maxCount))
             {
                 for (int i = 0; i < _maxCount; ++i)
@@ -162,36 +165,12 @@ namespace Benchmark
                         {
                             countdown.Signal();
                         }
-                    });
+                    }, workOption);
                 }
 
                 countdown.Wait();
             }
 
-            int count = powerThreadPoolRunCount;
-            if (count != _maxCount)
-            {
-                _ptpErrorCount = count;
-            }
-        }
-
-        [Benchmark]
-        public void TestPowerThreadPoolFireAndForget()
-        {
-            int powerThreadPoolRunCount = 0;
-            WorkOption workOption = new WorkOption
-            {
-                FireAndForget = true,
-            };
-            for (int i = 0; i < _maxCount; ++i)
-            {
-                _powerPool.QueueWorkItem(() =>
-                {
-                    Interlocked.Increment(ref powerThreadPoolRunCount);
-                    DoWork();
-                }, workOption);
-            }
-            _powerPool.Wait();
             int count = powerThreadPoolRunCount;
             if (count != _maxCount)
             {
