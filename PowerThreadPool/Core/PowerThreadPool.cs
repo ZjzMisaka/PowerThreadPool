@@ -407,9 +407,6 @@ namespace PowerThreadPool
 
             WorkPlacementPolicy workPlacementPolicy = work.WorkPlacementPolicy;
             // In most cases, the loop will not iterate more than once.
-
-            SpinWait sw = new SpinWait();
-
             while (true)
             {
                 bool rejected = PowerPoolOption.RejectOption != null;
@@ -451,8 +448,6 @@ namespace PowerThreadPool
                         break;
                     }
                 }
-
-                sw.SpinOnce();
             }
 
             if (PowerPoolOption.EnableStatisticsCollection)
@@ -901,7 +896,11 @@ namespace PowerThreadPool
         /// <param name="work"></param>
         internal void SetWorkOwner(WorkBase work)
         {
-            _aliveWorkDic[work.ID] = work;
+            if (!work.IsAlive)
+            {
+                work.IsAlive = true;
+                _aliveWorkDic[work.ID] = work;
+            }
         }
 
         /// <summary>
