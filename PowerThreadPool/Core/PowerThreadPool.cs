@@ -407,6 +407,9 @@ namespace PowerThreadPool
 
             WorkPlacementPolicy workPlacementPolicy = work.WorkPlacementPolicy;
             // In most cases, the loop will not iterate more than once.
+
+            SpinWait sw = new SpinWait();
+
             while (true)
             {
                 bool rejected = PowerPoolOption.RejectOption != null;
@@ -448,6 +451,8 @@ namespace PowerThreadPool
                         break;
                     }
                 }
+
+                sw.SpinOnce();
             }
 
             if (PowerPoolOption.EnableStatisticsCollection)
