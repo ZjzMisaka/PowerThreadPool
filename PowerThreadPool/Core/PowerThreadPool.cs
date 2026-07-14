@@ -896,10 +896,6 @@ namespace PowerThreadPool
         /// <param name="work"></param>
         internal void SetWorkOwner(WorkBase work)
         {
-            if (work.FireAndForget)
-            {
-                return;
-            }
             _aliveWorkDic[work.ID] = work;
         }
 

@@ -1,6 +1,5 @@
 ﻿using Amib.Threading;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Diagnosers;
 using BenchmarkDotNet.Engines;
 using PowerThreadPool;
 using PowerThreadPool.Options;
@@ -9,7 +8,6 @@ namespace Benchmark
 {
     [MarkdownExporterAttribute.GitHub]
     [MemoryDiagnoser]
-    [EventPipeProfiler(EventPipeProfile.CpuSampling)]
     public class BenchmarkSyncShortWork
     {
         private SmartThreadPool _smartThreadPool;
@@ -143,34 +141,20 @@ namespace Benchmark
         }
 
         [Benchmark]
-        public void TestPowerThreadPoolCountdownEventFireAndForget()
+        public void TestPowerThreadPoolSetEnablePoolIdleCheck()
         {
             int powerThreadPoolRunCount = 0;
-            WorkOption workOption = new WorkOption
+            _powerPool.EnablePoolIdleCheck = false;
+            for (int i = 0; i < _maxCount; ++i)
             {
-                FireAndForget = true,
-            };
-            using (CountdownEvent countdown = new CountdownEvent(_maxCount))
-            {
-                for (int i = 0; i < _maxCount; ++i)
+                _powerPool.QueueWorkItem(() =>
                 {
-                    _powerPool.QueueWorkItem(() =>
-                    {
-                        try
-                        {
-                            Interlocked.Increment(ref powerThreadPoolRunCount);
-                            DoWork();
-                        }
-                        finally
-                        {
-                            countdown.Signal();
-                        }
-                    }, workOption);
-                }
-
-                countdown.Wait();
+                    Interlocked.Increment(ref powerThreadPoolRunCount);
+                    DoWork();
+                });
             }
-
+            _powerPool.EnablePoolIdleCheck = true;
+            _powerPool.Wait();
             int count = powerThreadPoolRunCount;
             if (count != _maxCount)
             {
