@@ -40,11 +40,11 @@ namespace PowerThreadPool
         internal ConcurrentSet<WorkID> _canceledWorkSet = new ConcurrentSet<WorkID>();
 
         internal ConcurrentDictionary<int, Worker> _aliveWorkerDic = new ConcurrentDictionary<int, Worker>();
+        internal IEnumerator<KeyValuePair<int, Worker>> _aliveWorkerEnumerator = null;
+        internal readonly InterlockedFlag<CanEnumeratorMoveNext> _canAliveWorkerEnumeratorMoveNext = CanEnumeratorMoveNext.Allowed;
+        internal Worker _currentAliveWorker = null;
         internal ConcurrentDictionary<int, Worker> _idleWorkerDic = new ConcurrentDictionary<int, Worker>();
         internal ConcurrentQueue<int> _idleWorkerQueue = new ConcurrentQueue<int>();
-        internal volatile bool _aliveWorkerDicChanged = false;
-        internal Worker[] _aliveWorkerList = new List<Worker>().ToArray();
-        internal int _aliveWorkerListLoopIndex = 0;
 
         internal ConcurrentQueue<WorkID> _suspendedWorkQueue = new ConcurrentQueue<WorkID>();
         internal ConcurrentDictionary<WorkID, WorkBase> _suspendedWork = new ConcurrentDictionary<WorkID, WorkBase>();
@@ -344,7 +344,6 @@ namespace PowerThreadPool
                     if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                     {
                         Interlocked.Increment(ref _aliveWorkerCount);
-                        _aliveWorkerDicChanged = true;
                     }
 
                     _canCreateNewWorker.InterlockedValue = CanCreateNewWorker.Allowed;
@@ -457,6 +456,52 @@ namespace PowerThreadPool
             worker.SetWork(work, true);
         }
 
+        internal Worker InitAliveWorkerEnumerator(bool checkNull)
+        {
+            Worker currentAliveWorker = null;
+            if (!checkNull || _aliveWorkerEnumerator == null)
+            {
+                _aliveWorkerEnumerator = _aliveWorkerDic.GetEnumerator();
+                _aliveWorkerEnumerator.MoveNext();
+
+                currentAliveWorker = _aliveWorkerEnumerator.Current.Value;
+            }
+
+            while (currentAliveWorker == null)
+            {
+                currentAliveWorker = GetNextAliveWorker();
+            }
+            _currentAliveWorker = currentAliveWorker;
+            return currentAliveWorker;
+        }
+
+        internal Worker GetNextAliveWorker()
+        {
+            Worker worker = null;
+            if (_canAliveWorkerEnumeratorMoveNext.TrySet(CanEnumeratorMoveNext.NotAllowed, CanEnumeratorMoveNext.Allowed))
+            {
+                if (!_aliveWorkerEnumerator.MoveNext())
+                {
+                    InitAliveWorkerEnumerator(false);
+                }
+                worker = _aliveWorkerEnumerator.Current.Value;
+                
+                _canAliveWorkerEnumeratorMoveNext.InterlockedValue = CanEnumeratorMoveNext.Allowed;
+            }
+            else
+            {
+                worker = _currentAliveWorker;
+            }
+
+            if (worker == null)
+            {
+                worker = GetNextAliveWorker();
+            }
+            _currentAliveWorker = worker;
+
+            return worker;
+        }
+
         private bool OnRejected(WorkBase work, out Worker worker)
         {
             worker = null;
@@ -502,8 +547,9 @@ namespace PowerThreadPool
             }
             else if (rejectType == RejectType.DiscardQueuedPolicy)
             {
-                foreach (Worker workerDiscard in _aliveWorkerList)
+                foreach (var kv in _aliveWorkerDic)
                 {
+                    Worker workerDiscard = kv.Value;
                     // When ThreadQueueLimit is 0 and the work rejection policy is set to "DiscardQueuedPolicy",
                     // since there are no works in the queue, the oldest work cannot be discarded.
                     // This may cause excessive spinning with no progress.
@@ -623,7 +669,6 @@ namespace PowerThreadPool
                         if (_aliveWorkerDic.TryAdd(worker.ID, worker))
                         {
                             Interlocked.Increment(ref _aliveWorkerCount);
-                            _aliveWorkerDicChanged = true;
                         }
 
                         if (longRunning)
@@ -650,11 +695,9 @@ namespace PowerThreadPool
             Worker selectedWorker = null;
             int minWaitingWorkCount = int.MaxValue;
 
-            UpdateAliveWorkerList();
-            Worker[] workerList = _aliveWorkerList;
+            Worker aliveWorker = InitAliveWorkerEnumerator(true);
+
             int step = 0;
-            int startIndex = _aliveWorkerListLoopIndex;
-            int loopIndex = _aliveWorkerListLoopIndex;
 
             RejectOption rejectOption = PowerPoolOption.RejectOption;
 
@@ -665,7 +708,7 @@ namespace PowerThreadPool
                 // It limits the minimum number of steps for each loop iteration.
                 // The number of loop steps will not exceed the length of _aliveWorkerList.
                 // _aliveWorkerListLoopIndex is used to ensure that the starting point of each loop iteration varies as much as possible.
-                if ((step >= PowerPoolOption.WorkLoopMaxStep && selectedWorker != null) || step >= workerList.Length)
+                if ((step >= PowerPoolOption.WorkLoopMaxStep && selectedWorker != null) || step >= AliveWorkerCount)
                 {
                     if (selectedWorker != null && rejectOption != null)
                     {
@@ -674,16 +717,10 @@ namespace PowerThreadPool
                     break;
                 }
                 ++step;
-                if (loopIndex >= workerList.Length)
-                {
-                    loopIndex = 0;
-                }
-
-                Worker aliveWorker = workerList[loopIndex];
 
                 if (aliveWorker.LongRunning)
                 {
-                    ++loopIndex;
+                    aliveWorker = GetNextAliveWorker();
                     continue;
                 }
 
@@ -691,7 +728,7 @@ namespace PowerThreadPool
 
                 if (rejectOption != null && waitingWorkCountTemp >= rejectOption.ThreadQueueLimit)
                 {
-                    ++loopIndex;
+                    aliveWorker = GetNextAliveWorker();
                     continue;
                 }
 
@@ -715,10 +752,8 @@ namespace PowerThreadPool
                     }
                 }
 
-                ++loopIndex;
+                aliveWorker = GetNextAliveWorker();
             }
-
-            _aliveWorkerListLoopIndex = loopIndex;
 
             return selectedWorker;
         }
@@ -844,50 +879,6 @@ namespace PowerThreadPool
             }
 
             _waitAllSignal.Set();
-        }
-
-        /// <summary>
-        /// Update alive worker list when _aliveWorkerDic is already updated
-        /// </summary>
-        internal void UpdateAliveWorkerList()
-        {
-            // Static analysis tools and LLM-based analysis may flag that direct assignments
-            // could cause _aliveWorkerDicChanged or _aliveWorkerListLoopIndex to read stale data.
-            // This is NOT a bug.
-            //
-            // PTP's work-stealing algorithm iterates over the workers to reallocate tasks
-            // from those with a relatively higher number of pending tasks.
-            // To prevent excessive iteration overhead when managing a large number of worker instances,
-            // the _aliveWorkerListLoopIndex was introduced.
-            // This mechanism restricts each execution to a small segment of the worker list,
-            // updating the index upon completion.
-            //
-            // Strict real-time consistency of the WorkerList or the loop index is not required;
-            // reasonably up-to-date values are sufficient.
-            // However, it is critical to guarantee that the algorithm does not steal tasks from workers in an Idle state,
-            // nor attempt to steal tasks that are currently executing or already completed [①].
-            // To enforce this constraint, a strict atomic state machine is utilized.
-            //
-            // Regarding the potential implications of reading stale values:
-            // 1. Repeatedly targeting the same worker:
-            //    Stealing from a worker that was already targeted during the previous trigger is acceptable,
-            //    as the work-stealing logic primarily cares about ensuring that
-            //    the overall distribution of stolen tasks remains approximately even across the worker pool.
-            // 2. Targeting a terminated or terminating worker:
-            //    If the algorithm attempts to steal from a worker whose lifecycle has ended or is ending,
-            //    this worker will be safely bypassed.
-            //    The atomic state machine's Compare-And-Swap (CAS) operation will simply fail,
-            //    preventing any invalid state transitions [①].
-            // 
-            // Since static analysis tools and single-file-level LLM analysis often lack
-            // the broader context necessary to understand intentional design trade-offs,
-            // any reported "defects" regarding this logic should be carefully verified
-            // before assuming they represent actual bugs.
-            if (_aliveWorkerDicChanged)
-            {
-                _aliveWorkerDicChanged = false;
-                _aliveWorkerList = _aliveWorkerDic.Values.ToArray();
-            }
         }
 
         /// <summary>
@@ -1033,12 +1024,14 @@ namespace PowerThreadPool
                         while (AliveWorkerCount > 0)
                         {
                             Cancel();
-                            foreach (Worker worker in _idleWorkerDic.Values)
+                            foreach (var kv in _idleWorkerDic)
                             {
+                                Worker worker = kv.Value;
                                 StopAndDisposeWorkerAndHelpingWorkers(worker);
                             }
-                            foreach (Worker worker in _aliveWorkerDic.Values)
+                            foreach (var kv in _aliveWorkerDic)
                             {
+                                Worker worker = kv.Value;
                                 StopAndDisposeWorkerAndHelpingWorkers(worker);
                             }
                             Thread.Yield();
