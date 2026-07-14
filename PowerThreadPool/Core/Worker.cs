@@ -31,6 +31,7 @@ namespace PowerThreadPool
         internal InterlockedFlag<CanGetWork> CanGetWork { get; } = Constants.CanGetWork.NotAllowed;
         internal InterlockedFlag<WorkHeldStates> WorkHeldState { get; } = WorkHeldStates.NotHeld;
         internal InterlockedFlag<WorkStealability> WorkStealability { get; } = Constants.WorkStealability.Allowed;
+        internal int _lastStealTickCount = 0;
 
         private ConcurrentQueue<WorkBase> _workInbox;
 
@@ -722,6 +723,8 @@ namespace PowerThreadPool
                 }
             }
 
+            _lastStealTickCount = Environment.TickCount;
+
             return stolenList;
         }
 
@@ -803,6 +806,8 @@ namespace PowerThreadPool
             int startIndex = _powerPool._aliveWorkerListLoopIndex;
             int loopIndex = _powerPool._aliveWorkerListLoopIndex;
 
+            int nowTickCount = Environment.TickCount;
+
             // In most cases, the loop will not iterate more than once.
             while (true)
             {
@@ -822,7 +827,7 @@ namespace PowerThreadPool
 
                 Worker runningWorker = workerList[loopIndex];
 
-                if (runningWorker.WorkerState != WorkerStates.Running || runningWorker.ID == ID)
+                if (runningWorker.WorkerState != WorkerStates.Running || runningWorker.ID == ID || nowTickCount - runningWorker._lastStealTickCount < 500)
                 {
                     ++loopIndex;
                     continue;
