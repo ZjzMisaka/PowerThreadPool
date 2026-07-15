@@ -459,47 +459,78 @@ namespace PowerThreadPool
         internal Worker InitAliveWorkerEnumerator(bool checkNull)
         {
             Worker currentAliveWorker = null;
+
             if (!checkNull || _aliveWorkerEnumerator == null)
             {
                 _aliveWorkerEnumerator = _aliveWorkerDic.GetEnumerator();
-                _aliveWorkerEnumerator.MoveNext();
-
-                currentAliveWorker = _aliveWorkerEnumerator.Current.Value;
+                currentAliveWorker = _aliveWorkerEnumerator.MoveNext()
+                    ? _aliveWorkerEnumerator.Current.Value
+                    : null;
             }
 
             while (currentAliveWorker == null)
             {
+                if (_aliveWorkerDic.IsEmpty)
+                {
+                    _currentAliveWorker = null;
+                    return null;
+                }
+
                 currentAliveWorker = GetNextAliveWorker();
             }
+
             _currentAliveWorker = currentAliveWorker;
             return currentAliveWorker;
         }
 
         internal Worker GetNextAliveWorker()
         {
-            Worker worker = null;
-            if (_canAliveWorkerEnumeratorMoveNext.TrySet(CanEnumeratorMoveNext.NotAllowed, CanEnumeratorMoveNext.Allowed))
+            while (true)
             {
-                if (!_aliveWorkerEnumerator.MoveNext())
+                if (_canAliveWorkerEnumeratorMoveNext.TrySet(CanEnumeratorMoveNext.NotAllowed, CanEnumeratorMoveNext.Allowed))
                 {
-                    InitAliveWorkerEnumerator(false);
+                    Worker worker;
+
+                    if (!_aliveWorkerEnumerator.MoveNext())
+                    {
+                        worker = InitAliveWorkerEnumerator(false);
+                        _canAliveWorkerEnumeratorMoveNext.InterlockedValue = CanEnumeratorMoveNext.Allowed;
+                        return worker;
+                    }
+
+                    worker = _aliveWorkerEnumerator.Current.Value;
+
+                    if (worker != null)
+                    {
+                        _currentAliveWorker = worker;
+                    }
+                    _canAliveWorkerEnumeratorMoveNext.InterlockedValue = CanEnumeratorMoveNext.Allowed;
+
+                    if (worker != null)
+                    {
+                        return worker;
+                    }
+
+                    if (_aliveWorkerDic.IsEmpty)
+                    {
+                        return null;
+                    }
                 }
-                worker = _aliveWorkerEnumerator.Current.Value;
-                
-                _canAliveWorkerEnumeratorMoveNext.InterlockedValue = CanEnumeratorMoveNext.Allowed;
-            }
-            else
-            {
-                worker = _currentAliveWorker;
-            }
+                else
+                {
+                    Worker cached = _currentAliveWorker;
+                    if (cached != null)
+                    {
+                        return cached;
+                    }
 
-            if (worker == null)
-            {
-                worker = GetNextAliveWorker();
+                    if (_aliveWorkerDic.IsEmpty)
+                    {
+                        return null;
+                    }
+                    Thread.SpinWait(1);
+                }
             }
-            _currentAliveWorker = worker;
-
-            return worker;
         }
 
         private bool OnRejected(WorkBase work, out Worker worker)
