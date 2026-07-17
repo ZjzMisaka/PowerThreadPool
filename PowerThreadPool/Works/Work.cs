@@ -445,6 +445,7 @@ namespace PowerThreadPool.Works
 
         public override void Dispose()
         {
+            IsAlive = false;
             if (PauseSignal != null)
             {
                 PauseSignal.Dispose();
