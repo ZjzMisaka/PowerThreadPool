@@ -1,13 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers.LockFree;
 
 namespace PowerThreadPool.Collections
 {
-    internal class LoopWithStepDictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>> where TValue : class
+    internal class LoopWithStepDictionary<TKey, TValue> where TValue : class
     {
         internal ConcurrentDictionary<TKey, TValue> _innerDict = new ConcurrentDictionary<TKey, TValue>();
         internal IEnumerator<KeyValuePair<TKey, TValue>> _enumerator = null;
@@ -101,11 +99,6 @@ namespace PowerThreadPool.Collections
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             return _innerDict.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
         }
     }
 }

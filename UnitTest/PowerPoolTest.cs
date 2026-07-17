@@ -10205,13 +10205,17 @@ namespace UnitTest
             LoopWithStepDictionary<object, object> dict = new LoopWithStepDictionary<object, object>();
             dict.InitEnumerator();
 
+            List<Task> tasks = new List<Task>();
+
             for (int i = 0; i < 10000; ++i)
             {
-                Task.Run(() =>
+                tasks.Add(Task.Run(() =>
                 {
                     dict.GetNext();
-                });
+                }));
             }
+
+            Task.WaitAll(tasks.ToArray());
         }
     }
 }
