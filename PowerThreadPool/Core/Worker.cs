@@ -795,7 +795,7 @@ namespace PowerThreadPool
             Worker worker = null;
             int max = 0;
 
-            Worker runningWorker = _powerPool.InitAliveWorkerEnumerator(true);
+            Worker runningWorker = _powerPool._aliveWorkerDic.InitEnumerator();
 
             int step = 0;
 
@@ -814,7 +814,7 @@ namespace PowerThreadPool
 
                 if (runningWorker.WorkerState != WorkerStates.Running || runningWorker.ID == ID)
                 {
-                    runningWorker = _powerPool.GetNextAliveWorker();
+                    runningWorker = _powerPool._aliveWorkerDic.GetNext();
                     continue;
                 }
 
@@ -823,7 +823,7 @@ namespace PowerThreadPool
                 {
                     if (!runningWorker.WorkStealability.TrySet(Constants.WorkStealability.NotAllowed, Constants.WorkStealability.Allowed))
                     {
-                        runningWorker = _powerPool.GetNextAliveWorker();
+                        runningWorker = _powerPool._aliveWorkerDic.GetNext();
                         continue;
                     }
                     if (worker != null)
@@ -833,7 +833,7 @@ namespace PowerThreadPool
                     max = waitingWorkCountTemp;
                     worker = runningWorker;
                 }
-                runningWorker = _powerPool.GetNextAliveWorker();
+                runningWorker = _powerPool._aliveWorkerDic.GetNext();
             }
             return StealFromWorker(worker, max);
         }

@@ -39,10 +39,8 @@ namespace PowerThreadPool
         internal ConcurrentSet<WorkID> _failedWorkSet = new ConcurrentSet<WorkID>();
         internal ConcurrentSet<WorkID> _canceledWorkSet = new ConcurrentSet<WorkID>();
 
-        internal ConcurrentDictionary<int, Worker> _aliveWorkerDic = new ConcurrentDictionary<int, Worker>();
-        internal IEnumerator<KeyValuePair<int, Worker>> _aliveWorkerEnumerator = null;
-        internal readonly InterlockedFlag<CanEnumeratorMoveNext> _canAliveWorkerEnumeratorMoveNext = CanEnumeratorMoveNext.Allowed;
-        internal Worker _currentAliveWorker = null;
+        internal LoopWithStepDictionary<int, Worker> _aliveWorkerDic = new LoopWithStepDictionary<int, Worker>();
+
         internal ConcurrentDictionary<int, Worker> _idleWorkerDic = new ConcurrentDictionary<int, Worker>();
         internal ConcurrentQueue<int> _idleWorkerQueue = new ConcurrentQueue<int>();
 
@@ -456,83 +454,6 @@ namespace PowerThreadPool
             worker.SetWork(work, true);
         }
 
-        internal Worker InitAliveWorkerEnumerator(bool checkNull)
-        {
-            Worker currentAliveWorker = null;
-
-            if (!checkNull || _aliveWorkerEnumerator == null)
-            {
-                _aliveWorkerEnumerator = _aliveWorkerDic.GetEnumerator();
-                currentAliveWorker = _aliveWorkerEnumerator.MoveNext()
-                    ? _aliveWorkerEnumerator.Current.Value
-                    : null;
-            }
-
-            while (currentAliveWorker == null)
-            {
-                if (_aliveWorkerDic.IsEmpty)
-                {
-                    _currentAliveWorker = null;
-                    return null;
-                }
-
-                currentAliveWorker = GetNextAliveWorker();
-            }
-
-            _currentAliveWorker = currentAliveWorker;
-            return currentAliveWorker;
-        }
-
-        internal Worker GetNextAliveWorker()
-        {
-            while (true)
-            {
-                if (_canAliveWorkerEnumeratorMoveNext.TrySet(CanEnumeratorMoveNext.NotAllowed, CanEnumeratorMoveNext.Allowed))
-                {
-                    Worker worker;
-
-                    if (!_aliveWorkerEnumerator.MoveNext())
-                    {
-                        worker = InitAliveWorkerEnumerator(false);
-                        _canAliveWorkerEnumeratorMoveNext.InterlockedValue = CanEnumeratorMoveNext.Allowed;
-                        return worker;
-                    }
-
-                    worker = _aliveWorkerEnumerator.Current.Value;
-
-                    if (worker != null)
-                    {
-                        _currentAliveWorker = worker;
-                    }
-                    _canAliveWorkerEnumeratorMoveNext.InterlockedValue = CanEnumeratorMoveNext.Allowed;
-
-                    if (worker != null)
-                    {
-                        return worker;
-                    }
-
-                    if (_aliveWorkerDic.IsEmpty)
-                    {
-                        return null;
-                    }
-                }
-                else
-                {
-                    Worker cached = _currentAliveWorker;
-                    if (cached != null)
-                    {
-                        return cached;
-                    }
-
-                    if (_aliveWorkerDic.IsEmpty)
-                    {
-                        return null;
-                    }
-                    Thread.SpinWait(1);
-                }
-            }
-        }
-
         private bool OnRejected(WorkBase work, out Worker worker)
         {
             worker = null;
@@ -726,7 +647,7 @@ namespace PowerThreadPool
             Worker selectedWorker = null;
             int minWaitingWorkCount = int.MaxValue;
 
-            Worker aliveWorker = InitAliveWorkerEnumerator(true);
+            Worker aliveWorker = _aliveWorkerDic.InitEnumerator();
 
             int step = 0;
 
@@ -751,7 +672,7 @@ namespace PowerThreadPool
 
                 if (aliveWorker.LongRunning)
                 {
-                    aliveWorker = GetNextAliveWorker();
+                    aliveWorker = _aliveWorkerDic.GetNext();
                     continue;
                 }
 
@@ -759,7 +680,7 @@ namespace PowerThreadPool
 
                 if (rejectOption != null && waitingWorkCountTemp >= rejectOption.ThreadQueueLimit)
                 {
-                    aliveWorker = GetNextAliveWorker();
+                    aliveWorker = _aliveWorkerDic.GetNext();
                     continue;
                 }
 
@@ -783,7 +704,7 @@ namespace PowerThreadPool
                     }
                 }
 
-                aliveWorker = GetNextAliveWorker();
+                aliveWorker = _aliveWorkerDic.GetNext();
             }
 
             return selectedWorker;
