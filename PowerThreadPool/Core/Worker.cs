@@ -337,7 +337,6 @@ namespace PowerThreadPool
             if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
             {
                 Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
-                _powerPool._aliveWorkerDicChanged = true;
             }
             if (_powerPool._idleWorkerDic.TryRemove(ID, out _))
             {
@@ -413,7 +412,6 @@ namespace PowerThreadPool
                     WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
 
                     Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
-                    _powerPool._aliveWorkerDicChanged = true;
 
                     _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
 
@@ -797,11 +795,9 @@ namespace PowerThreadPool
             Worker worker = null;
             int max = 0;
 
-            _powerPool.UpdateAliveWorkerList();
-            Worker[] workerList = _powerPool._aliveWorkerList;
+            Worker runningWorker = _powerPool._aliveWorkerDic.InitEnumerator();
+
             int step = 0;
-            int startIndex = _powerPool._aliveWorkerListLoopIndex;
-            int loopIndex = _powerPool._aliveWorkerListLoopIndex;
 
             // In most cases, the loop will not iterate more than once.
             while (true)
@@ -810,21 +806,15 @@ namespace PowerThreadPool
                 // It limits the minimum number of steps for each loop iteration.
                 // The number of loop steps will not exceed the length of _aliveWorkerList.
                 // _aliveWorkerListLoopIndex is used to ensure that the starting point of each loop iteration varies as much as possible.
-                if ((step >= _powerPool.PowerPoolOption.WorkLoopMaxStep && worker != null) || step >= workerList.Length)
+                if ((step >= _powerPool.PowerPoolOption.WorkLoopMaxStep && worker != null) || step >= _powerPool.AliveWorkerCount)
                 {
                     break;
                 }
                 ++step;
-                if (loopIndex >= workerList.Length)
-                {
-                    loopIndex = 0;
-                }
-
-                Worker runningWorker = workerList[loopIndex];
 
                 if (runningWorker.WorkerState != WorkerStates.Running || runningWorker.ID == ID)
                 {
-                    ++loopIndex;
+                    runningWorker = _powerPool._aliveWorkerDic.GetNext();
                     continue;
                 }
 
@@ -833,7 +823,7 @@ namespace PowerThreadPool
                 {
                     if (!runningWorker.WorkStealability.TrySet(Constants.WorkStealability.NotAllowed, Constants.WorkStealability.Allowed))
                     {
-                        ++loopIndex;
+                        runningWorker = _powerPool._aliveWorkerDic.GetNext();
                         continue;
                     }
                     if (worker != null)
@@ -843,9 +833,8 @@ namespace PowerThreadPool
                     max = waitingWorkCountTemp;
                     worker = runningWorker;
                 }
-                ++loopIndex;
+                runningWorker = _powerPool._aliveWorkerDic.GetNext();
             }
-            _powerPool._aliveWorkerListLoopIndex = loopIndex;
             return StealFromWorker(worker, max);
         }
 
@@ -1141,7 +1130,6 @@ namespace PowerThreadPool
             if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
             {
                 Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
-                _powerPool._aliveWorkerDicChanged = true;
             }
             Kill();
         }

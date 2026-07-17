@@ -1030,8 +1030,9 @@ namespace PowerThreadPool
             {
                 _workGroupDic.Clear();
                 Cancel();
-                foreach (Worker worker in _aliveWorkerDic.Values)
+                foreach (var kv in _aliveWorkerDic)
                 {
+                    Worker worker = kv.Value;
                     if (worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed))
                     {
                         worker.ForceStop();
@@ -1271,8 +1272,9 @@ namespace PowerThreadPool
         /// </summary>
         public void Cancel()
         {
-            foreach (WorkBase work in _aliveWorkDic.Values)
+            foreach (var kv in _aliveWorkDic)
             {
+                WorkBase work = kv.Value;
                 work.Cancel(true);
             }
 
@@ -1398,8 +1400,9 @@ namespace PowerThreadPool
 
             if (works == null || works.Count == 0)
             {
-                foreach (Worker worker in _aliveWorkerDic.Values)
+                foreach (var kv in _aliveWorkerDic)
                 {
+                    Worker worker = kv.Value;
                     if (worker.WaitingWorkCount >= 1
                         && worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed))
                     {

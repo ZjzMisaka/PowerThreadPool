@@ -1,5 +1,6 @@
 ﻿using Amib.Threading;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Engines;
 using PowerThreadPool;
 using PowerThreadPool.Options;
 
@@ -12,18 +13,30 @@ namespace Benchmark
         private SmartThreadPool _smartThreadPool;
         private PowerPool _powerPool;
 
+        private readonly Consumer _consumer = new Consumer();
+
+        private int _tpErrorCount = -1;
+        private int _stpErrorCount = -1;
+        private int _ptpErrorCount = -1;
+
+        private readonly int _maxCount = 1000;
+
         [IterationSetup]
         public void Setup()
         {
             _smartThreadPool = new SmartThreadPool();
-            _smartThreadPool.MinThreads = 8;
-            _smartThreadPool.MaxThreads = 8;
+            _smartThreadPool.MinThreads = Environment.ProcessorCount;
+            _smartThreadPool.MaxThreads = Environment.ProcessorCount;
             _powerPool = new PowerPool(new PowerPoolOption
             {
-                MaxThreads = 8
+                MaxThreads = Environment.ProcessorCount
             });
-            ThreadPool.SetMinThreads(8, 8);
-            ThreadPool.SetMaxThreads(8, 8);
+            ThreadPool.SetMinThreads(Environment.ProcessorCount, Environment.ProcessorCount);
+            ThreadPool.SetMaxThreads(Environment.ProcessorCount, Environment.ProcessorCount);
+
+            _tpErrorCount = -1;
+            _stpErrorCount = -1;
+            _ptpErrorCount = -1;
         }
 
         [IterationCleanup]
@@ -33,116 +46,108 @@ namespace Benchmark
             _smartThreadPool.Dispose();
             _powerPool.Stop();
             _powerPool.Dispose();
+
+            if (_tpErrorCount > 0)
+            {
+                Console.WriteLine($"TestDotnetThreadPool: {_tpErrorCount} -> {_maxCount}");
+            }
+            if (_stpErrorCount > 0)
+            {
+                Console.WriteLine($"TestSmartThreadPool: {_stpErrorCount} -> {_maxCount}");
+            }
+            if (_ptpErrorCount > 0)
+            {
+                Console.WriteLine($"TestPowerThreadPool: {_ptpErrorCount} -> {_maxCount}");
+            }
         }
 
-        [Benchmark]
+        [Benchmark(Baseline = true)]
         public void TestDotnetThreadPool()
         {
-            try
+            int threadPoolRunCount = 0;
+            using (CountdownEvent countdown = new CountdownEvent(_maxCount))
             {
-                int threadPoolRunCount = 0;
-                using (CountdownEvent countdown = new CountdownEvent(1000))
+                for (int i = 0; i < _maxCount; ++i)
                 {
-                    for (int i = 0; i < 1000; ++i)
+                    ThreadPool.QueueUserWorkItem(state =>
                     {
-                        ThreadPool.QueueUserWorkItem(state =>
+                        try
                         {
-                            try
-                            {
-                                Interlocked.Increment(ref threadPoolRunCount);
-                                DoWork();
-                            }
-                            finally
-                            {
-                                countdown.Signal();
-                            }
-                        });
-                    }
-
-                    countdown.Wait();
+                            Interlocked.Increment(ref threadPoolRunCount);
+                            DoWork();
+                        }
+                        finally
+                        {
+                            countdown.Signal();
+                        }
+                    });
                 }
 
-                int count = threadPoolRunCount;
-                if (count != 1000)
-                {
-                    throw new InvalidOperationException($"TestDotnetThreadPool: {count} -> 1000");
-                }
+                countdown.Wait();
             }
-            catch (Exception ex)
+
+            int count = threadPoolRunCount;
+            if (count != _maxCount)
             {
-                Console.WriteLine(ex.ToString());
-                Console.ReadLine();
+                _tpErrorCount = count;
             }
         }
 
         [Benchmark]
         public void TestSmartThreadPool()
         {
-            try
+            int smartThreadPoolRunCount = 0;
+
+            for (int i = 0; i < _maxCount; ++i)
             {
-                int smartThreadPoolRunCount = 0;
-
-                for (int i = 0; i < 1000; ++i)
+                _smartThreadPool.QueueWorkItem(() =>
                 {
-                    _smartThreadPool.QueueWorkItem(() =>
-                    {
-                        Interlocked.Increment(ref smartThreadPoolRunCount);
-                        DoWork();
-                    });
-                }
-                _smartThreadPool.WaitForIdle();
-
-                int count = smartThreadPoolRunCount;
-                if (count != 1000)
-                {
-                    // throw new InvalidOperationException($"TestSmartThreadPool: {count} -> 1000");
-                    for (int i = count; i < 1000; ++i)
-                    {
-                        DoWork();
-                    }
-                }
+                    Interlocked.Increment(ref smartThreadPoolRunCount);
+                    DoWork();
+                });
             }
-            catch (Exception ex)
+            _smartThreadPool.WaitForIdle();
+
+            int count = smartThreadPoolRunCount;
+            if (count != _maxCount)
             {
-                Console.WriteLine(ex.ToString());
-                Console.ReadLine();
+                // throw new InvalidOperationException($"TestSmartThreadPool: {count} -> 1000");
+                Console.WriteLine($"TestSmartThreadPool: {count} -> {_maxCount}");
+                for (int i = count; i < _maxCount; ++i)
+                {
+                    DoWork();
+                }
             }
         }
 
         [Benchmark]
         public void TestPowerThreadPool()
         {
-            try
+            int powerThreadPoolRunCount = 0;
+            for (int i = 0; i < _maxCount; ++i)
             {
-                int powerThreadPoolRunCount = 0;
-                for (int i = 0; i < 1000; ++i)
+                _powerPool.QueueWorkItem(() =>
                 {
-                    _powerPool.QueueWorkItem(() =>
-                    {
-                        Interlocked.Increment(ref powerThreadPoolRunCount);
-                        DoWork();
-                    });
-                }
-                _powerPool.Wait();
-                int count = powerThreadPoolRunCount;
-                if (count != 1000)
-                {
-                    throw new InvalidOperationException($"TestPowerThreadPool: {count} -> 1000");
-                }
+                    Interlocked.Increment(ref powerThreadPoolRunCount);
+                    DoWork();
+                });
             }
-            catch (Exception ex)
+            _powerPool.Wait();
+            int count = powerThreadPoolRunCount;
+            if (count != _maxCount)
             {
-                Console.WriteLine(ex.ToString());
-                Console.ReadLine();
+                _ptpErrorCount = count;
             }
         }
 
         private void DoWork()
         {
+            double sum = 0;
             for (int i = 0; i < 100000; ++i)
             {
-                Math.Sqrt(i);
+                sum += Math.Sqrt(i);
             }
+            _consumer.Consume(sum);
         }
     }
 }

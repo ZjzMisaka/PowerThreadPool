@@ -42,7 +42,7 @@ namespace Benchmark
         {
             CancellationTokenSource cts = new CancellationTokenSource();
 
-            List<Task> tasks = new List<Task>();
+            Task[] tasks = new Task[200];
             for (int i = 0; i < 50; i++)
             {
                 _threadStaticPrioritySeedScheduler.Run(
@@ -73,7 +73,7 @@ namespace Benchmark
                         await DoWorkAsync(cts.Token);
                     },
                     0);
-                tasks.Add(task);
+                tasks[i] = task;
             }
 
             Task.WhenAll(tasks).Wait();
@@ -86,7 +86,7 @@ namespace Benchmark
         {
             CancellationTokenSource cts = new CancellationTokenSource();
 
-            List<Task> tasks = new List<Task>();
+            Task[] tasks = new Task[200];
             for (int i = 0; i < 50; i++)
             {
                 _perPriorityLaneScheduler.Run(
@@ -117,7 +117,7 @@ namespace Benchmark
                         await DoWorkAsync(cts.Token);
                     },
                     0);
-                tasks.Add(task);
+                tasks[i] = task;
             }
 
             Task.WhenAll(tasks).Wait();
@@ -130,7 +130,7 @@ namespace Benchmark
         {
             CancellationTokenSource cts = new CancellationTokenSource();
 
-            List<Task> tasks = new List<Task>();
+            Task[] tasks = new Task[200];
             for (int i = 0; i < 50; i++)
             {
                 _priorityDispatcherContext.Run(
@@ -161,7 +161,7 @@ namespace Benchmark
                         await DoWorkAsync(cts.Token);
                     },
                     0);
-                tasks.Add(task);
+                tasks[i] = task;
             }
 
             Task.WhenAll(tasks).Wait();
@@ -169,7 +169,7 @@ namespace Benchmark
             cts.Cancel();
         }
 
-        [Benchmark]
+        [Benchmark(Baseline = true)]
         public void TestPowerThreadPool()
         {
             WorkOption workOptionLow = new WorkOption { WorkPriority = 0 };
@@ -178,7 +178,7 @@ namespace Benchmark
 
             CancellationTokenSource cts = new CancellationTokenSource();
 
-            List<Task> tasks = new List<Task>();
+            Task[] tasks = new Task[200];
             for (int i = 0; i < 50; i++)
             {
                 _powerPool.QueueWorkItem(
@@ -210,7 +210,7 @@ namespace Benchmark
                     },
                     out Task task,
                     workOptionHighest);
-                tasks.Add(task);
+                tasks[i] = task;
             }
 
             Task.WhenAll(tasks).Wait();

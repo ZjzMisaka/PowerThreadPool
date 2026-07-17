@@ -10,15 +10,23 @@ namespace Benchmark
     {
         private PowerPool _powerPool;
 
+        private int _tpErrorCount = -1;
+        private int _ptpErrorCount = -1;
+
+        private readonly int _maxCount = 10000;
+
         [IterationSetup]
         public void Setup()
         {
             _powerPool = new PowerPool(new PowerPoolOption
             {
-                MaxThreads = 8
+                MaxThreads = Environment.ProcessorCount
             });
-            ThreadPool.SetMinThreads(8, 8);
-            ThreadPool.SetMaxThreads(8, 8);
+            ThreadPool.SetMinThreads(Environment.ProcessorCount, Environment.ProcessorCount);
+            ThreadPool.SetMaxThreads(Environment.ProcessorCount, Environment.ProcessorCount);
+
+            _tpErrorCount = -1;
+            _ptpErrorCount = -1;
         }
 
         [IterationCleanup]
@@ -26,135 +34,172 @@ namespace Benchmark
         {
             _powerPool.Stop();
             _powerPool.Dispose();
+
+            if (_tpErrorCount > 0)
+            {
+                Console.WriteLine($"TestDotnetThreadPool: {_tpErrorCount} -> {_maxCount}");
+            }
+            if (_ptpErrorCount > 0)
+            {
+                Console.WriteLine($"TestPowerThreadPool: {_ptpErrorCount} -> {_maxCount}");
+            }
+        }
+
+        [Benchmark(Baseline = true)]
+        public void TestTask()
+        {
+            int threadPoolRunCount = 0;
+
+            Task[] tasks = new Task[_maxCount];
+
+            for (int i = 0; i < _maxCount; ++i)
+            {
+                tasks[i] = Task.Run(async () =>
+                {
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    Interlocked.Increment(ref threadPoolRunCount);
+                });
+            }
+
+            Task.WhenAll(tasks).Wait();
+
+            int count = threadPoolRunCount;
+            if (count != _maxCount)
+            {
+                _tpErrorCount = count;
+            }
         }
 
         [Benchmark]
-        public void TestTask()
+        public void TestTaskNoYield()
         {
-            try
+            int threadPoolRunCount = 0;
+
+            Task[] tasks = new Task[_maxCount];
+
+            for (int i = 0; i < _maxCount; ++i)
             {
-                int threadPoolRunCount = 0;
-
-                Task[] tasks = new Task[10000];
-
-                for (int i = 0; i < 10000; ++i)
+                tasks[i] = Task.Run(async () =>
                 {
-                    tasks[i] = Task.Run(async () =>
-                    {
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        Interlocked.Increment(ref threadPoolRunCount);
-                    });
-                }
-
-                Task.WhenAll(tasks).Wait();
-
-                int count = threadPoolRunCount;
-                if (count != 10000)
-                {
-                    throw new InvalidOperationException($"Task: {count} -> 10000");
-                }
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    Interlocked.Increment(ref threadPoolRunCount);
+                });
             }
-            catch (Exception ex)
+
+            Task.WhenAll(tasks).Wait();
+
+            int count = threadPoolRunCount;
+            if (count != _maxCount)
             {
-                Console.WriteLine(ex.ToString());
-                Console.ReadLine();
+                _tpErrorCount = count;
             }
         }
 
         [Benchmark]
         public void TestPowerThreadPool()
         {
-            try
+            int powerThreadPoolRunCount = 0;
+            for (int i = 0; i < _maxCount; ++i)
             {
-                int powerThreadPoolRunCount = 0;
-                for (int i = 0; i < 10000; ++i)
+                _powerPool.QueueWorkItem(async () =>
                 {
-                    _powerPool.QueueWorkItem(async () =>
-                    {
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        await Task.Delay(0);
-                        Interlocked.Increment(ref powerThreadPoolRunCount);
-                        return true;
-                    });
-                }
-                _powerPool.Wait();
-                int count = powerThreadPoolRunCount;
-                if (count != 10000)
-                {
-                    throw new InvalidOperationException($"TestPowerThreadPool: {count} -> 10000");
-                }
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    Interlocked.Increment(ref powerThreadPoolRunCount);
+                    return true;
+                });
             }
-            catch (Exception ex)
+            _powerPool.Wait();
+            int count = powerThreadPoolRunCount;
+            if (count != _maxCount)
             {
-                Console.WriteLine(ex.ToString());
-                Console.ReadLine();
+                _ptpErrorCount = count;
+            }
+        }
+
+        [Benchmark]
+        public void TestPowerThreadPoolNoYield()
+        {
+            int powerThreadPoolRunCount = 0;
+            for (int i = 0; i < _maxCount; ++i)
+            {
+                _powerPool.QueueWorkItem(async () =>
+                {
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    await Task.Delay(0);
+                    Interlocked.Increment(ref powerThreadPoolRunCount);
+                    return true;
+                });
+            }
+            _powerPool.Wait();
+            int count = powerThreadPoolRunCount;
+            if (count != _maxCount)
+            {
+                _ptpErrorCount = count;
             }
         }
 
         [Benchmark]
         public void TestPowerThreadPoolSync()
         {
-            try
+            int powerThreadPoolRunCount = 0;
+            for (int i = 0; i < _maxCount; ++i)
             {
-                int powerThreadPoolRunCount = 0;
-                for (int i = 0; i < 10000; ++i)
+                _powerPool.QueueWorkItem(() =>
                 {
-                    _powerPool.QueueWorkItem(() =>
-                    {
-                        Task.Delay(0).Wait();
-                        Task.Delay(0).Wait();
-                        Task.Delay(0).Wait();
-                        Task.Delay(0).Wait();
-                        Task.Delay(0).Wait();
-                        Task.Delay(0).Wait();
-                        Task.Delay(0).Wait();
-                        Task.Delay(0).Wait();
-                        Task.Delay(0).Wait();
-                        Task.Delay(0).Wait();
-                        Interlocked.Increment(ref powerThreadPoolRunCount);
-                        return true;
-                    });
-                }
-                _powerPool.Wait();
-                int count = powerThreadPoolRunCount;
-                if (count != 10000)
-                {
-                    Thread.Yield();
-                    _powerPool.Wait();
-                    if (count != 10000)
-                    {
-                        Thread.Yield();
-                        _powerPool.Wait();
-                        if (count != 10000)
-                        {
-                            Thread.Yield();
-                            _powerPool.Wait();
-                            throw new InvalidOperationException($"TestPowerThreadPool: {count} -> 10000");
-                        }
-                    }
-                }
+                    Task.Delay(0).Wait();
+                    Task.Delay(0).Wait();
+                    Task.Delay(0).Wait();
+                    Task.Delay(0).Wait();
+                    Task.Delay(0).Wait();
+                    Task.Delay(0).Wait();
+                    Task.Delay(0).Wait();
+                    Task.Delay(0).Wait();
+                    Task.Delay(0).Wait();
+                    Task.Delay(0).Wait();
+                    Interlocked.Increment(ref powerThreadPoolRunCount);
+                    return true;
+                });
             }
-            catch (Exception ex)
+            _powerPool.Wait();
+            int count = powerThreadPoolRunCount;
+            if (count != _maxCount)
             {
-                Console.WriteLine(ex.ToString());
-                Console.ReadLine();
+                _ptpErrorCount = count;
             }
         }
     }

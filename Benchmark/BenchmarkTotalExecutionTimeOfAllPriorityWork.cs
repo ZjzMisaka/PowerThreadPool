@@ -42,7 +42,7 @@ namespace Benchmark
         {
             CancellationTokenSource cts = new CancellationTokenSource();
 
-            List<Task> tasks = new List<Task>();
+            Task[] tasks = new Task[600];
             for (int i = 0; i < 50; i++)
             {
                 _threadStaticPrioritySeedScheduler.Run(
@@ -73,9 +73,9 @@ namespace Benchmark
                         await DoWorkAsync(cts.Token);
                     },
                     0);
-                tasks.Add(task1);
-                tasks.Add(task2);
-                tasks.Add(task3);
+                tasks[i] = task1;
+                tasks[i + 200] = task2;
+                tasks[i + 400] = task3;
             }
 
             Task.WhenAll(tasks).Wait();
@@ -88,7 +88,7 @@ namespace Benchmark
         {
             CancellationTokenSource cts = new CancellationTokenSource();
 
-            List<Task> tasks = new List<Task>();
+            Task[] tasks = new Task[600];
             for (int i = 0; i < 50; i++)
             {
                 _perPriorityLaneScheduler.Run(
@@ -119,9 +119,9 @@ namespace Benchmark
                         await DoWorkAsync(cts.Token);
                     },
                     0);
-                tasks.Add(task1);
-                tasks.Add(task2);
-                tasks.Add(task3);
+                tasks[i] = task1;
+                tasks[i + 200] = task2;
+                tasks[i + 400] = task3;
             }
 
             Task.WhenAll(tasks).Wait();
@@ -134,7 +134,7 @@ namespace Benchmark
         {
             CancellationTokenSource cts = new CancellationTokenSource();
 
-            List<Task> tasks = new List<Task>();
+            Task[] tasks = new Task[600];
             for (int i = 0; i < 50; i++)
             {
                 _priorityDispatcherContext.Run(
@@ -165,9 +165,9 @@ namespace Benchmark
                         await DoWorkAsync(cts.Token);
                     },
                     0);
-                tasks.Add(task1);
-                tasks.Add(task2);
-                tasks.Add(task3);
+                tasks[i] = task1;
+                tasks[i + 200] = task2;
+                tasks[i + 400] = task3;
             }
 
             Task.WhenAll(tasks).Wait();
@@ -175,7 +175,7 @@ namespace Benchmark
             cts.Cancel();
         }
 
-        [Benchmark]
+        [Benchmark(Baseline = true)]
         public void TestPowerThreadPool()
         {
             WorkOption workOptionLow = new WorkOption { WorkPriority = 0 };
@@ -184,7 +184,7 @@ namespace Benchmark
 
             CancellationTokenSource cts = new CancellationTokenSource();
 
-            List<Task> tasks = new List<Task>();
+            Task[] tasks = new Task[600];
             for (int i = 0; i < 50; i++)
             {
                 _powerPool.QueueWorkItem(
@@ -218,9 +218,9 @@ namespace Benchmark
                     },
                     out Task task3,
                     workOptionHighest);
-                tasks.Add(task1);
-                tasks.Add(task2);
-                tasks.Add(task3);
+                tasks[i] = task1;
+                tasks[i + 200] = task2;
+                tasks[i + 400] = task3;
             }
 
             Task.WhenAll(tasks).Wait();
