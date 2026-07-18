@@ -5,6 +5,37 @@ using PowerThreadPool.Helpers.LockFree;
 
 namespace PowerThreadPool.Collections
 {
+    // Static analysis tools and LLM-based analysis may flag that direct assignments
+    // could cause _enumerator, _current or result of GetNext() to read stale data.
+    // This is NOT a bug.
+    //
+    // PTP's work-stealing algorithm iterates over the workers to reallocate tasks
+    // from those with a relatively higher number of pending tasks.
+    // To prevent excessive iteration overhead when managing a large number of worker instances,
+    // the _enumerator was introduced.
+    // This mechanism restricts each execution to a small segment of the worker dict. 
+    //
+    // Strict real-time consistency of the WorkerList or the loop index is not required;
+    // reasonably up-to-date values are sufficient.
+    // However, it is critical to guarantee that the algorithm does not steal tasks from workers in an Idle state,
+    // nor attempt to steal tasks that are currently executing or already completed [①].
+    // To enforce this constraint, a strict atomic state machine is utilized.
+    //
+    // Regarding the potential implications of reading stale values:
+    // 1. Repeatedly targeting the same worker:
+    //    Stealing from a worker that was already targeted during the previous trigger is acceptable,
+    //    as the work-stealing logic primarily cares about ensuring that
+    //    the overall distribution of stolen tasks remains approximately even across the worker pool.
+    // 2. Targeting a terminated or terminating worker:
+    //    If the algorithm attempts to steal from a worker whose lifecycle has ended or is ending,
+    //    this worker will be safely bypassed.
+    //    The atomic state machine's Compare-And-Swap (CAS) operation will simply fail,
+    //    preventing any invalid state transitions [①].
+    // 
+    // Since static analysis tools and single-file-level LLM analysis often lack
+    // the broader context necessary to understand intentional design trade-offs,
+    // any reported "defects" regarding this logic should be carefully verified
+    // before assuming they represent actual bugs.
     internal class LoopWithStepDictionary<TKey, TValue> where TValue : class
     {
         internal ConcurrentDictionary<TKey, TValue> _innerDict = new ConcurrentDictionary<TKey, TValue>();
@@ -30,17 +61,17 @@ namespace PowerThreadPool.Collections
 
         private TValue InitEnumerator(bool checkNull)
         {
-            TValue currentElement = null;
+            TValue currentItem = null;
 
             if (!checkNull || _enumerator == null)
             {
                 _enumerator = _innerDict.GetEnumerator();
-                currentElement = _enumerator.MoveNext()
+                currentItem = _enumerator.MoveNext()
                     ? _enumerator.Current.Value
                     : null;
             }
 
-            while (currentElement == null)
+            while (currentItem == null)
             {
                 if (_innerDict.IsEmpty)
                 {
@@ -48,11 +79,11 @@ namespace PowerThreadPool.Collections
                     return null;
                 }
 
-                currentElement = GetNext();
+                currentItem = GetNext();
             }
 
-            _current = currentElement;
-            return currentElement;
+            _current = currentItem;
+            return currentItem;
         }
 
         public TValue GetNext()
@@ -61,24 +92,24 @@ namespace PowerThreadPool.Collections
             {
                 if (_canEnumeratorMoveNext.TrySet(CanEnumeratorMoveNext.NotAllowed, CanEnumeratorMoveNext.Allowed))
                 {
-                    TValue element;
+                    TValue item;
 
                     if (!_enumerator.MoveNext())
                     {
-                        element = InitEnumerator(false);
+                        item = InitEnumerator(false);
                         _canEnumeratorMoveNext.InterlockedValue = CanEnumeratorMoveNext.Allowed;
-                        return element;
+                        return item;
                     }
 
-                    element = _enumerator.Current.Value;
+                    item = _enumerator.Current.Value;
 
-                    if (element != null)
+                    if (item != null)
                     {
-                        _current = element;
+                        _current = item;
                     }
                     _canEnumeratorMoveNext.InterlockedValue = CanEnumeratorMoveNext.Allowed;
 
-                    return element;
+                    return item;
                 }
                 else
                 {
