@@ -20,7 +20,7 @@ This project is currently a Seed Project within the .NET Foundation. This means 
 
 ## Architecture
 <a href="https://github.com/ZjzMisaka/PowerThreadPool/wiki/Architecture" title="Architecture PlantUML Code">
-<img alt="image" src="https://github.com/user-attachments/assets/b4d34559-8aeb-43f3-bf73-b6d0ee9012aa" />
+    <img alt="image" src="https://github.com/user-attachments/assets/d7395bad-9c16-4a9b-b713-f5b7da25039d" />
 </a>
 
 ## Why PTP
