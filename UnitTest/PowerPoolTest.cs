@@ -10198,7 +10198,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestLoopInStepsDictionaryGetNextNull()
+        public async void TestLoopInStepsDictionaryGetNextNull()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -10215,7 +10215,7 @@ namespace UnitTest
                 }));
             }
 
-            Task.WaitAll(tasks.ToArray());
+            await Task.WhenAll(tasks.ToArray());
         }
     }
 }
