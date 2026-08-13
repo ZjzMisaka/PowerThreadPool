@@ -800,7 +800,7 @@ namespace PowerThreadPool
             int step = 0;
 
             // In most cases, the loop will not iterate more than once.
-            while (true)
+            while (runningWorker != null)
             {
                 // WorkStealingLoopMaxStep is automatically calculated from MaxThreads using a logarithmic formula to optimize loop performance for different thread pool sizes.
                 // It limits the minimum number of steps for each loop iteration.
