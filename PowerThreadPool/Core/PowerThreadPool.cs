@@ -54,9 +54,6 @@ namespace PowerThreadPool
 
         internal ConcurrentDictionary<WorkID, ExecuteResultBase> _resultDic = new ConcurrentDictionary<WorkID, ExecuteResultBase>();
 
-        internal ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>> _asyncWorkIDDict = new ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>>();
-        internal ConcurrentDictionary<WorkID, ITaskCompletionSource> _tcsDict = new ConcurrentDictionary<WorkID, ITaskCompletionSource>();
-
         internal ConcurrentQueue<Worker> _helperWorkerQueue = new ConcurrentQueue<Worker>();
 
         internal ConcurrentDictionary<Task, RegisteredWaitHandle> _waitRegDict = new ConcurrentDictionary<Task, RegisteredWaitHandle>();

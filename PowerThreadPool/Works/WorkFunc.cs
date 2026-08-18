@@ -6,10 +6,16 @@ namespace PowerThreadPool.Works
 {
     internal class WorkFunc<TResult> : Work<TResult>
     {
+        private Func<TResult> _baseFunction;
         private Func<TResult> _function;
 
-        internal WorkFunc(PowerPool powerPool, WorkID id, Func<TResult> function, WorkOption option, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cts) : base(powerPool, id, option, asyncWorkInfo, cts)
+        internal WorkFunc()
         {
+        }
+
+        internal WorkFunc(PowerPool powerPool, WorkID id, Func<TResult> function, WorkOption option, CancellationTokenSource cts) : base(powerPool, id, option, cts)
+        {
+            _baseFunction = function;
             _function = function;
         }
 

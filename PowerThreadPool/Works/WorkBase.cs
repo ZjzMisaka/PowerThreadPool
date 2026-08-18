@@ -15,7 +15,6 @@ namespace PowerThreadPool.Works
     {
         internal Worker Worker { get; set; }
         internal PowerPool PowerPool { get; set; }
-        internal AsyncWorkInfo AsyncWorkInfo { get; set; }
         internal CancellationTokenSource CancellationTokenSource { get; set; }
         internal bool IsAlive { get; set; } = false;
         internal volatile int _executeCount;
@@ -24,7 +23,7 @@ namespace PowerThreadPool.Works
             get
             {
                 int count = _executeCount;
-                if (BaseAsyncWorkID != null && BaseAsyncWorkID != AsyncWorkID && PowerPool._aliveWorkDic.TryGetValue(BaseAsyncWorkID, out WorkBase asyncBaseWork))
+                if (PowerPool._aliveWorkDic.TryGetValue(ID, out WorkBase asyncBaseWork))
                 {
                     count = asyncBaseWork._executeCount;
                 }
@@ -38,25 +37,7 @@ namespace PowerThreadPool.Works
             get => _isDone;
             set => _isDone = value;
         }
-        internal volatile bool _asyncDone;
-        internal bool AsyncDone
-        {
-            get
-            {
-                return AsyncWorkInfo.AsyncDone;
-            }
-            set
-            {
-                if (AsyncWorkInfo == null)
-                {
-                    return;
-                }
-                AsyncWorkInfo.AsyncDone = value;
-            }
-        }
         internal volatile bool _isPausing;
-        internal bool SyncOrAsyncWorkDone
-            => IsDone && (BaseAsyncWorkID == null || AsyncDone);
         internal bool IsPausing
         {
             get => _isPausing;
@@ -80,6 +61,7 @@ namespace PowerThreadPool.Works
         internal DateTime StartDateTime { get; set; }
         internal long Duration { get; set; }
         internal abstract object Execute();
+        internal abstract WorkBase Init(PowerPool powerPool, WorkID id, WorkOption option, CancellationTokenSource cancellationTokenSource);
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Cancel(bool needFreeze);
         internal abstract bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false);
@@ -104,9 +86,5 @@ namespace PowerThreadPool.Works
         internal abstract bool ShouldStoreResult { get; }
         internal abstract WorkPlacementPolicy WorkPlacementPolicy { get; }
         internal abstract ConcurrentSet<WorkID> Dependents { get; }
-        internal abstract bool AllowEventsAndCallback { get; set; }
-        internal abstract WorkID AsyncWorkID { get; }
-        internal abstract WorkID BaseAsyncWorkID { get; }
-        internal abstract WorkID RealWorkID { get; }
     }
 }

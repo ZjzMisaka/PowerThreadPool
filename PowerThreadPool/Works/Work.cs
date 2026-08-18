@@ -48,24 +48,17 @@ namespace PowerThreadPool.Works
         internal override bool ShouldStoreResult => WorkOption.ShouldStoreResult;
         internal override WorkPlacementPolicy WorkPlacementPolicy => WorkOption.WorkPlacementPolicy;
         internal override ConcurrentSet<WorkID> Dependents => WorkOption.Dependents;
-        internal override bool AllowEventsAndCallback
-        {
-            get => AsyncWorkInfo != null ?
-                (AsyncWorkInfo.AllowEventsAndCallback && ID == AsyncWorkInfo.AsyncWorkID) : true;
-            set
-            {
-                if (AsyncWorkInfo == null)
-                {
-                    return;
-                }
-                AsyncWorkInfo.AllowEventsAndCallback = value;
-            }
-        }
-        internal override WorkID AsyncWorkID => AsyncWorkInfo?.AsyncWorkID;
-        internal override WorkID BaseAsyncWorkID => AsyncWorkInfo?.BaseAsyncWorkID;
-        internal override WorkID RealWorkID => AsyncWorkInfo?.BaseAsyncWorkID == null ? ID : AsyncWorkInfo.BaseAsyncWorkID;
 
-        internal Work(PowerPool powerPool, WorkID id, WorkOption option, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cancellationTokenSource)
+        internal Work()
+        {
+        }
+
+        internal Work(PowerPool powerPool, WorkID id, WorkOption option, CancellationTokenSource cancellationTokenSource)
+        {
+            Init(powerPool, id, option, cancellationTokenSource);
+        }
+
+        internal override WorkBase Init(PowerPool powerPool, WorkID id, WorkOption option, CancellationTokenSource cancellationTokenSource)
         {
             if (option is WorkOption<TResult> wor)
             {
@@ -78,10 +71,10 @@ namespace PowerThreadPool.Works
             PowerPool = powerPool;
             ID = id;
             ExecuteCount = 0;
-            AsyncWorkInfo = asyncWorkInfo;
             ShouldStop = false;
             IsPausing = false;
             CancellationTokenSource = cancellationTokenSource;
+            return this;
         }
 
         private void EnsureWaitSignalExists()

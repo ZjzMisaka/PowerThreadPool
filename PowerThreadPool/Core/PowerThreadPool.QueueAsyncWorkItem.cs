@@ -1502,13 +1502,13 @@ namespace PowerThreadPool
             TaskCompletionSourceBox<ExecuteResult<TResult>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<TResult>>();
             task = taskCompletionSource.TypedTask;
 
-            AsyncWorkInfo asyncWorkInfo = new AsyncWorkInfo();
             PrepareAsyncWork(option, asyncWorkInfo);
 
+            WorkBase workBase = new WorkFunc<TResult>();
             WorkID id = QueueAsyncWorkItemInner<TResult>(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
-                PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, option, asyncWorkInfo, null);
+                PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, workBase, null);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task<TResult> taskFunc = asyncFunc();
@@ -1518,9 +1518,7 @@ namespace PowerThreadPool
                 RegisterCompletionWithResult(taskFunc, prevCtx, asyncWorkInfo.BaseAsyncWorkID);
 
                 return default;
-            }, option, asyncWorkInfo, null);
-
-            _tcsDict[id] = taskCompletionSource;
+            }, option, null, workBase);
 
             return id;
         }
