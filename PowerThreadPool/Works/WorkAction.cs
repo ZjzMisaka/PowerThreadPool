@@ -15,11 +15,18 @@ namespace PowerThreadPool.Works
             _action = action;
         }
 
+        internal override bool IsFirstAsyncWork => _baseAction == _action;
+
         internal override object Execute()
         {
             ++_executeCount;
             _action();
             return null;
+        }
+
+        internal override void ResetBase()
+        {
+            _action = _baseAction;
         }
     }
 }

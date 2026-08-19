@@ -16,6 +16,7 @@ namespace PowerThreadPool.Works
         internal Worker Worker { get; set; }
         internal PowerPool PowerPool { get; set; }
         internal CancellationTokenSource CancellationTokenSource { get; set; }
+        internal TaskCompletionSource<ExecuteResultBase> TaskCompletionSource { get; set; }
         internal bool IsAlive { get; set; } = false;
         internal volatile int _executeCount;
         internal int ExecuteCount
@@ -61,6 +62,7 @@ namespace PowerThreadPool.Works
         internal DateTime StartDateTime { get; set; }
         internal long Duration { get; set; }
         internal abstract object Execute();
+        internal abstract void ResetBase();
         internal abstract WorkBase Init(PowerPool powerPool, WorkID id, WorkOption option, CancellationTokenSource cancellationTokenSource);
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Cancel(bool needFreeze);
@@ -86,5 +88,11 @@ namespace PowerThreadPool.Works
         internal abstract bool ShouldStoreResult { get; }
         internal abstract WorkPlacementPolicy WorkPlacementPolicy { get; }
         internal abstract ConcurrentSet<WorkID> Dependents { get; }
-    }
+
+        /// <summary>
+        /// 注释: 异步下表示任务是否完成的标志
+        /// </summary>
+        internal abstract bool AllowEventsAndCallback { get; set; }
+
+        internal abstract bool IsFirstAsyncWork { get; }
 }

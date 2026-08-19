@@ -29,7 +29,7 @@ namespace PowerThreadPool
         /// Invoke work end event
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult, bool isAsync)
+        internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult)
         {
             if (PowerPoolOption.EnableStatisticsCollection)
             {
@@ -52,12 +52,6 @@ namespace PowerThreadPool
                     RetryInfo = executeResult.RetryInfo,
                 };
 
-                if (isAsync && PowerPoolOption.EnableStatisticsCollection && _aliveWorkDic.TryGetValue(executeResult.ID, out WorkBase work))
-                {
-                    e.QueueDateTime = work.QueueDateTime;
-                    e.StartDateTime = work.StartDateTime;
-                }
-
                 if (executeResult.RetryInfo != null)
                 {
                     executeResult.RetryInfo.StopRetry = e.RetryInfo.StopRetry;
@@ -71,7 +65,7 @@ namespace PowerThreadPool
         /// Invoke work stopped event
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult, bool isAsync)
+        internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult)
         {
             if (PowerPoolOption.EnableStatisticsCollection)
             {
@@ -90,12 +84,6 @@ namespace PowerThreadPool
                     EndDateTime = executeResult.UtcEndDateTime,
                     Duration = executeResult.Duration,
                 };
-
-                if (isAsync && PowerPoolOption.EnableStatisticsCollection && _aliveWorkDic.TryGetValue(executeResult.ID, out WorkBase work))
-                {
-                    e.QueueDateTime = work.QueueDateTime;
-                    e.StartDateTime = work.StartDateTime;
-                }
 
                 SafeInvoke(WorkStopped, e, ErrorFrom.WorkStopped, executeResult);
             }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using PowerThreadPool.Options;
+using static System.Collections.Specialized.BitVector32;
 
 namespace PowerThreadPool.Works
 {
@@ -19,10 +20,17 @@ namespace PowerThreadPool.Works
             _function = function;
         }
 
+        internal override bool IsFirstAsyncWork => _baseFunction == _function;
+
         internal override object Execute()
         {
             ++_executeCount;
             return _function();
+        }
+
+        internal override void ResetBase()
+        {
+            _function = _baseFunction;
         }
     }
 }

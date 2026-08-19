@@ -48,6 +48,7 @@ namespace PowerThreadPool.Works
         internal override bool ShouldStoreResult => WorkOption.ShouldStoreResult;
         internal override WorkPlacementPolicy WorkPlacementPolicy => WorkOption.WorkPlacementPolicy;
         internal override ConcurrentSet<WorkID> Dependents => WorkOption.Dependents;
+        internal override bool AllowEventsAndCallback { get; set; }
 
         internal Work()
         {

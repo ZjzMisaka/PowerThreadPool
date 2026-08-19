@@ -202,11 +202,7 @@ namespace PowerThreadPool
             bool isRetry = false;
             do
             {
-                if (isRetry && Work.BaseAsyncWorkID != null && _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork))
-                {
-                    Work = asyncBaseWork;
-                    Work.AllowEventsAndCallback = false;
-                }
+                Work.ResetBase();
                 executeResult = ExecuteMain();
                 InvokeEventsAndCallback(executeResult);
                 isRetry = true;
@@ -215,24 +211,9 @@ namespace PowerThreadPool
             if (Work.ShouldRequeue(executeResult))
             {
                 WorkBase requeueWork = Work;
-                if (Work.BaseAsyncWorkID != null && _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork))
-                {
-                    requeueWork = asyncBaseWork;
-                    requeueWork.AllowEventsAndCallback = false;
-                }
+                Work.ResetBase();
                 requeueWork._canCancel.InterlockedValue = CanCancel.Allowed;
                 Interlocked.Increment(ref _powerPool._waitingWorkCount);
-                if (requeueWork.BaseAsyncWorkID != null)
-                {
-                    foreach (var oldWorkID in _powerPool._asyncWorkIDDict[requeueWork.BaseAsyncWorkID])
-                    {
-                        if (_powerPool._aliveWorkDic.TryRemove(oldWorkID, out WorkBase work))
-                        {
-                            work.Dispose();
-                        }
-                    }
-                    _powerPool._asyncWorkIDDict[requeueWork.BaseAsyncWorkID].Clear();
-                }
                 _powerPool.SetWork(requeueWork);
             }
             else
@@ -243,20 +224,21 @@ namespace PowerThreadPool
 
         private void SetTaskCompletionSourceAfterExecute(ExecuteResultBase executeResult)
         {
-            if (_powerPool._tcsDict.TryRemove(Work.RealWorkID, out ITaskCompletionSource tcs))
+            if (Work.TaskCompletionSource == null)
             {
-                if (executeResult.Status == Status.Stopped)
-                {
-                    tcs.SetCanceled();
-                }
-                else if (executeResult.Status == Status.Failed)
-                {
-                    tcs.SetException(executeResult.Exception);
-                }
-                else
-                {
-                    tcs.SetResult(executeResult);
-                }
+                return;
+            }
+            if (executeResult.Status == Status.Stopped)
+            {
+                Work.TaskCompletionSource.SetCanceled();
+            }
+            else if (executeResult.Status == Status.Failed)
+            {
+                Work.TaskCompletionSource.SetException(executeResult.Exception);
+            }
+            else
+            {
+                Work.TaskCompletionSource.SetResult(executeResult);
             }
         }
 
@@ -269,15 +251,15 @@ namespace PowerThreadPool
             }
             if (executeResult.Status == Status.Stopped)
             {
-                _powerPool.InvokeWorkStoppedEvent(executeResult, Work.BaseAsyncWorkID != null);
+                _powerPool.InvokeWorkStoppedEvent(executeResult);
             }
             else
             {
-                _powerPool.InvokeWorkEndedEvent(executeResult, Work.BaseAsyncWorkID != null);
+                _powerPool.InvokeWorkEndedEvent(executeResult);
             }
-            if (Work.AllowEventsAndCallback)
+            if (Work.IsDone)
             {
-                if (Work.BaseAsyncWorkID != null)
+                if (Work.TaskCompletionSource != null)
                 {
                     SetTaskCompletionSourceAfterExecute(executeResult);
                 }
@@ -290,28 +272,26 @@ namespace PowerThreadPool
             if (Work.AllowEventsAndCallback)
             {
                 _powerPool.WorkCallbackEnd(Work, executeResult.Status);
-                Work.AsyncDone = true;
+                Work.IsDone = true;
             }
 
-            Work.IsDone = true;
+            // 注释: 仅同步时设为true
+            if (Work.TaskCompletionSource == null)
+            {
+                Work.IsDone = true;
+            }
 
-            if (Work.WaitSignal != null && Work.BaseAsyncWorkID == null)
+            if (Work.WaitSignal != null && Work.TaskCompletionSource == null)
             {
                 Work.WaitSignal.Set();
             }
 
-            if (Work.AllowEventsAndCallback && Work.BaseAsyncWorkID != null)
+            if (Work.AllowEventsAndCallback && Work.TaskCompletionSource != null)
             {
-                bool shouldStoreResult = false;
-                if (_powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out WorkBase asyncBaseWork))
+                if (Work.WaitSignal != null)
                 {
-                    shouldStoreResult = asyncBaseWork.ShouldStoreResult;
-                    if (asyncBaseWork.WaitSignal != null)
-                    {
-                        asyncBaseWork.WaitSignal.Set();
-                    }
+                    Work.WaitSignal.Set();
                 }
-                _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true, shouldStoreResult, true);
             }
         }
 
@@ -342,23 +322,18 @@ namespace PowerThreadPool
             {
                 Interlocked.Decrement(ref _powerPool._idleWorkerCount);
             }
-            if (Work.BaseAsyncWorkID != null)
+            if (Work.TaskCompletionSource != null)
             {
-                _powerPool.TryRemoveAsyncWork(Work.BaseAsyncWorkID, true, false, true);
-
-                if (_powerPool._tcsDict.TryRemove(Work.RealWorkID, out ITaskCompletionSource tcs))
-                {
-                    tcs.SetCanceled();
-                }
+                Work.TaskCompletionSource.SetCanceled();
             }
 
             ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
-            executeResult.ID = Work.RealWorkID;
+            executeResult.ID = Work.ID;
             if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
             {
                 executeResult.StartDateTime = Work.StartDateTime;
             }
-            _powerPool.InvokeWorkStoppedEvent(executeResult, Work.BaseAsyncWorkID != null);
+            _powerPool.InvokeWorkStoppedEvent(executeResult);
 
             if (!ex.Data.Contains("ThrowedWhenExecuting"))
             {
@@ -369,7 +344,6 @@ namespace PowerThreadPool
             _powerPool.WorkCallbackEnd(Work, Status.ForceStopped);
 
             bool hasWaitingWork = RequeueAllWaitingWork(null);
-            Work.AsyncDone = true;
             Work.IsDone = true;
 
             if (Work.WaitSignal != null)
@@ -453,7 +427,7 @@ namespace PowerThreadPool
         private bool RequeueAllWaitingWork(WorkBase work)
         {
             bool hasWaitingWork = false;
-            if (work != null && !work.SyncOrAsyncWorkDone && work._canCancel.TrySet(CanCancel.Allowed, CanCancel.NotAllowed))
+            if (work != null && !work.IsDone && work._canCancel.TrySet(CanCancel.Allowed, CanCancel.NotAllowed))
             {
                 _powerPool.SetWork(work);
                 hasWaitingWork = true;
@@ -495,7 +469,7 @@ namespace PowerThreadPool
                 {
                     runDateTime = DateTime.UtcNow;
                     Work.StartDateTime = runDateTime;
-                    if (Work.BaseAsyncWorkID == null || Work.BaseAsyncWorkID == WorkID)
+                    if (Work.TaskCompletionSource == null || Work.IsFirstAsyncWork)
                     {
                         Interlocked.Increment(ref _powerPool._startCount);
                     }
