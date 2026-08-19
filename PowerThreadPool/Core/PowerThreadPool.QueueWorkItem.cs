@@ -356,12 +356,12 @@ namespace PowerThreadPool
         {
             CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token);
             Action act = () => action(cts.Token);
-            return QueueWorkItemCore<object>(act, null, option, null, cts);
+            return QueueWorkItemCore<object>(act, null, option, cts, null);
         }
 
-        internal WorkID QueueAsyncWorkItemInner(Action action, WorkOption option, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cts)
+        internal WorkID QueueAsyncWorkItemInner(Action action, WorkOption option, CancellationTokenSource cts, WorkBase work)
         {
-            return QueueWorkItemCore<object>(action, null, option, asyncWorkInfo, cts);
+            return QueueWorkItemCore<object>(action, null, option, cts, work);
         }
 
         /// <summary>
@@ -767,12 +767,12 @@ namespace PowerThreadPool
         {
             CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token);
             Func<TResult> func = () => function(cts.Token);
-            return QueueWorkItemCore(null, func, option, null, cts);
+            return QueueWorkItemCore(null, func, option, cts, null);
         }
 
-        internal WorkID QueueAsyncWorkItemInner<TResult>(Func<TResult> function, WorkOption option, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cts, WorkBase workBase)
+        internal WorkID QueueAsyncWorkItemInner<TResult>(Func<TResult> function, WorkOption option, CancellationTokenSource cts, WorkBase workBase)
         {
-            return QueueWorkItemCore(null, function, option, asyncWorkInfo, cts, workBase);
+            return QueueWorkItemCore(null, function, option, cts, workBase);
         }
 
         /// <summary>

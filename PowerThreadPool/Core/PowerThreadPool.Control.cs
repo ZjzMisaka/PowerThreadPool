@@ -1285,7 +1285,6 @@ namespace PowerThreadPool
 
             bool res = false;
             WorkBase work = default;
-            bool isQueuedAndDidnotCallTryRemoveAsyncWorkInside = false;
 
             if (_workDependencyController.Cancel(id, out work))
             {
@@ -1295,17 +1294,14 @@ namespace PowerThreadPool
             {
                 Interlocked.Decrement(ref _waitingWorkCount);
                 res = true;
-                isQueuedAndDidnotCallTryRemoveAsyncWorkInside = true;
             }
             else if (_stopSuspendedWork.TryRemove(id, out work))
             {
                 res = true;
-                isQueuedAndDidnotCallTryRemoveAsyncWorkInside = true;
             }
             else if (_aliveWorkDic.TryGetValue(id, out work))
             {
                 res = work.Cancel(true);
-                isQueuedAndDidnotCallTryRemoveAsyncWorkInside = false;
                 if (res && _aliveWorkDic.TryRemove(id, out _))
                 {
                     work.Dispose();
