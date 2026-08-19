@@ -457,7 +457,7 @@ namespace PowerThreadPool
 
             RejectType rejectType = PowerPoolOption.RejectOption.RejectType;
 
-            WorkID rejectID = work.RealWorkID;
+            WorkID rejectID = work.ID;
 
             if (WorkRejected != null)
             {

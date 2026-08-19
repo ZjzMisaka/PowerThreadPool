@@ -88,10 +88,6 @@ namespace PowerThreadPool
             {
                 pauseWork = worker.Work;
             }
-            else if (worker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase work) && work.IsPausing)
-            {
-                pauseWork = work;
-            }
         }
 
         /// <summary>
@@ -146,7 +142,7 @@ namespace PowerThreadPool
             // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
             if (work.Group == null || !work.ShouldStoreResult)
             {
-                if (work.BaseAsyncWorkID == null)
+                if (work.TaskCompletionSource == null)
                 {
                     _aliveWorkDic.TryRemove(work.ID, out _);
                     work.Dispose();
@@ -221,11 +217,6 @@ namespace PowerThreadPool
             if (GetCurrentThreadWorker(out Worker worker) && worker.WorkerState == WorkerStates.Running)
             {
                 if (worker.IsCancellationRequested())
-                {
-                    work = worker.Work;
-                    return true;
-                }
-                else if (worker.Work.BaseAsyncWorkID != null && _aliveWorkDic.TryGetValue(worker.Work.BaseAsyncWorkID, out WorkBase baseAsyncWork) && baseAsyncWork.ShouldStop)
                 {
                     work = worker.Work;
                     return true;
@@ -1097,14 +1088,6 @@ namespace PowerThreadPool
                 res = work.Stop(forceStop);
             }
 
-            if (_asyncWorkIDDict.TryGetValue(id, out ConcurrentSet<WorkID> idSet))
-            {
-                foreach (WorkID subID in idSet)
-                {
-                    res = Stop(subID, forceStop);
-                }
-            }
-
             _workDependencyController.Cancel(id, out _);
 
             return res;
@@ -1333,11 +1316,6 @@ namespace PowerThreadPool
                 res = false;
             }
 
-            if (res && work.BaseAsyncWorkID != null)
-            {
-                TryRemoveAsyncWork(id, false, false, isQueuedAndDidnotCallTryRemoveAsyncWorkInside);
-            }
-
             return res;
         }
 
@@ -1363,24 +1341,16 @@ namespace PowerThreadPool
 
         private void RemoveAfterFetch(WorkBase work)
         {
-            if (work.BaseAsyncWorkID != null)
+            if (_aliveWorkDic.TryRemove(work.ID, out _))
             {
-                TryRemoveAsyncWork(work.ID, true, false, false);
-                _resultDic.TryRemove(work.AsyncWorkID, out _);
-            }
-            else
-            {
-                if (_aliveWorkDic.TryRemove(work.ID, out _))
+                if (work.Group != null)
                 {
-                    if (work.Group != null)
-                    {
-                        RemoveWorkFromGroup(work.Group, work);
-                    }
-                    work.Dispose();
+                    RemoveWorkFromGroup(work.Group, work);
                 }
-
-                _resultDic.TryRemove(work.ID, out _);
+                work.Dispose();
             }
+
+            _resultDic.TryRemove(work.ID, out _);
 
             CheckPoolIdle();
         }

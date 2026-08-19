@@ -269,6 +269,7 @@ namespace PowerThreadPool
 
         private void CleanUpAndSetSignalAfterExecute(ExecuteResultBase executeResult)
         {
+            // 注释: 异步时等待AllowEventsAndCallback为true时才设为true
             if (Work.AllowEventsAndCallback)
             {
                 _powerPool.WorkCallbackEnd(Work, executeResult.Status);
@@ -477,12 +478,12 @@ namespace PowerThreadPool
                 }
                 object result = Work.Execute();
 
-                WorkBase baseWork = AppendDuration(runDateTime);
+                AppendDuration(runDateTime);
 
                 if (Work.AllowEventsAndCallback)
                 {
                     executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
-                    SetStatisticsCollection(executeResult, runDateTime, baseWork);
+                    SetStatisticsCollection(executeResult, runDateTime);
                 }
             }
             catch (ThreadInterruptedException ex)
@@ -501,12 +502,7 @@ namespace PowerThreadPool
                 Work.AllowEventsAndCallback = true;
 
                 executeResult = Work.SetExecuteResult(null, ex, Status.Stopped);
-                WorkBase baseWork = null;
-                if (Work.BaseAsyncWorkID != null)
-                {
-                    _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out baseWork);
-                }
-                SetStatisticsCollection(executeResult, runDateTime, baseWork);
+                SetStatisticsCollection(executeResult, runDateTime);
             }
             catch (Exception ex)
             {
@@ -516,7 +512,7 @@ namespace PowerThreadPool
                 Work.AllowEventsAndCallback = true;
 
                 executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
-                executeResult.ID = Work.RealWorkID;
+                executeResult.ID = Work.ID;
                 _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
             }
 #if DEBUG
@@ -533,48 +529,28 @@ namespace PowerThreadPool
             Work.Worker = null;
             if (Work.AllowEventsAndCallback)
             {
-                executeResult.ID = Work.RealWorkID;
+                executeResult.ID = Work.ID;
             }
 
             return executeResult;
         }
 
-        private void SetStatisticsCollection(ExecuteResultBase executeResult, DateTime runDateTime, WorkBase baseWork)
+        private void SetStatisticsCollection(ExecuteResultBase executeResult, DateTime runDateTime)
         {
             if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
             {
-                if (baseWork != null)
-                {
-                    runDateTime = baseWork.StartDateTime;
-                    executeResult.QueueDateTime = baseWork.QueueDateTime;
-                    executeResult.Duration = baseWork.Duration;
-                }
-                else
-                {
-                    executeResult.Duration = Work.Duration;
-                }
+                executeResult.Duration = Work.Duration;
                 executeResult.StartDateTime = runDateTime;
             }
         }
 
-        private WorkBase AppendDuration(DateTime runDateTime)
+        private void AppendDuration(DateTime runDateTime)
         {
-            WorkBase baseWork = null;
-
             if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
             {
                 long duration = (long)(DateTime.UtcNow - runDateTime).TotalMilliseconds;
-                if (Work.BaseAsyncWorkID != null && _powerPool._aliveWorkDic.TryGetValue(Work.BaseAsyncWorkID, out baseWork))
-                {
-                    baseWork.Duration += duration;
-                }
-                else
-                {
-                    Work.Duration += duration;
-                }
+                Work.Duration += duration;
             }
-
-            return baseWork;
         }
 
         // Due to the unreliability of Thread.Interrupt(), forced stop functionality should be avoided as much as possible.
@@ -1021,7 +997,7 @@ namespace PowerThreadPool
             }
 
             if (workTimeoutOption != null
-                && (work.BaseAsyncWorkID == null || work.BaseAsyncWorkID == work.ID)
+                && (work.TaskCompletionSource == null || work.IsFirstAsyncWork)
                 && work.ExecuteCount == 0)
             {
                 if (work.TimeoutTimer == null)
@@ -1138,7 +1114,7 @@ namespace PowerThreadPool
             if (work != null)
             {
                 Interlocked.Decrement(ref _waitingWorkCount);
-                if (work.BaseAsyncWorkID != work.AsyncWorkID)
+                if (work.TaskCompletionSource != null && !work.IsFirstAsyncWork)
                 {
                     _powerPool.SetWork(work);
                     res = false;

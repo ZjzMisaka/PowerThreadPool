@@ -95,4 +95,5 @@ namespace PowerThreadPool.Works
         internal abstract bool AllowEventsAndCallback { get; set; }
 
         internal abstract bool IsFirstAsyncWork { get; }
+    }
 }

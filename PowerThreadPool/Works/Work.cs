@@ -131,11 +131,6 @@ namespace PowerThreadPool.Works
                 return false;
             }
 
-            if (BaseAsyncWorkID != null && BaseAsyncWorkID != ID)
-            {
-                return false;
-            }
-
             bool res = false;
 
             using (new WorkGuard(this, needFreeze))
@@ -144,16 +139,6 @@ namespace PowerThreadPool.Works
 
                 if (res)
                 {
-                    if (BaseAsyncWorkID != null)
-                    {
-                        PowerPool.TryRemoveAsyncWork(ID, false, false, true);
-
-                        if (PowerPool._tcsDict.TryRemove(RealWorkID, out ITaskCompletionSource tcs))
-                        {
-                            tcs.SetCanceled();
-                        }
-                    }
-
                     ExecuteResultBase executeResult = SetExecuteResult(null, null, Status.Canceled);
                     executeResult.ID = ID;
                     executeResult.StartDateTime = StartDateTime;
@@ -187,7 +172,7 @@ namespace PowerThreadPool.Works
 
             EnsureWaitSignalExists();
 
-            if (!SyncOrAsyncWorkDone)
+            if (!IsDone)
             {
                 if (cancellationToken == default)
                     WaitSignal.WaitOne();
@@ -277,7 +262,7 @@ namespace PowerThreadPool.Works
             bool res = false;
             task = default;
 
-            if (SyncOrAsyncWorkDone)
+            if (IsDone)
             {
                 res = true;
 
@@ -330,9 +315,9 @@ namespace PowerThreadPool.Works
 
         private ExecuteResult<T> FetchCore<T>()
         {
-            if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
+            if (PowerPool._aliveWorkDic.TryGetValue(ID, out WorkBase work))
             {
-                Work<T> lastWorkT = lastWork as Work<T>;
+                Work<T> lastWorkT = work as Work<T>;
                 Spinner.Start(() => lastWorkT.ExecuteResult != null, true);
                 return lastWorkT.ExecuteResult.ToTypedResult<T>();
             }
@@ -344,11 +329,11 @@ namespace PowerThreadPool.Works
 
         internal override bool Pause()
         {
-            if (BaseAsyncWorkID == null && PauseSignal == null)
+            if (TaskCompletionSource == null && PauseSignal == null)
             {
                 PauseSignal = new ManualResetEvent(true);
             }
-            if (BaseAsyncWorkID != null && PauseAsyncSignal == null)
+            if (TaskCompletionSource != null && PauseAsyncSignal == null)
             {
                 PauseAsyncSignal = new AsyncManualResetEvent(true);
             }
@@ -396,7 +381,7 @@ namespace PowerThreadPool.Works
             ExecuteResult = executeResult;
             if (WorkOption.ShouldStoreResult)
             {
-                PowerPool._resultDic[RealWorkID] = ExecuteResult;
+                PowerPool._resultDic[ID] = ExecuteResult;
             }
             return executeResult;
         }

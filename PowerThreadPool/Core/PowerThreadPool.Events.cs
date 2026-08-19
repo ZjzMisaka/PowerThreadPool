@@ -149,11 +149,11 @@ namespace PowerThreadPool
         {
             if (status == Status.Failed)
             {
-                _failedWorkSet.Add(work.RealWorkID);
+                _failedWorkSet.Add(work.ID);
             }
             else if (status == Status.Canceled)
             {
-                _canceledWorkSet.Add(work.RealWorkID);
+                _canceledWorkSet.Add(work.ID);
             }
 
             if (CallbackEnd != null)
@@ -163,7 +163,7 @@ namespace PowerThreadPool
 
             // If the result needs to be stored, there is a possibility of fetching the result through Group.
             // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-            if ((work.Group == null || !work.ShouldStoreResult) && work.BaseAsyncWorkID == null)
+            if ((work.Group == null || !work.ShouldStoreResult) && work.ID == null)
             {
                 _aliveWorkDic.TryRemove(work.ID, out _);
                 if (work.WaitSignal != null)
@@ -176,7 +176,7 @@ namespace PowerThreadPool
             {
                 if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<WorkID> idSet))
                 {
-                    idSet.Remove(work.RealWorkID);
+                    idSet.Remove(work.ID);
                 }
             }
         }
