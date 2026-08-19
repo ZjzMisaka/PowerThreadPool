@@ -32,5 +32,12 @@ namespace PowerThreadPool.Works
         {
             _function = _baseFunction;
         }
+
+        internal override void SetAction(Action newAction) => throw new NotImplementedException();
+
+        internal override void SetFunction<TRes>(Func<TRes> newFunction)
+        {
+            _function = newFunction as Func<TResult>;
+        }
     }
 }

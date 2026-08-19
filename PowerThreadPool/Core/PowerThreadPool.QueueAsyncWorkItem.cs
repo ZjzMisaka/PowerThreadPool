@@ -1495,7 +1495,7 @@ namespace PowerThreadPool
 
             PrepareAsyncWork(option);
 
-            WorkBase workBase = new WorkFunc<TResult>();
+            WorkFunc<TResult> workBase = new WorkFunc<TResult>();
             WorkID id = QueueAsyncWorkItemInner<TResult>(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
@@ -1531,7 +1531,7 @@ namespace PowerThreadPool
 
             CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token);
 
-            WorkBase workBase = new WorkFunc<TResult>();
+            WorkFunc<TResult> workBase = new WorkFunc<TResult>();
             WorkID id = QueueAsyncWorkItemInner<TResult>(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;

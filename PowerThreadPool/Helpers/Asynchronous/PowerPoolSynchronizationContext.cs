@@ -28,33 +28,28 @@ namespace PowerThreadPool.Helpers.Asynchronous
 
         public override void Post(SendOrPostCallback d, object state)
         {
-            if (_powerPool._asyncWorkIDDict.TryGetValue(_asyncWorkInfo.BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet))
+            _workBase.SetAction(() =>
             {
-                _asyncWorkInfo.AsyncWorkID = _powerPool.CreateID();
-                idSet.Add(_asyncWorkInfo.AsyncWorkID);
-
-                _powerPool.QueueAsyncWorkItemInner(() =>
+                SetSynchronizationContext(this);
+                if (_workBase.AutoCheckStopOnAsyncTask)
                 {
-                    SetSynchronizationContext(this);
-                    if (_workOption.AutoCheckStopOnAsyncTask)
+                    _powerPool.StopIfRequested(() =>
                     {
-                        _powerPool.StopIfRequested(() =>
-                        {
-                            _asyncWorkInfo.AllowEventsAndCallback = true;
-                        });
-                    }
-                    d(state);
-                    if (_originalTask.IsFaulted)
-                    {
-                        throw _originalTask.Exception.InnerException;
-                    }
-                    if (_originalTask.IsCompleted &&
-                    Interlocked.Exchange(ref _done, 1) == 0)
-                    {
-                        _asyncWorkInfo.AllowEventsAndCallback = true;
-                    }
-                }, _workOption, _asyncWorkInfo, _cts);
-            }
+                        _workBase.AllowEventsAndCallback = true;
+                    });
+                }
+                d(state);
+                if (_originalTask.IsFaulted)
+                {
+                    throw _originalTask.Exception.InnerException;
+                }
+                if (_originalTask.IsCompleted &&
+                Interlocked.Exchange(ref _done, 1) == 0)
+                {
+                    _workBase.AllowEventsAndCallback = true;
+                }
+            });
+            _powerPool.SetWork(_workBase);
         }
     }
 }
