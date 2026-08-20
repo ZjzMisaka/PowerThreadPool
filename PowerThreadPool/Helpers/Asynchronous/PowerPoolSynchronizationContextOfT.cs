@@ -28,6 +28,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
 
         public override void Post(SendOrPostCallback d, object state)
         {
+            _work._canCancel.TrySet(Constants.CanCancel.Allowed, Constants.CanCancel.NotAllowed);
             _work.SetFunction(() =>
             {
                 SetSynchronizationContext(this);
@@ -51,6 +52,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
                 }
                 return res;
             });
+            Interlocked.Increment(ref _powerPool._waitingWorkCount);
             _powerPool.SetWork(_work);
         }
     }

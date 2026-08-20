@@ -49,7 +49,12 @@ namespace PowerThreadPool.Works
         internal override bool AutoCheckStopOnAsyncTask => WorkOption.AutoCheckStopOnAsyncTask;
         internal override WorkPlacementPolicy WorkPlacementPolicy => WorkOption.WorkPlacementPolicy;
         internal override ConcurrentSet<WorkID> Dependents => WorkOption.Dependents;
-        internal override bool AllowEventsAndCallback { get; set; }
+        internal bool _allowEventsAndCallback;
+        internal override bool AllowEventsAndCallback
+        {
+            get => TaskCompletionSource == null ? true : _allowEventsAndCallback;
+            set => _allowEventsAndCallback = value;
+        }
 
         internal Work()
         {
@@ -140,6 +145,12 @@ namespace PowerThreadPool.Works
 
                 if (res)
                 {
+                    if (TaskCompletionSource != null)
+                    {
+                        Interlocked.Decrement(ref PowerPool._asyncWorkCount);
+                        TaskCompletionSource.SetCanceled();
+                    }
+
                     ExecuteResultBase executeResult = SetExecuteResult(null, null, Status.Canceled);
                     executeResult.ID = ID;
                     executeResult.StartDateTime = StartDateTime;

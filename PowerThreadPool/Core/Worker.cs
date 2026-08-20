@@ -202,11 +202,14 @@ namespace PowerThreadPool
             bool isRetry = false;
             do
             {
-                Work.ResetBase();
+                if (isRetry)
+                {
+                    Work.ResetBase();
+                }
                 executeResult = ExecuteMain();
                 InvokeEventsAndCallback(executeResult);
-                isRetry = true;
-            } while (Work.ShouldImmediateRetry(executeResult));
+                isRetry = Work.ShouldImmediateRetry(executeResult);
+            } while (isRetry);
 
             if (Work.ShouldRequeue(executeResult))
             {
@@ -257,7 +260,7 @@ namespace PowerThreadPool
             {
                 _powerPool.InvokeWorkEndedEvent(executeResult);
             }
-            if (Work.IsDone)
+            if (Work.AllowEventsAndCallback)
             {
                 if (Work.TaskCompletionSource != null)
                 {
@@ -293,6 +296,8 @@ namespace PowerThreadPool
                 {
                     Work.WaitSignal.Set();
                 }
+
+                Interlocked.Decrement(ref _powerPool._asyncWorkCount);
             }
         }
 
@@ -325,6 +330,7 @@ namespace PowerThreadPool
             }
             if (Work.TaskCompletionSource != null)
             {
+                Interlocked.Decrement(ref _powerPool._asyncWorkCount);
                 Work.TaskCompletionSource.SetCanceled();
             }
 

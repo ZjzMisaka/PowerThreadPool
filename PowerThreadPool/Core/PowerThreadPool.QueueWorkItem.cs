@@ -860,14 +860,32 @@ namespace PowerThreadPool
 
         private WorkBase GetWork<TResult>(WorkID workID, Action action, Func<TResult> function, WorkOption option, CancellationTokenSource cts, WorkBase workBase)
         {
+            WorkBase work = null;
             if (action != null)
             {
-                return workBase == null ? new WorkAction<TResult>(this, workID, action, option, cts) : workBase.Init(this, workID, option, cts);
+                if (workBase == null)
+                {
+                    work = new WorkAction<TResult>(this, workID, action, option, cts);
+                }
+                else
+                {
+                    work = workBase.Init(this, workID, option, cts);
+                    work.SetAction(action);
+                }
             }
             else
             {
-                return workBase == null ? new WorkFunc<TResult>(this, workID, function, option, cts) : workBase.Init(this, workID, option, cts);
+                if (workBase == null)
+                {
+                    work = new WorkFunc<TResult>(this, workID, function, option, cts);
+                }
+                else
+                {
+                    work = workBase.Init(this, workID, option, cts);
+                    work.SetFunction(function);
+                }
             }
+            return work;
         }
 
         private void SuspendOrSetWork(bool startSuspended, bool registeredDependents, WorkID workID, WorkBase work)

@@ -16,7 +16,7 @@ namespace PowerThreadPool.Works
         internal Worker Worker { get; set; }
         internal PowerPool PowerPool { get; set; }
         internal CancellationTokenSource CancellationTokenSource { get; set; }
-        internal TaskCompletionSource<ExecuteResultBase> TaskCompletionSource { get; set; }
+        internal ITaskCompletionSource TaskCompletionSource { get; set; }
         internal bool IsAlive { get; set; } = false;
         internal volatile int _executeCount;
         internal int ExecuteCount
