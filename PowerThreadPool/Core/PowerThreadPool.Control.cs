@@ -1349,11 +1349,6 @@ namespace PowerThreadPool
         {
             if (_aliveWorkDic.TryRemove(work.ID, out _))
             {
-                if (work.TaskCompletionSource != null)
-                {
-                    Interlocked.Decrement(ref _asyncWorkCount);
-                }
-
                 if (work.Group != null)
                 {
                     RemoveWorkFromGroup(work.Group, work);
