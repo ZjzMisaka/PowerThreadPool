@@ -32,6 +32,12 @@ namespace PowerThreadPool.Works
             }
             set => _executeCount = value;
         }
+        internal volatile bool _isCurrentDone;
+        internal bool IsCurrentDone
+        {
+            get => _isCurrentDone;
+            set => _isCurrentDone = value;
+        }
         internal volatile bool _isDone;
         internal bool IsDone
         {
@@ -63,8 +69,8 @@ namespace PowerThreadPool.Works
         internal long Duration { get; set; }
         internal abstract object Execute();
         internal abstract void ResetBase();
-        internal abstract void SetFunction<TResult>(Func<TResult> newFunction);
-        internal abstract void SetAction(Action newAction);
+        internal abstract void SetFunction<TResult>(Func<TResult> function, bool isFirst);
+        internal abstract void SetAction(Action action, bool isFirst);
         internal abstract WorkBase Init(PowerPool powerPool, WorkID id, WorkOption option, CancellationTokenSource cancellationTokenSource);
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Cancel(bool needFreeze);
@@ -88,6 +94,7 @@ namespace PowerThreadPool.Works
         internal abstract RetryOption RetryOption { get; }
         internal abstract bool LongRunning { get; }
         internal abstract bool ShouldStoreResult { get; }
+        internal abstract ExecuteResultBase ExecuteResultBase { get; }
         internal abstract bool AutoCheckStopOnAsyncTask { get; }
         internal abstract WorkPlacementPolicy WorkPlacementPolicy { get; }
         internal abstract ConcurrentSet<WorkID> Dependents { get; }

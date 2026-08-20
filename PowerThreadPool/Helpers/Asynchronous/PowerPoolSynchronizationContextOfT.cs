@@ -28,7 +28,14 @@ namespace PowerThreadPool.Helpers.Asynchronous
 
         public override void Post(SendOrPostCallback d, object state)
         {
+            if (_work.TaskCompletionSource.Task.IsCanceled ||
+                _work.TaskCompletionSource.Task.IsCompleted ||
+                _work.TaskCompletionSource.Task.IsFaulted)
+            {
+                return;
+            }
             _work._canCancel.TrySet(Constants.CanCancel.Allowed, Constants.CanCancel.NotAllowed);
+            _work.IsCurrentDone = false;
             _work.SetFunction(() =>
             {
                 SetSynchronizationContext(this);
@@ -51,7 +58,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
                     res = _originalTask.Result;
                 }
                 return res;
-            });
+            }, false);
             Interlocked.Increment(ref _powerPool._waitingWorkCount);
             _powerPool.SetWork(_work);
         }

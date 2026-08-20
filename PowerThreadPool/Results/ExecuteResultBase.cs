@@ -6,6 +6,7 @@ namespace PowerThreadPool.Results
 {
     public enum Status
     {
+        None,
         Succeed,
         Failed,
         Canceled,

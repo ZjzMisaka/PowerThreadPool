@@ -33,11 +33,16 @@ namespace PowerThreadPool.Works
             _function = _baseFunction;
         }
 
-        internal override void SetAction(Action newAction) => throw new NotImplementedException();
+        internal override void SetAction(Action action, bool isFirst) => throw new NotImplementedException();
 
-        internal override void SetFunction<TRes>(Func<TRes> newFunction)
+        internal override void SetFunction<TRes>(Func<TRes> function, bool isFirst)
         {
-            _function = newFunction as Func<TResult>;
+            Func<TResult> func = function as Func<TResult>;
+            if (isFirst)
+            {
+                _baseFunction = func;
+            }
+            _function = func;
         }
     }
 }

@@ -196,7 +196,10 @@ namespace PowerThreadPool
 
         internal void ExecuteWork()
         {
-            _powerPool.OnWorkStarted(Work.ID);
+            if (Work.TaskCompletionSource == null || Work.IsFirstAsyncWork)
+            {
+                _powerPool.OnWorkStarted(Work.ID);
+            }
 
             ExecuteResultBase executeResult;
             bool isRetry = false;
@@ -215,6 +218,10 @@ namespace PowerThreadPool
             {
                 WorkBase requeueWork = Work;
                 Work.ResetBase();
+                if (Work.TaskCompletionSource != null)
+                {
+                    Work.AllowEventsAndCallback = false;
+                }
                 requeueWork._canCancel.InterlockedValue = CanCancel.Allowed;
                 Interlocked.Increment(ref _powerPool._waitingWorkCount);
                 _powerPool.SetWork(requeueWork);
@@ -227,7 +234,10 @@ namespace PowerThreadPool
 
         private void SetTaskCompletionSourceAfterExecute(ExecuteResultBase executeResult)
         {
-            if (Work.TaskCompletionSource == null)
+            if (Work.TaskCompletionSource == null
+                || Work.TaskCompletionSource.Task.IsCanceled
+                || Work.TaskCompletionSource.Task.IsCompleted
+                || Work.TaskCompletionSource.Task.IsFaulted)
             {
                 return;
             }
@@ -280,6 +290,7 @@ namespace PowerThreadPool
             }
 
             // 注释: 仅同步时设为true
+            Work.IsCurrentDone = true;
             if (Work.TaskCompletionSource == null)
             {
                 Work.IsDone = true;
@@ -488,7 +499,14 @@ namespace PowerThreadPool
 
                 if (Work.AllowEventsAndCallback)
                 {
-                    executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
+                    if (Work.ExecuteResultBase != null)
+                    {
+                        executeResult = Work.ExecuteResultBase;
+                    }
+                    else
+                    {
+                        executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
+                    }
                     SetStatisticsCollection(executeResult, runDateTime);
                 }
             }

@@ -870,7 +870,7 @@ namespace PowerThreadPool
                 else
                 {
                     work = workBase.Init(this, workID, option, cts);
-                    work.SetAction(action);
+                    work.SetAction(action, true);
                 }
             }
             else
@@ -882,7 +882,7 @@ namespace PowerThreadPool
                 else
                 {
                     work = workBase.Init(this, workID, option, cts);
-                    work.SetFunction(function);
+                    work.SetFunction(function, true);
                 }
             }
             return work;

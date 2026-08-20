@@ -163,7 +163,7 @@ namespace PowerThreadPool
 
             // If the result needs to be stored, there is a possibility of fetching the result through Group.
             // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-            if ((work.Group == null || !work.ShouldStoreResult) && work.TaskCompletionSource == null)
+            if (work.Group == null || !work.ShouldStoreResult)
             {
                 _aliveWorkDic.TryRemove(work.ID, out _);
                 if (work.WaitSignal != null)

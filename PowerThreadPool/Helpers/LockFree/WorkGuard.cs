@@ -44,9 +44,9 @@ namespace PowerThreadPool.Helpers.LockFree
                 // (temporarily keeping the Worker bound to this task).
                 // Perform another check to see if the current Worker in _work matches the previously retrieved Worker. 
                 // If they are different, it means the Freeze operation has failed and a retry is needed.
-                Spinner.Start(() => (_worker = _work.Worker) != null || _work.IsDone);
+                Spinner.Start(() => (_worker = _work.Worker) != null || _work.IsCurrentDone);
 
-                if (!_work.IsDone)
+                if (!_work.IsCurrentDone)
                 {
                     // Prevent the target work from being stolen by other workers using the work-stealing algorithm when it is stopped or canceled
                     Spinner.Start(() => _worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed));
