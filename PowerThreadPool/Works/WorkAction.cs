@@ -9,6 +9,10 @@ namespace PowerThreadPool.Works
         private Action _baseAction;
         private Action _action;
 
+        internal WorkAction()
+        {
+        }
+
         internal WorkAction(PowerPool powerPool, WorkID id, Action action, WorkOption option, CancellationTokenSource cts) : base(powerPool, id, option, cts)
         {
             _baseAction = action;

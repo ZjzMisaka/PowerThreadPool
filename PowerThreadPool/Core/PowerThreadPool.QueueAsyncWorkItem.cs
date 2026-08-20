@@ -936,7 +936,7 @@ namespace PowerThreadPool
 
             PrepareAsyncWork(option);
 
-            WorkBase workBase = new WorkFunc<object>();
+            WorkBase workBase = new WorkAction<object>();
             workBase.TaskCompletionSource = taskCompletionSource;
             WorkID id = QueueAsyncWorkItemInner(() =>
             {
@@ -970,7 +970,7 @@ namespace PowerThreadPool
 
             CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token);
 
-            WorkBase workBase = new WorkFunc<object>();
+            WorkBase workBase = new WorkAction<object>();
             workBase.TaskCompletionSource = taskCompletionSource;
             WorkID id = QueueAsyncWorkItemInner(() =>
             {
