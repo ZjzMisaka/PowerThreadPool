@@ -390,7 +390,7 @@ namespace PowerThreadPool.Works
         {
             Status = status;
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
-            executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, ExecuteCount);
+            executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, _retryCount);
             ExecuteResult = executeResult;
             if (WorkOption.ShouldStoreResult)
             {
@@ -405,7 +405,7 @@ namespace PowerThreadPool.Works
             {
                 return false;
             }
-            else if (WorkOption.RetryOption != null && Status == Status.Failed && ((WorkOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < WorkOption.RetryOption.MaxRetryCount) || WorkOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
+            else if (WorkOption.RetryOption != null && Status == Status.Failed && ((WorkOption.RetryOption.RetryPolicy == RetryPolicy.Limited && _retryCount < WorkOption.RetryOption.MaxRetryCount) || WorkOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
             {
                 return true;
             }

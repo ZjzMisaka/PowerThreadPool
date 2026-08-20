@@ -208,6 +208,7 @@ namespace PowerThreadPool
                 if (isRetry)
                 {
                     Work.ResetBase();
+                    ++Work._retryCount;
                 }
                 executeResult = ExecuteMain();
                 InvokeEventsAndCallback(executeResult);
@@ -218,16 +219,21 @@ namespace PowerThreadPool
             {
                 WorkBase requeueWork = Work;
                 Work.ResetBase();
+                ++Work._retryCount;
                 if (Work.TaskCompletionSource != null)
                 {
                     Work.AllowEventsAndCallback = false;
+                    // 注释: 标志设定放在SetWork里
+                    Work._canSetTaskCompletionSource.InterlockedValue = CanSetTaskCompletionSource.Allowed;
                 }
+                // 注释: 标志设定放在SetWork里
                 requeueWork._canCancel.InterlockedValue = CanCancel.Allowed;
                 Interlocked.Increment(ref _powerPool._waitingWorkCount);
                 _powerPool.SetWork(requeueWork);
             }
             else
             {
+                SetTaskCompletionSourceAfterExecute(executeResult);
                 CleanUpAndSetSignalAfterExecute(executeResult);
             }
         }
@@ -235,9 +241,8 @@ namespace PowerThreadPool
         private void SetTaskCompletionSourceAfterExecute(ExecuteResultBase executeResult)
         {
             if (Work.TaskCompletionSource == null
-                || Work.TaskCompletionSource.Task.IsCanceled
-                || Work.TaskCompletionSource.Task.IsCompleted
-                || Work.TaskCompletionSource.Task.IsFaulted)
+                || executeResult == null
+                || !Work._canSetTaskCompletionSource.TrySet(CanSetTaskCompletionSource.NotAllowed, CanSetTaskCompletionSource.Allowed))
             {
                 return;
             }
@@ -272,10 +277,6 @@ namespace PowerThreadPool
             }
             if (Work.AllowEventsAndCallback)
             {
-                if (Work.TaskCompletionSource != null)
-                {
-                    SetTaskCompletionSourceAfterExecute(executeResult);
-                }
                 Work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
             }
         }
@@ -291,11 +292,12 @@ namespace PowerThreadPool
 
             // 注释: 仅同步时设为true
             Work.IsCurrentDone = true;
+            // 注释: 这段不必要
             if (Work.TaskCompletionSource == null)
             {
                 Work.IsDone = true;
             }
-
+            // 注释: Work.WaitSignal.Set();可以与上面合并
             if (Work.WaitSignal != null && Work.TaskCompletionSource == null)
             {
                 Work.WaitSignal.Set();

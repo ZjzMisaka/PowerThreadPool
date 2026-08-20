@@ -14,7 +14,7 @@ namespace PowerThreadPool.Results
         {
         }
 
-        internal override void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime, RetryOption retryOption, int executeCount)
+        internal override void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime, RetryOption retryOption, int retryCount)
         {
             if (result != null)
             {
@@ -29,7 +29,7 @@ namespace PowerThreadPool.Results
             {
                 RetryInfo = new RetryInfo()
                 {
-                    CurrentRetryCount = executeCount - 1,
+                    CurrentRetryCount = retryCount,
                     MaxRetryCount = retryOption.MaxRetryCount,
                     RetryPolicy = retryOption.RetryPolicy,
                     StopRetry = false

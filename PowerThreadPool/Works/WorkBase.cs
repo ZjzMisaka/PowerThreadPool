@@ -16,8 +16,10 @@ namespace PowerThreadPool.Works
         internal Worker Worker { get; set; }
         internal PowerPool PowerPool { get; set; }
         internal CancellationTokenSource CancellationTokenSource { get; set; }
+        internal InterlockedFlag<CanSetTaskCompletionSource> _canSetTaskCompletionSource = CanSetTaskCompletionSource.Allowed;
         internal ITaskCompletionSource TaskCompletionSource { get; set; }
         internal bool IsAlive { get; set; } = false;
+        internal volatile int _retryCount;
         internal volatile int _executeCount;
         internal int ExecuteCount
         {

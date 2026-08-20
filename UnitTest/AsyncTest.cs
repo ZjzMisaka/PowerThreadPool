@@ -1674,7 +1674,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal(3, runCount);
+            Assert.Equal(1, runCount);
         }
 
         [Fact]

@@ -28,9 +28,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
 
         public override void Post(SendOrPostCallback d, object state)
         {
-            if (_workBase.TaskCompletionSource.Task.IsCanceled ||
-                _workBase.TaskCompletionSource.Task.IsCompleted ||
-                _workBase.TaskCompletionSource.Task.IsFaulted)
+            if (_workBase.ExecuteResultBase != null)
             {
                 return;
             }
