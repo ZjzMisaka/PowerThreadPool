@@ -205,10 +205,19 @@ namespace PowerThreadPool
             bool isRetry = false;
             do
             {
+                // 注释: 提共通
                 if (isRetry)
                 {
                     Work.ResetBase();
                     ++Work._retryCount;
+                    if (Work.TaskCompletionSource != null)
+                    {
+                        Work.Status = default;
+                        Work.AllowEventsAndCallback = false;
+                        // 注释: 标志设定放在SetWork里
+                        Work._canSetTaskCompletionSource.InterlockedValue = CanSetTaskCompletionSource.Allowed;
+                    }
+                    Work._canCancel.InterlockedValue = CanCancel.Allowed;
                 }
                 executeResult = ExecuteMain();
                 InvokeEventsAndCallback(executeResult);
@@ -217,7 +226,6 @@ namespace PowerThreadPool
 
             if (Work.ShouldRequeue(executeResult))
             {
-                WorkBase requeueWork = Work;
                 Work.ResetBase();
                 ++Work._retryCount;
                 if (Work.TaskCompletionSource != null)
@@ -228,9 +236,9 @@ namespace PowerThreadPool
                     Work._canSetTaskCompletionSource.InterlockedValue = CanSetTaskCompletionSource.Allowed;
                 }
                 // 注释: 标志设定放在SetWork里
-                requeueWork._canCancel.InterlockedValue = CanCancel.Allowed;
+                Work._canCancel.InterlockedValue = CanCancel.Allowed;
                 Interlocked.Increment(ref _powerPool._waitingWorkCount);
-                _powerPool.SetWork(requeueWork);
+                _powerPool.SetWork(Work);
             }
             else
             {
@@ -529,7 +537,7 @@ namespace PowerThreadPool
                 Work.AllowEventsAndCallback = true;
 
                 executeResult = Work.SetExecuteResult(null, ex, Status.Stopped);
-                SetStatisticsCollection(executeResult, runDateTime);
+                SetStatisticsCollection(executeResult, Work.StartDateTime);
             }
             catch (Exception ex)
             {

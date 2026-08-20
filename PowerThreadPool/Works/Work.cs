@@ -144,7 +144,7 @@ namespace PowerThreadPool.Works
             {
                 res = _canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed);
 
-                if (res)
+                if (res && Worker != null)
                 {
                     if (TaskCompletionSource != null)
                     {
@@ -173,6 +173,10 @@ namespace PowerThreadPool.Works
                         // after reducing the count of _powerPool.PowerPoolOption.
                         PowerPool.CheckPoolIdle();
                     }
+                }
+                else if (res)
+                {
+                    _canCancel.InterlockedValue = CanCancel.Allowed;
                 }
             }
 
