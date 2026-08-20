@@ -222,6 +222,7 @@ namespace PowerThreadPool
                 ++Work._retryCount;
                 if (Work.TaskCompletionSource != null)
                 {
+                    Work.Status = default;
                     Work.AllowEventsAndCallback = false;
                     // 注释: 标志设定放在SetWork里
                     Work._canSetTaskCompletionSource.InterlockedValue = CanSetTaskCompletionSource.Allowed;
