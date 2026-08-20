@@ -489,12 +489,12 @@ namespace PowerThreadPool
                 if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
                 {
                     runDateTime = DateTime.UtcNow;
-                    Work.StartDateTime = runDateTime;
                     if (Work.TaskCompletionSource == null || Work.IsFirstAsyncWork)
                     {
+                        Work.StartDateTime = runDateTime;
                         Interlocked.Increment(ref _powerPool._startCount);
+                        Interlocked.Add(ref _powerPool._queueTime, (long)(runDateTime - Work.QueueDateTime).TotalMilliseconds);
                     }
-                    Interlocked.Add(ref _powerPool._queueTime, (long)(runDateTime - Work.QueueDateTime).TotalMilliseconds);
                 }
                 object result = Work.Execute();
 
@@ -510,7 +510,7 @@ namespace PowerThreadPool
                     {
                         executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
                     }
-                    SetStatisticsCollection(executeResult, runDateTime);
+                    SetStatisticsCollection(executeResult, Work.StartDateTime);
                 }
             }
             catch (ThreadInterruptedException ex)

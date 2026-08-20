@@ -444,7 +444,7 @@ namespace PowerThreadPool
                 }
             }
 
-            if (PowerPoolOption.EnableStatisticsCollection)
+            if ((work.TaskCompletionSource == null || work.IsFirstAsyncWork) && PowerPoolOption.EnableStatisticsCollection)
             {
                 work.QueueDateTime = DateTime.UtcNow;
             }

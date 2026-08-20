@@ -1306,7 +1306,7 @@ namespace PowerThreadPool
             else if (_aliveWorkDic.TryGetValue(id, out work))
             {
                 res = work.Cancel(true);
-                isQueuedAndDidNotDecreasedCountInside = true;
+                isQueuedAndDidNotDecreasedCountInside = false;
                 if (res && _aliveWorkDic.TryRemove(id, out _))
                 {
                     work.Dispose();
