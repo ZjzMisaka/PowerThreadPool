@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 #if NET5_0_OR_GREATER
 using System.Runtime.CompilerServices;
 #endif
@@ -35,7 +36,9 @@ namespace PowerThreadPool.Works
             _function = _baseFunction;
         }
 
-        internal override void SetAction(Action action, bool isFirst) => throw new NotImplementedException();
+        [ExcludeFromCodeCoverage]
+        internal override void SetAction(Action action, bool isFirst)
+            => throw new NotImplementedException();
 
         internal override void SetFunction<TRes>(Func<TRes> function, bool isFirst)
         {
