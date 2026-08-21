@@ -1,4 +1,7 @@
 ﻿using System;
+#if NET5_0_OR_GREATER
+using System.Runtime.CompilerServices;
+#endif
 using System.Threading;
 using PowerThreadPool.Options;
 
@@ -36,7 +39,11 @@ namespace PowerThreadPool.Works
 
         internal override void SetFunction<TRes>(Func<TRes> function, bool isFirst)
         {
+#if NET5_0_OR_GREATER
+            Func<TResult> func = Unsafe.As<Func<TRes>, Func<TResult>>(ref function);
+#else
             Func<TResult> func = function as Func<TResult>;
+#endif
             if (isFirst)
             {
                 _baseFunction = func;
