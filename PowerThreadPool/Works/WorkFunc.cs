@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using PowerThreadPool.Options;
-using static System.Collections.Specialized.BitVector32;
 
 namespace PowerThreadPool.Works
 {

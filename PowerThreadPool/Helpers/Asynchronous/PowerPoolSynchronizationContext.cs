@@ -1,7 +1,5 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using PowerThreadPool.Collections;
-using PowerThreadPool.Options;
 using PowerThreadPool.Works;
 
 namespace PowerThreadPool.Helpers.Asynchronous
