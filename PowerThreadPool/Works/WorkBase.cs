@@ -100,10 +100,6 @@ namespace PowerThreadPool.Works
         internal abstract bool AutoCheckStopOnAsyncTask { get; }
         internal abstract WorkPlacementPolicy WorkPlacementPolicy { get; }
         internal abstract ConcurrentSet<WorkID> Dependents { get; }
-
-        /// <summary>
-        /// 注释: 异步下表示任务是否完成的标志
-        /// </summary>
         internal abstract bool AllowEventsAndCallback { get; set; }
 
         internal abstract bool IsFirstAsyncWork { get; }
