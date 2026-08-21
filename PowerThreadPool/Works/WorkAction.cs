@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using PowerThreadPool.Options;
 
@@ -42,6 +43,8 @@ namespace PowerThreadPool.Works
             _action = action;
         }
 
-        internal override void SetFunction<TResult>(Func<TResult> function, bool isFirst) => throw new NotImplementedException();
+        [ExcludeFromCodeCoverage]
+        internal override void SetFunction<TResult>(Func<TResult> function, bool isFirst)
+            => throw new NotImplementedException();
     }
 }
