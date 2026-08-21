@@ -824,7 +824,7 @@ namespace PowerThreadPool
             CheckDisposed();
             CheckPowerPoolOption();
 
-            WorkID workID = GetWorkID(option);
+            WorkID workID = CreateID(option);
             WorkBase work = GetWork(workID, action, function, option, cts, workBase);
 
             bool registeredDependents = _workDependencyController.Register(work, option.Dependents, out bool workNotSuccessfullyCompleted);
@@ -854,9 +854,6 @@ namespace PowerThreadPool
 
             return workID;
         }
-
-        private WorkID GetWorkID(WorkOption option)
-            => CreateID(option);
 
         private WorkBase GetWork<TResult>(WorkID workID, Action action, Func<TResult> function, WorkOption option, CancellationTokenSource cts, WorkBase workBase)
         {
@@ -904,11 +901,11 @@ namespace PowerThreadPool
             }
         }
 
-        internal WorkID CreateID(WorkOption option = null)
+        private WorkID CreateID(WorkOption option)
         {
             WorkID workID;
 
-            if (option != null && option.CustomWorkID != null)
+            if (option.CustomWorkID != null)
             {
                 if (_suspendedWork.ContainsKey(WorkID.FromString(option.CustomWorkID)) || _aliveWorkDic.ContainsKey(WorkID.FromString(option.CustomWorkID)))
                 {
