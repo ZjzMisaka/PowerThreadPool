@@ -143,8 +143,7 @@ namespace PowerThreadPool.Works
             using (new WorkGuard(this, needFreeze))
             {
                 res = _canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed);
-
-                if (res && Worker != null)
+                if (res)
                 {
                     if (TaskCompletionSource != null)
                     {
@@ -173,10 +172,6 @@ namespace PowerThreadPool.Works
                         // after reducing the count of _powerPool.PowerPoolOption.
                         PowerPool.CheckPoolIdle();
                     }
-                }
-                else if (res)
-                {
-                    _canCancel.InterlockedValue = CanCancel.Allowed;
                 }
             }
 

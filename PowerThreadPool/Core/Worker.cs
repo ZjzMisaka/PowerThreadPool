@@ -284,7 +284,9 @@ namespace PowerThreadPool
 
         private void CleanUpAndSetSignalAfterExecute(ExecuteResultBase executeResult)
         {
-            if (Work.AllowEventsAndCallback)
+            bool finalizeWork = false;
+            if (Work.AllowEventsAndCallback
+                && (finalizeWork = Work._canFinalizeWork.TrySet(CanFinalizeWork.NotAllowed, CanFinalizeWork.Allowed) == true))
             {
                 _powerPool.WorkCallbackEnd(Work, executeResult.Status);
                 Work.IsDone = true;
@@ -297,7 +299,8 @@ namespace PowerThreadPool
                 Work.WaitSignal.Set();
             }
 
-            if (Work.AllowEventsAndCallback && Work.TaskCompletionSource != null)
+            if (Work.AllowEventsAndCallback && Work.TaskCompletionSource != null
+                && finalizeWork)
             {
                 if (Work.WaitSignal != null)
                 {
