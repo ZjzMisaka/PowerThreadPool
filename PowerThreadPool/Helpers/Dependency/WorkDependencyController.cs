@@ -118,7 +118,7 @@ namespace PowerThreadPool.Helpers.Dependency
 
             _powerPool._resultDic[work.ID] = executeResult;
 
-            _powerPool.InvokeWorkEndedEvent(executeResult, work.BaseAsyncWorkID != null);
+            _powerPool.InvokeWorkEndedEvent(executeResult);
 
             work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
 
@@ -216,7 +216,7 @@ namespace PowerThreadPool.Helpers.Dependency
 
         private void OnCallbackEnd(WorkBase endWork, Status status)
         {
-            WorkID id = endWork.RealWorkID;
+            WorkID id = endWork.ID;
 
             if (status == Status.Failed || status == Status.Canceled)
             {
@@ -253,7 +253,7 @@ namespace PowerThreadPool.Helpers.Dependency
             _workChildrenDict.TryRemove(id, out _);
             foreach (var failedWork in newlyFailed)
             {
-                _workChildrenDict.TryRemove(failedWork.RealWorkID, out _);
+                _workChildrenDict.TryRemove(failedWork.ID, out _);
             }
 
             _powerPool.CheckPoolIdle();
@@ -278,7 +278,7 @@ namespace PowerThreadPool.Helpers.Dependency
 
                 _powerPool._resultDic[work.ID] = executeResult;
 
-                _powerPool.InvokeWorkEndedEvent(executeResult, work.BaseAsyncWorkID != null);
+                _powerPool.InvokeWorkEndedEvent(executeResult);
                 work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
                 _powerPool.WorkCallbackEnd(work, Status.Failed);
             }
@@ -300,9 +300,9 @@ namespace PowerThreadPool.Helpers.Dependency
                             Interlocked.Decrement(ref _powerPool._waitingWorkCount);
                             newlyFailed.Add(work);
 
-                            if (visited.Add(work.RealWorkID))
+                            if (visited.Add(work.ID))
                             {
-                                stack.Push(work.RealWorkID);
+                                stack.Push(work.ID);
                             }
                         }
                     }

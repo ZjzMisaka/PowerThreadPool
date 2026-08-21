@@ -523,8 +523,19 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1 });
             WorkID stoppedID = default;
             WorkID nsID = default;
+            int stopCount = 0;
             powerPool.WorkStopped += (s, e) =>
             {
+                ++stopCount;
+                if (nsID == e.ID)
+                {
+                    return;
+                }
+                stoppedID = e.ID;
+            };
+            powerPool.WorkCanceled += (s, e) =>
+            {
+                ++stopCount;
                 if (nsID == e.ID)
                 {
                     return;
@@ -566,6 +577,10 @@ namespace UnitTest
             Thread.Sleep(10);
             powerPool.Stop(nsID);
             powerPool.Wait();
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+            Assert.Equal(0, powerPool.AsyncWorkCount);
+            // Assert.Equal(2, stopCount);
             Assert.Equal(id, stoppedID);
         }
 

@@ -6,12 +6,20 @@ namespace PowerThreadPool.Works
 {
     internal class WorkAction<TUseless> : Work<TUseless>
     {
+        private Action _baseAction;
         private Action _action;
 
-        internal WorkAction(PowerPool powerPool, WorkID id, Action action, WorkOption option, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cts) : base(powerPool, id, option, asyncWorkInfo, cts)
+        internal WorkAction()
         {
+        }
+
+        internal WorkAction(PowerPool powerPool, WorkID id, Action action, WorkOption option, CancellationTokenSource cts) : base(powerPool, id, option, cts)
+        {
+            _baseAction = action;
             _action = action;
         }
+
+        internal override bool IsFirstAsyncWork => _baseAction == _action;
 
         internal override object Execute()
         {
@@ -19,5 +27,21 @@ namespace PowerThreadPool.Works
             _action();
             return null;
         }
+
+        internal override void ResetBase()
+        {
+            _action = _baseAction;
+        }
+
+        internal override void SetAction(Action action, bool isFirst)
+        {
+            if (isFirst)
+            {
+                _baseAction = action;
+            }
+            _action = action;
+        }
+
+        internal override void SetFunction<TResult>(Func<TResult> function, bool isFirst) => throw new NotImplementedException();
     }
 }

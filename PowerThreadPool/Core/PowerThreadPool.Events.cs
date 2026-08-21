@@ -29,7 +29,7 @@ namespace PowerThreadPool
         /// Invoke work end event
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult, bool isAsync)
+        internal void InvokeWorkEndedEvent(ExecuteResultBase executeResult)
         {
             if (PowerPoolOption.EnableStatisticsCollection)
             {
@@ -52,12 +52,6 @@ namespace PowerThreadPool
                     RetryInfo = executeResult.RetryInfo,
                 };
 
-                if (isAsync && PowerPoolOption.EnableStatisticsCollection && _aliveWorkDic.TryGetValue(executeResult.ID, out WorkBase work))
-                {
-                    e.QueueDateTime = work.QueueDateTime;
-                    e.StartDateTime = work.StartDateTime;
-                }
-
                 if (executeResult.RetryInfo != null)
                 {
                     executeResult.RetryInfo.StopRetry = e.RetryInfo.StopRetry;
@@ -71,7 +65,7 @@ namespace PowerThreadPool
         /// Invoke work stopped event
         /// </summary>
         /// <param name="executeResult"></param>
-        internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult, bool isAsync)
+        internal void InvokeWorkStoppedEvent(ExecuteResultBase executeResult)
         {
             if (PowerPoolOption.EnableStatisticsCollection)
             {
@@ -90,12 +84,6 @@ namespace PowerThreadPool
                     EndDateTime = executeResult.UtcEndDateTime,
                     Duration = executeResult.Duration,
                 };
-
-                if (isAsync && PowerPoolOption.EnableStatisticsCollection && _aliveWorkDic.TryGetValue(executeResult.ID, out WorkBase work))
-                {
-                    e.QueueDateTime = work.QueueDateTime;
-                    e.StartDateTime = work.StartDateTime;
-                }
 
                 SafeInvoke(WorkStopped, e, ErrorFrom.WorkStopped, executeResult);
             }
@@ -161,11 +149,11 @@ namespace PowerThreadPool
         {
             if (status == Status.Failed)
             {
-                _failedWorkSet.Add(work.RealWorkID);
+                _failedWorkSet.Add(work.ID);
             }
             else if (status == Status.Canceled)
             {
-                _canceledWorkSet.Add(work.RealWorkID);
+                _canceledWorkSet.Add(work.ID);
             }
 
             if (CallbackEnd != null)
@@ -175,7 +163,7 @@ namespace PowerThreadPool
 
             // If the result needs to be stored, there is a possibility of fetching the result through Group.
             // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-            if ((work.Group == null || !work.ShouldStoreResult) && work.BaseAsyncWorkID == null)
+            if (work.Group == null || !work.ShouldStoreResult)
             {
                 _aliveWorkDic.TryRemove(work.ID, out _);
                 if (work.WaitSignal != null)
@@ -188,7 +176,7 @@ namespace PowerThreadPool
             {
                 if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<WorkID> idSet))
                 {
-                    idSet.Remove(work.RealWorkID);
+                    idSet.Remove(work.ID);
                 }
             }
         }

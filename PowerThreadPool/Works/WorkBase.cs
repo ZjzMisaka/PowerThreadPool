@@ -15,16 +15,18 @@ namespace PowerThreadPool.Works
     {
         internal Worker Worker { get; set; }
         internal PowerPool PowerPool { get; set; }
-        internal AsyncWorkInfo AsyncWorkInfo { get; set; }
         internal CancellationTokenSource CancellationTokenSource { get; set; }
+        internal InterlockedFlag<CanSetTaskCompletionSource> _canSetTaskCompletionSource = CanSetTaskCompletionSource.Allowed;
+        internal ITaskCompletionSource TaskCompletionSource { get; set; }
         internal bool IsAlive { get; set; } = false;
+        internal volatile int _retryCount;
         internal volatile int _executeCount;
         internal int ExecuteCount
         {
             get
             {
                 int count = _executeCount;
-                if (BaseAsyncWorkID != null && BaseAsyncWorkID != AsyncWorkID && PowerPool._aliveWorkDic.TryGetValue(BaseAsyncWorkID, out WorkBase asyncBaseWork))
+                if (PowerPool._aliveWorkDic.TryGetValue(ID, out WorkBase asyncBaseWork))
                 {
                     count = asyncBaseWork._executeCount;
                 }
@@ -32,31 +34,19 @@ namespace PowerThreadPool.Works
             }
             set => _executeCount = value;
         }
+        internal volatile bool _isCurrentDone;
+        internal bool IsCurrentDone
+        {
+            get => _isCurrentDone;
+            set => _isCurrentDone = value;
+        }
         internal volatile bool _isDone;
         internal bool IsDone
         {
             get => _isDone;
             set => _isDone = value;
         }
-        internal volatile bool _asyncDone;
-        internal bool AsyncDone
-        {
-            get
-            {
-                return AsyncWorkInfo.AsyncDone;
-            }
-            set
-            {
-                if (AsyncWorkInfo == null)
-                {
-                    return;
-                }
-                AsyncWorkInfo.AsyncDone = value;
-            }
-        }
         internal volatile bool _isPausing;
-        internal bool SyncOrAsyncWorkDone
-            => IsDone && (BaseAsyncWorkID == null || AsyncDone);
         internal bool IsPausing
         {
             get => _isPausing;
@@ -80,6 +70,10 @@ namespace PowerThreadPool.Works
         internal DateTime StartDateTime { get; set; }
         internal long Duration { get; set; }
         internal abstract object Execute();
+        internal abstract void ResetBase();
+        internal abstract void SetFunction<TResult>(Func<TResult> function, bool isFirst);
+        internal abstract void SetAction(Action action, bool isFirst);
+        internal abstract WorkBase Init(PowerPool powerPool, WorkID id, WorkOption option, CancellationTokenSource cancellationTokenSource);
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Cancel(bool needFreeze);
         internal abstract bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false);
@@ -102,11 +96,12 @@ namespace PowerThreadPool.Works
         internal abstract RetryOption RetryOption { get; }
         internal abstract bool LongRunning { get; }
         internal abstract bool ShouldStoreResult { get; }
+        internal abstract ExecuteResultBase ExecuteResultBase { get; }
+        internal abstract bool AutoCheckStopOnAsyncTask { get; }
         internal abstract WorkPlacementPolicy WorkPlacementPolicy { get; }
         internal abstract ConcurrentSet<WorkID> Dependents { get; }
         internal abstract bool AllowEventsAndCallback { get; set; }
-        internal abstract WorkID AsyncWorkID { get; }
-        internal abstract WorkID BaseAsyncWorkID { get; }
-        internal abstract WorkID RealWorkID { get; }
+
+        internal abstract bool IsFirstAsyncWork { get; }
     }
 }

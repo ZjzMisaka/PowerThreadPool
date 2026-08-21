@@ -46,26 +46,27 @@ namespace PowerThreadPool.Works
         internal override RetryOption RetryOption => WorkOption.RetryOption;
         internal override bool LongRunning => WorkOption.LongRunning;
         internal override bool ShouldStoreResult => WorkOption.ShouldStoreResult;
+        internal override ExecuteResultBase ExecuteResultBase => ExecuteResult;
+        internal override bool AutoCheckStopOnAsyncTask => WorkOption.AutoCheckStopOnAsyncTask;
         internal override WorkPlacementPolicy WorkPlacementPolicy => WorkOption.WorkPlacementPolicy;
         internal override ConcurrentSet<WorkID> Dependents => WorkOption.Dependents;
+        internal bool _allowEventsAndCallback;
         internal override bool AllowEventsAndCallback
         {
-            get => AsyncWorkInfo != null ?
-                (AsyncWorkInfo.AllowEventsAndCallback && ID == AsyncWorkInfo.AsyncWorkID) : true;
-            set
-            {
-                if (AsyncWorkInfo == null)
-                {
-                    return;
-                }
-                AsyncWorkInfo.AllowEventsAndCallback = value;
-            }
+            get => TaskCompletionSource == null ? true : _allowEventsAndCallback;
+            set => _allowEventsAndCallback = value;
         }
-        internal override WorkID AsyncWorkID => AsyncWorkInfo?.AsyncWorkID;
-        internal override WorkID BaseAsyncWorkID => AsyncWorkInfo?.BaseAsyncWorkID;
-        internal override WorkID RealWorkID => AsyncWorkInfo?.BaseAsyncWorkID == null ? ID : AsyncWorkInfo.BaseAsyncWorkID;
 
-        internal Work(PowerPool powerPool, WorkID id, WorkOption option, AsyncWorkInfo asyncWorkInfo, CancellationTokenSource cancellationTokenSource)
+        internal Work()
+        {
+        }
+
+        internal Work(PowerPool powerPool, WorkID id, WorkOption option, CancellationTokenSource cancellationTokenSource)
+        {
+            Init(powerPool, id, option, cancellationTokenSource);
+        }
+
+        internal override WorkBase Init(PowerPool powerPool, WorkID id, WorkOption option, CancellationTokenSource cancellationTokenSource)
         {
             if (option is WorkOption<TResult> wor)
             {
@@ -78,10 +79,10 @@ namespace PowerThreadPool.Works
             PowerPool = powerPool;
             ID = id;
             ExecuteCount = 0;
-            AsyncWorkInfo = asyncWorkInfo;
             ShouldStop = false;
             IsPausing = false;
             CancellationTokenSource = cancellationTokenSource;
+            return this;
         }
 
         private void EnsureWaitSignalExists()
@@ -137,27 +138,18 @@ namespace PowerThreadPool.Works
                 return false;
             }
 
-            if (BaseAsyncWorkID != null && BaseAsyncWorkID != ID)
-            {
-                return false;
-            }
-
             bool res = false;
 
             using (new WorkGuard(this, needFreeze))
             {
                 res = _canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed);
 
-                if (res)
+                if (res && Worker != null)
                 {
-                    if (BaseAsyncWorkID != null)
+                    if (TaskCompletionSource != null)
                     {
-                        PowerPool.TryRemoveAsyncWork(ID, false, false, true);
-
-                        if (PowerPool._tcsDict.TryRemove(RealWorkID, out ITaskCompletionSource tcs))
-                        {
-                            tcs.SetCanceled();
-                        }
+                        Interlocked.Decrement(ref PowerPool._asyncWorkCount);
+                        TaskCompletionSource.SetCanceled();
                     }
 
                     ExecuteResultBase executeResult = SetExecuteResult(null, null, Status.Canceled);
@@ -182,6 +174,10 @@ namespace PowerThreadPool.Works
                         PowerPool.CheckPoolIdle();
                     }
                 }
+                else if (res)
+                {
+                    _canCancel.InterlockedValue = CanCancel.Allowed;
+                }
             }
 
             return res;
@@ -193,7 +189,7 @@ namespace PowerThreadPool.Works
 
             EnsureWaitSignalExists();
 
-            if (!SyncOrAsyncWorkDone)
+            if (!IsDone)
             {
                 if (cancellationToken == default)
                     WaitSignal.WaitOne();
@@ -283,7 +279,7 @@ namespace PowerThreadPool.Works
             bool res = false;
             task = default;
 
-            if (SyncOrAsyncWorkDone)
+            if (IsDone)
             {
                 res = true;
 
@@ -336,9 +332,9 @@ namespace PowerThreadPool.Works
 
         private ExecuteResult<T> FetchCore<T>()
         {
-            if (BaseAsyncWorkID != null && PowerPool._asyncWorkIDDict.TryGetValue(BaseAsyncWorkID, out ConcurrentSet<WorkID> idSet) && idSet.Last != null && PowerPool._aliveWorkDic.TryGetValue(idSet.Last, out WorkBase lastWork))
+            if (PowerPool._aliveWorkDic.TryGetValue(ID, out WorkBase work))
             {
-                Work<T> lastWorkT = lastWork as Work<T>;
+                Work<T> lastWorkT = work as Work<T>;
                 Spinner.Start(() => lastWorkT.ExecuteResult != null, true);
                 return lastWorkT.ExecuteResult.ToTypedResult<T>();
             }
@@ -350,11 +346,11 @@ namespace PowerThreadPool.Works
 
         internal override bool Pause()
         {
-            if (BaseAsyncWorkID == null && PauseSignal == null)
+            if (TaskCompletionSource == null && PauseSignal == null)
             {
                 PauseSignal = new ManualResetEvent(true);
             }
-            if (BaseAsyncWorkID != null && PauseAsyncSignal == null)
+            if (TaskCompletionSource != null && PauseAsyncSignal == null)
             {
                 PauseAsyncSignal = new AsyncManualResetEvent(true);
             }
@@ -398,11 +394,11 @@ namespace PowerThreadPool.Works
         {
             Status = status;
             ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
-            executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, ExecuteCount);
+            executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, _retryCount);
             ExecuteResult = executeResult;
             if (WorkOption.ShouldStoreResult)
             {
-                PowerPool._resultDic[RealWorkID] = ExecuteResult;
+                PowerPool._resultDic[ID] = ExecuteResult;
             }
             return executeResult;
         }
@@ -413,7 +409,7 @@ namespace PowerThreadPool.Works
             {
                 return false;
             }
-            else if (WorkOption.RetryOption != null && Status == Status.Failed && ((WorkOption.RetryOption.RetryPolicy == RetryPolicy.Limited && ExecuteCount - 1 < WorkOption.RetryOption.MaxRetryCount) || WorkOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
+            else if (WorkOption.RetryOption != null && Status == Status.Failed && ((WorkOption.RetryOption.RetryPolicy == RetryPolicy.Limited && _retryCount < WorkOption.RetryOption.MaxRetryCount) || WorkOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
             {
                 return true;
             }

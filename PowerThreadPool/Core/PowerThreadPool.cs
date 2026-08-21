@@ -54,9 +54,6 @@ namespace PowerThreadPool
 
         internal ConcurrentDictionary<WorkID, ExecuteResultBase> _resultDic = new ConcurrentDictionary<WorkID, ExecuteResultBase>();
 
-        internal ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>> _asyncWorkIDDict = new ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>>();
-        internal ConcurrentDictionary<WorkID, ITaskCompletionSource> _tcsDict = new ConcurrentDictionary<WorkID, ITaskCompletionSource>();
-
         internal ConcurrentQueue<Worker> _helperWorkerQueue = new ConcurrentQueue<Worker>();
 
         internal ConcurrentDictionary<Task, RegisteredWaitHandle> _waitRegDict = new ConcurrentDictionary<Task, RegisteredWaitHandle>();
@@ -447,7 +444,7 @@ namespace PowerThreadPool
                 }
             }
 
-            if (PowerPoolOption.EnableStatisticsCollection)
+            if ((work.TaskCompletionSource == null || work.IsFirstAsyncWork) && PowerPoolOption.EnableStatisticsCollection)
             {
                 work.QueueDateTime = DateTime.UtcNow;
             }
@@ -460,7 +457,7 @@ namespace PowerThreadPool
 
             RejectType rejectType = PowerPoolOption.RejectOption.RejectType;
 
-            WorkID rejectID = work.RealWorkID;
+            WorkID rejectID = work.ID;
 
             if (WorkRejected != null)
             {
@@ -882,40 +879,6 @@ namespace PowerThreadPool
         {
             _failedWorkSet.Clear();
             _canceledWorkSet.Clear();
-        }
-
-        /// <summary>
-        /// Try remove async work
-        /// </summary>
-        /// <param name="baseID"></param>
-        /// <param name="started"></param>
-        internal void TryRemoveAsyncWork(WorkID baseID, bool started, bool justGetDontRemove, bool shouldDecrementAsyncWorkCount)
-        {
-            ConcurrentSet<WorkID> asyncIDList = null;
-            if (shouldDecrementAsyncWorkCount)
-            {
-                Interlocked.Decrement(ref _asyncWorkCount);
-            }
-            if (justGetDontRemove ? _asyncWorkIDDict.TryGetValue(baseID, out asyncIDList) : _asyncWorkIDDict.TryRemove(baseID, out asyncIDList))
-            {
-                if (!justGetDontRemove)
-                {
-                    if (_aliveWorkDic.TryRemove(baseID, out WorkBase baseWork))
-                    {
-                        baseWork.Dispose();
-                    }
-                    if (started)
-                    {
-                        foreach (WorkID asyncID in asyncIDList)
-                        {
-                            if (_aliveWorkDic.TryRemove(asyncID, out WorkBase asyncWork))
-                            {
-                                asyncWork.Dispose();
-                            }
-                        }
-                    }
-                }
-            }
         }
 
         private void CheckDisposed()
