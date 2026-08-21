@@ -1621,6 +1621,44 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestImmediateRetryFunc()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+
+            int runCount = 0;
+
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref runCount);
+                Assert.Equal(5, e.RetryInfo.MaxRetryCount);
+                Assert.Equal(RetryPolicy.Limited, e.RetryInfo.RetryPolicy);
+            };
+
+            int a = 1;
+            int b = 1;
+
+            powerPool.QueueWorkItem(async () =>
+            {
+                await Task.Delay(1);
+                await Task.Delay(1);
+                if (a == b)
+                {
+                    throw new Exception();
+                }
+                return 1;
+            }, out _, new WorkOption<object>()
+            {
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(6, runCount);
+        }
+
+        [Fact]
         public void TestImmediateRetryUnlimited()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
