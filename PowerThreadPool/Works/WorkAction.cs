@@ -22,6 +22,8 @@ namespace PowerThreadPool.Works
 
         internal override bool IsFirstAsyncWork => _baseAction == _action;
 
+        internal override bool IsFunc => false;
+
         internal override object Execute()
         {
             ++_executeCount;

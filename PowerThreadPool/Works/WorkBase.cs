@@ -70,11 +70,13 @@ namespace PowerThreadPool.Works
         /// </summary>
         internal DateTime StartDateTime { get; set; }
         internal long Duration { get; set; }
+        internal long DeadTickCount { get; set; }
         internal abstract object Execute();
         internal abstract void ResetBase();
         internal abstract void SetFunction<TResult>(Func<TResult> function, bool isFirst);
         internal abstract void SetAction(Action action, bool isFirst);
         internal abstract WorkBase Init(PowerPool powerPool, WorkID id, WorkOption option, CancellationTokenSource cancellationTokenSource);
+        internal abstract void Refresh();
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Cancel(bool needFreeze);
         internal abstract bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false);
@@ -102,7 +104,8 @@ namespace PowerThreadPool.Works
         internal abstract WorkPlacementPolicy WorkPlacementPolicy { get; }
         internal abstract ConcurrentSet<WorkID> Dependents { get; }
         internal abstract bool AllowEventsAndCallback { get; set; }
-
+        internal abstract Type ResultType { get; }
         internal abstract bool IsFirstAsyncWork { get; }
+        internal abstract bool IsFunc { get; }
     }
 }

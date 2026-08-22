@@ -145,7 +145,7 @@ namespace PowerThreadPool
                 if (work.TaskCompletionSource == null)
                 {
                     _aliveWorkDic.TryRemove(work.ID, out _);
-                    work.Dispose();
+                    _workManager.Set(work);
                 }
             }
             if (work.Group != null && !work.ShouldStoreResult)
@@ -1309,7 +1309,7 @@ namespace PowerThreadPool
                 isQueuedAndDidNotDecreasedCountInside = false;
                 if (res && _aliveWorkDic.TryRemove(id, out _))
                 {
-                    work.Dispose();
+                    _workManager.Set(work);
                 }
             }
             else
@@ -1353,7 +1353,7 @@ namespace PowerThreadPool
                 {
                     RemoveWorkFromGroup(work.Group, work);
                 }
-                work.Dispose();
+                _workManager.Set(work);
             }
 
             _resultDic.TryRemove(work.ID, out _);

@@ -56,6 +56,7 @@ namespace PowerThreadPool.Works
             get => TaskCompletionSource == null ? true : _allowEventsAndCallback;
             set => _allowEventsAndCallback = value;
         }
+        internal override Type ResultType => typeof(TResult);
 
         internal Work()
         {
@@ -84,6 +85,63 @@ namespace PowerThreadPool.Works
             CancellationTokenSource = cancellationTokenSource;
             return this;
         }
+
+        internal override void Refresh()
+        {
+            IsAlive = false;
+            IsCurrentDone = false;
+            IsDone = false;
+            IsPausing = false;
+            ShouldStop = false;
+            Status = default;
+
+            _retryCount = 0;
+            _executeCount = 0;
+            Duration = 0;
+            DeadTickCount = 0;
+            QueueDateTime = default;
+            StartDateTime = default;
+
+            _canSetTaskCompletionSource = CanSetTaskCompletionSource.Allowed;
+            _canFinalizeWork = CanFinalizeWork.Allowed;
+            _canCancel = CanCancel.Allowed;
+            _dependencyStatus = DependencyStatus.Normal;
+
+            Worker = null;
+            TaskCompletionSource = null;
+
+            if (CancellationTokenSource != null)
+            {
+                CancellationTokenSource.Dispose();
+                CancellationTokenSource = null;
+            }
+
+            if (WaitSignal != null)
+            {
+                WaitSignal.Dispose();
+                WaitSignal = null;
+            }
+
+            if (PauseSignal != null)
+            {
+                PauseSignal.Dispose();
+                PauseSignal = null;
+            }
+
+            PauseAsyncSignal = null;
+
+            if (TimeoutTimer != null)
+            {
+                TimeoutTimer.Dispose();
+                TimeoutTimer = null;
+            }
+
+            _workOption = null;
+            _workOptionResult = null;
+            ExecuteResult = null;
+            _allowEventsAndCallback = false;
+        }
+
 
         private void EnsureWaitSignalExists()
         {

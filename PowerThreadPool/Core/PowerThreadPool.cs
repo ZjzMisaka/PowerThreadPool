@@ -66,6 +66,8 @@ namespace PowerThreadPool
         private DateTime _startDateTime;
         private DateTime _endDateTime;
 
+        internal WorkManager _workManager = new WorkManager();
+
         private readonly InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
         internal readonly InterlockedFlag<CanDeleteRedundantWorker> _canDeleteRedundantWorker = CanDeleteRedundantWorker.Allowed;
 
