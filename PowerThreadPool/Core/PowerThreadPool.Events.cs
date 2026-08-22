@@ -161,6 +161,14 @@ namespace PowerThreadPool
                 CallbackEnd.Invoke(work, status);
             }
 
+            if (work.Group != null && !work.ShouldStoreResult)
+            {
+                if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<WorkID> idSet))
+                {
+                    idSet.Remove(work.ID);
+                }
+            }
+
             // If the result needs to be stored, there is a possibility of fetching the result through Group.
             // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
             if (work.Group == null || !work.ShouldStoreResult)
@@ -170,14 +178,7 @@ namespace PowerThreadPool
                 {
                     work.WaitSignal.Set();
                 }
-                work.Dispose();
-            }
-            if (work.Group != null && !work.ShouldStoreResult)
-            {
-                if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<WorkID> idSet))
-                {
-                    idSet.Remove(work.ID);
-                }
+                _workManager.Set(work);
             }
         }
 
