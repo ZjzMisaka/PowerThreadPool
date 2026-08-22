@@ -91,10 +91,9 @@ namespace PowerThreadPool
                             return;
                         }
 
-                        bool longRunning = Work.LongRunning;
                         ExecuteWork();
 
-                        if (longRunning)
+                        if (Work.LongRunning)
                         {
                             Interlocked.Decrement(ref _powerPool._longRunningWorkerCount);
                             LongRunning = false;
