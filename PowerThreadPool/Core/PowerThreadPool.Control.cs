@@ -1347,6 +1347,7 @@ namespace PowerThreadPool
 
         private void RemoveAfterFetch(WorkBase work)
         {
+            _resultDic.TryRemove(work.ID, out _);
             if (_aliveWorkDic.TryRemove(work.ID, out _))
             {
                 if (work.Group != null)
@@ -1355,8 +1356,6 @@ namespace PowerThreadPool
                 }
                 _workManager.Set(work);
             }
-
-            _resultDic.TryRemove(work.ID, out _);
 
             CheckPoolIdle();
         }

@@ -98,7 +98,6 @@ namespace PowerThreadPool.Works
             _retryCount = 0;
             _executeCount = 0;
             Duration = 0;
-            DeadTickCount = 0;
             QueueDateTime = default;
             StartDateTime = default;
 
@@ -217,7 +216,11 @@ namespace PowerThreadPool.Works
                     InvokeCallback(executeResult, PowerPool.PowerPoolOption);
                     PowerPool.WorkCallbackEnd(this, Status.Canceled);
 
-                    Interlocked.Decrement(ref Worker._waitingWorkCount);
+                    // Run help
+                    if (Worker != null)
+                    {
+                        Interlocked.Decrement(ref Worker._waitingWorkCount);
+                    }
                     int waitingWorkCount = Interlocked.Decrement(ref PowerPool._waitingWorkCount);
 
                     if (waitingWorkCount == 0)
