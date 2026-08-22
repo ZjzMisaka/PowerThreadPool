@@ -2,20 +2,11 @@
   "files": [
     "README.md"
   ],
-  "imageSize": 100,
+  "imageSize": 80,
   "commit": false,
   "commitType": "docs",
   "commitConvention": "angular",
   "contributors": [
-    {
-      "login": "dlnn",
-      "name": "一条咸鱼",
-      "avatar_url": "https://avatars.githubusercontent.com/u/22004270?v=4",
-      "profile": "https://github.com/dlnn",
-      "contributions": [
-        "code"
-      ]
-    },
     {
       "login": "ZjzMisaka",
       "name": "ZjzMisaka",
@@ -25,6 +16,15 @@
         "code",
         "maintenance",
         "doc"
+      ]
+    },
+    {
+      "login": "dlnn",
+      "name": "一条咸鱼",
+      "avatar_url": "https://avatars.githubusercontent.com/u/22004270?v=4",
+      "profile": "https://github.com/dlnn",
+      "contributions": [
+        "code"
       ]
     },
     {
