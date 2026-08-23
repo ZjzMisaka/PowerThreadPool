@@ -28,7 +28,7 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore PowerThreadPool/PowerThreadPool.csproj
     - name: Build
-      run: dotnet build PowerThreadPool/PowerThreadPool.csproj --no-restore
+      run: dotnet build PowerThreadPool/PowerThreadPool.csproj --no-restore --configuration Release
 
   tests-and-reports:
     needs: build
@@ -46,6 +46,7 @@ jobs:
       - name: Run Tests and Generate TRX Report
         run: >
           dotnet test UnitTest/UnitTest.csproj
+          --configuration Release
           --logger "console;verbosity=normal"
           --logger "trx;LogFileName=test-results.trx"
           --collect:"XPlat Code Coverage"
