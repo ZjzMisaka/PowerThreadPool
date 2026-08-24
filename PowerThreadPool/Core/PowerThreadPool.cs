@@ -401,6 +401,7 @@ namespace PowerThreadPool
 
             WorkPlacementPolicy workPlacementPolicy = work.WorkPlacementPolicy;
             // In most cases, the loop will not iterate more than once.
+            int tryCount = 0;
             while (true)
             {
                 bool rejected = PowerPoolOption.RejectOption != null;
@@ -412,7 +413,7 @@ namespace PowerThreadPool
                     break;
                 }
 
-                if ((worker = GetWorker(work.LongRunning, workPlacementPolicy, ref rejected)) != null)
+                if ((worker = GetWorker(work.LongRunning, tryCount < 3 ? workPlacementPolicy : WorkPlacementPolicy.PreferIdleThenLeastLoaded, ref rejected)) != null)
                 {
                     break;
                 }
@@ -442,6 +443,8 @@ namespace PowerThreadPool
                         break;
                     }
                 }
+
+                ++tryCount;
             }
 
             if ((work.TaskCompletionSource == null || work.IsFirstAsyncWork) && PowerPoolOption.EnableStatisticsCollection)
