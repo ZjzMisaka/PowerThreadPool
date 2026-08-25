@@ -144,8 +144,10 @@ namespace PowerThreadPool
             {
                 if (work.TaskCompletionSource == null)
                 {
-                    _aliveWorkDic.TryRemove(work.ID, out _);
-                    _workManager.Set(work);
+                    if (_aliveWorkDic.TryRemove(work.ID, out _))
+                    {
+                        _workManager.Set(work);
+                    }
                 }
             }
             if (work.Group != null && !work.ShouldStoreResult)
