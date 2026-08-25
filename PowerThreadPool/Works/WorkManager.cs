@@ -45,11 +45,18 @@ namespace PowerThreadPool.Works
                 }
             }
 
+            work._canSetIntoPool.InterlockedValue = Constants.CanSetIntoPool.Allowed;
+
             return work;
         }
 
         internal void Set(WorkBase workBase)
         {
+            if (!workBase._canSetIntoPool.TrySet(Constants.CanSetIntoPool.NotAllowed, Constants.CanSetIntoPool.Allowed))
+            {
+                return;
+            }
+
             ConcurrentQueue<WorkBase> pool = (workBase.IsFunc ? _funcWorkPoolDict : _actionWorkPoolDict).GetOrAdd(
                 workBase.ResultType,
                 _ => new ConcurrentQueue<WorkBase>());

@@ -18,6 +18,7 @@ namespace PowerThreadPool.Works
         internal CancellationTokenSource CancellationTokenSource { get; set; }
         internal InterlockedFlag<CanSetTaskCompletionSource> _canSetTaskCompletionSource = CanSetTaskCompletionSource.Allowed;
         internal InterlockedFlag<CanFinalizeWork> _canFinalizeWork = CanFinalizeWork.Allowed;
+        internal InterlockedFlag<CanSetIntoPool> _canSetIntoPool = CanSetIntoPool.Allowed;
         internal ITaskCompletionSource TaskCompletionSource { get; set; }
         internal bool IsAlive { get; set; } = false;
         internal volatile int _canRefresh;

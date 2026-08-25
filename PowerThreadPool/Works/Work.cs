@@ -88,6 +88,9 @@ namespace PowerThreadPool.Works
 
         internal override bool Refresh()
         {
+            // Refresh发生在出池时, 而Work被持有是发生在入池前的.
+            // 因此在这个时间点只要有逻辑持有这个Work, _canRefresh必定大于0
+            // 而在这之后, 不会再有逻辑获取这一代Work
             if (_canRefresh != 0)
             {
                 return false;
