@@ -14,12 +14,6 @@ namespace PowerThreadPool.Works
         {
         }
 
-        internal WorkAction(PowerPool powerPool, WorkID id, Action action, WorkOption option, CancellationTokenSource cts) : base(powerPool, id, option, cts)
-        {
-            _baseAction = action;
-            _action = action;
-        }
-
         internal override bool IsFirstAsyncWork => _baseAction == _action;
 
         internal override bool IsFunc => false;

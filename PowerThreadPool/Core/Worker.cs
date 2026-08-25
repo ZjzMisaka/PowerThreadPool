@@ -157,6 +157,9 @@ namespace PowerThreadPool
 
             Worker workerTemp = WorkerContext.s_current;
             WorkerContext.s_current = this;
+
+            work._canCancel.InterlockedValue = CanCancel.NotAllowed;
+
             work.Worker = this;
             Interlocked.Decrement(ref _powerPool._waitingWorkCount);
             SetWorkToRun(work);
