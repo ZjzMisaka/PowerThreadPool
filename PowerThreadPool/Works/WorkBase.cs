@@ -20,7 +20,7 @@ namespace PowerThreadPool.Works
         internal InterlockedFlag<CanFinalizeWork> _canFinalizeWork = CanFinalizeWork.Allowed;
         internal ITaskCompletionSource TaskCompletionSource { get; set; }
         internal bool IsAlive { get; set; } = false;
-        internal volatile int _canRefresh;
+        
         internal volatile int _retryCount;
         internal volatile int _executeCount;
         internal int ExecuteCount
