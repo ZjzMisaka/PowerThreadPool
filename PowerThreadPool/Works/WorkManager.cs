@@ -15,34 +15,31 @@ namespace PowerThreadPool.Works
                 _ => new ConcurrentQueue<WorkBase>());
             WorkBase work = null;
 
-        GetWork:
-            if (pool.TryDequeue(out work))
+            while (pool.TryDequeue(out work))
             {
                 if (!work.Refresh())
                 {
-                    goto GetWork;
+                    continue;
                 }
+
                 long currentTickCount = Environment.TickCount;
 
-                while (pool.TryPeek(out WorkBase workPeek) && workPeek.DeadTickCount - currentTickCount > 60000)
+                while (pool.TryPeek(out WorkBase workPeek) && currentTickCount - workPeek.DeadTickCount > 60000)
                 {
                     if (pool.TryDequeue(out workPeek))
                     {
-                        // 这里peek到的和dequeue到的work可能不是同一个实例, 但这是允许的, 照样Dispose. 
+                        // 这里peek到的和dequeue到的work可能不是同一个实例. 
+                        // 但这是允许的, 照样Dispose. 
                         workPeek.Dispose();
                     }
                 }
+
+                break;
             }
-            else
+
+            if (work == null)
             {
-                if (isFunc)
-                {
-                    work = new WorkFunc<T>();
-                }
-                else
-                {
-                    work = new WorkAction<T>();
-                }
+                work = isFunc ? (WorkBase)new WorkFunc<T>() : new WorkAction<T>();
             }
 
             work._canSetIntoPool.InterlockedValue = Constants.CanSetIntoPool.Allowed;
