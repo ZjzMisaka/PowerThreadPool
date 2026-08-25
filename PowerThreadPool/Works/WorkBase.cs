@@ -20,6 +20,7 @@ namespace PowerThreadPool.Works
         internal InterlockedFlag<CanFinalizeWork> _canFinalizeWork = CanFinalizeWork.Allowed;
         internal ITaskCompletionSource TaskCompletionSource { get; set; }
         internal bool IsAlive { get; set; } = false;
+        internal volatile int _canRefresh;
         internal volatile int _retryCount;
         internal volatile int _executeCount;
         internal int ExecuteCount
@@ -76,7 +77,7 @@ namespace PowerThreadPool.Works
         internal abstract void SetFunction<TResult>(Func<TResult> function, bool isFirst);
         internal abstract void SetAction(Action action, bool isFirst);
         internal abstract WorkBase Init(PowerPool powerPool, WorkID id, WorkOption option, CancellationTokenSource cancellationTokenSource);
-        internal abstract void Refresh();
+        internal abstract bool Refresh();
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Cancel(bool needFreeze);
         internal abstract bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false);

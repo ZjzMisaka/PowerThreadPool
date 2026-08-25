@@ -15,9 +15,13 @@ namespace PowerThreadPool.Works
                 _ => new ConcurrentQueue<WorkBase>());
             WorkBase work = null;
 
+        GetWork:
             if (pool.TryDequeue(out work))
             {
-                work.Refresh();
+                if (!work.Refresh())
+                {
+                    goto GetWork;
+                }
                 long currentTickCount = Environment.TickCount;
 
                 while (pool.TryPeek(out WorkBase workPeek) && workPeek.DeadTickCount - currentTickCount > 60000)

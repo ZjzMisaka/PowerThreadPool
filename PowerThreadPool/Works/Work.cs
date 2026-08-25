@@ -86,8 +86,13 @@ namespace PowerThreadPool.Works
             return this;
         }
 
-        internal override void Refresh()
+        internal override bool Refresh()
         {
+            if (_canRefresh != 0)
+            {
+                return false;
+            }
+
             IsAlive = false;
             IsCurrentDone = false;
             IsDone = false;
@@ -139,6 +144,8 @@ namespace PowerThreadPool.Works
             _workOptionResult = null;
             ExecuteResult = null;
             _allowEventsAndCallback = false;
+
+            return true;
         }
 
 
@@ -241,6 +248,8 @@ namespace PowerThreadPool.Works
 
         internal override bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
         {
+            Interlocked.Increment(ref _canRefresh);
+
             HelpWhileWaiting(cancellationToken, helpWhileWaiting);
 
             EnsureWaitSignalExists();
@@ -252,6 +261,8 @@ namespace PowerThreadPool.Works
                 else if (WaitHandle.WaitAny(new WaitHandle[] { WaitSignal, cancellationToken.WaitHandle }) == 1)
                     cancellationToken.ThrowIfCancellationRequested();
             }
+
+            Interlocked.Decrement(ref _canRefresh);
 
             return true;
         }
@@ -277,10 +288,13 @@ namespace PowerThreadPool.Works
 
         internal override Task<bool> WaitAsync(CancellationToken cancellationToken)
         {
+            Interlocked.Increment(ref _canRefresh);
+
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
             Task<bool> task = null;
             if (CheckWorkAlreadyDoneWhenAsyncWait(null, out task))
             {
+                Interlocked.Decrement(ref _canRefresh);
                 return task;
             }
 
@@ -304,11 +318,13 @@ namespace PowerThreadPool.Works
 #if (NET46_OR_GREATER || NET5_0_OR_GREATER)
                     if (tcs.TrySetCanceled(cancellationToken))
                     {
+                        Interlocked.Decrement(ref _canRefresh);
                         SetTcsResult(tcs);
                     }
 #else
                     if (tcs.TrySetCanceled())
                     {
+                        Interlocked.Decrement(ref _canRefresh);
                         SetTcsResult(tcs);
                     }
 #endif
@@ -317,6 +333,7 @@ namespace PowerThreadPool.Works
 
             if (CheckWorkAlreadyDoneWhenAsyncWait(tcs, out task))
             {
+                Interlocked.Decrement(ref _canRefresh);
                 return task;
             }
 
@@ -324,6 +341,7 @@ namespace PowerThreadPool.Works
 #else
             return Task.Factory.StartNew(() =>
             {
+                Interlocked.Decrement(ref _canRefresh);
                 return Wait(cancellationToken, false);
             });
 #endif
@@ -362,17 +380,25 @@ namespace PowerThreadPool.Works
 
         internal override ExecuteResult<T> Fetch<T>(CancellationToken cancellationToken, bool helpWhileWaiting = false)
         {
+            Interlocked.Increment(ref _canRefresh);
             Wait(cancellationToken, helpWhileWaiting);
 
-            return FetchCore<T>();
+            ExecuteResult<T> res = FetchCore<T>();
+            Interlocked.Decrement(ref _canRefresh);
+
+            return res;
         }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
         internal override async Task<ExecuteResult<T>> FetchAsync<T>(CancellationToken cancellationToken)
         {
+            Interlocked.Increment(ref _canRefresh);
             await WaitAsync(cancellationToken);
 
-            return FetchCore<T>();
+            ExecuteResult<T> res = FetchCore<T>();
+            Interlocked.Decrement(ref _canRefresh);
+
+            return res;
         }
 #else
         internal override Task<ExecuteResult<T>> FetchAsync<T>(CancellationToken cancellationToken)
