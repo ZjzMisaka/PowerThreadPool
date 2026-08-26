@@ -311,7 +311,7 @@ namespace PowerThreadPool
             WorkHandle work;
             if (TryGetSuspendOrAliveWork(id, out work))
             {
-                return work.Shell.Wait(cancellationToken, helpWhileWaiting);
+                return work.Wait(cancellationToken, helpWhileWaiting);
             }
             else
             {
@@ -482,7 +482,7 @@ namespace PowerThreadPool
             WorkHandle work;
             if (TryGetSuspendOrAliveWork(id, out work))
             {
-                return work.Shell.WaitAsync(cancellationToken);
+                return work.WaitAsync(cancellationToken);
             }
             else
             {
@@ -594,7 +594,7 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    ExecuteResult<TResult> res = work.Shell.Fetch<TResult>(cancellationToken, helpWhileWaiting);
+                    ExecuteResult<TResult> res = work.Fetch<TResult>(cancellationToken, helpWhileWaiting);
                     if (removeAfterFetch)
                     {
                         RemoveAfterFetch(work);
@@ -670,7 +670,7 @@ namespace PowerThreadPool
 
             foreach (WorkHandle work in workList)
             {
-                resultList.Add(work.Shell.Fetch<TResult>(cancellationToken, helpWhileWaiting));
+                resultList.Add(work.Fetch<TResult>(cancellationToken, helpWhileWaiting));
 
                 if (removeAfterFetch)
                 {
@@ -785,7 +785,7 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    ExecuteResult<TResult> res = await work.Shell.FetchAsync<TResult>(cancellationToken);
+                    ExecuteResult<TResult> res = await work.FetchAsync<TResult>(cancellationToken);
                     if (removeAfterFetch)
                     {
                         RemoveAfterFetch(work);
@@ -894,7 +894,7 @@ namespace PowerThreadPool
 
             foreach (WorkHandle work in workList)
             {
-                resultList.Add(await work.Shell.FetchAsync<TResult>(cancellationToken));
+                resultList.Add(await work.FetchAsync<TResult>(cancellationToken));
 
                 if (removeAfterFetch)
                 {

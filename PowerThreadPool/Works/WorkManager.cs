@@ -8,7 +8,7 @@ namespace PowerThreadPool.Works
         private readonly ConcurrentDictionary<Type, ConcurrentQueue<WorkBase>> _actionWorkPoolDict = new ConcurrentDictionary<Type, ConcurrentQueue<WorkBase>>();
         private readonly ConcurrentDictionary<Type, ConcurrentQueue<WorkBase>> _funcWorkPoolDict = new ConcurrentDictionary<Type, ConcurrentQueue<WorkBase>>();
 
-        internal WorkBase Get<T>(bool isFunc)
+        internal WorkBase Get<T>(bool isFunc, PowerPool powerPool)
         {
             ConcurrentQueue<WorkBase> pool = (isFunc ? _funcWorkPoolDict : _actionWorkPoolDict).GetOrAdd(
                 typeof(T),
@@ -42,10 +42,7 @@ namespace PowerThreadPool.Works
                 work = isFunc ? (WorkBase)new WorkFunc<T>() : new WorkAction<T>();
             }
 
-            work.WorkHandle = new WorkHandle()
-            {
-                Shell = work
-            };
+            work.WorkHandle = new WorkHandle(work, powerPool);
 
             return work;
         }

@@ -343,7 +343,7 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public WorkID QueueWorkItem(Action action, WorkOption option)
         {
-            return QueueWorkItemCore<object>(action, null, option, null, _workManager.Get<object>(false).WorkHandle);
+            return QueueWorkItemCore<object>(action, null, option, null, _workManager.Get<object>(false, this).WorkHandle);
         }
 
         /// <summary>
@@ -356,7 +356,7 @@ namespace PowerThreadPool
         {
             CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token);
             Action act = () => action(cts.Token);
-            return QueueWorkItemCore<object>(act, null, option, cts, _workManager.Get<object>(false).WorkHandle);
+            return QueueWorkItemCore<object>(act, null, option, cts, _workManager.Get<object>(false, this).WorkHandle);
         }
 
         internal WorkID QueueAsyncWorkItemInner(Action action, WorkOption option, CancellationTokenSource cts, WorkHandle work)
@@ -753,7 +753,7 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public WorkID QueueWorkItem<TResult>(Func<TResult> function, WorkOption option)
         {
-            return QueueWorkItemCore(null, function, option, null, _workManager.Get<TResult>(true).WorkHandle);
+            return QueueWorkItemCore(null, function, option, null, _workManager.Get<TResult>(true, this).WorkHandle);
         }
 
         /// <summary>
@@ -767,7 +767,7 @@ namespace PowerThreadPool
         {
             CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token);
             Func<TResult> func = () => function(cts.Token);
-            return QueueWorkItemCore(null, func, option, cts, _workManager.Get<TResult>(true).WorkHandle);
+            return QueueWorkItemCore(null, func, option, cts, _workManager.Get<TResult>(true, this).WorkHandle);
         }
 
         internal WorkID QueueAsyncWorkItemInner<TResult>(Func<TResult> function, WorkOption option, CancellationTokenSource cts, WorkHandle workBase)

@@ -13,7 +13,13 @@ namespace PowerThreadPool.Works
 {
     internal sealed class WorkHandle : WorkItemBase
     {
+        internal WorkHandle(WorkBase shell, PowerPool powerPool)
+        {
+            Shell = shell;
+            PowerPool = powerPool;
+        }
         internal ManualResetEvent WaitSignal { get; set; }
+        internal ExecuteResultBase ExecuteResultBase { get; }
         internal volatile bool _isDone;
         internal bool IsDone
         {
@@ -22,6 +28,162 @@ namespace PowerThreadPool.Works
         }
         internal InterlockedFlag<CanCancel> _canCancel = CanCancel.Allowed;
         internal WorkBase Shell { get; set; }
+        internal PowerPool PowerPool { get; }
+
+        internal bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
+        {
+            Shell?.HelpWhileWaiting(cancellationToken, helpWhileWaiting);
+
+            EnsureWaitSignalExists();
+
+            if (!IsDone)
+            {
+                if (cancellationToken == default)
+                    WaitSignal.WaitOne();
+                else if (WaitHandle.WaitAny(new WaitHandle[] { WaitSignal, cancellationToken.WaitHandle }) == 1)
+                    cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            return true;
+        }
+
+        internal Task<bool> WaitAsync(CancellationToken cancellationToken)
+        {
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+            Task<bool> task = null;
+            if (CheckWorkAlreadyDoneWhenAsyncWait(null, out task))
+            {
+                return task;
+            }
+
+            TaskCompletionSource<bool> tcs = PowerPool.NewTcs<bool>();
+            EnsureWaitSignalExists();
+            ManualResetEvent ev = WaitSignal;
+
+            RegisteredWaitHandle rwh = null;
+            WaitOrTimerCallback cb = (state, timedOut) =>
+            {
+                SetTcsResult(tcs);
+            };
+            rwh = ThreadPool.RegisterWaitForSingleObject(ev, cb, null, Timeout.Infinite, true);
+
+            PowerPool._waitRegDict[tcs.Task] = rwh;
+
+            if (cancellationToken.CanBeCanceled)
+            {
+                cancellationToken.Register(() =>
+                {
+#if (NET46_OR_GREATER || NET5_0_OR_GREATER)
+                    if (tcs.TrySetCanceled(cancellationToken))
+                    {
+                        SetTcsResult(tcs);
+                    }
+#else
+                    if (tcs.TrySetCanceled())
+                    {
+                        SetTcsResult(tcs);
+                    }
+#endif
+                });
+            }
+
+            if (CheckWorkAlreadyDoneWhenAsyncWait(tcs, out task))
+            {
+                return task;
+            }
+
+            return tcs.Task;
+#else
+            return Task.Factory.StartNew(() =>
+            {
+                return Wait(cancellationToken, false);
+            });
+#endif
+        }
+
+        private void EnsureWaitSignalExists()
+        {
+            if (WaitSignal == null)
+            {
+                WaitSignal = new ManualResetEvent(false);
+            }
+        }
+
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        private bool CheckWorkAlreadyDoneWhenAsyncWait(TaskCompletionSource<bool> tcs, out Task<bool> task)
+        {
+            bool res = false;
+            task = default;
+
+            if (IsDone)
+            {
+                res = true;
+
+                SetTcsResult(tcs);
+
+                task = Task.FromResult(true);
+            }
+
+            return res;
+        }
+
+        private void SetTcsResult(TaskCompletionSource<bool> tcs)
+        {
+            if (tcs != null)
+            {
+                tcs.TrySetResult(true);
+                if (PowerPool._waitRegDict.TryRemove(tcs.Task, out RegisteredWaitHandle h))
+                {
+                    h.Unregister(null);
+                }
+            }
+        }
+#endif
+
+        internal ExecuteResult<T> Fetch<T>(CancellationToken cancellationToken, bool helpWhileWaiting = false)
+        {
+            Wait(cancellationToken, helpWhileWaiting);
+
+            ExecuteResult<T> res = FetchCore<T>();
+
+            return res;
+        }
+
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+        internal async Task<ExecuteResult<T>> FetchAsync<T>(CancellationToken cancellationToken)
+        {
+            await WaitAsync(cancellationToken);
+
+            ExecuteResult<T> res = FetchCore<T>();
+
+            return res;
+        }
+#else
+        internal Task<ExecuteResult<T>> FetchAsync<T>(CancellationToken cancellationToken)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                WaitAsync(cancellationToken).Wait();
+
+                return FetchCore<T>();
+            });
+        }
+#endif
+
+        private ExecuteResult<T> FetchCore<T>()
+        {
+            if (PowerPool._aliveWorkDic.TryGetValue(ID, out WorkHandle work))
+            {
+                Work<T> workT = work.Shell as Work<T>;
+                Spinner.Start(() => workT.ExecuteResult != null, true);
+                return workT.ExecuteResult.ToTypedResult<T>();
+            }
+            else
+            {
+                return ExecuteResultBase.ToTypedResult<T>();
+            }
+        }
+
     }
     internal abstract class WorkBase : IDisposable
     {
@@ -85,10 +247,7 @@ namespace PowerThreadPool.Works
         internal abstract bool Refresh();
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Cancel(bool needFreeze);
-        internal abstract bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false);
-        internal abstract Task<bool> WaitAsync(CancellationToken cancellationToken);
-        internal abstract ExecuteResult<T> Fetch<T>(CancellationToken cancellationToken, bool helpWhileWaiting = false);
-        internal abstract Task<ExecuteResult<T>> FetchAsync<T>(CancellationToken cancellationToken);
+        internal abstract void HelpWhileWaiting(CancellationToken cancellationToken, bool helpWhileWaiting);
         internal abstract bool Pause();
         internal abstract bool Resume();
         internal abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
@@ -105,7 +264,6 @@ namespace PowerThreadPool.Works
         internal abstract RetryOption RetryOption { get; }
         internal abstract bool LongRunning { get; }
         internal abstract bool ShouldStoreResult { get; }
-        internal abstract ExecuteResultBase ExecuteResultBase { get; }
         internal abstract bool AutoCheckStopOnAsyncTask { get; }
         internal abstract WorkPlacementPolicy WorkPlacementPolicy { get; }
         internal abstract ConcurrentSet<WorkID> Dependents { get; }

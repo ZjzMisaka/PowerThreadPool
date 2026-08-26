@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Threading.Tasks;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers.Asynchronous;
@@ -46,7 +45,6 @@ namespace PowerThreadPool.Works
         internal override RetryOption RetryOption => WorkOption.RetryOption;
         internal override bool LongRunning => WorkOption.LongRunning;
         internal override bool ShouldStoreResult => WorkOption.ShouldStoreResult;
-        internal override ExecuteResultBase ExecuteResultBase => ExecuteResult;
         internal override bool AutoCheckStopOnAsyncTask => WorkOption.AutoCheckStopOnAsyncTask;
         internal override WorkPlacementPolicy WorkPlacementPolicy => WorkOption.WorkPlacementPolicy;
         internal override ConcurrentSet<WorkID> Dependents => WorkOption.Dependents;
@@ -133,15 +131,6 @@ namespace PowerThreadPool.Works
             _allowEventsAndCallback = false;
 
             return true;
-        }
-
-
-        private void EnsureWaitSignalExists()
-        {
-            if (WorkHandle.WaitSignal == null)
-            {
-                WorkHandle.WaitSignal = new ManualResetEvent(false);
-            }
         }
 
         internal override bool Stop(bool forceStop)
@@ -233,24 +222,7 @@ namespace PowerThreadPool.Works
             return res;
         }
 
-        internal override bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
-        {
-            HelpWhileWaiting(cancellationToken, helpWhileWaiting);
-
-            EnsureWaitSignalExists();
-
-            if (!WorkHandle.IsDone)
-            {
-                if (cancellationToken == default)
-                    WorkHandle.WaitSignal.WaitOne();
-                else if (WaitHandle.WaitAny(new WaitHandle[] { WorkHandle.WaitSignal, cancellationToken.WaitHandle }) == 1)
-                    cancellationToken.ThrowIfCancellationRequested();
-            }
-
-            return true;
-        }
-
-        private void HelpWhileWaiting(CancellationToken cancellationToken, bool helpWhileWaiting)
+        internal override void HelpWhileWaiting(CancellationToken cancellationToken, bool helpWhileWaiting)
         {
             SpinWait spinner = new SpinWait();
             while ((WorkHandle != null && !WorkHandle.IsDone) && helpWhileWaiting)
@@ -266,135 +238,6 @@ namespace PowerThreadPool.Works
                 {
                     spinner.Reset();
                 }
-            }
-        }
-
-        internal override Task<bool> WaitAsync(CancellationToken cancellationToken)
-        {
-#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-            Task<bool> task = null;
-            if (CheckWorkAlreadyDoneWhenAsyncWait(null, out task))
-            {
-                return task;
-            }
-
-            TaskCompletionSource<bool> tcs = PowerPool.NewTcs<bool>();
-            EnsureWaitSignalExists();
-            ManualResetEvent ev = WorkHandle.WaitSignal;
-
-            RegisteredWaitHandle rwh = null;
-            WaitOrTimerCallback cb = (state, timedOut) =>
-            {
-                SetTcsResult(tcs);
-            };
-            rwh = ThreadPool.RegisterWaitForSingleObject(ev, cb, null, Timeout.Infinite, true);
-
-            PowerPool._waitRegDict[tcs.Task] = rwh;
-
-            if (cancellationToken.CanBeCanceled)
-            {
-                cancellationToken.Register(() =>
-                {
-#if (NET46_OR_GREATER || NET5_0_OR_GREATER)
-                    if (tcs.TrySetCanceled(cancellationToken))
-                    {
-                        SetTcsResult(tcs);
-                    }
-#else
-                    if (tcs.TrySetCanceled())
-                    {
-                        SetTcsResult(tcs);
-                    }
-#endif
-                });
-            }
-
-            if (CheckWorkAlreadyDoneWhenAsyncWait(tcs, out task))
-            {
-                return task;
-            }
-
-            return tcs.Task;
-#else
-            return Task.Factory.StartNew(() =>
-            {
-                return Wait(cancellationToken, false);
-            });
-#endif
-        }
-
-#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        private bool CheckWorkAlreadyDoneWhenAsyncWait(TaskCompletionSource<bool> tcs, out Task<bool> task)
-        {
-            bool res = false;
-            task = default;
-
-            if (WorkHandle.IsDone)
-            {
-                res = true;
-
-                SetTcsResult(tcs);
-
-                task = Task.FromResult(true);
-            }
-
-            return res;
-        }
-
-        private void SetTcsResult(TaskCompletionSource<bool> tcs)
-        {
-            if (tcs != null)
-            {
-                tcs.TrySetResult(true);
-                if (PowerPool._waitRegDict.TryRemove(tcs.Task, out RegisteredWaitHandle h))
-                {
-                    h.Unregister(null);
-                }
-            }
-        }
-#endif
-
-        internal override ExecuteResult<T> Fetch<T>(CancellationToken cancellationToken, bool helpWhileWaiting = false)
-        {
-            Wait(cancellationToken, helpWhileWaiting);
-
-            ExecuteResult<T> res = FetchCore<T>();
-
-            return res;
-        }
-
-#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-        internal override async Task<ExecuteResult<T>> FetchAsync<T>(CancellationToken cancellationToken)
-        {
-            await WaitAsync(cancellationToken);
-
-            ExecuteResult<T> res = FetchCore<T>();
-
-            return res;
-        }
-#else
-        internal override Task<ExecuteResult<T>> FetchAsync<T>(CancellationToken cancellationToken)
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                WaitAsync(cancellationToken).Wait();
-
-                return FetchCore<T>();
-            });
-        }
-#endif
-
-        private ExecuteResult<T> FetchCore<T>()
-        {
-            if (PowerPool._aliveWorkDic.TryGetValue(WorkHandle.ID, out WorkHandle work))
-            {
-                Work<T> workT = work.Shell as Work<T>;
-                Spinner.Start(() => workT.ExecuteResult != null, true);
-                return workT.ExecuteResult.ToTypedResult<T>();
-            }
-            else
-            {
-                return ExecuteResult.ToTypedResult<T>();
             }
         }
 

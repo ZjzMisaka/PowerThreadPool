@@ -502,9 +502,9 @@ namespace PowerThreadPool
 
                 if (Work.Shell.AllowEventsAndCallback)
                 {
-                    if (Work.Shell.ExecuteResultBase != null)
+                    if (Work.ExecuteResultBase != null)
                     {
-                        executeResult = Work.Shell.ExecuteResultBase;
+                        executeResult = Work.ExecuteResultBase;
                     }
                     else
                     {

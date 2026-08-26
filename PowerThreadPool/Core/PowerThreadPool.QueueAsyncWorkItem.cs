@@ -935,7 +935,7 @@ namespace PowerThreadPool
 
             PrepareAsyncWork(option);
 
-            WorkBase workBase = _workManager.Get<object>(false);
+            WorkBase workBase = _workManager.Get<object>(false, this);
             workBase.TaskCompletionSource = taskCompletionSource;
             WorkID id = QueueAsyncWorkItemInner(() =>
             {
@@ -969,7 +969,7 @@ namespace PowerThreadPool
 
             CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token);
 
-            WorkBase workBase = _workManager.Get<object>(false);
+            WorkBase workBase = _workManager.Get<object>(false, this);
             workBase.TaskCompletionSource = taskCompletionSource;
             WorkID id = QueueAsyncWorkItemInner(() =>
             {
@@ -1496,7 +1496,7 @@ namespace PowerThreadPool
 
             PrepareAsyncWork(option);
 
-            WorkFunc<TResult> workBase = _workManager.Get<TResult>(true) as WorkFunc<TResult>;
+            WorkFunc<TResult> workBase = _workManager.Get<TResult>(true, this) as WorkFunc<TResult>;
             workBase.TaskCompletionSource = taskCompletionSource;
             WorkID id = QueueAsyncWorkItemInner<TResult>(() =>
             {
@@ -1533,7 +1533,7 @@ namespace PowerThreadPool
 
             CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token);
 
-            WorkFunc<TResult> workBase = _workManager.Get<TResult>(true) as WorkFunc<TResult>;
+            WorkFunc<TResult> workBase = _workManager.Get<TResult>(true, this) as WorkFunc<TResult>;
             workBase.TaskCompletionSource = taskCompletionSource;
             WorkID id = QueueAsyncWorkItemInner<TResult>(() =>
             {
