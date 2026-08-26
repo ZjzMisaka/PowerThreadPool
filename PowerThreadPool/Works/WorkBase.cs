@@ -42,12 +42,6 @@ namespace PowerThreadPool.Works
             get => _isCurrentDone;
             set => _isCurrentDone = value;
         }
-        internal volatile bool _isDone;
-        internal bool IsDone
-        {
-            get => _isDone;
-            set => _isDone = value;
-        }
         internal volatile bool _isPausing;
         internal bool IsPausing
         {
@@ -56,9 +50,7 @@ namespace PowerThreadPool.Works
         }
         internal InterlockedFlag<DependencyStatus> _dependencyStatus = DependencyStatus.Normal;
         internal Status Status { get; set; }
-        internal ManualResetEvent WaitSignal { get; set; }
         internal bool ShouldStop { get; set; }
-        internal InterlockedFlag<CanCancel> _canCancel = CanCancel.Allowed;
         internal ManualResetEvent PauseSignal { get; set; }
         internal AsyncManualResetEvent PauseAsyncSignal { get; set; }
         internal DeferredActionTimer TimeoutTimer { get; set; }
