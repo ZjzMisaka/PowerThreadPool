@@ -253,7 +253,7 @@ namespace PowerThreadPool.Works
         private void HelpWhileWaiting(CancellationToken cancellationToken, bool helpWhileWaiting)
         {
             SpinWait spinner = new SpinWait();
-            while (!WorkHandle.IsDone && helpWhileWaiting)
+            while ((WorkHandle != null && !WorkHandle.IsDone) && helpWhileWaiting)
             {
                 if (cancellationToken.IsCancellationRequested)
                     cancellationToken.ThrowIfCancellationRequested();
@@ -388,7 +388,7 @@ namespace PowerThreadPool.Works
         {
             if (PowerPool._aliveWorkDic.TryGetValue(WorkHandle.ID, out WorkHandle work))
             {
-                Work<T> workT = work as Work<T>;
+                Work<T> workT = work.Shell as Work<T>;
                 Spinner.Start(() => workT.ExecuteResult != null, true);
                 return workT.ExecuteResult.ToTypedResult<T>();
             }

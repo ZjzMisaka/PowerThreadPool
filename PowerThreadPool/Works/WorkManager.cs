@@ -42,6 +42,11 @@ namespace PowerThreadPool.Works
                 work = isFunc ? (WorkBase)new WorkFunc<T>() : new WorkAction<T>();
             }
 
+            work.WorkHandle = new WorkHandle()
+            {
+                Shell = work
+            };
+
             return work;
         }
 
@@ -51,6 +56,8 @@ namespace PowerThreadPool.Works
                 workBase.ResultType,
                 _ => new ConcurrentQueue<WorkBase>());
 
+            workBase.WorkHandle.Shell = null;
+            workBase.WorkHandle = null;
             workBase.DeadTickCount = Environment.TickCount;
 
             pool.Enqueue(workBase);
