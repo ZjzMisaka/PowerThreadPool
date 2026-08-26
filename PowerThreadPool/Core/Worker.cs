@@ -288,7 +288,10 @@ namespace PowerThreadPool
 
         private void CleanUpAndSetSignalAfterExecute(ExecuteResultBase executeResult)
         {
+            bool allowEventsAndCallback = Work.Shell.AllowEventsAndCallback;
+            bool isSync = Work.Shell.TaskCompletionSource == null;
             bool finalizeWork = false;
+            Work.Shell.IsCurrentDone = true;
             if (Work.Shell.AllowEventsAndCallback
                 && (finalizeWork = Work.Shell._canFinalizeWork.TrySet(CanFinalizeWork.NotAllowed, CanFinalizeWork.Allowed) == true))
             {
@@ -296,14 +299,12 @@ namespace PowerThreadPool
                 Work.IsDone = true;
             }
 
-            Work.Shell.IsCurrentDone = true;
-
-            if (Work.WaitSignal != null && Work.Shell.TaskCompletionSource == null)
+            if (Work.WaitSignal != null && isSync)
             {
                 Work.WaitSignal.Set();
             }
 
-            if (Work.Shell.AllowEventsAndCallback && Work.Shell.TaskCompletionSource != null
+            if (allowEventsAndCallback && !isSync
                 && finalizeWork)
             {
                 if (Work.WaitSignal != null)
@@ -348,7 +349,7 @@ namespace PowerThreadPool
                 Work.Shell.TaskCompletionSource.SetCanceled();
             }
 
-            ExecuteResultBase executeResult = Work.Shell.SetExecuteResult(null, ex, Status.ForceStopped);
+            ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
             executeResult.ID = Work.ID;
             if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
             {
@@ -508,7 +509,7 @@ namespace PowerThreadPool
                     }
                     else
                     {
-                        executeResult = Work.Shell.SetExecuteResult(result, null, Status.Succeed);
+                        executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
                     }
                     SetStatisticsCollection(executeResult, Work.Shell.StartDateTime);
                 }
@@ -528,7 +529,7 @@ namespace PowerThreadPool
                 // then AllowEventsAndCallback may not be set to true.
                 Work.Shell.AllowEventsAndCallback = true;
 
-                executeResult = Work.Shell.SetExecuteResult(null, ex, Status.Stopped);
+                executeResult = Work.SetExecuteResult(null, ex, Status.Stopped);
                 SetStatisticsCollection(executeResult, Work.Shell.StartDateTime);
             }
             catch (Exception ex)
@@ -538,7 +539,7 @@ namespace PowerThreadPool
                 // then AllowEventsAndCallback may not be set to true
                 Work.Shell.AllowEventsAndCallback = true;
 
-                executeResult = Work.Shell.SetExecuteResult(null, ex, Status.Failed);
+                executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
                 executeResult.ID = Work.ID;
                 _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
             }

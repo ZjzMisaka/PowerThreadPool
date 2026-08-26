@@ -109,7 +109,7 @@ namespace PowerThreadPool.Helpers.Dependency
             }
 
             InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{dependedId}' did not complete successfully.");
-            ExecuteResultBase executeResult = work.Shell.SetExecuteResult(null, exception, Status.Failed);
+            ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
             executeResult.ID = work.ID;
             if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
             {
@@ -269,7 +269,7 @@ namespace PowerThreadPool.Helpers.Dependency
                 }
 
                 InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{id}' did not complete successfully.");
-                ExecuteResultBase executeResult = work.Shell.SetExecuteResult(null, exception, Status.Failed);
+                ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
                 executeResult.ID = work.ID;
                 if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
                 {

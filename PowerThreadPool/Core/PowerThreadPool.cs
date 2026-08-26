@@ -524,7 +524,7 @@ namespace PowerThreadPool
 
         private void OnWorkDiscarded(WorkHandle work, RejectType rejectType)
         {
-            ExecuteResultBase executeResult = work.Shell.SetExecuteResult(null, null, Status.Canceled);
+            ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
             WorkID idErr = work.ID;
             executeResult.ID = idErr;
 

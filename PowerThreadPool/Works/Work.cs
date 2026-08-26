@@ -19,13 +19,6 @@ namespace PowerThreadPool.Works
             set => _workOption = value;
         }
 
-        internal ExecuteResult<TResult> _executeResult;
-        internal ExecuteResult<TResult> ExecuteResult
-        {
-            get => _executeResult;
-            set => _executeResult = value;
-        }
-
         internal override string Group
         {
             get => WorkOption.Group;
@@ -127,7 +120,6 @@ namespace PowerThreadPool.Works
 
             _workOption = null;
             _workOptionResult = null;
-            ExecuteResult = null;
             _allowEventsAndCallback = false;
 
             return true;
@@ -191,7 +183,7 @@ namespace PowerThreadPool.Works
                         TaskCompletionSource.SetCanceled();
                     }
 
-                    ExecuteResultBase executeResult = SetExecuteResult(null, null, Status.Canceled);
+                    ExecuteResultBase executeResult = WorkHandle.SetExecuteResult(null, null, Status.Canceled);
                     executeResult.ID = WorkHandle.ID;
                     executeResult.StartDateTime = StartDateTime;
 
@@ -287,19 +279,6 @@ namespace PowerThreadPool.Works
             }
         }
 
-        internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status)
-        {
-            Status = status;
-            ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
-            executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, _retryCount);
-            ExecuteResult = executeResult;
-            if (WorkOption.ShouldStoreResult)
-            {
-                PowerPool._resultDic[WorkHandle.ID] = ExecuteResult;
-            }
-            return executeResult;
-        }
-
         internal override bool ShouldRetry(ExecuteResultBase executeResult)
         {
             if (executeResult != null && executeResult.RetryInfo != null && executeResult.RetryInfo.StopRetry)
@@ -321,7 +300,7 @@ namespace PowerThreadPool.Works
             bool res = ShouldRetry(executeResult) && WorkOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry;
             if (res)
             {
-                ExecuteResult = null;
+                WorkHandle.ClearExecuteResult();
             }
             return res;
         }
@@ -331,7 +310,7 @@ namespace PowerThreadPool.Works
             bool res = ShouldRetry(executeResult) && WorkOption.RetryOption.RetryBehavior == RetryBehavior.Requeue;
             if (res)
             {
-                ExecuteResult = null;
+                WorkHandle.ClearExecuteResult();
             }
             return res;
         }

@@ -73,7 +73,7 @@ namespace PowerThreadPool
                 // and successfully completes without failure or being stopped, this branch will be entered.
                 // Requires direct setting of AllowEventsAndCallback and ExecuteResult.
                 workDone.Shell.AllowEventsAndCallback = true;
-                workDone.Shell.SetExecuteResult(task.Result, task.Exception, Status.Succeed);
+                workDone.SetExecuteResult(task.Result, task.Exception, Status.Succeed);
             }
 
             RegisterCompletion(task, prevCtx, id, true);
@@ -87,7 +87,7 @@ namespace PowerThreadPool
                 // and successfully completes without failure or being stopped, this branch will be entered.
                 // Requires direct setting of AllowEventsAndCallback and ExecuteResult.
                 workDone.Shell.AllowEventsAndCallback = true;
-                workDone.Shell.SetExecuteResult(null, task.Exception, Status.Succeed);
+                workDone.SetExecuteResult(null, task.Exception, Status.Succeed);
             }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)

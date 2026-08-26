@@ -42,7 +42,7 @@ namespace PowerThreadPool.Works
                 work = isFunc ? (WorkBase)new WorkFunc<T>() : new WorkAction<T>();
             }
 
-            work.WorkHandle = new WorkHandle(work, powerPool);
+            work.WorkHandle = new WorkHandleT<T>(work, powerPool);
 
             return work;
         }

@@ -11,7 +11,7 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Works
 {
-    internal sealed class WorkHandle : WorkItemBase
+    internal abstract class WorkHandle : WorkItemBase
     {
         internal WorkHandle(WorkBase shell, PowerPool powerPool)
         {
@@ -19,7 +19,9 @@ namespace PowerThreadPool.Works
             PowerPool = powerPool;
         }
         internal ManualResetEvent WaitSignal { get; set; }
-        internal ExecuteResultBase ExecuteResultBase { get; }
+
+        internal abstract ExecuteResultBase ExecuteResultBase { get; }
+
         internal volatile bool _isDone;
         internal bool IsDone
         {
@@ -29,6 +31,9 @@ namespace PowerThreadPool.Works
         internal InterlockedFlag<CanCancel> _canCancel = CanCancel.Allowed;
         internal WorkBase Shell { get; set; }
         internal PowerPool PowerPool { get; }
+
+        internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
+        internal abstract void ClearExecuteResult();
 
         internal bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
         {
@@ -174,17 +179,50 @@ namespace PowerThreadPool.Works
         {
             if (PowerPool._aliveWorkDic.TryGetValue(ID, out WorkHandle work))
             {
-                Work<T> workT = work.Shell as Work<T>;
-                Spinner.Start(() => workT.ExecuteResult != null, true);
-                return workT.ExecuteResult.ToTypedResult<T>();
+                Spinner.Start(() => work.ExecuteResultBase != null, true);
+                return work.ExecuteResultBase.ToTypedResult<T>();
             }
             else
             {
-                return ExecuteResultBase.ToTypedResult<T>();
+                return work.ExecuteResultBase.ToTypedResult<T>();
             }
         }
-
     }
+
+    internal sealed class WorkHandleT<TResult> : WorkHandle
+    {
+        internal WorkHandleT(WorkBase shell, PowerPool powerPool) : base(shell, powerPool)
+        {
+        }
+
+        internal override ExecuteResultBase ExecuteResultBase => ExecuteResult;
+        internal ExecuteResult<TResult> _executeResult;
+
+        internal ExecuteResult<TResult> ExecuteResult
+        {
+            get => _executeResult;
+            set => _executeResult = value;
+        }
+
+        internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status)
+        {
+            Shell.Status = status;
+            ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
+            executeResult.SetExecuteResult(result, exception, status, Shell.QueueDateTime, Shell.RetryOption, Shell._retryCount);
+            ExecuteResult = executeResult;
+            if (Shell.ShouldStoreResult)
+            {
+                PowerPool._resultDic[ID] = ExecuteResult;
+            }
+            return executeResult;
+        }
+
+        internal override void ClearExecuteResult()
+        {
+            ExecuteResult = null;
+        }
+    }
+
     internal abstract class WorkBase : IDisposable
     {
         internal WorkHandle WorkHandle { get; set; }
@@ -251,7 +289,6 @@ namespace PowerThreadPool.Works
         internal abstract bool Pause();
         internal abstract bool Resume();
         internal abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
-        internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
         internal abstract bool ShouldRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldImmediateRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldRequeue(ExecuteResultBase executeResult);
