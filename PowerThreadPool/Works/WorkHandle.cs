@@ -11,8 +11,21 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Works
 {
-    internal abstract class WorkBase : WorkItemBase, IDisposable
+    internal sealed class WorkHandle : WorkItemBase
     {
+        internal ManualResetEvent WaitSignal { get; set; }
+        internal volatile bool _isDone;
+        internal bool IsDone
+        {
+            get => _isDone;
+            set => _isDone = value;
+        }
+        internal InterlockedFlag<CanCancel> _canCancel = CanCancel.Allowed;
+        internal WorkBase Shell { get; set; }
+    }
+    internal abstract class WorkBase : IDisposable
+    {
+        internal WorkHandle WorkHandle { get; set; }
         internal Worker Worker { get; set; }
         internal PowerPool PowerPool { get; set; }
         internal CancellationTokenSource CancellationTokenSource { get; set; }
@@ -28,9 +41,9 @@ namespace PowerThreadPool.Works
             get
             {
                 int count = _executeCount;
-                if (PowerPool._aliveWorkDic.TryGetValue(ID, out WorkBase asyncBaseWork))
+                if (PowerPool._aliveWorkDic.TryGetValue(WorkHandle.ID, out WorkHandle asyncBaseWork))
                 {
-                    count = asyncBaseWork._executeCount;
+                    count = asyncBaseWork.Shell._executeCount;
                 }
                 return count;
             }
@@ -42,12 +55,6 @@ namespace PowerThreadPool.Works
             get => _isCurrentDone;
             set => _isCurrentDone = value;
         }
-        internal volatile bool _isDone;
-        internal bool IsDone
-        {
-            get => _isDone;
-            set => _isDone = value;
-        }
         internal volatile bool _isPausing;
         internal bool IsPausing
         {
@@ -56,9 +63,7 @@ namespace PowerThreadPool.Works
         }
         internal InterlockedFlag<DependencyStatus> _dependencyStatus = DependencyStatus.Normal;
         internal Status Status { get; set; }
-        internal ManualResetEvent WaitSignal { get; set; }
         internal bool ShouldStop { get; set; }
-        internal InterlockedFlag<CanCancel> _canCancel = CanCancel.Allowed;
         internal ManualResetEvent PauseSignal { get; set; }
         internal AsyncManualResetEvent PauseAsyncSignal { get; set; }
         internal DeferredActionTimer TimeoutTimer { get; set; }

@@ -343,7 +343,7 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public WorkID QueueWorkItem(Action action, WorkOption option)
         {
-            return QueueWorkItemCore<object>(action, null, option, null, _workManager.Get<object>(false));
+            return QueueWorkItemCore<object>(action, null, option, null, _workManager.Get<object>(false).WorkHandle);
         }
 
         /// <summary>
@@ -356,10 +356,10 @@ namespace PowerThreadPool
         {
             CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token);
             Action act = () => action(cts.Token);
-            return QueueWorkItemCore<object>(act, null, option, cts, _workManager.Get<object>(false));
+            return QueueWorkItemCore<object>(act, null, option, cts, _workManager.Get<object>(false).WorkHandle);
         }
 
-        internal WorkID QueueAsyncWorkItemInner(Action action, WorkOption option, CancellationTokenSource cts, WorkBase work)
+        internal WorkID QueueAsyncWorkItemInner(Action action, WorkOption option, CancellationTokenSource cts, WorkHandle work)
         {
             return QueueWorkItemCore<object>(action, null, option, cts, work);
         }
@@ -753,7 +753,7 @@ namespace PowerThreadPool
         /// <returns>work id</returns>
         public WorkID QueueWorkItem<TResult>(Func<TResult> function, WorkOption option)
         {
-            return QueueWorkItemCore(null, function, option, null, _workManager.Get<TResult>(true));
+            return QueueWorkItemCore(null, function, option, null, _workManager.Get<TResult>(true).WorkHandle);
         }
 
         /// <summary>
@@ -767,10 +767,10 @@ namespace PowerThreadPool
         {
             CancellationTokenSource cts = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSource.Token);
             Func<TResult> func = () => function(cts.Token);
-            return QueueWorkItemCore(null, func, option, cts, _workManager.Get<TResult>(true));
+            return QueueWorkItemCore(null, func, option, cts, _workManager.Get<TResult>(true).WorkHandle);
         }
 
-        internal WorkID QueueAsyncWorkItemInner<TResult>(Func<TResult> function, WorkOption option, CancellationTokenSource cts, WorkBase workBase)
+        internal WorkID QueueAsyncWorkItemInner<TResult>(Func<TResult> function, WorkOption option, CancellationTokenSource cts, WorkHandle workBase)
         {
             return QueueWorkItemCore(null, function, option, cts, workBase);
         }
@@ -819,23 +819,23 @@ namespace PowerThreadPool
         public WorkID QueueWorkItem<TResult>(Func<object[], CancellationToken, TResult> function, object[] param, WorkOption option)
             => QueueWorkItem<TResult>(DelegateHelper.ToNormalFunc<TResult>(function, param), option);
 
-        private WorkID QueueWorkItemCore<TResult>(Action action, Func<TResult> function, WorkOption option, CancellationTokenSource cts, WorkBase workBase)
+        private WorkID QueueWorkItemCore<TResult>(Action action, Func<TResult> function, WorkOption option, CancellationTokenSource cts, WorkHandle workBase)
         {
             CheckDisposed();
             CheckPowerPoolOption();
 
             WorkID workID = CreateID(option);
-            WorkBase work = InitWork(workID, action, function, option, cts, workBase);
+            WorkHandle work = InitWork(workID, action, function, option, cts, workBase);
 
             bool registeredDependents = _workDependencyController.Register(work, option.Dependents, out bool workNotSuccessfullyCompleted);
-            if (work._dependencyStatus.InterlockedValue == DependencyStatus.Failed)
+            if (work.Shell._dependencyStatus.InterlockedValue == DependencyStatus.Failed)
             {
                 return workID;
             }
 
-            if (work.Group != null)
+            if (work.Shell.Group != null)
             {
-                _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<WorkID>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
+                _workGroupDic.AddOrUpdate(work.Shell.Group, new ConcurrentSet<WorkID>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
             }
 
             if (!PowerPoolOption.StartSuspended && PoolStopping)
@@ -855,23 +855,23 @@ namespace PowerThreadPool
             return workID;
         }
 
-        private WorkBase InitWork<TResult>(WorkID workID, Action action, Func<TResult> function, WorkOption option, CancellationTokenSource cts, WorkBase workBase)
+        private WorkHandle InitWork<TResult>(WorkID workID, Action action, Func<TResult> function, WorkOption option, CancellationTokenSource cts, WorkHandle workBase)
         {
-            WorkBase work = null;
+            WorkHandle work = null;
             if (action != null)
             {
-                work = workBase.Init(this, workID, option, cts);
-                work.SetAction(action, true);
+                work = workBase.Shell.Init(this, workID, option, cts).WorkHandle;
+                work.Shell.SetAction(action, true);
             }
             else
             {
-                work = workBase.Init(this, workID, option, cts);
-                work.SetFunction(function, true);
+                work = workBase.Shell.Init(this, workID, option, cts).WorkHandle;
+                work.Shell.SetFunction(function, true);
             }
             return work;
         }
 
-        private void SuspendOrSetWork(bool startSuspended, bool registeredDependents, WorkID workID, WorkBase work)
+        private void SuspendOrSetWork(bool startSuspended, bool registeredDependents, WorkID workID, WorkHandle work)
         {
             if (startSuspended)
             {

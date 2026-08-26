@@ -24,13 +24,13 @@ namespace PowerThreadPool
             _pauseSignal.WaitOne();
 
             Worker worker;
-            WorkBase pauseWork;
+            WorkHandle pauseWork;
             GetPauseWork(out worker, out pauseWork);
 
             if (pauseWork != null)
             {
                 worker.PauseTimer();
-                pauseWork.PauseSignal.WaitOne();
+                pauseWork.Shell.PauseSignal.WaitOne();
                 worker.ResumeTimer();
             }
         }
@@ -44,13 +44,13 @@ namespace PowerThreadPool
             await _pauseAsyncSignal.WaitAsync();
 
             Worker worker;
-            WorkBase pauseWork;
+            WorkHandle pauseWork;
             GetPauseWork(out worker, out pauseWork);
 
             if (pauseWork != null)
             {
                 worker.PauseTimer();
-                await pauseWork.PauseAsyncSignal.WaitAsync();
+                await pauseWork.Shell.PauseAsyncSignal.WaitAsync();
                 worker.ResumeTimer();
             }
         }
@@ -63,19 +63,19 @@ namespace PowerThreadPool
             _pauseAsyncSignal.WaitAsync().Wait();
 
             Worker worker;
-            WorkBase pauseWork;
+            WorkHandle pauseWork;
             GetPauseWork(out worker, out pauseWork);
 
             if (pauseWork != null)
             {
                 worker.PauseTimer();
-                pauseWork.PauseAsyncSignal.WaitAsync().Wait();
+                pauseWork.Shell.PauseAsyncSignal.WaitAsync().Wait();
                 worker.ResumeTimer();
             }
         }
 #endif
 
-        private void GetPauseWork(out Worker worker, out WorkBase pauseWork)
+        private void GetPauseWork(out Worker worker, out WorkHandle pauseWork)
         {
             // Directly get current thread worker since it is guaranteed to exist
             // If not, just let Work execute failed
@@ -84,7 +84,7 @@ namespace PowerThreadPool
                 throw new InvalidOperationException("PauseIfRequested must be called on a PowerPool worker thread.");
             }
             pauseWork = null;
-            if (worker.Work.IsPausing)
+            if (worker.Work.Shell.IsPausing)
             {
                 pauseWork = worker.Work;
             }
@@ -101,7 +101,7 @@ namespace PowerThreadPool
         /// </param>
         public void StopIfRequested(Func<bool> beforeStop = null)
         {
-            WorkBase work = null;
+            WorkHandle work = null;
 
             if (!CheckIfRequestedStopAndGetWork(ref work))
             {
@@ -122,7 +122,7 @@ namespace PowerThreadPool
         {
             if (GetCurrentThreadWorker(out Worker worker))
             {
-                worker.Work.AllowEventsAndCallback = true;
+                worker.Work.Shell.AllowEventsAndCallback = true;
             }
             if (beforeStop != null && !beforeStop())
             {
@@ -132,7 +132,7 @@ namespace PowerThreadPool
             throw new WorkStopException();
         }
 
-        private void StopByIDIfRequested(WorkBase work, Func<bool> beforeStop = null)
+        private void StopByIDIfRequested(WorkHandle work, Func<bool> beforeStop = null)
         {
             if (beforeStop != null && !beforeStop())
             {
@@ -140,19 +140,19 @@ namespace PowerThreadPool
             }
             // If the result needs to be stored, there is a possibility of fetching the result through Group.
             // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-            if (work.Group == null || !work.ShouldStoreResult)
+            if (work.Shell.Group == null || !work.Shell.ShouldStoreResult)
             {
-                if (work.TaskCompletionSource == null)
+                if (work.Shell.TaskCompletionSource == null)
                 {
                     if (_aliveWorkDic.TryRemove(work.ID, out _))
                     {
-                        _workManager.Set(work);
+                        _workManager.Set(work.Shell);
                     }
                 }
             }
-            if (work.Group != null && !work.ShouldStoreResult)
+            if (work.Shell.Group != null && !work.Shell.ShouldStoreResult)
             {
-                if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<WorkID> idSet))
+                if (_workGroupDic.TryGetValue(work.Shell.Group, out ConcurrentSet<WorkID> idSet))
                 {
                     idSet.Remove(work.ID);
                 }
@@ -209,7 +209,7 @@ namespace PowerThreadPool
         /// Return true if stop.
         /// If work is null, it means stop all, otherwise it means stopping based on work id.
         /// </returns>
-        private bool CheckIfRequestedStopAndGetWork(ref WorkBase work)
+        private bool CheckIfRequestedStopAndGetWork(ref WorkHandle work)
         {
             if (_cancellationTokenSource.Token.IsCancellationRequested)
             {
@@ -308,10 +308,10 @@ namespace PowerThreadPool
                 return false;
             }
 
-            WorkBase work;
+            WorkHandle work;
             if (TryGetSuspendOrAliveWork(id, out work))
             {
-                return work.Wait(cancellationToken, helpWhileWaiting);
+                return work.Shell.Wait(cancellationToken, helpWhileWaiting);
             }
             else
             {
@@ -479,10 +479,10 @@ namespace PowerThreadPool
                 return Task.FromResult(false);
             }
 
-            WorkBase work;
+            WorkHandle work;
             if (TryGetSuspendOrAliveWork(id, out work))
             {
-                return work.WaitAsync(cancellationToken);
+                return work.Shell.WaitAsync(cancellationToken);
             }
             else
             {
@@ -584,7 +584,7 @@ namespace PowerThreadPool
                 return null;
             }
 
-            WorkBase work;
+            WorkHandle work;
             ExecuteResultBase executeResultBase = null;
             if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work) || _workDependencyController._workDict.TryGetValue(id, out work) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
             {
@@ -594,7 +594,7 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    ExecuteResult<TResult> res = work.Fetch<TResult>(cancellationToken, helpWhileWaiting);
+                    ExecuteResult<TResult> res = work.Shell.Fetch<TResult>(cancellationToken, helpWhileWaiting);
                     if (removeAfterFetch)
                     {
                         RemoveAfterFetch(work);
@@ -661,16 +661,16 @@ namespace PowerThreadPool
         {
             List<ExecuteResult<TResult>> resultList = new List<ExecuteResult<TResult>>();
 
-            List<WorkBase> workList = new List<WorkBase>();
+            List<WorkHandle> workList = new List<WorkHandle>();
 
             foreach (WorkID id in idList)
             {
                 GetFetchWorkByIDList(resultList, workList, id, removeAfterFetch);
             }
 
-            foreach (WorkBase work in workList)
+            foreach (WorkHandle work in workList)
             {
-                resultList.Add(work.Fetch<TResult>(cancellationToken, helpWhileWaiting));
+                resultList.Add(work.Shell.Fetch<TResult>(cancellationToken, helpWhileWaiting));
 
                 if (removeAfterFetch)
                 {
@@ -775,7 +775,7 @@ namespace PowerThreadPool
                 return null;
             }
 
-            WorkBase work;
+            WorkHandle work;
             ExecuteResultBase executeResultBase = null;
             if (_suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work) || _workDependencyController._workDict.TryGetValue(id, out work) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
             {
@@ -785,7 +785,7 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    ExecuteResult<TResult> res = await work.FetchAsync<TResult>(cancellationToken);
+                    ExecuteResult<TResult> res = await work.Shell.FetchAsync<TResult>(cancellationToken);
                     if (removeAfterFetch)
                     {
                         RemoveAfterFetch(work);
@@ -885,16 +885,16 @@ namespace PowerThreadPool
         {
             List<ExecuteResult<TResult>> resultList = new List<ExecuteResult<TResult>>();
 
-            List<WorkBase> workList = new List<WorkBase>();
+            List<WorkHandle> workList = new List<WorkHandle>();
 
             foreach (WorkID id in idList)
             {
                 GetFetchWorkByIDList(resultList, workList, id, removeAfterFetch);
             }
 
-            foreach (WorkBase work in workList)
+            foreach (WorkHandle work in workList)
             {
-                resultList.Add(await work.FetchAsync<TResult>(cancellationToken));
+                resultList.Add(await work.Shell.FetchAsync<TResult>(cancellationToken));
 
                 if (removeAfterFetch)
                 {
@@ -957,9 +957,9 @@ namespace PowerThreadPool
         }
 #endif
 
-        private void GetFetchWorkByIDList<TResult>(List<ExecuteResult<TResult>> resultList, List<WorkBase> workList, WorkID id, bool removeAfterFetch)
+        private void GetFetchWorkByIDList<TResult>(List<ExecuteResult<TResult>> resultList, List<WorkHandle> workList, WorkID id, bool removeAfterFetch)
         {
-            WorkBase workBase;
+            WorkHandle workBase;
             ExecuteResultBase executeResultBase = null;
             if (_suspendedWork.TryGetValue(id, out workBase) || _aliveWorkDic.TryGetValue(id, out workBase) || (removeAfterFetch ? _resultDic.TryRemove(id, out executeResultBase) : _resultDic.TryGetValue(id, out executeResultBase)))
             {
@@ -1085,9 +1085,9 @@ namespace PowerThreadPool
             }
 
             bool res = false;
-            if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
+            if (_aliveWorkDic.TryGetValue(id, out WorkHandle work))
             {
-                res = work.Stop(forceStop);
+                res = work.Shell.Stop(forceStop);
             }
 
             _workDependencyController.Cancel(id, out _);
@@ -1161,10 +1161,10 @@ namespace PowerThreadPool
             {
                 return false;
             }
-            if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
+            if (_aliveWorkDic.TryGetValue(id, out WorkHandle work))
             {
                 _pausingWorkSet.Add(work);
-                return work.Pause();
+                return work.Shell.Pause();
             }
             else
             {
@@ -1204,9 +1204,9 @@ namespace PowerThreadPool
 
             if (resumeWorkPausedByID)
             {
-                foreach (WorkBase work in _pausingWorkSet)
+                foreach (WorkHandle work in _pausingWorkSet)
                 {
-                    work.Resume();
+                    work.Shell.Resume();
                 }
                 _pausingWorkSet.Clear();
             }
@@ -1224,10 +1224,10 @@ namespace PowerThreadPool
             {
                 res = false;
             }
-            else if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
+            else if (_aliveWorkDic.TryGetValue(id, out WorkHandle work))
             {
                 _pausingWorkSet.Remove(work);
-                res = work.Resume();
+                res = work.Shell.Resume();
             }
             return res;
         }
@@ -1259,8 +1259,8 @@ namespace PowerThreadPool
         {
             foreach (var kv in _aliveWorkDic)
             {
-                WorkBase work = kv.Value;
-                work.Cancel(true);
+                WorkHandle work = kv.Value;
+                work.Shell.Cancel(true);
             }
 
             _workDependencyController.Cancel();
@@ -1286,7 +1286,7 @@ namespace PowerThreadPool
             }
 
             bool res = false;
-            WorkBase work = default;
+            WorkHandle work = default;
 
             bool isQueuedAndDidNotDecreasedCountInside = false;
 
@@ -1307,11 +1307,11 @@ namespace PowerThreadPool
             }
             else if (_aliveWorkDic.TryGetValue(id, out work))
             {
-                res = work.Cancel(true);
+                res = work.Shell.Cancel(true);
                 isQueuedAndDidNotDecreasedCountInside = false;
                 if (res && _aliveWorkDic.TryRemove(id, out _))
                 {
-                    _workManager.Set(work);
+                    _workManager.Set(work.Shell);
                 }
             }
             else
@@ -1319,7 +1319,7 @@ namespace PowerThreadPool
                 res = false;
             }
 
-            if (res && work.TaskCompletionSource != null && isQueuedAndDidNotDecreasedCountInside)
+            if (res && work.Shell.TaskCompletionSource != null && isQueuedAndDidNotDecreasedCountInside)
             {
                 Interlocked.Decrement(ref _asyncWorkCount);
             }
@@ -1347,16 +1347,16 @@ namespace PowerThreadPool
             return failedIDList;
         }
 
-        private void RemoveAfterFetch(WorkBase work)
+        private void RemoveAfterFetch(WorkHandle work)
         {
             _resultDic.TryRemove(work.ID, out _);
             if (_aliveWorkDic.TryRemove(work.ID, out _))
             {
-                if (work.Group != null)
+                if (work.Shell.Group != null)
                 {
-                    RemoveWorkFromGroup(work.Group, work);
+                    RemoveWorkFromGroup(work.Shell.Group, work);
                 }
-                _workManager.Set(work);
+                _workManager.Set(work.Shell);
             }
 
             CheckPoolIdle();
@@ -1364,7 +1364,7 @@ namespace PowerThreadPool
 
         internal bool HelpWhileWaiting()
         {
-            List<WorkBase> works = null;
+            List<WorkHandle> works = null;
             if (GetCurrentThreadBaseWorker(out Worker workerCurrentThread))
             {
                 if (workerCurrentThread.WaitingWorkCount >= 1
@@ -1393,7 +1393,7 @@ namespace PowerThreadPool
 
             if (works != null && works.Count > 0)
             {
-                WorkBase work = works[0];
+                WorkHandle work = works[0];
 
                 HelpWhileWaitingCore(work);
 
@@ -1407,7 +1407,7 @@ namespace PowerThreadPool
             }
         }
 
-        private void HelpWhileWaitingCore(WorkBase work)
+        private void HelpWhileWaitingCore(WorkHandle work)
         {
             Interlocked.Increment(ref _runningWorkerCount);
             InvokeRunningWorkerCountChangedEvent(true);
@@ -1422,7 +1422,7 @@ namespace PowerThreadPool
             InvokeRunningWorkerCountChangedEvent(false);
         }
 
-        private bool TryGetSuspendOrAliveWork(WorkID id, out WorkBase work)
+        private bool TryGetSuspendOrAliveWork(WorkID id, out WorkHandle work)
         {
             return _suspendedWork.TryGetValue(id, out work) || _aliveWorkDic.TryGetValue(id, out work);
         }

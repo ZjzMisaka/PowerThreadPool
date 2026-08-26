@@ -45,12 +45,12 @@ namespace PowerThreadPool
         internal ConcurrentQueue<int> _idleWorkerQueue = new ConcurrentQueue<int>();
 
         internal ConcurrentQueue<WorkID> _suspendedWorkQueue = new ConcurrentQueue<WorkID>();
-        internal ConcurrentDictionary<WorkID, WorkBase> _suspendedWork = new ConcurrentDictionary<WorkID, WorkBase>();
+        internal ConcurrentDictionary<WorkID, WorkHandle> _suspendedWork = new ConcurrentDictionary<WorkID, WorkHandle>();
         internal ConcurrentQueue<WorkID> _stopSuspendedWorkQueue = new ConcurrentQueue<WorkID>();
-        internal ConcurrentDictionary<WorkID, WorkBase> _stopSuspendedWork = new ConcurrentDictionary<WorkID, WorkBase>();
+        internal ConcurrentDictionary<WorkID, WorkHandle> _stopSuspendedWork = new ConcurrentDictionary<WorkID, WorkHandle>();
 
-        internal ConcurrentDictionary<WorkID, WorkBase> _aliveWorkDic = new ConcurrentDictionary<WorkID, WorkBase>();
-        private ConcurrentSet<WorkBase> _pausingWorkSet = new ConcurrentSet<WorkBase>();
+        internal ConcurrentDictionary<WorkID, WorkHandle> _aliveWorkDic = new ConcurrentDictionary<WorkID, WorkHandle>();
+        private ConcurrentSet<WorkHandle> _pausingWorkSet = new ConcurrentSet<WorkHandle>();
 
         internal ConcurrentDictionary<WorkID, ExecuteResultBase> _resultDic = new ConcurrentDictionary<WorkID, ExecuteResultBase>();
 
@@ -135,7 +135,7 @@ namespace PowerThreadPool
             get
             {
                 List<WorkID> list = _aliveWorkDic.Values
-                    .Where(x => x.ExecuteCount == 0)
+                    .Where(x => x.Shell.ExecuteCount == 0)
                     .Select(x => x.ID).ToList();
                 return list;
             }
@@ -293,9 +293,9 @@ namespace PowerThreadPool
 
             while (_suspendedWorkQueue.TryDequeue(out WorkID key))
             {
-                if (_suspendedWork.TryGetValue(key, out WorkBase work))
+                if (_suspendedWork.TryGetValue(key, out WorkHandle work))
                 {
-                    ConcurrentSet<WorkID> dependents = work.Dependents;
+                    ConcurrentSet<WorkID> dependents = work.Shell.Dependents;
                     if (dependents == null || dependents.Count == 0)
                     {
                         if (PoolStopping)
@@ -395,13 +395,13 @@ namespace PowerThreadPool
         /// Set a work into a worker's work queue.
         /// </summary>
         /// <param name="work"></param>
-        internal void SetWork(WorkBase work)
+        internal void SetWork(WorkHandle work)
         {
             CheckPoolStart();
 
             Worker worker = null;
 
-            WorkPlacementPolicy workPlacementPolicy = work.WorkPlacementPolicy;
+            WorkPlacementPolicy workPlacementPolicy = work.Shell.WorkPlacementPolicy;
             // In most cases, the loop will not iterate more than once.
             int tryCount = 0;
             while (true)
@@ -415,7 +415,7 @@ namespace PowerThreadPool
                     break;
                 }
 
-                if ((worker = GetWorker(work.LongRunning, tryCount < 3 ? workPlacementPolicy : WorkPlacementPolicy.PreferIdleThenLeastLoaded, ref rejected)) != null)
+                if ((worker = GetWorker(work.Shell.LongRunning, tryCount < 3 ? workPlacementPolicy : WorkPlacementPolicy.PreferIdleThenLeastLoaded, ref rejected)) != null)
                 {
                     break;
                 }
@@ -449,14 +449,14 @@ namespace PowerThreadPool
                 ++tryCount;
             }
 
-            if ((work.TaskCompletionSource == null || work.IsFirstAsyncWork) && PowerPoolOption.EnableStatisticsCollection)
+            if ((work.Shell.TaskCompletionSource == null || work.Shell.IsFirstAsyncWork) && PowerPoolOption.EnableStatisticsCollection)
             {
-                work.QueueDateTime = DateTime.UtcNow;
+                work.Shell.QueueDateTime = DateTime.UtcNow;
             }
             worker.SetWork(work, true);
         }
 
-        private bool OnRejected(WorkBase work, out Worker worker)
+        private bool OnRejected(WorkHandle work, out Worker worker)
         {
             worker = null;
 
@@ -509,7 +509,7 @@ namespace PowerThreadPool
                     // This may cause excessive spinning with no progress.
                     // However, this is due to an unreasonable user configuration, so no handling is implemented;
                     // a warning is provided in the documentation instead.
-                    if (workerDiscard.DiscardOneWork(out WorkBase discardWork))
+                    if (workerDiscard.DiscardOneWork(out WorkHandle discardWork))
                     {
                         OnWorkDiscarded(discardWork, rejectType);
                         Interlocked.Decrement(ref _waitingWorkCount);
@@ -522,9 +522,9 @@ namespace PowerThreadPool
             return false;
         }
 
-        private void OnWorkDiscarded(WorkBase work, RejectType rejectType)
+        private void OnWorkDiscarded(WorkHandle work, RejectType rejectType)
         {
-            ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
+            ExecuteResultBase executeResult = work.Shell.SetExecuteResult(null, null, Status.Canceled);
             WorkID idErr = work.ID;
             executeResult.ID = idErr;
 
@@ -825,7 +825,7 @@ namespace PowerThreadPool
 
                 while (_stopSuspendedWorkQueue.TryDequeue(out WorkID key))
                 {
-                    if (_stopSuspendedWork.TryGetValue(key, out WorkBase work))
+                    if (_stopSuspendedWork.TryGetValue(key, out WorkHandle work))
                     {
                         SetWork(work);
                     }
@@ -839,11 +839,11 @@ namespace PowerThreadPool
         /// Add worker into _aliveWorkDic
         /// </summary>
         /// <param name="work"></param>
-        internal void SetWorkOwner(WorkBase work)
+        internal void SetWorkOwner(WorkHandle work)
         {
-            if (!work.IsAlive)
+            if (!work.Shell.IsAlive)
             {
-                work.IsAlive = true;
+                work.Shell.IsAlive = true;
                 _aliveWorkDic[work.ID] = work;
             }
         }

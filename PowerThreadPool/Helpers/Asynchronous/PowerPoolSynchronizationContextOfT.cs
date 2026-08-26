@@ -30,8 +30,9 @@ namespace PowerThreadPool.Helpers.Asynchronous
             {
                 return;
             }
-            _work._canCancel.TrySet(Constants.CanCancel.Allowed, Constants.CanCancel.NotAllowed);
-            _work.IsCurrentDone = false;
+            WorkBase workBase = _work as WorkBase;
+            workBase.WorkHandle._canCancel.TrySet(Constants.CanCancel.Allowed, Constants.CanCancel.NotAllowed);
+            workBase.IsCurrentDone = false;
             _work.SetFunction(() =>
             {
                 SetSynchronizationContext(this);
@@ -56,7 +57,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
                 return res;
             }, false);
             Interlocked.Increment(ref _powerPool._waitingWorkCount);
-            _powerPool.SetWork(_work);
+            _powerPool.SetWork(workBase.WorkHandle);
         }
     }
 }

@@ -7518,7 +7518,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool(new PowerPoolOption());
             WorkOption<string> workOption = new WorkOption<string>();
             Work<string> work = new WorkFunc<string>(powerPool, null, () => { return ""; }, workOption, null);
-            work.IsDone = false;
+            work.WorkHandle.IsDone = false;
             Worker worker = new Worker(powerPool);
             worker.WorkStealability.InterlockedValue = WorkStealability.NotAllowed;
             work.Worker = worker;
@@ -7553,7 +7553,7 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool(new PowerPoolOption());
             WorkOption<string> workOption = new WorkOption<string>();
             Work<string> work = new WorkFunc<string>(powerPool, null, () => { return ""; }, workOption, null);
-            work.IsDone = false;
+            work.WorkHandle.IsDone = false;
             Worker worker = new Worker(powerPool);
             worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
             work.Worker = worker;

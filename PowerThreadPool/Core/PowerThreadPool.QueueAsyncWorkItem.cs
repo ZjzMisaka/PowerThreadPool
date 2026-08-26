@@ -67,13 +67,13 @@ namespace PowerThreadPool
 
         private void RegisterCompletionWithResult<TResult>(Task<TResult> task, SynchronizationContext prevCtx, WorkID id)
         {
-            if (task.IsCompleted && _aliveWorkDic.TryGetValue(id, out WorkBase workDone))
+            if (task.IsCompleted && _aliveWorkDic.TryGetValue(id, out WorkHandle workDone))
             {
                 // If the incoming asynchronous work doesn't execute await,
                 // and successfully completes without failure or being stopped, this branch will be entered.
                 // Requires direct setting of AllowEventsAndCallback and ExecuteResult.
-                workDone.AllowEventsAndCallback = true;
-                workDone.SetExecuteResult(task.Result, task.Exception, Status.Succeed);
+                workDone.Shell.AllowEventsAndCallback = true;
+                workDone.Shell.SetExecuteResult(task.Result, task.Exception, Status.Succeed);
             }
 
             RegisterCompletion(task, prevCtx, id, true);
@@ -81,13 +81,13 @@ namespace PowerThreadPool
 
         private void RegisterCompletion(Task task, SynchronizationContext prevCtx, WorkID id, bool hasRes = false)
         {
-            if (!hasRes && task.IsCompleted && _aliveWorkDic.TryGetValue(id, out WorkBase workDone))
+            if (!hasRes && task.IsCompleted && _aliveWorkDic.TryGetValue(id, out WorkHandle workDone))
             {
                 // If the incoming asynchronous work doesn't execute await,
                 // and successfully completes without failure or being stopped, this branch will be entered.
                 // Requires direct setting of AllowEventsAndCallback and ExecuteResult.
-                workDone.AllowEventsAndCallback = true;
-                workDone.SetExecuteResult(null, task.Exception, Status.Succeed);
+                workDone.Shell.AllowEventsAndCallback = true;
+                workDone.Shell.SetExecuteResult(null, task.Exception, Status.Succeed);
             }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
@@ -98,7 +98,7 @@ namespace PowerThreadPool
             {
                 SynchronizationContext.SetSynchronizationContext(prevCtx);
 
-                if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
+                if (_aliveWorkDic.TryGetValue(id, out WorkHandle work))
                 {
                     if (work.WaitSignal != null)
                     {
@@ -940,15 +940,15 @@ namespace PowerThreadPool
             WorkID id = QueueAsyncWorkItemInner(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
-                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, workBase, null);
+                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, workBase.WorkHandle, null);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task taskFunc = asyncFunc();
                 ThrowInnerIfNeeded(taskFunc);
 
                 ctx.SetTask(taskFunc);
-                RegisterCompletion(taskFunc, prevCtx, workBase.ID);
-            }, option, null, workBase);
+                RegisterCompletion(taskFunc, prevCtx, workBase.WorkHandle.ID);
+            }, option, null, workBase.WorkHandle);
 
             return id;
         }
@@ -974,15 +974,15 @@ namespace PowerThreadPool
             WorkID id = QueueAsyncWorkItemInner(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
-                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, workBase, cts);
+                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, workBase.WorkHandle, cts);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task taskFunc = asyncFunc(cts.Token);
                 ThrowInnerIfNeeded(taskFunc);
 
                 ctx.SetTask(taskFunc);
-                RegisterCompletion(taskFunc, prevCtx, workBase.ID);
-            }, option, cts, workBase);
+                RegisterCompletion(taskFunc, prevCtx, workBase.WorkHandle.ID);
+            }, option, cts, workBase.WorkHandle);
 
             return id;
         }
@@ -1508,10 +1508,10 @@ namespace PowerThreadPool
                 ThrowInnerIfNeeded(taskFunc);
 
                 ctx.SetTask(taskFunc);
-                RegisterCompletionWithResult(taskFunc, prevCtx, workBase.ID);
+                RegisterCompletionWithResult(taskFunc, prevCtx, workBase.WorkHandle.ID);
 
                 return default;
-            }, option, null, workBase);
+            }, option, null, workBase.WorkHandle);
 
             return id;
         }
@@ -1545,10 +1545,10 @@ namespace PowerThreadPool
                 ThrowInnerIfNeeded(taskFunc);
 
                 ctx.SetTask(taskFunc);
-                RegisterCompletionWithResult(taskFunc, prevCtx, workBase.ID);
+                RegisterCompletionWithResult(taskFunc, prevCtx, workBase.WorkHandle.ID);
 
                 return default;
-            }, option, cts, workBase);
+            }, option, cts, workBase.WorkHandle);
 
             return id;
         }

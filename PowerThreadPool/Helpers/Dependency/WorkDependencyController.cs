@@ -14,7 +14,7 @@ namespace PowerThreadPool.Helpers.Dependency
 {
     internal class WorkDependencyController
     {
-        internal ConcurrentDictionary<WorkID, WorkBase> _workDict = new ConcurrentDictionary<WorkID, WorkBase>();
+        internal ConcurrentDictionary<WorkID, WorkHandle> _workDict = new ConcurrentDictionary<WorkID, WorkHandle>();
         internal ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>> _workChildrenDict = new ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>>();
         private CallbackEndEventHandler _callbackEndHandler;
         private PowerPool _powerPool;
@@ -25,7 +25,7 @@ namespace PowerThreadPool.Helpers.Dependency
             _powerPool = powerPool;
         }
 
-        internal bool Register(WorkBase work, ConcurrentSet<WorkID> dependents, out bool workNotSuccessfullyCompleted)
+        internal bool Register(WorkHandle work, ConcurrentSet<WorkID> dependents, out bool workNotSuccessfullyCompleted)
         {
             workNotSuccessfullyCompleted = false;
 
@@ -84,7 +84,7 @@ namespace PowerThreadPool.Helpers.Dependency
                 }
 
                 if (dependents.Count == 0 &&
-                    work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
+                    work.Shell._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
                 {
                     return false;
                 }
@@ -97,19 +97,19 @@ namespace PowerThreadPool.Helpers.Dependency
             return false;
         }
 
-        private bool OnPrecedingWorkNotSuccessfullyCompletedWhenRegister(WorkBase work, WorkID dependedId)
+        private bool OnPrecedingWorkNotSuccessfullyCompletedWhenRegister(WorkHandle work, WorkID dependedId)
         {
             bool workNotSuccessfullyCompleted;
-            work._dependencyStatus.InterlockedValue = DependencyStatus.Failed;
+            work.Shell._dependencyStatus.InterlockedValue = DependencyStatus.Failed;
             _workDict.TryRemove(work.ID, out _);
 
             if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
             {
-                work.QueueDateTime = DateTime.UtcNow;
+                work.Shell.QueueDateTime = DateTime.UtcNow;
             }
 
             InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{dependedId}' did not complete successfully.");
-            ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
+            ExecuteResultBase executeResult = work.Shell.SetExecuteResult(null, exception, Status.Failed);
             executeResult.ID = work.ID;
             if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
             {
@@ -120,7 +120,7 @@ namespace PowerThreadPool.Helpers.Dependency
 
             _powerPool.InvokeWorkEndedEvent(executeResult);
 
-            work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
+            work.Shell.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
 
             _powerPool.WorkCallbackEnd(work, Status.Failed);
 
@@ -129,10 +129,10 @@ namespace PowerThreadPool.Helpers.Dependency
             return workNotSuccessfullyCompleted;
         }
 
-        private void SetWorkIfDependencySolved(ConcurrentSet<WorkID> dependents, WorkBase work)
+        private void SetWorkIfDependencySolved(ConcurrentSet<WorkID> dependents, WorkHandle work)
         {
             if (dependents.Count == 0 &&
-                work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
+                work.Shell._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
             {
                 _powerPool.SetWork(work);
             }
@@ -160,7 +160,7 @@ namespace PowerThreadPool.Helpers.Dependency
             _powerPool.CheckPoolIdle();
         }
 
-        internal bool Cancel(WorkID id, out WorkBase work)
+        internal bool Cancel(WorkID id, out WorkHandle work)
         {
             bool res = false;
             if (_workDict.TryRemove(id, out work))
@@ -214,7 +214,7 @@ namespace PowerThreadPool.Helpers.Dependency
             return false;
         }
 
-        private void OnCallbackEnd(WorkBase endWork, Status status)
+        private void OnCallbackEnd(WorkHandle endWork, Status status)
         {
             WorkID id = endWork.ID;
 
@@ -228,9 +228,9 @@ namespace PowerThreadPool.Helpers.Dependency
             {
                 foreach (WorkID workID in childWorkSet)
                 {
-                    if (_workDict.TryGetValue(workID, out WorkBase work) && work.Dependents.Remove(id))
+                    if (_workDict.TryGetValue(workID, out WorkHandle work) && work.Shell.Dependents.Remove(id))
                     {
-                        SetWorkIfDependencySolved(work.Dependents, work);
+                        SetWorkIfDependencySolved(work.Shell.Dependents, work);
                     }
                 }
             }
@@ -242,7 +242,7 @@ namespace PowerThreadPool.Helpers.Dependency
         {
             Stack<WorkID> stack = new Stack<WorkID>();
             HashSet<WorkID> visited = new HashSet<WorkID>();
-            List<WorkBase> newlyFailed = new List<WorkBase>();
+            List<WorkHandle> newlyFailed = new List<WorkHandle>();
 
             stack.Push(id);
             visited.Add(id);
@@ -259,17 +259,17 @@ namespace PowerThreadPool.Helpers.Dependency
             _powerPool.CheckPoolIdle();
         }
 
-        private void CauseAcquiredWorksToFail(WorkID id, List<WorkBase> newlyFailed)
+        private void CauseAcquiredWorksToFail(WorkID id, List<WorkHandle> newlyFailed)
         {
-            foreach (WorkBase work in newlyFailed)
+            foreach (WorkHandle work in newlyFailed)
             {
-                if (_powerPool.PowerPoolOption.EnableStatisticsCollection && work.QueueDateTime == default)
+                if (_powerPool.PowerPoolOption.EnableStatisticsCollection && work.Shell.QueueDateTime == default)
                 {
-                    work.QueueDateTime = DateTime.UtcNow;
+                    work.Shell.QueueDateTime = DateTime.UtcNow;
                 }
 
                 InvalidOperationException exception = new InvalidOperationException($"Work '{work.ID}' failed because dependency '{id}' did not complete successfully.");
-                ExecuteResultBase executeResult = work.SetExecuteResult(null, exception, Status.Failed);
+                ExecuteResultBase executeResult = work.Shell.SetExecuteResult(null, exception, Status.Failed);
                 executeResult.ID = work.ID;
                 if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
                 {
@@ -279,12 +279,12 @@ namespace PowerThreadPool.Helpers.Dependency
                 _powerPool._resultDic[work.ID] = executeResult;
 
                 _powerPool.InvokeWorkEndedEvent(executeResult);
-                work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
+                work.Shell.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
                 _powerPool.WorkCallbackEnd(work, Status.Failed);
             }
         }
 
-        private void GetAllFailedChildren(Stack<WorkID> stack, HashSet<WorkID> visited, List<WorkBase> newlyFailed)
+        private void GetAllFailedChildren(Stack<WorkID> stack, HashSet<WorkID> visited, List<WorkHandle> newlyFailed)
         {
             while (stack.Count > 0)
             {
@@ -294,8 +294,8 @@ namespace PowerThreadPool.Helpers.Dependency
                 {
                     foreach (WorkID workID in failedChildWorkSet)
                     {
-                        WorkBase work = _workDict[workID];
-                        if (work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
+                        WorkHandle work = _workDict[workID];
+                        if (work.Shell._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
                         {
                             Interlocked.Decrement(ref _powerPool._waitingWorkCount);
                             newlyFailed.Add(work);

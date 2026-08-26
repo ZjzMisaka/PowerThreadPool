@@ -22,7 +22,7 @@ namespace PowerThreadPool
         public event EventHandler<WorkDiscardedEventArgs> WorkDiscarded;
         public event EventHandler<ErrorOccurredEventArgs> ErrorOccurred;
 
-        internal delegate void CallbackEndEventHandler(WorkBase work, Status status);
+        internal delegate void CallbackEndEventHandler(WorkHandle work, Status status);
         internal event CallbackEndEventHandler CallbackEnd;
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="work"></param>
         /// <param name="status"></param>
-        internal void WorkCallbackEnd(WorkBase work, Status status)
+        internal void WorkCallbackEnd(WorkHandle work, Status status)
         {
             if (status == Status.Failed)
             {
@@ -161,9 +161,9 @@ namespace PowerThreadPool
                 CallbackEnd.Invoke(work, status);
             }
 
-            if (work.Group != null && !work.ShouldStoreResult)
+            if (work.Shell.Group != null && !work.Shell.ShouldStoreResult)
             {
-                if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<WorkID> idSet))
+                if (_workGroupDic.TryGetValue(work.Shell.Group, out ConcurrentSet<WorkID> idSet))
                 {
                     idSet.Remove(work.ID);
                 }
@@ -171,7 +171,7 @@ namespace PowerThreadPool
 
             // If the result needs to be stored, there is a possibility of fetching the result through Group.
             // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-            if (work.Group == null || !work.ShouldStoreResult)
+            if (work.Shell.Group == null || !work.Shell.ShouldStoreResult)
             {
                 bool res = _aliveWorkDic.TryRemove(work.ID, out _);
                 if (work.WaitSignal != null)
@@ -180,7 +180,7 @@ namespace PowerThreadPool
                 }
                 if (res)
                 {
-                    _workManager.Set(work);
+                    _workManager.Set(work.Shell);
                 }
             }
         }

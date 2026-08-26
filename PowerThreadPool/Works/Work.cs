@@ -78,7 +78,7 @@ namespace PowerThreadPool.Works
                 _workOption = option;
             }
             PowerPool = powerPool;
-            ID = id;
+            WorkHandle.ID = id;
             ExecuteCount = 0;
             ShouldStop = false;
             IsPausing = false;
@@ -90,7 +90,6 @@ namespace PowerThreadPool.Works
         {
             IsAlive = false;
             IsCurrentDone = false;
-            IsDone = false;
             IsPausing = false;
             ShouldStop = false;
             Status = default;
@@ -103,7 +102,6 @@ namespace PowerThreadPool.Works
 
             _canSetTaskCompletionSource = CanSetTaskCompletionSource.Allowed;
             _canFinalizeWork = CanFinalizeWork.Allowed;
-            _canCancel = CanCancel.Allowed;
             _dependencyStatus = DependencyStatus.Normal;
 
             Worker = null;
@@ -113,12 +111,6 @@ namespace PowerThreadPool.Works
             {
                 CancellationTokenSource.Dispose();
                 CancellationTokenSource = null;
-            }
-
-            if (WaitSignal != null)
-            {
-                WaitSignal.Dispose();
-                WaitSignal = null;
             }
 
             if (PauseSignal != null)
@@ -146,9 +138,9 @@ namespace PowerThreadPool.Works
 
         private void EnsureWaitSignalExists()
         {
-            if (WaitSignal == null)
+            if (WorkHandle.WaitSignal == null)
             {
-                WaitSignal = new ManualResetEvent(false);
+                WorkHandle.WaitSignal = new ManualResetEvent(false);
             }
         }
 
@@ -165,7 +157,7 @@ namespace PowerThreadPool.Works
                 {
                     if (Worker != null)
                     {
-                        if (Worker.WorkID == ID)
+                        if (Worker.WorkID == WorkHandle.ID)
                         {
                             if (Worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed))
                             {
@@ -192,7 +184,7 @@ namespace PowerThreadPool.Works
 
         internal override bool Cancel(bool needFreeze)
         {
-            if (_canCancel.InterlockedValue == CanCancel.NotAllowed)
+            if (WorkHandle._canCancel.InterlockedValue == CanCancel.NotAllowed)
             {
                 return false;
             }
@@ -201,7 +193,7 @@ namespace PowerThreadPool.Works
 
             using (new WorkGuard(this, needFreeze))
             {
-                res = _canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed);
+                res = WorkHandle._canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed);
                 if (res)
                 {
                     if (TaskCompletionSource != null)
@@ -211,12 +203,12 @@ namespace PowerThreadPool.Works
                     }
 
                     ExecuteResultBase executeResult = SetExecuteResult(null, null, Status.Canceled);
-                    executeResult.ID = ID;
+                    executeResult.ID = WorkHandle.ID;
                     executeResult.StartDateTime = StartDateTime;
 
                     PowerPool.InvokeWorkCanceledEvent(executeResult);
                     InvokeCallback(executeResult, PowerPool.PowerPoolOption);
-                    PowerPool.WorkCallbackEnd(this, Status.Canceled);
+                    PowerPool.WorkCallbackEnd(this.WorkHandle, Status.Canceled);
 
                     // Run help
                     if (Worker != null)
@@ -247,11 +239,11 @@ namespace PowerThreadPool.Works
 
             EnsureWaitSignalExists();
 
-            if (!IsDone)
+            if (!WorkHandle.IsDone)
             {
                 if (cancellationToken == default)
-                    WaitSignal.WaitOne();
-                else if (WaitHandle.WaitAny(new WaitHandle[] { WaitSignal, cancellationToken.WaitHandle }) == 1)
+                    WorkHandle.WaitSignal.WaitOne();
+                else if (WaitHandle.WaitAny(new WaitHandle[] { WorkHandle.WaitSignal, cancellationToken.WaitHandle }) == 1)
                     cancellationToken.ThrowIfCancellationRequested();
             }
 
@@ -261,7 +253,7 @@ namespace PowerThreadPool.Works
         private void HelpWhileWaiting(CancellationToken cancellationToken, bool helpWhileWaiting)
         {
             SpinWait spinner = new SpinWait();
-            while (!IsDone && helpWhileWaiting)
+            while (!WorkHandle.IsDone && helpWhileWaiting)
             {
                 if (cancellationToken.IsCancellationRequested)
                     cancellationToken.ThrowIfCancellationRequested();
@@ -288,7 +280,7 @@ namespace PowerThreadPool.Works
 
             TaskCompletionSource<bool> tcs = PowerPool.NewTcs<bool>();
             EnsureWaitSignalExists();
-            ManualResetEvent ev = WaitSignal;
+            ManualResetEvent ev = WorkHandle.WaitSignal;
 
             RegisteredWaitHandle rwh = null;
             WaitOrTimerCallback cb = (state, timedOut) =>
@@ -337,7 +329,7 @@ namespace PowerThreadPool.Works
             bool res = false;
             task = default;
 
-            if (IsDone)
+            if (WorkHandle.IsDone)
             {
                 res = true;
 
@@ -394,7 +386,7 @@ namespace PowerThreadPool.Works
 
         private ExecuteResult<T> FetchCore<T>()
         {
-            if (PowerPool._aliveWorkDic.TryGetValue(ID, out WorkBase work))
+            if (PowerPool._aliveWorkDic.TryGetValue(WorkHandle.ID, out WorkHandle work))
             {
                 Work<T> workT = work as Work<T>;
                 Spinner.Start(() => workT.ExecuteResult != null, true);
@@ -460,7 +452,7 @@ namespace PowerThreadPool.Works
             ExecuteResult = executeResult;
             if (WorkOption.ShouldStoreResult)
             {
-                PowerPool._resultDic[ID] = ExecuteResult;
+                PowerPool._resultDic[WorkHandle.ID] = ExecuteResult;
             }
             return executeResult;
         }
