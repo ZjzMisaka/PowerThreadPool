@@ -26,7 +26,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
 
         public override void Post(SendOrPostCallback d, object state)
         {
-            if (_work.WorkHandle.ExecuteResultBase != null)
+            if (_work.WorkHandle == null)
             {
                 return;
             }

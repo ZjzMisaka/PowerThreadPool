@@ -138,9 +138,11 @@ namespace PowerThreadPool
             {
                 return;
             }
+            bool hasGroup = work.Shell.Group != null;
+            bool shouldStoreResult = work.Shell.ShouldStoreResult;
             // If the result needs to be stored, there is a possibility of fetching the result through Group.
             // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-            if (work.Shell.Group == null || !work.Shell.ShouldStoreResult)
+            if (!hasGroup || !shouldStoreResult)
             {
                 if (work.Shell.TaskCompletionSource == null)
                 {
@@ -150,7 +152,7 @@ namespace PowerThreadPool
                     }
                 }
             }
-            if (work.Shell.Group != null && !work.Shell.ShouldStoreResult)
+            if (hasGroup && !shouldStoreResult)
             {
                 if (_workGroupDic.TryGetValue(work.Shell.Group, out ConcurrentSet<WorkID> idSet))
                 {
