@@ -184,7 +184,7 @@ namespace PowerThreadPool.Works
             }
             else
             {
-                return work.ExecuteResultBase.ToTypedResult<T>();
+                return ExecuteResultBase.ToTypedResult<T>();
             }
         }
     }
