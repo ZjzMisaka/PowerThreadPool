@@ -37,7 +37,10 @@ namespace PowerThreadPool.Works
 
         internal bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
         {
-            Shell?.HelpWhileWaiting(cancellationToken, helpWhileWaiting);
+            if (helpWhileWaiting && !IsDone)
+            {
+                HelpWhileWaiting(cancellationToken);
+            }
 
             EnsureWaitSignalExists();
 
@@ -205,6 +208,20 @@ namespace PowerThreadPool.Works
                 }
             }
         }
+
+        internal void HelpWhileWaiting(CancellationToken cancellationToken)
+        {
+            SpinWait spinner = new SpinWait();
+            while (!IsDone)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    cancellationToken.ThrowIfCancellationRequested();
+                if (!PowerPool.HelpWhileWaiting())
+                    spinner.SpinOnce();
+                else
+                    spinner.Reset();
+            }
+        }
     }
 
     internal sealed class WorkHandleT<TResult> : WorkHandle
@@ -303,7 +320,6 @@ namespace PowerThreadPool.Works
         internal abstract bool Refresh();
         internal abstract bool Stop(bool forceStop);
         internal abstract bool Cancel(bool needFreeze);
-        internal abstract void HelpWhileWaiting(CancellationToken cancellationToken, bool helpWhileWaiting);
         internal abstract bool Pause();
         internal abstract bool Resume();
         internal abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);

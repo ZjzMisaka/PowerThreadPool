@@ -219,25 +219,6 @@ namespace PowerThreadPool.Works
             return res;
         }
 
-        internal override void HelpWhileWaiting(CancellationToken cancellationToken, bool helpWhileWaiting)
-        {
-            SpinWait spinner = new SpinWait();
-            while ((WorkHandle != null && !WorkHandle.IsDone) && helpWhileWaiting)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                if (!PowerPool.HelpWhileWaiting())
-                {
-                    spinner.SpinOnce();
-                }
-                else
-                {
-                    spinner.Reset();
-                }
-            }
-        }
-
         internal override bool Pause()
         {
             if (TaskCompletionSource == null && PauseSignal == null)
