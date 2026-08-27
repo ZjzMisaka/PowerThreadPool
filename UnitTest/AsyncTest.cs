@@ -634,7 +634,7 @@ namespace UnitTest
             WorkID id = powerPool.QueueWorkItem<string>(async () =>
             {
                 p = "1";
-                await Task.Delay(1000);
+                Thread.Sleep(1000);
                 Thread.Sleep(200);
                 l = "2";
                 powerPool.StopIfRequested();
