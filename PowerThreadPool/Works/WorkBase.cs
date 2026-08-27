@@ -11,6 +11,22 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.Works
 {
+    /// <summary>
+    /// An abstract class representing a task submitted by the user. Each submitted task generates one instance of this class.
+    /// The continuation of an asynchronous task does not generate a new instance, but reuses the current instance.
+    ///
+    /// Optimization already attempted: managing WorkBase using an object pool.
+    /// Since the user may call blocking APIs such as Wait, there is a race condition where the Work object is still being referenced when it is returned to the pool.
+    /// Therefore, an attempt was made to split Work into WorkBase and WorkHandle,
+    /// WorkBase: regardless of whether ShouldStoreResult is true or a Group exists, it is immediately returned to the pool once the task completes.
+    /// WorkHandle: holds the ID, Group, WaitSignal, ExecuteResultBase, IsDone, _canCancel.
+    ///     When the user calls APIs such as Wait, the PTP can continue to hold a reference to it.
+    /// However, the creation/pooling and unpooling of two objects, along with a large number of additional checks, resulted in:
+    /// 1. GC benefits exist but are minor.
+    /// 2. A slight decrease in performance.
+    /// 3. Possible introduction of other bugs.
+    /// Therefore, using an object pool to manage Work is not being considered for the time being.
+    /// </summary>
     internal abstract class WorkBase : WorkItemBase, IDisposable
     {
         internal Worker Worker { get; set; }
