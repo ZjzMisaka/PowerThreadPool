@@ -193,19 +193,14 @@ namespace PowerThreadPool.Works
 
         internal void OnWorkDone()
         {
-            // If the result needs to be stored, there is a possibility of fetching the result through Group.
-            // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-            if (Shell.Group == null || !Shell.ShouldStoreResult)
+            bool res = PowerPool._aliveWorkDic.TryRemove(ID, out _);
+            if (WaitSignal != null)
             {
-                bool res = PowerPool._aliveWorkDic.TryRemove(ID, out _);
-                if (WaitSignal != null)
-                {
-                    WaitSignal.Set();
-                }
-                if (res)
-                {
-                    PowerPool._workManager.Set(Shell);
-                }
+                WaitSignal.Set();
+            }
+            if (res)
+            {
+                PowerPool._workManager.Set(Shell);
             }
         }
 

@@ -1345,10 +1345,9 @@ namespace PowerThreadPool
             _resultDic.TryRemove(work.ID, out _);
             if (_aliveWorkDic.TryRemove(work.ID, out _))
             {
-                if (work.Shell.Group != null)
+                if (work.Group != null)
                 {
-                    RemoveWorkFromGroup(work.Shell.Group, work);
-                    _workManager.Set(work.Shell);
+                    RemoveWorkFromGroup(work.Group, work);
                 }
             }
 

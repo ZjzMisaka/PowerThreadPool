@@ -70,6 +70,7 @@ namespace PowerThreadPool.Works
             }
             PowerPool = powerPool;
             WorkHandle.ID = id;
+            WorkHandle.Group = option.Group;
             ExecuteCount = 0;
             ShouldStop = false;
             IsPausing = false;
