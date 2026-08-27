@@ -1156,7 +1156,7 @@ namespace PowerThreadPool
             if (work != null)
             {
                 Interlocked.Decrement(ref _waitingWorkCount);
-                if (Work.Shell.TaskCompletionSource != null && !work.Shell.IsFirstAsyncWork)
+                if (work.Shell.TaskCompletionSource != null && !work.Shell.IsFirstAsyncWork)
                 {
                     _powerPool.SetWork(work);
                     res = false;
