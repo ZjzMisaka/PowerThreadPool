@@ -330,7 +330,7 @@ namespace PowerThreadPool
             WorkerStates origWorkState = WorkerState.InterlockedValue;
             WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
 
-            if (Work.Shell.LongRunning)
+            if (origWorkState != WorkerStates.Idle && Work.Shell.LongRunning)
             {
                 Interlocked.Decrement(ref _powerPool._longRunningWorkerCount);
                 LongRunning = false;
@@ -350,35 +350,41 @@ namespace PowerThreadPool
             {
                 Interlocked.Decrement(ref _powerPool._idleWorkerCount);
             }
-            if (Work.Shell.TaskCompletionSource != null)
+            if (origWorkState != WorkerStates.Idle && Work.Shell.TaskCompletionSource != null)
             {
                 Interlocked.Decrement(ref _powerPool._asyncWorkCount);
                 Work.Shell.TaskCompletionSource.SetCanceled();
             }
 
-            ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
-            executeResult.ID = Work.ID;
-            if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+            if (origWorkState != WorkerStates.Idle)
             {
-                executeResult.StartDateTime = Work.Shell.StartDateTime;
-            }
-            _powerPool.InvokeWorkStoppedEvent(executeResult);
+                ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
+                executeResult.ID = Work.ID;
+                if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
+                {
+                    executeResult.StartDateTime = Work.Shell.StartDateTime;
+                }
+                _powerPool.InvokeWorkStoppedEvent(executeResult);
 
-            if (!ex.Data.Contains("ThrowedWhenExecuting"))
-            {
-                ex.Data.Add("ThrowedWhenExecuting", false);
-            }
-            Work.Shell.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
+                if (!ex.Data.Contains("ThrowedWhenExecuting"))
+                {
+                    ex.Data.Add("ThrowedWhenExecuting", false);
+                }
+                Work.Shell.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
 
-            _powerPool.WorkCallbackEnd(Work, Status.ForceStopped);
-            Work.OnWorkDone();
+                _powerPool.WorkCallbackEnd(Work, Status.ForceStopped);
+                Work.OnWorkDone();
+            }
 
             bool hasWaitingWork = RequeueAllWaitingWork(null);
-            Work.IsDone = true;
-
-            if (Work.WaitSignal != null)
+            if (origWorkState != WorkerStates.Idle)
             {
-                Work.WaitSignal.Set();
+                Work.IsDone = true;
+
+                if (Work.WaitSignal != null)
+                {
+                    Work.WaitSignal.Set();
+                }
             }
 
             _powerPool.FillWorkerQueue();
