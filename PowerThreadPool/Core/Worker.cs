@@ -15,6 +15,15 @@ using PowerThreadPool.Works;
 
 namespace PowerThreadPool
 {
+    /// <summary>
+    /// A class used to execute tasks (WorkBase) submitted by the user.
+    /// It manages the entire lifecycle of a WorkBase, with the exception that work stealing may hand it off to another Worker.
+    ///
+    /// The Worker contains a large number of orthogonal state machines based on InterlockedFlag. For details, please refer to:
+    ///     https://github.com/ZjzMisaka/PowerThreadPool/wiki/State-Machine
+    /// For the Worker's heuristic debounce algorithm, please refer to:
+    ///     https://github.com/ZjzMisaka/PowerThreadPool/wiki/Heuristic-Debounce-Algorithm
+    /// </summary>
     internal class Worker : IDisposable
     {
         private StatusPingPongChecker _statusPingPongChecker = new StatusPingPongChecker();
