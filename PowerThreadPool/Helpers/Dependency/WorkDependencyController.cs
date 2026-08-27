@@ -123,6 +123,7 @@ namespace PowerThreadPool.Helpers.Dependency
             work.Shell.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
 
             _powerPool.WorkCallbackEnd(work, Status.Failed);
+            work.OnWorkDone();
 
             _powerPool.CheckPoolIdle();
             workNotSuccessfullyCompleted = true;
@@ -281,6 +282,7 @@ namespace PowerThreadPool.Helpers.Dependency
                 _powerPool.InvokeWorkEndedEvent(executeResult);
                 work.Shell.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
                 _powerPool.WorkCallbackEnd(work, Status.Failed);
+                work.OnWorkDone();
             }
         }
 

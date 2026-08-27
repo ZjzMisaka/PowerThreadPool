@@ -174,6 +174,10 @@ namespace PowerThreadPool.Works
 
             using (new WorkGuard(this, needFreeze))
             {
+                if (WorkHandle == null)
+                {
+                    return false;
+                }
                 res = WorkHandle._canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed);
                 if (res)
                 {
@@ -190,6 +194,7 @@ namespace PowerThreadPool.Works
                     PowerPool.InvokeWorkCanceledEvent(executeResult);
                     InvokeCallback(executeResult, PowerPool.PowerPoolOption);
                     PowerPool.WorkCallbackEnd(this.WorkHandle, Status.Canceled);
+                    WorkHandle.OnWorkDone();
 
                     // Run help
                     if (Worker != null)

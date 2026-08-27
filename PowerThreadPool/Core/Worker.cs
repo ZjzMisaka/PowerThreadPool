@@ -288,6 +288,11 @@ namespace PowerThreadPool
 
         private void CleanUpAndSetSignalAfterExecute(ExecuteResultBase executeResult)
         {
+            if (executeResult == null)
+            {
+                return;
+            }
+
             bool allowEventsAndCallback = Work.Shell.AllowEventsAndCallback;
             bool isSync = Work.Shell.TaskCompletionSource == null;
             bool finalizeWork = false;
@@ -314,6 +319,8 @@ namespace PowerThreadPool
 
                 Interlocked.Decrement(ref _powerPool._asyncWorkCount);
             }
+
+            Work.OnWorkDone();
         }
 
         private void ThreadInterrupted(ThreadInterruptedException ex)
@@ -364,6 +371,7 @@ namespace PowerThreadPool
             Work.Shell.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
 
             _powerPool.WorkCallbackEnd(Work, Status.ForceStopped);
+            Work.OnWorkDone();
 
             bool hasWaitingWork = RequeueAllWaitingWork(null);
             Work.IsDone = true;

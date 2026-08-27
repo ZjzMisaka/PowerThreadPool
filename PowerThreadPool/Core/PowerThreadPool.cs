@@ -529,6 +529,7 @@ namespace PowerThreadPool
             executeResult.ID = idErr;
 
             WorkCallbackEnd(work, executeResult.Status);
+            work.OnWorkDone();
 
             if (WorkDiscarded != null)
             {

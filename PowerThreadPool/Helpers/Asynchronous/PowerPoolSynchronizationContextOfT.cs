@@ -8,6 +8,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
     {
         private readonly PowerPool _powerPool;
         private readonly WorkFunc<TResult> _work;
+        private readonly WorkHandle _handle;
         private CancellationTokenSource _cts;
         private Task<TResult> _originalTask;
         private int _done = 0;
@@ -16,6 +17,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
         {
             _powerPool = powerPool;
             _work = work;
+            _handle = _work.WorkHandle;
             _cts = cts;
         }
 
@@ -26,12 +28,12 @@ namespace PowerThreadPool.Helpers.Asynchronous
 
         public override void Post(SendOrPostCallback d, object state)
         {
-            if (_work.WorkHandle.ExecuteResultBase != null)
+            if (_handle.ExecuteResultBase != null)
             {
                 return;
             }
             WorkBase workBase = _work as WorkBase;
-            workBase.WorkHandle._canCancel.TrySet(Constants.CanCancel.Allowed, Constants.CanCancel.NotAllowed);
+            _handle._canCancel.TrySet(Constants.CanCancel.Allowed, Constants.CanCancel.NotAllowed);
             workBase.IsCurrentDone = false;
             _work.SetFunction(() =>
             {
@@ -57,7 +59,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
                 return res;
             }, false);
             Interlocked.Increment(ref _powerPool._waitingWorkCount);
-            _powerPool.SetWork(workBase.WorkHandle);
+            _powerPool.SetWork(_handle);
         }
     }
 }
