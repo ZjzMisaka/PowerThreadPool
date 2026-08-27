@@ -1348,8 +1348,8 @@ namespace PowerThreadPool
                 if (work.Shell.Group != null)
                 {
                     RemoveWorkFromGroup(work.Shell.Group, work);
+                    _workManager.Set(work.Shell);
                 }
-                _workManager.Set(work.Shell);
             }
 
             CheckPoolIdle();
