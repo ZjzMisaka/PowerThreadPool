@@ -1033,7 +1033,7 @@ namespace PowerThreadPool
             }
 
             if (workTimeoutOption != null
-                && (Work.Shell.TaskCompletionSource == null || work.Shell.IsFirstAsyncWork)
+                && (work.Shell.TaskCompletionSource == null || work.Shell.IsFirstAsyncWork)
                 && work.Shell.ExecuteCount == 0)
             {
                 if (work.Shell.TimeoutTimer == null)
