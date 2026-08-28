@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
-
 #if DEBUG
 using System.Diagnostics;
 #endif
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
 using System.Runtime.CompilerServices;
-#endif
-#if NET7_0_OR_GREATER
-using System.Runtime.Intrinsics.Arm;
-using System.Runtime.Intrinsics.X86;
 #endif
 using System.Threading;
 
@@ -73,27 +67,6 @@ namespace PowerThreadPool.Helpers.LockFree
                 Console.WriteLine($"The operation took too long to complete: {stopwatch.Elapsed.Ticks} ticks.");
 #endif
             }
-#endif
-        }
-
-        [ExcludeFromCodeCoverage]
-        internal static void SpinOnce()
-        {
-#if NET7_0_OR_GREATER
-            if (X86Base.IsSupported)
-            {
-                X86Base.Pause();
-            }
-            else if (ArmBase.IsSupported)
-            {
-                ArmBase.Yield();
-            }
-            else
-            {
-                Thread.SpinWait(1);
-            }
-#else
-            Thread.SpinWait(1);
 #endif
         }
     }

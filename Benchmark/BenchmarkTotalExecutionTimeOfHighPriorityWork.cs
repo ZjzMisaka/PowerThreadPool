@@ -14,18 +14,16 @@ namespace Benchmark
         private PerPriorityLaneScheduler _perPriorityLaneScheduler;
         private PriorityDispatcherContext _priorityDispatcherContext;
 
-        private int ThreadCount => Environment.ProcessorCount < 8 ? 8 : Environment.ProcessorCount;
-
         [IterationSetup]
         public void Setup()
         {
             _powerPool = new PowerPool(new PowerPoolOption
             {
-                MaxThreads = ThreadCount
+                MaxThreads = Environment.ProcessorCount
             });
-            _threadStaticPrioritySeedScheduler = new ThreadStaticPrioritySeedScheduler(ThreadCount);
-            _perPriorityLaneScheduler = new PerPriorityLaneScheduler(ThreadCount);
-            _priorityDispatcherContext = new PriorityDispatcherContext(ThreadCount);
+            _threadStaticPrioritySeedScheduler = new ThreadStaticPrioritySeedScheduler(Environment.ProcessorCount);
+            _perPriorityLaneScheduler = new PerPriorityLaneScheduler(Environment.ProcessorCount);
+            _priorityDispatcherContext = new PriorityDispatcherContext(Environment.ProcessorCount);
         }
 
         [IterationCleanup]
