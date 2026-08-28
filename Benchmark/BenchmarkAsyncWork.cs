@@ -15,15 +15,17 @@ namespace Benchmark
 
         private readonly int _maxCount = 50;
 
+        private int ThreadCount => Environment.ProcessorCount < 8 ? 8 : Environment.ProcessorCount;
+
         [IterationSetup]
         public void Setup()
         {
             _powerPool = new PowerPool(new PowerPoolOption
             {
-                MaxThreads = Environment.ProcessorCount
+                MaxThreads = ThreadCount
             });
-            ThreadPool.SetMinThreads(Environment.ProcessorCount, Environment.ProcessorCount);
-            ThreadPool.SetMaxThreads(Environment.ProcessorCount, Environment.ProcessorCount);
+            ThreadPool.SetMinThreads(ThreadCount, ThreadCount);
+            ThreadPool.SetMaxThreads(ThreadCount, ThreadCount);
 
             _tpErrorCount = -1;
             _ptpErrorCount = -1;
