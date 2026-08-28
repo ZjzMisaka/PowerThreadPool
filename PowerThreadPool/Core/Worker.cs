@@ -559,6 +559,7 @@ namespace PowerThreadPool
                 {
                     break;
                 }
+                Spinner.SpinOnce();
             }
 #endif
             Work.Worker = null;
