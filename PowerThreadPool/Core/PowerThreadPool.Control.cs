@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using PowerThreadPool.Collections;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Exceptions;
+using PowerThreadPool.Helpers.LockFree;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;
 
@@ -276,7 +277,7 @@ namespace PowerThreadPool
                     {
                         return;
                     }
-                    Thread.Yield();
+                    Spinner.SpinOnce();
                 }
             }
         }

@@ -559,6 +559,7 @@ namespace PowerThreadPool
                 {
                     break;
                 }
+                Spinner.SpinOnce();
             }
 #endif
             Work.Worker = null;
@@ -1013,7 +1014,7 @@ namespace PowerThreadPool
             {
                 if (i > 100)
                 {
-                    Thread.Yield();
+                    Spinner.SpinOnce();
                 }
                 work = Get();
             }
