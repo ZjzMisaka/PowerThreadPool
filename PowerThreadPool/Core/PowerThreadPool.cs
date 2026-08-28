@@ -444,7 +444,6 @@ namespace PowerThreadPool
                     }
                 }
 
-                Spinner.SpinOnce();
                 ++tryCount;
             }
 
