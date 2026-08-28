@@ -444,6 +444,7 @@ namespace PowerThreadPool
                     }
                 }
 
+                Spinner.SpinOnce();
                 ++tryCount;
             }
 
@@ -956,7 +957,7 @@ namespace PowerThreadPool
                                 Worker worker = kv.Value;
                                 StopAndDisposeWorkerAndHelpingWorkers(worker);
                             }
-                            Thread.Yield();
+                            Spinner.SpinOnce();
                         }
                         while (_helperWorkerQueue.TryDequeue(out Worker worker))
                         {
