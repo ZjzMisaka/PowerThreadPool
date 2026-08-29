@@ -883,5 +883,53 @@ namespace UnitTest
             while (d.Get() != default) { }
             Assert.Equal(new List<int> { 0 }, d._sortedPriorityList);
         }
+
+        [Fact]
+        public async Task TestRemovePriorityRaceQueueRemovalRacesWithConcurrentSet()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            var q = new ConcurrentStealablePriorityQueue<int>(false);
+            const int total = 100000;
+            Task setter = Task.Run(() =>
+            {
+                for (int i = 0; i < total; ++i)
+                {
+                    q.Set(i + 1, 7);
+                }
+            });
+            Task[] drainers = Enumerable.Range(0, 4).Select(_ => Task.Run(() =>
+            {
+                while (q.Get() != default || !setter.IsCompleted) { }
+            })).ToArray();
+            await Task.WhenAll(drainers.Append(setter).ToArray());
+
+            while (q.Get() != default) { }
+            Assert.Equal(new List<int> { 0 }, q._sortedPriorityList);
+        }
+
+        [Fact]
+        public async Task TestRemovePriorityRaceStackRemovalRacesWithConcurrentSet()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            var s = new ConcurrentStealablePriorityStack<int>(false);
+            const int total = 100000;
+            Task setter = Task.Run(() =>
+            {
+                for (int i = 0; i < total; ++i)
+                {
+                    s.Set(i + 1, 7);
+                }
+            });
+            Task[] drainers = Enumerable.Range(0, 4).Select(_ => Task.Run(() =>
+            {
+                while (s.Get() != default || !setter.IsCompleted) { }
+            })).ToArray();
+            await Task.WhenAll(drainers.Append(setter).ToArray());
+
+            while (s.Get() != default) { }
+            Assert.Equal(new List<int> { 0 }, s._sortedPriorityList);
+        }
     }
 }
