@@ -45,7 +45,15 @@ namespace PowerThreadPool.Collections
             }
 
             ConcurrentStack<T> stack = _queueDic.GetOrAdd(priority, _ => new ConcurrentStack<T>());
+            stack.Push(item);
 
+            Thread.MemoryBarrier();
+
+            SetPriorityList(priority);
+        }
+
+        private void SetPriorityList(int priority)
+        {
             while (true)
             {
                 List<int> oldList = _sortedPriorityList;
@@ -64,8 +72,6 @@ namespace PowerThreadPool.Collections
                     break;
                 }
             }
-
-            stack.Push(item);
         }
 
         public T Get()
@@ -119,7 +125,46 @@ namespace PowerThreadPool.Collections
         private bool TryGetItem(int priority, out T item)
         {
             item = default;
-            return TryGetStack(priority, out ConcurrentStack<T> s) && s.TryPop(out item);
+            if (!TryGetStack(priority, out ConcurrentStack<T> s))
+            {
+                return false;
+            }
+            bool res = s.TryPop(out item);
+            if (s.IsEmpty)
+            {
+                TryRemoveEmptyPriority(priority, s);
+            }
+            return res;
+        }
+
+        private void TryRemoveEmptyPriority(int priority, ConcurrentStack<T> s)
+        {
+            while (priority != 0 && s.IsEmpty)
+            {
+                List<int> oldList = _sortedPriorityList;
+
+                int index;
+                if ((index = oldList.BinarySearch(priority, DescendingIntComparer.Instance)) < 0)
+                {
+                    break;
+                }
+
+                List<int> newList = new List<int>(oldList);
+                newList.RemoveAt(index);
+
+                List<int> orig = Interlocked.CompareExchange(ref _sortedPriorityList, newList, oldList);
+
+                if (!ReferenceEquals(orig, oldList))
+                {
+                    continue;
+                }
+
+                if (!s.IsEmpty)
+                {
+                    SetPriorityList(priority);
+                }
+                break;
+            }
         }
     }
 }

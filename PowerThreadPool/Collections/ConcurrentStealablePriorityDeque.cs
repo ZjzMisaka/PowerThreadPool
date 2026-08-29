@@ -65,7 +65,15 @@ namespace PowerThreadPool.Collections
             }
 
             ChaseLevDeque<T> queue = _queueDic.GetOrAdd(priority, _ => new ChaseLevDeque<T>());
+            queue.PushBottom(item);
 
+            Thread.MemoryBarrier();
+
+            SetPriorityList(priority);
+        }
+
+        private void SetPriorityList(int priority)
+        {
             while (true)
             {
                 List<int> oldList = _sortedPriorityList;
@@ -84,8 +92,6 @@ namespace PowerThreadPool.Collections
                     break;
                 }
             }
-
-            queue.PushBottom(item);
         }
 
         public T Get()
@@ -160,13 +166,61 @@ namespace PowerThreadPool.Collections
         private bool TryGetItem(int priority, out T item)
         {
             item = default;
-            return TryGetQueue(priority, out ChaseLevDeque<T> q) && q.TryPopBottom(out item);
+            if (!TryGetQueue(priority, out ChaseLevDeque<T> q))
+            {
+                return false;
+            }
+            bool res = q.TryPopBottom(out item);
+            if (q.IsEmpty)
+            {
+                TryRemoveEmptyPriority(priority, q);
+            }
+            return res;
         }
 
         private bool TryStealItem(int priority, out T item)
         {
             item = default;
-            return TryGetQueue(priority, out ChaseLevDeque<T> q) && q.TrySteal(out item);
+            if (!TryGetQueue(priority, out ChaseLevDeque<T> q))
+            {
+                return false;
+            }
+            bool res = q.TrySteal(out item);
+            if (q.IsEmpty)
+            {
+                TryRemoveEmptyPriority(priority, q);
+            }
+            return res;
+        }
+
+        private void TryRemoveEmptyPriority(int priority, ChaseLevDeque<T> q)
+        {
+            while (priority != 0 && q.IsEmpty)
+            {
+                List<int> oldList = _sortedPriorityList;
+
+                int index;
+                if ((index = oldList.BinarySearch(priority, DescendingIntComparer.Instance)) < 0)
+                {
+                    break;
+                }
+
+                List<int> newList = new List<int>(oldList);
+                newList.RemoveAt(index);
+
+                List<int> orig = Interlocked.CompareExchange(ref _sortedPriorityList, newList, oldList);
+
+                if (!ReferenceEquals(orig, oldList))
+                {
+                    continue;
+                }
+
+                if (!q.IsEmpty)
+                {
+                    SetPriorityList(priority);
+                }
+                break;
+            }
         }
     }
 }
