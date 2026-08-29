@@ -45,7 +45,15 @@ namespace PowerThreadPool.Collections
             }
 
             ConcurrentQueue<T> queue = _queueDic.GetOrAdd(priority, _ => new ConcurrentQueue<T>());
+            queue.Enqueue(item);
 
+            Thread.MemoryBarrier();
+
+            SetPriorityList(priority);
+        }
+
+        private void SetPriorityList(int priority)
+        {
             while (true)
             {
                 List<int> oldList = _sortedPriorityList;
@@ -64,8 +72,6 @@ namespace PowerThreadPool.Collections
                     break;
                 }
             }
-
-            queue.Enqueue(item);
         }
 
         public T Get()
@@ -119,7 +125,46 @@ namespace PowerThreadPool.Collections
         private bool TryGetItem(int priority, out T item)
         {
             item = default;
-            return TryGetQueue(priority, out ConcurrentQueue<T> q) && q.TryDequeue(out item);
+            if (!TryGetQueue(priority, out ConcurrentQueue<T> q))
+            {
+                return false;
+            }
+            bool res = q.TryDequeue(out item);
+            if (q.IsEmpty)
+            {
+                TryRemoveEmptyPriority(priority, q);
+            }
+            return res;
+        }
+
+        private void TryRemoveEmptyPriority(int priority, ConcurrentQueue<T> q)
+        {
+            while (priority != 0 && q.IsEmpty)
+            {
+                List<int> oldList = _sortedPriorityList;
+
+                int index;
+                if ((index = oldList.BinarySearch(priority, DescendingIntComparer.Instance)) < 0)
+                {
+                    break;
+                }
+
+                List<int> newList = new List<int>(oldList);
+                newList.RemoveAt(index);
+
+                List<int> orig = Interlocked.CompareExchange(ref _sortedPriorityList, newList, oldList);
+
+                if (!ReferenceEquals(orig, oldList))
+                {
+                    continue;
+                }
+
+                if (!q.IsEmpty)
+                {
+                    SetPriorityList(priority);
+                }
+                break;
+            }
         }
     }
 }

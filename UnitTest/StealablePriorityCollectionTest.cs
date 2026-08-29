@@ -566,5 +566,298 @@ namespace UnitTest
 
             Assert.Equal(10000, d._sortedPriorityList.Count);
         }
+
+        [Fact]
+        public void TestQueueRemovesEmptyPriorityOnGetAndFallsBackToListWithOnlyZero()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>(false);
+            queue.Set(1, 0);
+            queue.Set(2, 5);
+
+            Assert.Equal(2, queue.Get());
+            Assert.Equal(1, queue.Get());
+
+            Assert.Equal(new List<int> { 0 }, queue._sortedPriorityList);
+        }
+
+        [Fact]
+        public void TestQueueRemovesEmptyPriorityOnDiscardAndFallsBackToListWithOnlyZero()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>(false);
+            queue.Set(1, 0);
+            queue.Set(2, 5);
+
+            Assert.Equal(1, queue.Discard());
+            Assert.Equal(2, queue.Discard());
+
+            Assert.Equal(new List<int> { 0 }, queue._sortedPriorityList);
+        }
+
+        [Fact]
+        public void TestQueueZeroPriorityNeverRemovedAndFastPathRestored()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>(false);
+            queue.Set(1, 0);
+            queue.Set(2, 7);
+
+            Assert.Equal(2, queue.Get());
+            _ = queue.Get();
+            _ = queue.Get();
+
+            Assert.Equal(new List<int> { 0 }, queue._sortedPriorityList);
+
+            queue.Set(3, 0);
+            Assert.Equal(3, queue.Get());
+        }
+
+        [Fact]
+        public void TestQueueRemovedPriorityIsReachableAgainAfterReSet()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            ConcurrentStealablePriorityQueue<int> queue = new ConcurrentStealablePriorityQueue<int>(false);
+            queue.Set(1, 3);
+
+            Assert.Equal(1, queue.Get());
+            Assert.Equal(new List<int> { 0 }, queue._sortedPriorityList);
+
+            queue.Set(2, 3);
+            Assert.Equal(2, queue.Get());
+            Assert.Equal(new List<int> { 0 }, queue._sortedPriorityList);
+        }
+
+        [Fact]
+        public void TestStackRemovesEmptyPriorityOnGetAndFallsBackToListWithOnlyZero()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            ConcurrentStealablePriorityStack<int> stack = new ConcurrentStealablePriorityStack<int>(false);
+            stack.Set(1, 0);
+            stack.Set(2, 5);
+
+            Assert.Equal(2, stack.Get());
+            Assert.Equal(1, stack.Get());
+
+            Assert.Equal(new List<int> { 0 }, stack._sortedPriorityList);
+        }
+
+        [Fact]
+        public void TestStackRemovesEmptyPriorityOnDiscardAndFallsBackToListWithOnlyZero()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            ConcurrentStealablePriorityStack<int> stack = new ConcurrentStealablePriorityStack<int>(false);
+            stack.Set(1, 0);
+            stack.Set(2, 5);
+
+            Assert.Equal(1, stack.Discard());
+            Assert.Equal(2, stack.Discard());
+
+            Assert.Equal(new List<int> { 0 }, stack._sortedPriorityList);
+        }
+
+        [Fact]
+        public void TestStackZeroPriorityNeverRemovedAndFastPathRestored()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            ConcurrentStealablePriorityStack<int> stack = new ConcurrentStealablePriorityStack<int>(false);
+            stack.Set(1, 0);
+            stack.Set(2, 7);
+
+            Assert.Equal(2, stack.Get());
+            _ = stack.Get();
+            _ = stack.Get();
+
+            Assert.Equal(new List<int> { 0 }, stack._sortedPriorityList);
+
+            stack.Set(3, 0);
+            Assert.Equal(3, stack.Get());
+        }
+
+        [Fact]
+        public void TestStackRemovedPriorityIsReachableAgainAfterReSet()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            ConcurrentStealablePriorityStack<int> stack = new ConcurrentStealablePriorityStack<int>(false);
+            stack.Set(1, 3);
+
+            Assert.Equal(1, stack.Get());
+            Assert.Equal(new List<int> { 0 }, stack._sortedPriorityList);
+
+            stack.Set(2, 3);
+            Assert.Equal(2, stack.Get());
+            Assert.Equal(new List<int> { 0 }, stack._sortedPriorityList);
+        }
+
+        [Fact]
+        public void TestDequeRemovesEmptyPriorityOnGetAndFallsBackToListWithOnlyZero()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            var deque = new ConcurrentStealablePriorityDeque<int>(true);
+            deque.Set(1, 0);
+            deque.Set(2, 5);
+
+            Assert.Equal(2, deque.Get());
+            Assert.Equal(1, deque.Get());
+
+            Assert.Equal(new List<int> { 0 }, deque._sortedPriorityList);
+        }
+
+        [Fact]
+        public void TestDequeRemovesEmptyPriorityOnStealAndFallsBackToListWithOnlyZero()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            var deque = new ConcurrentStealablePriorityDeque<int>(true);
+            deque.Set(1, 0);
+            deque.Set(2, 5);
+
+            Assert.Equal(2, deque.Steal());
+            Assert.Equal(1, deque.Steal());
+
+            Assert.Equal(new List<int> { 0 }, deque._sortedPriorityList);
+        }
+
+        [Fact]
+        public void TestDequeRemovesEmptyPriorityOnDiscardAndFallsBackToListWithOnlyZero()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            var deque = new ConcurrentStealablePriorityDeque<int>(true);
+            deque.Set(1, 0);
+            deque.Set(2, 5);
+
+            Assert.Equal(1, deque.Discard());
+            Assert.Equal(2, deque.Discard());
+
+            Assert.Equal(new List<int> { 0 }, deque._sortedPriorityList);
+        }
+
+        [Fact]
+        public void TestDequeZeroPriorityNeverRemovedAndFastPathRestored()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            var deque = new ConcurrentStealablePriorityDeque<int>(true);
+            deque.Set(1, 0);
+            deque.Set(2, 7);
+
+            Assert.Equal(2, deque.Get());
+            _ = deque.Get();
+            _ = deque.Get();
+
+            Assert.Equal(new List<int> { 0 }, deque._sortedPriorityList);
+
+            deque.Set(3, 0);
+            Assert.Equal(3, deque.Get());
+        }
+
+        [Fact]
+        public void TestDequeRemovedPriorityIsReachableAgainAfterReSet()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            var deque = new ConcurrentStealablePriorityDeque<int>(true);
+            deque.Set(1, 3);
+
+            Assert.Equal(1, deque.Get());
+            Assert.Equal(new List<int> { 0 }, deque._sortedPriorityList);
+
+            deque.Set(2, 3);
+            Assert.Equal(2, deque.Get());
+            Assert.Equal(new List<int> { 0 }, deque._sortedPriorityList);
+        }
+
+        [Fact]
+        public void TestRemovePriorityRaceQueue()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            var q = new ConcurrentStealablePriorityQueue<int>(false);
+            PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
+            {
+                MaxThreads = 100,
+                StartSuspended = true,
+            });
+            const int total = 20000;
+            const int priorities = 50;
+            for (int i = 0; i < total; ++i)
+            {
+                int localI = i;
+                powerPool.QueueWorkItem(() =>
+                {
+                    q.Set(localI + 1, localI % priorities);
+                    while (q.Get() != default) { }
+                });
+            }
+            powerPool.Start();
+            powerPool.Wait();
+
+            Assert.Equal(new List<int> { 0 }, q._sortedPriorityList);
+        }
+
+        [Fact]
+        public void TestRemovePriorityRaceStack()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            var s = new ConcurrentStealablePriorityStack<int>(false);
+            PowerPool powerPool = new PowerPool(new PowerThreadPool.Options.PowerPoolOption
+            {
+                MaxThreads = 100,
+                StartSuspended = true,
+            });
+            const int total = 20000;
+            const int priorities = 50;
+            for (int i = 0; i < total; ++i)
+            {
+                int localI = i;
+                powerPool.QueueWorkItem(() =>
+                {
+                    s.Set(localI + 1, localI % priorities);
+                    while (s.Get() != default) { }
+                });
+            }
+            powerPool.Start();
+            powerPool.Wait();
+
+            Assert.Equal(new List<int> { 0 }, s._sortedPriorityList);
+        }
+
+        [Fact]
+        public async Task TestRemovePriorityRaceDeque()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            var d = new ConcurrentStealablePriorityDeque<int>(true);
+            // Owner-only PushBottom/TryPopBottom per Chase-Lev ownership: a single owner
+            // thread Sets and Gets while thief tasks race Steal, which also drives removal.
+            const int total = 20000;
+            const int priorities = 50;
+            Task owner = Task.Run(() =>
+            {
+                for (int i = 0; i < total; ++i)
+                {
+                    d.Set(i + 1, i % priorities);
+                    while (d.Get() != default) { }
+                }
+            });
+            Task[] thieves = Enumerable.Range(0, 8).Select(_ => Task.Run(() =>
+            {
+                while (d.Steal() != default || !owner.IsCompleted) { }
+            })).ToArray();
+            await Task.WhenAll(thieves.Append(owner).ToArray());
+
+            Assert.Equal(new List<int> { 0 }, d._sortedPriorityList);
+        }
     }
 }
