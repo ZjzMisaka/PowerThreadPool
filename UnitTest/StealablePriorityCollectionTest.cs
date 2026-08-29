@@ -859,5 +859,29 @@ namespace UnitTest
 
             Assert.Equal(new List<int> { 0 }, d._sortedPriorityList);
         }
+
+        [Fact]
+        public async Task TestRemovePriorityRaceDequeThiefRemovalRacesWithOwnerPush()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            var d = new ConcurrentStealablePriorityDeque<int>(true);
+            const int total = 100000;
+            Task owner = Task.Run(() =>
+            {
+                for (int i = 0; i < total; ++i)
+                {
+                    d.Set(i + 1, 7);
+                }
+            });
+            Task[] thieves = Enumerable.Range(0, 4).Select(_ => Task.Run(() =>
+            {
+                while (d.Steal() != default || !owner.IsCompleted) { }
+            })).ToArray();
+            await Task.WhenAll(thieves.Append(owner).ToArray());
+
+            while (d.Get() != default) { }
+            Assert.Equal(new List<int> { 0 }, d._sortedPriorityList);
+        }
     }
 }
