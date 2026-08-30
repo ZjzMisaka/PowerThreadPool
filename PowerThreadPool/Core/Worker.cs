@@ -296,6 +296,10 @@ namespace PowerThreadPool
 
         private void CleanUpAndSetSignalAfterExecute(ExecuteResultBase executeResult)
         {
+            if (executeResult == null)
+            {
+                return;
+            }
             bool finalizeWork = false;
             if (Work.AllowEventsAndCallback
                 && (finalizeWork = Work._canFinalizeWork.TrySet(CanFinalizeWork.NotAllowed, CanFinalizeWork.Allowed) == true))
@@ -563,7 +567,7 @@ namespace PowerThreadPool
             }
 #endif
             Work.Worker = null;
-            if (Work.AllowEventsAndCallback)
+            if (Work.AllowEventsAndCallback && executeResult != null)
             {
                 executeResult.ID = Work.ID;
             }

@@ -940,7 +940,7 @@ namespace PowerThreadPool
             WorkID id = QueueAsyncWorkItemInner(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
-                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, workBase, null);
+                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, workBase);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task taskFunc = asyncFunc();
@@ -974,7 +974,7 @@ namespace PowerThreadPool
             WorkID id = QueueAsyncWorkItemInner(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
-                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, workBase, cts);
+                PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, workBase);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task taskFunc = asyncFunc(cts.Token);
@@ -1501,7 +1501,7 @@ namespace PowerThreadPool
             WorkID id = QueueAsyncWorkItemInner<TResult>(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
-                PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, workBase, null);
+                PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, workBase);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task<TResult> taskFunc = asyncFunc();
@@ -1538,7 +1538,7 @@ namespace PowerThreadPool
             WorkID id = QueueAsyncWorkItemInner<TResult>(() =>
             {
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
-                PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, workBase, cts);
+                PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, workBase);
                 SynchronizationContext.SetSynchronizationContext(ctx);
 
                 Task<TResult> taskFunc = asyncFunc(cts.Token);

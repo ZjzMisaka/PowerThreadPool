@@ -2099,6 +2099,52 @@ namespace UnitTest
             Assert.IsType<InvalidOperationException>(ex);
         }
 
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestActionWithAwaitTaskYield()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            for (int i = 0; i < 50000; ++i)
+            {
+                powerPool.QueueWorkItem(async () =>
+                {
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                });
+
+                await powerPool.WaitAsync();
+
+                Assert.Equal(0, powerPool.RunningWorkerCount);
+                Assert.Equal(0, powerPool.WaitingWorkCount);
+            }
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestFuncWithAwaitTaskYield()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            for (int i = 0; i < 50000; ++i)
+            {
+                WorkID id = powerPool.QueueWorkItem(async () =>
+                {
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+
+                    return "123";
+                });
+
+                await powerPool.WaitAsync();
+
+                Assert.Equal(0, powerPool.RunningWorkerCount);
+                Assert.Equal(0, powerPool.WaitingWorkCount);
+            }
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();

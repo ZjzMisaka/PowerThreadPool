@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using PowerThreadPool.Helpers.LockFree;
 using PowerThreadPool.Works;
 
 namespace PowerThreadPool.Helpers.Asynchronous
@@ -8,15 +9,13 @@ namespace PowerThreadPool.Helpers.Asynchronous
     {
         private readonly PowerPool _powerPool;
         private readonly WorkBase _workBase;
-        private CancellationTokenSource _cts;
-        private Task _originalTask;
+        private volatile Task _originalTask;
         private int _done = 0;
 
-        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkBase workBase, CancellationTokenSource cts)
+        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkBase workBase)
         {
             _powerPool = powerPool;
             _workBase = workBase;
-            _cts = cts;
         }
 
         internal void SetTask(Task originalTask)
@@ -43,11 +42,21 @@ namespace PowerThreadPool.Helpers.Asynchronous
                     });
                 }
                 d(state);
-                if (_originalTask.IsFaulted)
+                Task originalTask = _originalTask;
+                if (originalTask == null)
                 {
-                    throw _originalTask.Exception.InnerException;
+                    // The continuation may start before SetTask publishes the task instance. 
+                    // This race is more likely to surface with awaits that force the continuation to be
+                    // queued/posted asynchronously (e.g., Task.Yield()), since a plain await often just
+                    // runs the continuation inline (synchronously) on the same thread.
+                    Spinner.Start(() =>
+                        (originalTask = _originalTask) != null);
                 }
-                if (_originalTask.IsCompleted &&
+                if (originalTask.IsFaulted)
+                {
+                    throw originalTask.Exception.InnerException;
+                }
+                if (originalTask.IsCompleted &&
                 Interlocked.Exchange(ref _done, 1) == 0)
                 {
                     _workBase.AllowEventsAndCallback = true;
