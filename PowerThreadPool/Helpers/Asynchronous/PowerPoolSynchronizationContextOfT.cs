@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using PowerThreadPool.Helpers.LockFree;
 using PowerThreadPool.Works;
 
 namespace PowerThreadPool.Helpers.Asynchronous
@@ -9,7 +10,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
         private readonly PowerPool _powerPool;
         private readonly WorkFunc<TResult> _work;
         private CancellationTokenSource _cts;
-        private Task<TResult> _originalTask;
+        private volatile Task<TResult> _originalTask;
         private int _done = 0;
 
         internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkFunc<TResult> work, CancellationTokenSource cts)
@@ -43,15 +44,25 @@ namespace PowerThreadPool.Helpers.Asynchronous
                     });
                 }
                 d(state);
-                if (_originalTask.IsFaulted)
+                Task<TResult> originalTask = _originalTask;
+                if (originalTask == null)
                 {
-                    throw _originalTask.Exception.InnerException;
+                    // The continuation may start before SetTask publishes the task instance. 
+                    // This race is more likely to surface with awaits that force the continuation to be
+                    // queued/posted asynchronously (e.g., Task.Yield()), since a plain await often just
+                    // runs the continuation inline (synchronously) on the same thread.
+                    Spinner.Start(() =>
+                        (originalTask = _originalTask) != null);
+                }
+                if (originalTask.IsFaulted)
+                {
+                    throw originalTask.Exception.InnerException;
                 }
                 TResult res = default;
-                if (_originalTask.IsCompleted && Interlocked.Exchange(ref _done, 1) == 0)
+                if (originalTask.IsCompleted && Interlocked.Exchange(ref _done, 1) == 0)
                 {
                     _work.AllowEventsAndCallback = true;
-                    res = _originalTask.Result;
+                    res = originalTask.Result;
                 }
                 return res;
             }, false);
