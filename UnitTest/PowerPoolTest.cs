@@ -5479,6 +5479,45 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestParallelWatchAsyncLostWakeupRace()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 4,
+            };
+
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>(new ConcurrentBag<int>());
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            powerPool.Watch(list, async (i) =>
+            {
+                await Task.Yield();
+                result.Add(i);
+            });
+
+            DateTime deadline = DateTime.UtcNow.AddSeconds(10);
+            int batch = 0;
+            while (DateTime.UtcNow < deadline)
+            {
+                ++batch;
+                for (int i = 0; i < 5; ++i)
+                {
+                    list.TryAdd(batch * 5 + i);
+                }
+
+                powerPool.Wait();
+
+                Assert.Equal(0, list.Count);
+            }
+
+            Assert.Equal(batch * 5, result.Count);
+
+            powerPool.Dispose();
+        }
+
+        [Fact]
         public void TestParallelWatchGroupID()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
