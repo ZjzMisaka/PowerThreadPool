@@ -9,15 +9,13 @@ namespace PowerThreadPool.Helpers.Asynchronous
     {
         private readonly PowerPool _powerPool;
         private readonly WorkFunc<TResult> _work;
-        private CancellationTokenSource _cts;
         private volatile Task<TResult> _originalTask;
         private int _done = 0;
 
-        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkFunc<TResult> work, CancellationTokenSource cts)
+        internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkFunc<TResult> work)
         {
             _powerPool = powerPool;
             _work = work;
-            _cts = cts;
         }
 
         internal void SetTask(Task<TResult> originalTask)
