@@ -866,7 +866,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             var d = new ConcurrentStealablePriorityDeque<int>(true);
-            const int total = 100000;
+            const int total = 1000000;
             Task owner = Task.Run(() =>
             {
                 for (int i = 0; i < total; ++i)
@@ -890,7 +890,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             var q = new ConcurrentStealablePriorityQueue<int>(false);
-            const int total = 100000;
+            const int total = 1000000;
             Task setter = Task.Run(() =>
             {
                 for (int i = 0; i < total; ++i)
@@ -914,7 +914,7 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             var s = new ConcurrentStealablePriorityStack<int>(false);
-            const int total = 100000;
+            const int total = 500000;
             Task setter = Task.Run(() =>
             {
                 for (int i = 0; i < total; ++i)
