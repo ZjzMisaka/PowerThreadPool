@@ -315,8 +315,7 @@ namespace PowerThreadPool
                 Work.WaitSignal.Set();
             }
 
-            if (Work.AllowEventsAndCallback && Work.TaskCompletionSource != null
-                && finalizeWork)
+            if (Work.TaskCompletionSource != null && finalizeWork)
             {
                 if (Work.WaitSignal != null)
                 {
