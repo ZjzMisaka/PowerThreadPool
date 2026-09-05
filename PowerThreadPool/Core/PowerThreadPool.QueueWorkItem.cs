@@ -893,11 +893,11 @@ namespace PowerThreadPool
 
             if (option.CustomWorkID != null)
             {
-                if (_suspendedWork.ContainsKey(WorkID.FromString(option.CustomWorkID)) || _aliveWorkDic.ContainsKey(WorkID.FromString(option.CustomWorkID)))
+                workID = WorkID.FromString(option.CustomWorkID);
+                if (_suspendedWork.ContainsKey(workID) || _aliveWorkDic.ContainsKey(workID))
                 {
                     throw new InvalidOperationException($"The work ID '{option.CustomWorkID}' already exists.");
                 }
-                workID = WorkID.FromString(option.CustomWorkID);
             }
             else
             {
