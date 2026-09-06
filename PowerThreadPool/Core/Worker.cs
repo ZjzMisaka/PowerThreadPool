@@ -233,7 +233,12 @@ namespace PowerThreadPool
             }
             else
             {
-                SetTaskCompletionSourceAfterExecute(executeResult);
+                Status status = Status.Succeed;
+                if (executeResult != null)
+                {
+                    status = executeResult.Status;
+                }
+                Work.SetTaskCompletionSource(status, executeResult);
                 CleanUpAndSetSignalAfterExecute(executeResult);
             }
         }
@@ -249,28 +254,6 @@ namespace PowerThreadPool
                 Work._canSetTaskCompletionSource.InterlockedValue = CanSetTaskCompletionSource.Allowed;
             }
             Work._canCancel.InterlockedValue = CanCancel.Allowed;
-        }
-
-        private void SetTaskCompletionSourceAfterExecute(ExecuteResultBase executeResult)
-        {
-            if (Work.TaskCompletionSource == null
-                || executeResult == null
-                || !Work._canSetTaskCompletionSource.TrySet(CanSetTaskCompletionSource.NotAllowed, CanSetTaskCompletionSource.Allowed))
-            {
-                return;
-            }
-            if (executeResult.Status == Status.Stopped)
-            {
-                Work.TaskCompletionSource.SetCanceled();
-            }
-            else if (executeResult.Status == Status.Failed)
-            {
-                Work.TaskCompletionSource.SetException(executeResult.Exception);
-            }
-            else
-            {
-                Work.TaskCompletionSource.SetResult(executeResult);
-            }
         }
 
         private void InvokeEventsAndCallback(ExecuteResultBase executeResult)
@@ -356,7 +339,7 @@ namespace PowerThreadPool
             if (Work.TaskCompletionSource != null)
             {
                 Interlocked.Decrement(ref _powerPool._asyncWorkCount);
-                Work.TaskCompletionSource.SetCanceled();
+                Work.SetTaskCompletionSource(Status.ForceStopped, null);
             }
 
             ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);

@@ -148,7 +148,7 @@ namespace PowerThreadPool.Works
                     if (TaskCompletionSource != null)
                     {
                         Interlocked.Decrement(ref PowerPool._asyncWorkCount);
-                        TaskCompletionSource.SetCanceled();
+                        SetTaskCompletionSource(Status.Canceled, null);
                     }
 
                     ExecuteResultBase executeResult = SetExecuteResult(null, null, Status.Canceled);
@@ -176,6 +176,28 @@ namespace PowerThreadPool.Works
             }
 
             return res;
+        }
+
+        internal override void SetTaskCompletionSource(Status status, ExecuteResultBase executeResult)
+        {
+            if (TaskCompletionSource == null
+                || (status == Status.Succeed && executeResult == null)
+                || !_canSetTaskCompletionSource.TrySet(CanSetTaskCompletionSource.NotAllowed, CanSetTaskCompletionSource.Allowed))
+            {
+                return;
+            }
+            if (status == Status.Stopped || status == Status.ForceStopped || status == Status.Canceled)
+            {
+                TaskCompletionSource.SetCanceled();
+            }
+            else if (status == Status.Failed)
+            {
+                TaskCompletionSource.SetException(executeResult.Exception);
+            }
+            else
+            {
+                TaskCompletionSource.SetResult(executeResult);
+            }
         }
 
         internal override bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
