@@ -21,7 +21,7 @@ namespace PowerThreadPool
         /// </summary>
         public void PauseIfRequested()
         {
-            _pauseSignal.Wait();
+            _pauseSignal.WaitOne();
 
             Worker worker;
             WorkBase pauseWork;
@@ -30,7 +30,7 @@ namespace PowerThreadPool
             if (pauseWork != null)
             {
                 worker.PauseTimer();
-                pauseWork.PauseSignal.Wait();
+                pauseWork.PauseSignal.WaitOne();
                 worker.ResumeTimer();
             }
         }
@@ -255,8 +255,8 @@ namespace PowerThreadPool
             else
             {
                 if (cancellationToken == default)
-                    _waitAllSignal.Wait();
-                else if (WaitHandle.WaitAny(new WaitHandle[] { _waitAllSignal.WaitHandle, cancellationToken.WaitHandle }) == 1)
+                    _waitAllSignal.WaitOne();
+                else if (WaitHandle.WaitAny(new WaitHandle[] { _waitAllSignal, cancellationToken.WaitHandle }) == 1)
                     cancellationToken.ThrowIfCancellationRequested();
             }
         }
@@ -379,7 +379,7 @@ namespace PowerThreadPool
             {
                 SetTcsResult(tcs);
             };
-            rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal.WaitHandle, cb, null, Timeout.Infinite, true);
+            rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal, cb, null, Timeout.Infinite, true);
 
             _waitRegDict[tcs.Task] = rwh;
 
@@ -424,7 +424,7 @@ namespace PowerThreadPool
             bool res = false;
             task = default;
 
-            if (_waitAllSignal.IsSet)
+            if (_waitAllSignal.WaitOne(0))
             {
                 res = true;
 

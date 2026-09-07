@@ -46,7 +46,7 @@ namespace PowerThreadPool
 
         private DeferredActionTimer _killTimer;
 
-        private ManualResetEventSlim _runSignal = new ManualResetEventSlim(false);
+        private ManualResetEvent _runSignal = new ManualResetEvent(false);
 
         internal WorkID WorkID => Work.ID;
 
@@ -93,7 +93,7 @@ namespace PowerThreadPool
                     {
                         SetKillTimer();
 
-                        _runSignal.Wait();
+                        _runSignal.WaitOne();
 
                         if (_killFlag)
                         {

@@ -321,16 +321,21 @@ namespace UnitTest
             Thread.Sleep(1000);
             bool resumeRes = powerPool.Resume(id);
             Assert.True(resumeRes);
+
             pauseRes = powerPool.Pause(id);
             Assert.True(pauseRes);
             Thread.Sleep(1000);
             resumeRes = powerPool.Resume(id);
             Assert.True(resumeRes);
+
+            Thread.Sleep(1000);
+
             pauseRes = powerPool.Pause(id);
-            Assert.True(pauseRes);
+            Assert.False(pauseRes);
             Thread.Sleep(1000);
             resumeRes = powerPool.Resume(id);
             Assert.False(resumeRes);
+
             powerPool.Wait();
 
             Assert.Collection<string>(logList,
