@@ -255,8 +255,8 @@ namespace PowerThreadPool
             else
             {
                 if (cancellationToken == default)
-                    _waitAllSignal.WaitOne();
-                else if (WaitHandle.WaitAny(new WaitHandle[] { _waitAllSignal, cancellationToken.WaitHandle }) == 1)
+                    _waitAllSignal.Wait();
+                else if (WaitHandle.WaitAny(new WaitHandle[] { _waitAllSignal.WaitHandle, cancellationToken.WaitHandle }) == 1)
                     cancellationToken.ThrowIfCancellationRequested();
             }
         }
@@ -379,7 +379,7 @@ namespace PowerThreadPool
             {
                 SetTcsResult(tcs);
             };
-            rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal, cb, null, Timeout.Infinite, true);
+            rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal.WaitHandle, cb, null, Timeout.Infinite, true);
 
             _waitRegDict[tcs.Task] = rwh;
 
@@ -424,7 +424,7 @@ namespace PowerThreadPool
             bool res = false;
             task = default;
 
-            if (_waitAllSignal.WaitOne(0))
+            if (_waitAllSignal.IsSet)
             {
                 res = true;
 

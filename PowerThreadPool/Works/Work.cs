@@ -89,7 +89,7 @@ namespace PowerThreadPool.Works
         {
             if (WaitSignal == null)
             {
-                WaitSignal = new ManualResetEvent(false);
+                WaitSignal = new ManualResetEventSlim(false);
             }
         }
 
@@ -209,8 +209,8 @@ namespace PowerThreadPool.Works
             if (!IsDone)
             {
                 if (cancellationToken == default)
-                    WaitSignal.WaitOne();
-                else if (WaitHandle.WaitAny(new WaitHandle[] { WaitSignal, cancellationToken.WaitHandle }) == 1)
+                    WaitSignal.Wait();
+                else if (WaitHandle.WaitAny(new WaitHandle[] { WaitSignal.WaitHandle, cancellationToken.WaitHandle }) == 1)
                     cancellationToken.ThrowIfCancellationRequested();
             }
 
@@ -247,14 +247,14 @@ namespace PowerThreadPool.Works
 
             TaskCompletionSource<bool> tcs = PowerPool.NewTcs<bool>();
             EnsureWaitSignalExists();
-            ManualResetEvent ev = WaitSignal;
+            ManualResetEventSlim ev = WaitSignal;
 
             RegisteredWaitHandle rwh = null;
             WaitOrTimerCallback cb = (state, timedOut) =>
             {
                 SetTcsResult(tcs);
             };
-            rwh = ThreadPool.RegisterWaitForSingleObject(ev, cb, null, Timeout.Infinite, true);
+            rwh = ThreadPool.RegisterWaitForSingleObject(ev.WaitHandle, cb, null, Timeout.Infinite, true);
 
             PowerPool._waitRegDict[tcs.Task] = rwh;
 

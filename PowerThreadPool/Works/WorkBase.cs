@@ -71,7 +71,7 @@ namespace PowerThreadPool.Works
         }
         internal InterlockedFlag<DependencyStatus> _dependencyStatus = DependencyStatus.Normal;
         internal Status Status { get; set; }
-        internal ManualResetEvent WaitSignal { get; set; }
+        internal ManualResetEventSlim WaitSignal { get; set; }
         internal bool ShouldStop { get; set; }
         internal InterlockedFlag<CanCancel> _canCancel = CanCancel.Allowed;
         internal ManualResetEventSlim PauseSignal { get; set; }
