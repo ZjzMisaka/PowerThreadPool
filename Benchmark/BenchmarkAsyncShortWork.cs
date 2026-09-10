@@ -57,15 +57,6 @@ namespace Benchmark
                 tasks[i] = Task.Run(async () =>
                 {
                     await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
                     Interlocked.Increment(ref threadPoolRunCount);
                 });
             }
@@ -88,20 +79,12 @@ namespace Benchmark
                 _powerPool.QueueWorkItem(async () =>
                 {
                     await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
-                    await Task.Yield();
                     Interlocked.Increment(ref powerThreadPoolRunCount);
-                    return true;
                 });
             }
+
             _powerPool.Wait();
+
             int count = powerThreadPoolRunCount;
             if (count != _maxCount)
             {
