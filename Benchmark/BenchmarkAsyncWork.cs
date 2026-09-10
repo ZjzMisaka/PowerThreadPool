@@ -94,28 +94,5 @@ namespace Benchmark
                 _ptpErrorCount = count;
             }
         }
-
-        [Benchmark]
-        public void TestPowerThreadPoolSync()
-        {
-            int powerThreadPoolRunCount = 0;
-            for (int i = 0; i < _maxCount; ++i)
-            {
-                _powerPool.QueueWorkItem(() =>
-                {
-                    Task.Delay(10).Wait();
-                    Task.Delay(10).Wait();
-                    Task.Delay(10).Wait();
-                    Interlocked.Increment(ref powerThreadPoolRunCount);
-                    return true;
-                });
-            }
-            _powerPool.Wait();
-            int count = powerThreadPoolRunCount;
-            if (count != _maxCount)
-            {
-                _ptpErrorCount = count;
-            }
-        }
     }
 }

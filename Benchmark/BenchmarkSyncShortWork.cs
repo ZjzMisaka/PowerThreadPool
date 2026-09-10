@@ -140,28 +140,6 @@ namespace Benchmark
             }
         }
 
-        [Benchmark]
-        public void TestPowerThreadPoolSetEnablePoolIdleCheck()
-        {
-            int powerThreadPoolRunCount = 0;
-            _powerPool.EnablePoolIdleCheck = false;
-            for (int i = 0; i < _maxCount; ++i)
-            {
-                _powerPool.QueueWorkItem(() =>
-                {
-                    Interlocked.Increment(ref powerThreadPoolRunCount);
-                    DoWork();
-                });
-            }
-            _powerPool.EnablePoolIdleCheck = true;
-            _powerPool.Wait();
-            int count = powerThreadPoolRunCount;
-            if (count != _maxCount)
-            {
-                _ptpErrorCount = count;
-            }
-        }
-
         private void DoWork()
         {
             double sum = 0;
