@@ -80,40 +80,6 @@ namespace Benchmark
         }
 
         [Benchmark]
-        public void TestTaskNoYield()
-        {
-            int threadPoolRunCount = 0;
-
-            Task[] tasks = new Task[_maxCount];
-
-            for (int i = 0; i < _maxCount; ++i)
-            {
-                tasks[i] = Task.Run(async () =>
-                {
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    Interlocked.Increment(ref threadPoolRunCount);
-                });
-            }
-
-            Task.WhenAll(tasks).Wait();
-
-            int count = threadPoolRunCount;
-            if (count != _maxCount)
-            {
-                _tpErrorCount = count;
-            }
-        }
-
-        [Benchmark]
         public void TestPowerThreadPool()
         {
             int powerThreadPoolRunCount = 0;
@@ -131,66 +97,6 @@ namespace Benchmark
                     await Task.Yield();
                     await Task.Yield();
                     await Task.Yield();
-                    Interlocked.Increment(ref powerThreadPoolRunCount);
-                    return true;
-                });
-            }
-            _powerPool.Wait();
-            int count = powerThreadPoolRunCount;
-            if (count != _maxCount)
-            {
-                _ptpErrorCount = count;
-            }
-        }
-
-        [Benchmark]
-        public void TestPowerThreadPoolNoYield()
-        {
-            int powerThreadPoolRunCount = 0;
-            for (int i = 0; i < _maxCount; ++i)
-            {
-                _powerPool.QueueWorkItem(async () =>
-                {
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    await Task.Delay(0);
-                    Interlocked.Increment(ref powerThreadPoolRunCount);
-                    return true;
-                });
-            }
-            _powerPool.Wait();
-            int count = powerThreadPoolRunCount;
-            if (count != _maxCount)
-            {
-                _ptpErrorCount = count;
-            }
-        }
-
-        [Benchmark]
-        public void TestPowerThreadPoolSync()
-        {
-            int powerThreadPoolRunCount = 0;
-            for (int i = 0; i < _maxCount; ++i)
-            {
-                _powerPool.QueueWorkItem(() =>
-                {
-                    Task.Delay(0).Wait();
-                    Task.Delay(0).Wait();
-                    Task.Delay(0).Wait();
-                    Task.Delay(0).Wait();
-                    Task.Delay(0).Wait();
-                    Task.Delay(0).Wait();
-                    Task.Delay(0).Wait();
-                    Task.Delay(0).Wait();
-                    Task.Delay(0).Wait();
-                    Task.Delay(0).Wait();
                     Interlocked.Increment(ref powerThreadPoolRunCount);
                     return true;
                 });
