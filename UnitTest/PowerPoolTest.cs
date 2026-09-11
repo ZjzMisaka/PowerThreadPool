@@ -10242,7 +10242,6 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             LoopWithStepDictionary<object, object> dict = new LoopWithStepDictionary<object, object>();
-            dict.InitEnumerator();
 
             List<Task> tasks = new List<Task>();
 
