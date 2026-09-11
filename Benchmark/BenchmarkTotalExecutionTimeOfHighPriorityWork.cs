@@ -2,6 +2,7 @@
 using BenchmarkDotNet.Attributes;
 using PowerThreadPool;
 using PowerThreadPool.Options;
+using PowerThreadPool.Works;
 
 namespace Benchmark
 {
@@ -178,7 +179,7 @@ namespace Benchmark
 
             CancellationTokenSource cts = new CancellationTokenSource();
 
-            Task[] tasks = new Task[200];
+            WorkID[] tasks = new WorkID[200];
             for (int i = 0; i < 50; i++)
             {
                 _powerPool.QueueWorkItem(
@@ -203,17 +204,15 @@ namespace Benchmark
                         await DoWorkAsync(cts.Token);
                     },
                     workOptionNormal);
-                _powerPool.QueueWorkItem(
+                tasks[i] = _powerPool.QueueWorkItem(
                     async () =>
                     {
                         await DoWorkAsync(cts.Token);
                     },
-                    out Task task,
                     workOptionHighest);
-                tasks[i] = task;
             }
 
-            Task.WhenAll(tasks).Wait();
+            _powerPool.Wait(tasks);
 
             cts.Cancel();
         }
