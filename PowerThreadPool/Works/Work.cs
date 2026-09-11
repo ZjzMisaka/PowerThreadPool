@@ -365,7 +365,7 @@ namespace PowerThreadPool.Works
         {
             if (TaskCompletionSource == null && PauseSignal == null)
             {
-                PauseSignal = new ManualResetEventSlim(true);
+                PauseSignal = new ManualResetEvent(true);
             }
             if (TaskCompletionSource != null && PauseAsyncSignal == null)
             {

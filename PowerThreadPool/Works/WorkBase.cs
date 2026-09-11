@@ -74,7 +74,7 @@ namespace PowerThreadPool.Works
         internal ManualResetEventSlim WaitSignal { get; set; }
         internal bool ShouldStop { get; set; }
         internal InterlockedFlag<CanCancel> _canCancel = CanCancel.Allowed;
-        internal ManualResetEventSlim PauseSignal { get; set; }
+        internal ManualResetEvent PauseSignal { get; set; }
         internal AsyncManualResetEvent PauseAsyncSignal { get; set; }
         internal DeferredActionTimer TimeoutTimer { get; set; }
         /// <summary>

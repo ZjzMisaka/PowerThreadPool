@@ -21,7 +21,7 @@ namespace PowerThreadPool
         /// </summary>
         public void PauseIfRequested()
         {
-            _pauseSignal.Wait();
+            _pauseSignal.WaitOne();
 
             Worker worker;
             WorkBase pauseWork;
@@ -30,7 +30,7 @@ namespace PowerThreadPool
             if (pauseWork != null)
             {
                 worker.PauseTimer();
-                pauseWork.PauseSignal.Wait();
+                pauseWork.PauseSignal.WaitOne();
                 worker.ResumeTimer();
             }
         }
