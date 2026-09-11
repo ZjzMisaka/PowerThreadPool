@@ -52,6 +52,8 @@ namespace PowerThreadPool.Collections
         private readonly InterlockedFlag<CanRebuildSnapshot> _canRebuildSnapshot = CanRebuildSnapshot.Allowed;
         private volatile TValue[] _snapshot = s_empty;
         private int _cursor = -1;
+        private volatile int _jumpCount = 0;
+
         public bool TryAdd(TKey key, TValue value)
         {
             _innerDict[key] = value;
@@ -69,6 +71,11 @@ namespace PowerThreadPool.Collections
             return true;
         }
 
+        public void ReportStepsTaken(int jumpCount)
+        {
+            _jumpCount += jumpCount;
+        }
+
         public void Clear()
         {
             _innerDict.Clear();
@@ -82,7 +89,8 @@ namespace PowerThreadPool.Collections
 
         internal int GetNextStartIndex(int count)
         {
-            int cursor = _cursor + 1;
+            int cursor = _cursor + _jumpCount;
+            _jumpCount = 0;
             _cursor = cursor;
             return (int)((uint)cursor % (uint)count);
         }

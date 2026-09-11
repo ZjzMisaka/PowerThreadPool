@@ -813,6 +813,9 @@ namespace PowerThreadPool
                     worker = runningWorker;
                 }
             }
+
+            _powerPool._aliveWorkerDic.ReportStepsTaken(step);
+
             return StealFromWorker(worker, max);
         }
 

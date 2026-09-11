@@ -705,6 +705,8 @@ namespace PowerThreadPool
                 }
             }
 
+            _aliveWorkerDic.ReportStepsTaken(step);
+
             if (selectedWorker != null && rejectOption != null)
             {
                 rejected = false;
