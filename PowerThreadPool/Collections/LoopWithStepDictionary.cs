@@ -54,10 +54,7 @@ namespace PowerThreadPool.Collections
         private int _cursor = -1;
         public bool TryAdd(TKey key, TValue value)
         {
-            if (!_innerDict.TryAdd(key, value))
-            {
-                return false;
-            }
+            _innerDict[key] = value;
             RebuildSnapshot();
             return true;
         }
@@ -88,17 +85,6 @@ namespace PowerThreadPool.Collections
             int cursor = _cursor + 1;
             _cursor = cursor;
             return (int)((uint)cursor % (uint)count);
-        }
-
-        public TValue GetNext()
-        {
-            TValue[] snapshot = _snapshot;
-            int count = snapshot.Length;
-            if (count == 0)
-            {
-                return null;
-            }
-            return snapshot[GetNextStartIndex(count)];
         }
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
