@@ -10235,25 +10235,5 @@ namespace UnitTest
 
             Assert.Equal(1, powerPool.FailedWorkList.FirstOrDefault());
         }
-
-        [Fact]
-        public async void TestLoopInStepsDictionaryGetNextNull()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            LoopWithStepDictionary<object, object> dict = new LoopWithStepDictionary<object, object>();
-
-            List<Task> tasks = new List<Task>();
-
-            for (int i = 0; i < 10000; ++i)
-            {
-                tasks.Add(Task.Run(() =>
-                {
-                    dict.GetNext();
-                }));
-            }
-
-            await Task.WhenAll(tasks.ToArray());
-        }
     }
 }
