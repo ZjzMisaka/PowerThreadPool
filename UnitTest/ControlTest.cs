@@ -342,8 +342,8 @@ namespace UnitTest
                 item => Assert.Equal("Work0 END", item)
             );
 
-            Assert.InRange(d1, 1999, 2300);
-            Assert.InRange(t1, 1999, 2300);
+            Assert.InRange(d1, 1999, 2200);
+            Assert.InRange(t1, 1999, 2200);
         }
 
         [Fact]
