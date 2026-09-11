@@ -647,32 +647,33 @@ namespace PowerThreadPool
             Worker selectedWorker = null;
             int minWaitingWorkCount = int.MaxValue;
 
-            Worker aliveWorker = _aliveWorkerDic.InitEnumerator();
+            // In most cases, the loop will not iterate more than once.
+            // WorkLoopMaxStep is automatically calculated from MaxThreads using a logarithmic formula to optimize loop performance for different thread pool sizes.
+            // It limits the minimum number of steps for each loop iteration.
+            // The number of loop steps will not exceed the length of the worker snapshot.
+            // GetNextStartIndex is used to ensure that the starting point of each loop iteration varies as much as possible.
+            RejectOption rejectOption = PowerPoolOption.RejectOption;
+            Worker[] workers = _aliveWorkerDic.GetSnapshot();
+            int workerCount = workers.Length;
+            if (workerCount == 0)
+            {
+                return null;
+            }
+            int start = _aliveWorkerDic.GetNextStartIndex(workerCount);
 
             int step = 0;
 
-            RejectOption rejectOption = PowerPoolOption.RejectOption;
-
-            // In most cases, the loop will not iterate more than once.
-            while (aliveWorker != null)
+            while (step < workerCount)
             {
-                // WorkStealingLoopMaxStep is automatically calculated from MaxThreads using a logarithmic formula to optimize loop performance for different thread pool sizes.
-                // It limits the minimum number of steps for each loop iteration.
-                // The number of loop steps will not exceed the length of _aliveWorkerList.
-                // _aliveWorkerListLoopIndex is used to ensure that the starting point of each loop iteration varies as much as possible.
-                if ((step >= PowerPoolOption.WorkLoopMaxStep && selectedWorker != null) || step >= AliveWorkerCount)
+                if (step >= PowerPoolOption.WorkLoopMaxStep && selectedWorker != null)
                 {
-                    if (selectedWorker != null && rejectOption != null)
-                    {
-                        rejected = false;
-                    }
                     break;
                 }
+                Worker aliveWorker = workers[(start + step) % workerCount];
                 ++step;
 
                 if (aliveWorker.LongRunning)
                 {
-                    aliveWorker = _aliveWorkerDic.GetNext();
                     continue;
                 }
 
@@ -680,7 +681,6 @@ namespace PowerThreadPool
 
                 if (rejectOption != null && waitingWorkCountTemp >= rejectOption.ThreadQueueLimit)
                 {
-                    aliveWorker = _aliveWorkerDic.GetNext();
                     continue;
                 }
 
@@ -703,8 +703,11 @@ namespace PowerThreadPool
                         minWaitingWorkCount = waitingWorkCountTemp;
                     }
                 }
+            }
 
-                aliveWorker = _aliveWorkerDic.GetNext();
+            if (selectedWorker != null && rejectOption != null)
+            {
+                rejected = false;
             }
 
             return selectedWorker;

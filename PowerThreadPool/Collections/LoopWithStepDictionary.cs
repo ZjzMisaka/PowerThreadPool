@@ -5,17 +5,22 @@ using PowerThreadPool.Helpers.LockFree;
 
 namespace PowerThreadPool.Collections
 {
-    // Static analysis tools and LLM-based analysis may flag that direct assignments
-    // could cause _enumerator, _current or result of GetNext() to read stale data.
+    // Static analysis tools and LLM-based analysis may flag that the snapshot array could
+    // contain workers already removed from _innerDict, could miss workers added after the
+    // snapshot was built, or that the shared _cursor is incremented concurrently.
     // This is NOT a bug.
     //
     // PTP's work-stealing algorithm iterates over the workers to reallocate tasks
     // from those with a relatively higher number of pending tasks.
     // To prevent excessive iteration overhead when managing a large number of worker instances,
-    // the _enumerator was introduced.
-    // This mechanism restricts each execution to a small segment of the worker dict. 
+    // each scan only walks a limited segment of the worker snapshot.
     //
-    // Strict real-time consistency of the WorkerList or the loop index is not required;
+    // The snapshot array is rebuilt only when a worker is added to or removed from _innerDict. 
+    // This mechanism restricts each execution to a small segment of the worker snapshot. 
+    // A shared rotating cursor (_cursor) is used to ensure that the starting point of each
+    // scan varies as much as possible.
+    //
+    // Strict real-time consistency of the snapshot or the cursor is not required;
     // reasonably up-to-date values are sufficient.
     // However, it is critical to guarantee that the algorithm does not steal tasks from workers in an Idle state,
     // nor attempt to steal tasks that are currently executing or already completed [①].
@@ -31,6 +36,9 @@ namespace PowerThreadPool.Collections
     //    this worker will be safely bypassed.
     //    The atomic state machine's Compare-And-Swap (CAS) operation will simply fail,
     //    preventing any invalid state transitions [①].
+    // 3. Missing a newly created worker:
+    //    The snapshot is rebuilt synchronously when a worker is added,
+    //    so the next scan will find it.
     // 
     // Since static analysis tools and single-file-level LLM analysis often lack
     // the broader context necessary to understand intentional design trade-offs,
@@ -38,98 +46,82 @@ namespace PowerThreadPool.Collections
     // before assuming they represent actual bugs.
     internal class LoopWithStepDictionary<TKey, TValue> where TValue : class
     {
-        internal ConcurrentDictionary<TKey, TValue> _innerDict = new ConcurrentDictionary<TKey, TValue>();
-        internal IEnumerator<KeyValuePair<TKey, TValue>> _enumerator = null;
-        internal readonly InterlockedFlag<CanEnumeratorMoveNext> _canEnumeratorMoveNext = CanEnumeratorMoveNext.Allowed;
-        internal TValue _current = null;
+        private static readonly TValue[] s_empty = new TValue[0];
 
+        internal ConcurrentDictionary<TKey, TValue> _innerDict = new ConcurrentDictionary<TKey, TValue>();
+        private readonly InterlockedFlag<CanRebuildSnapshot> _canRebuildSnapshot = CanRebuildSnapshot.Allowed;
+        private volatile TValue[] _snapshot = s_empty;
+        private int _cursor = -1;
         public bool TryAdd(TKey key, TValue value)
-            => _innerDict.TryAdd(key, value);
+        {
+            if (!_innerDict.TryAdd(key, value))
+            {
+                return false;
+            }
+            RebuildSnapshot();
+            return true;
+        }
 
         public bool TryRemove(TKey key, out TValue value)
-            => _innerDict.TryRemove(key, out value);
+        {
+            if (!_innerDict.TryRemove(key, out value))
+            {
+                return false;
+            }
+            RebuildSnapshot();
+            return true;
+        }
 
         public void Clear()
         {
             _innerDict.Clear();
-            _enumerator = null;
-            _current = null;
+
+            _snapshot = s_empty;
+            _cursor = -1;
         }
 
-        public TValue InitEnumerator()
-            => InitEnumerator(true);
+        internal TValue[] GetSnapshot()
+            => _snapshot;
 
-        private TValue InitEnumerator(bool checkNull)
+        internal int GetNextStartIndex(int count)
         {
-            TValue currentItem = null;
-
-            if (!checkNull || _enumerator == null)
-            {
-                _enumerator = _innerDict.GetEnumerator();
-                currentItem = _enumerator.MoveNext()
-                    ? _enumerator.Current.Value
-                    : null;
-            }
-
-            while (currentItem == null)
-            {
-                if (_innerDict.IsEmpty)
-                {
-                    _current = null;
-                    return null;
-                }
-
-                currentItem = GetNext();
-            }
-
-            _current = currentItem;
-            return currentItem;
+            int cursor = _cursor + 1;
+            _cursor = cursor;
+            return (int)((uint)cursor % (uint)count);
         }
 
         public TValue GetNext()
         {
-            while (true)
+            TValue[] snapshot = _snapshot;
+            int count = snapshot.Length;
+            if (count == 0)
             {
-                if (_canEnumeratorMoveNext.TrySet(CanEnumeratorMoveNext.NotAllowed, CanEnumeratorMoveNext.Allowed))
-                {
-                    TValue item;
-
-                    if (!_enumerator.MoveNext())
-                    {
-                        item = InitEnumerator(false);
-                        _canEnumeratorMoveNext.InterlockedValue = CanEnumeratorMoveNext.Allowed;
-                        return item;
-                    }
-
-                    item = _enumerator.Current.Value;
-
-                    if (item != null)
-                    {
-                        _current = item;
-                    }
-                    _canEnumeratorMoveNext.InterlockedValue = CanEnumeratorMoveNext.Allowed;
-
-                    return item;
-                }
-                else
-                {
-                    TValue cached = _current;
-                    if (cached != null)
-                    {
-                        return cached;
-                    }
-
-                    if (_innerDict.IsEmpty)
-                    {
-                        return null;
-                    }
-                }
+                return null;
             }
+            return snapshot[GetNextStartIndex(count)];
         }
 
         public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             return _innerDict.GetEnumerator();
+        }
+
+        private void RebuildSnapshot()
+        {
+            if (_canRebuildSnapshot.TrySet(CanRebuildSnapshot.NotAllowed, CanRebuildSnapshot.Allowed))
+            {
+                ConcurrentDictionary<TKey, TValue> innerDict = _innerDict;
+                if (innerDict.IsEmpty)
+                {
+                    _snapshot = s_empty;
+                    return;
+                }
+                TValue[] snapshot = new TValue[innerDict.Count];
+                ((ICollection<TValue>)innerDict.Values).CopyTo(snapshot, 0);
+                _snapshot = snapshot;
+
+                _canRebuildSnapshot.InterlockedValue = CanRebuildSnapshot.Allowed;
+            }
         }
     }
 }

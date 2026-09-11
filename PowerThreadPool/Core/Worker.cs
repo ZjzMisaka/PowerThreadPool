@@ -66,17 +66,17 @@ namespace PowerThreadPool
         internal int _waitingWorkCount = 0;
 
         internal int WaitingWorkCount => _waitingWorkCount;
-
-#pragma warning disable CS0618
-        private bool EnforceDequeOwnership
-            => _waitingWorkPriorityCollection.EnforceDequeOwnership;
-#pragma warning restore CS0618
+        private bool EnforceDequeOwnership => _enforceDequeOwnership;
+        private bool _enforceDequeOwnership;
+        private ThreadPriority _lastThreadPriority = ThreadPriority.Normal;
+        private bool _lastIsBackground = true;
 
         internal Worker(PowerPool powerPool)
         {
             _powerPool = powerPool;
 
             _waitingWorkPriorityCollection = QueueFactory();
+            _enforceDequeOwnership = _waitingWorkPriorityCollection.EnforceDequeOwnership;
 
             if (EnforceDequeOwnership)
             {
@@ -767,26 +767,34 @@ namespace PowerThreadPool
             Worker worker = null;
             int max = 0;
 
-            Worker runningWorker = _powerPool._aliveWorkerDic.InitEnumerator();
+            // In most cases, the loop will not iterate more than once.
+            // WorkStealingLoopMaxStep is automatically calculated from MaxThreads using a logarithmic formula to optimize loop performance for different thread pool sizes.
+            // It limits the minimum number of steps for each loop iteration.
+            // The number of loop steps will not exceed the length of the worker snapshot.
+            // GetNextStartIndex is used to ensure that the starting point of each loop iteration varies as much as possible.
+            PowerPoolOption powerPoolOption = _powerPool.PowerPoolOption;
+            int workLoopMaxStep = powerPoolOption.WorkLoopMaxStep;
+            Worker[] workers = _powerPool._aliveWorkerDic.GetSnapshot();
+            int workerCount = workers.Length;
+            if (workerCount == 0)
+            {
+                return null;
+            }
+            int start = _powerPool._aliveWorkerDic.GetNextStartIndex(workerCount);
 
             int step = 0;
 
-            // In most cases, the loop will not iterate more than once.
-            while (runningWorker != null)
+            while (step < workerCount)
             {
-                // WorkStealingLoopMaxStep is automatically calculated from MaxThreads using a logarithmic formula to optimize loop performance for different thread pool sizes.
-                // It limits the minimum number of steps for each loop iteration.
-                // The number of loop steps will not exceed the length of _aliveWorkerList.
-                // _aliveWorkerListLoopIndex is used to ensure that the starting point of each loop iteration varies as much as possible.
-                if ((step >= _powerPool.PowerPoolOption.WorkLoopMaxStep && worker != null) || step >= _powerPool.AliveWorkerCount)
+                if (step >= workLoopMaxStep && worker != null)
                 {
                     break;
                 }
+                Worker runningWorker = workers[(start + step) % workerCount];
                 ++step;
 
                 if (runningWorker.WorkerState != WorkerStates.Running || runningWorker.ID == ID)
                 {
-                    runningWorker = _powerPool._aliveWorkerDic.GetNext();
                     continue;
                 }
 
@@ -795,7 +803,6 @@ namespace PowerThreadPool
                 {
                     if (!runningWorker.WorkStealability.TrySet(Constants.WorkStealability.NotAllowed, Constants.WorkStealability.Allowed))
                     {
-                        runningWorker = _powerPool._aliveWorkerDic.GetNext();
                         continue;
                     }
                     if (worker != null)
@@ -805,7 +812,6 @@ namespace PowerThreadPool
                     max = waitingWorkCountTemp;
                     worker = runningWorker;
                 }
-                runningWorker = _powerPool._aliveWorkerDic.GetNext();
             }
             return StealFromWorker(worker, max);
         }
@@ -920,7 +926,7 @@ namespace PowerThreadPool
                                 _powerPool._idleWorkerQueue.Enqueue(ID);
                             }
 
-                            _thread.IsBackground = true;
+                            _lastIsBackground = true;
                         }
                     }
 
@@ -1044,13 +1050,17 @@ namespace PowerThreadPool
 
             if (_thread != null)
             {
-                if (_thread.Priority != work.ThreadPriority)
+                ThreadPriority threadPriority = work.ThreadPriority;
+                if (threadPriority != _lastThreadPriority)
                 {
-                    _thread.Priority = work.ThreadPriority;
+                    _thread.Priority = threadPriority;
+                    _lastThreadPriority = threadPriority;
                 }
-                if (_thread.IsBackground != work.IsBackground)
+                bool isBackground = work.IsBackground;
+                if (isBackground != _lastIsBackground)
                 {
-                    _thread.IsBackground = work.IsBackground;
+                    _thread.IsBackground = isBackground;
+                    _lastIsBackground = isBackground;
                 }
             }
         }
