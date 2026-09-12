@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.5.33516.290
+# Visual Studio Version 18
+VisualStudioVersion = 18.9.12128.139 oobstable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PowerThreadPoolTest", "PowerThreadPoolTest\PowerThreadPoolTest.csproj", "{29CE4645-0683-4DBC-9C7E-9268C395E585}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark", "Benchmark\Benchmark.csproj", "{470FB9E9-F963-41B8-9ECB-360906ABE0CC}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Deque", "Deque\Deque.shproj", "{70448BCA-9802-46C0-9AA8-17F518A8E7B2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PowerThreadPoolConsoleTest", "PowerThreadPoolConsoleTest\PowerThreadPoolConsoleTest.csproj", "{5187CC4F-798B-484D-8DA0-D330FDB083BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +37,10 @@ Global
 		{470FB9E9-F963-41B8-9ECB-360906ABE0CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{470FB9E9-F963-41B8-9ECB-360906ABE0CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{470FB9E9-F963-41B8-9ECB-360906ABE0CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5187CC4F-798B-484D-8DA0-D330FDB083BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5187CC4F-798B-484D-8DA0-D330FDB083BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5187CC4F-798B-484D-8DA0-D330FDB083BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5187CC4F-798B-484D-8DA0-D330FDB083BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
