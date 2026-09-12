@@ -49,7 +49,7 @@ namespace PowerThreadPool
         internal ConcurrentQueue<WorkID> _stopSuspendedWorkQueue = new ConcurrentQueue<WorkID>();
         internal ConcurrentDictionary<WorkID, WorkBase> _stopSuspendedWork = new ConcurrentDictionary<WorkID, WorkBase>();
 
-        internal ConcurrentDictionary<WorkID, WorkBase> _aliveWorkDic = new ConcurrentDictionary<WorkID, WorkBase>();
+        internal ConcurrentDictionary<WorkID, WorkBase> _aliveWorkDic;
         private ConcurrentSet<WorkBase> _pausingWorkSet = new ConcurrentSet<WorkBase>();
 
         internal ConcurrentDictionary<WorkID, ExecuteResultBase> _resultDic = new ConcurrentDictionary<WorkID, ExecuteResultBase>();
@@ -249,6 +249,10 @@ namespace PowerThreadPool
 
         public PowerPool()
         {
+            int concurrencyLevel = Math.Max(4, 2 * Environment.ProcessorCount);
+            int initialCapacity = Math.Max(31, concurrencyLevel * 4);
+            _aliveWorkDic = new ConcurrentDictionary<WorkID, WorkBase>(concurrencyLevel, initialCapacity);
+
             _workDependencyController = new WorkDependencyController(this);
             _timeoutTimer = new DeferredActionTimer(() =>
             {
