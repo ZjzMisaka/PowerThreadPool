@@ -9,6 +9,19 @@ namespace PowerThreadPool.Works
         String = 2,
     }
 
+    /// <summary>
+    /// An abstract class representing the ID of a work.
+    ///
+    /// Optimization already attempted: converting WorkID to a readonly struct
+    /// (a union of kind/long/Guid/string fields, about 40 bytes).
+    /// This eliminates one small heap allocation per work, but the ID is embedded by value
+    /// in three heap objects per work (the Work instance, the _aliveWorkDic dictionary node,
+    /// and the ExecuteResult), so one 32-byte shared object plus three 8-byte references
+    /// becomes three 40-byte inline copies. Net effect: about +64 bytes per work,
+    /// which increased total allocations by ~10% in the sync-short-work benchmark
+    /// (622.67 MB -> 684.93 MB per 1,000,000 works) with no measurable time improvement.
+    /// Therefore, keeping WorkID as a class.
+    /// </summary>
     public abstract class WorkID :
         IEquatable<WorkID>
         , IFormattable
