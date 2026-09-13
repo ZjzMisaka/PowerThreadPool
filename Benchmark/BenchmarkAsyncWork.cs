@@ -94,5 +94,28 @@ namespace Benchmark
                 _ptpErrorCount = count;
             }
         }
+
+        [Benchmark]
+        public async Task TestPowerThreadPoolWaitAsync()
+        {
+            int powerThreadPoolRunCount = 0;
+            for (int i = 0; i < _maxCount; ++i)
+            {
+                _powerPool.QueueWorkItem(async () =>
+                {
+                    await Task.Delay(10);
+                    await Task.Delay(10);
+                    await Task.Delay(10);
+                    Interlocked.Increment(ref powerThreadPoolRunCount);
+                    return true;
+                });
+            }
+            await _powerPool.WaitAsync();
+            int count = powerThreadPoolRunCount;
+            if (count != _maxCount)
+            {
+                _ptpErrorCount = count;
+            }
+        }
     }
 }
