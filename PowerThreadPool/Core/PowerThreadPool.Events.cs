@@ -25,6 +25,8 @@ namespace PowerThreadPool
         internal delegate void CallbackEndEventHandler(WorkBase work, Status status);
         internal event CallbackEndEventHandler CallbackEnd;
 
+        internal bool HasWorkEndEventSubscriber => WorkEnded != null || WorkStopped != null;
+
         /// <summary>
         /// Invoke work end event
         /// </summary>

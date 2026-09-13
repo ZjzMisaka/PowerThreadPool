@@ -3759,6 +3759,41 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestFetchAfterDoneWithoutAnyResultConsumer()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem(() => true);
+
+            powerPool.Wait();
+
+            ExecuteResult<bool> res = powerPool.Fetch<bool>(id);
+            Assert.False(res.IsFound);
+            Assert.False(res.Result);
+        }
+
+        [Fact]
+        public void TestFetchWhileRunningWithoutPrecomputedResult()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 1 });
+            WorkID before = powerPool.QueueWorkItem(() => Thread.Sleep(200));
+            WorkID id = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(200);
+                return 1024;
+            });
+            powerPool.Wait(before);
+
+            ExecuteResult<int> res = powerPool.Fetch<int>(id);
+
+            Assert.True(res.IsFound);
+            Assert.Equal(1024, res.Result);
+        }
+
+        [Fact]
         public void TestFetchByIDButNull()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");

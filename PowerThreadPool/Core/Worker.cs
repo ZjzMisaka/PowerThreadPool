@@ -278,15 +278,11 @@ namespace PowerThreadPool
 
         private void CleanUpAndSetSignalAfterExecute(ExecuteResultBase executeResult)
         {
-            if (executeResult == null)
-            {
-                return;
-            }
             bool finalizeWork = false;
             if (Work.AllowEventsAndCallback
                 && (finalizeWork = Work._canFinalizeWork.TrySet(CanFinalizeWork.NotAllowed, CanFinalizeWork.Allowed) == true))
             {
-                _powerPool.WorkCallbackEnd(Work, executeResult.Status);
+                _powerPool.WorkCallbackEnd(Work, executeResult != null ? executeResult.Status : Work.Status);
                 Work.IsDone = true;
             }
 
@@ -498,12 +494,18 @@ namespace PowerThreadPool
                     if (Work.ExecuteResultBase != null)
                     {
                         executeResult = Work.ExecuteResultBase;
+                        SetStatisticsCollection(executeResult, Work.StartDateTime);
+                    }
+                    else if (Work.NeedsExecuteResult || Work._resultRequested)
+                    {
+                        executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
+                        SetStatisticsCollection(executeResult, Work.StartDateTime);
                     }
                     else
                     {
-                        executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
+                        Work._lastResult = result;
+                        Work.Status = Status.Succeed;
                     }
-                    SetStatisticsCollection(executeResult, Work.StartDateTime);
                 }
             }
             catch (ThreadInterruptedException ex)
@@ -536,7 +538,7 @@ namespace PowerThreadPool
                 _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
             }
 #if DEBUG
-            Spinner.Start(() => WorkHeldState == WorkHeldStates.NotHeld);
+            Spinner.Start(() => _workHeldState == WorkHeldStates.NotHeld);
 #else
             while (true)
             {
