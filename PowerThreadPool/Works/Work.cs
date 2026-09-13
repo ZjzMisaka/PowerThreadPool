@@ -82,6 +82,13 @@ namespace PowerThreadPool.Works
             ShouldStop = false;
             IsPausing = false;
             CancellationTokenSource = cancellationTokenSource;
+            NeedsExecuteResult = TaskCompletionSource != null
+                || WorkOption.ShouldStoreResult
+                || WorkOption.Callback != null
+                || (WorkOption is WorkOption<TResult> wor2 && wor2.Callback != null)
+                || powerPool.PowerPoolOption.DefaultCallback != null
+                || powerPool.HasWorkEndEventSubscriber
+                || powerPool.PowerPoolOption.EnableStatisticsCollection;
             return this;
         }
 
@@ -323,6 +330,7 @@ namespace PowerThreadPool.Works
 
         internal override ExecuteResult<T> Fetch<T>(CancellationToken cancellationToken, bool helpWhileWaiting = false)
         {
+            _resultRequested = true;
             Wait(cancellationToken, helpWhileWaiting);
 
             return FetchCore<T>();
@@ -352,11 +360,19 @@ namespace PowerThreadPool.Works
             if (PowerPool._aliveWorkDic.TryGetValue(ID, out WorkBase work))
             {
                 Work<T> workT = work as Work<T>;
-                Spinner.Start(() => workT.ExecuteResult != null, true);
+                Spinner.Start(() => workT.ExecuteResult != null || workT.IsDone, true);
+                if (workT.ExecuteResult == null && workT.IsDone)
+                {
+                    workT.SetExecuteResult(workT._lastResult, null, Status.Succeed);
+                }
                 return workT.ExecuteResult.ToTypedResult<T>();
             }
             else
             {
+                if (ExecuteResult == null && IsDone)
+                {
+                    SetExecuteResult(_lastResult, null, Status.Succeed);
+                }
                 return ExecuteResult.ToTypedResult<T>();
             }
         }
@@ -410,9 +426,13 @@ namespace PowerThreadPool.Works
         internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status)
         {
             Status = status;
-            ExecuteResult<TResult> executeResult = new ExecuteResult<TResult>();
+            ExecuteResult<TResult> executeResult = ExecuteResult;
+            if (executeResult == null)
+            {
+                executeResult = new ExecuteResult<TResult>();
+                ExecuteResult = executeResult;
+            }
             executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, _retryCount);
-            ExecuteResult = executeResult;
             if (WorkOption.ShouldStoreResult)
             {
                 PowerPool._resultDic[ID] = ExecuteResult;
