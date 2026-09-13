@@ -120,15 +120,28 @@ namespace UnitTest
             Assert.False(res);
             res = _canGetWork0 == _canGetWork1;
             Assert.False(res);
-            _canGetWork0 = null;
             res = _canGetWork0 == _canGetWork1;
             Assert.False(res);
-            _canGetWork1 = null;
-            res = _canGetWork0 == _canGetWork1;
+        }
+
+        [Fact]
+        public void TestDefaultIsInitialValue()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            // default(InterlockedFlag<T>) must be a validly-initialized flag:
+            // every flag enum defines its initial state as the 0 member.
+            InterlockedFlag<CanGetWork> def = default;
+            Assert.Equal(CanGetWork.Allowed, def.Get());
+            Assert.Equal(CanGetWork.Allowed, def.Value);
+            Assert.True(def == CanGetWork.Allowed);
+
+            bool res = def.TrySet(CanGetWork.Disabled, CanGetWork.Allowed);
             Assert.True(res);
-            _canGetWork0 = CanGetWork.ToBeDisabled;
-            res = _canGetWork0 == _canGetWork1;
-            Assert.False(res);
+            Assert.Equal(CanGetWork.Disabled, def.Get());
+
+            InterlockedFlag<CanGetWork> def2 = default;
+            Assert.True(def2 == CanGetWork.Allowed);
         }
 
         [Fact]
@@ -146,9 +159,6 @@ namespace UnitTest
             _canGetWork0 = CanGetWork.ToBeDisabled;
             res = _canGetWork0 == CanGetWork.Allowed;
             Assert.False(res);
-            res = _canGetWork0 == CanGetWork.Allowed;
-            Assert.False(res);
-            _canGetWork0 = null;
             res = _canGetWork0 == CanGetWork.Allowed;
             Assert.False(res);
         }

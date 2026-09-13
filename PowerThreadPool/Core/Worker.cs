@@ -28,17 +28,19 @@ namespace PowerThreadPool
     {
         private StatusPingPongChecker _statusPingPongChecker = new StatusPingPongChecker();
 
-        internal InterlockedFlag<CanDispose> CanDispose { get; } = Constants.CanDispose.Allowed;
-        internal InterlockedFlag<CanForceStop> CanForceStop { get; } = Constants.CanForceStop.Allowed;
+        // InterlockedFlag is a mutable struct: keep these as fields (not get-only properties),
+        // otherwise mutating members would act on a defensive copy returned by the property getter.
+        internal InterlockedFlag<CanDispose> CanDispose = Constants.CanDispose.Allowed;
+        internal InterlockedFlag<CanForceStop> CanForceStop = Constants.CanForceStop.Allowed;
 
         internal Thread _thread;
 
         internal int ID { get; set; }
 
-        internal InterlockedFlag<WorkerStates> WorkerState { get; } = WorkerStates.Idle;
-        internal InterlockedFlag<CanGetWork> CanGetWork { get; } = Constants.CanGetWork.NotAllowed;
-        internal InterlockedFlag<WorkHeldStates> WorkHeldState { get; } = WorkHeldStates.NotHeld;
-        internal InterlockedFlag<WorkStealability> WorkStealability { get; } = Constants.WorkStealability.Allowed;
+        internal InterlockedFlag<WorkerStates> WorkerState = WorkerStates.Idle;
+        internal InterlockedFlag<CanGetWork> CanGetWork = Constants.CanGetWork.NotAllowed;
+        internal InterlockedFlag<WorkHeldStates> WorkHeldState = WorkHeldStates.NotHeld;
+        internal InterlockedFlag<WorkStealability> WorkStealability = Constants.WorkStealability.Allowed;
 
         private ConcurrentQueue<WorkBase> _workInbox;
 

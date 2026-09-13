@@ -66,8 +66,10 @@ namespace PowerThreadPool
         private DateTime _startDateTime;
         private DateTime _endDateTime;
 
-        private readonly InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
-        internal readonly InterlockedFlag<CanDeleteRedundantWorker> _canDeleteRedundantWorker = CanDeleteRedundantWorker.Allowed;
+        // InterlockedFlag is a mutable struct: must not be readonly,
+        // otherwise mutating members would act on a defensive copy of the field.
+        private InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
+        internal InterlockedFlag<CanDeleteRedundantWorker> _canDeleteRedundantWorker = CanDeleteRedundantWorker.Allowed;
 
 #if (NET46_OR_GREATER || NET5_0_OR_GREATER)
         internal TaskCompletionSource<T> NewTcs<T>()
@@ -98,7 +100,7 @@ namespace PowerThreadPool
         private DeferredActionTimer _runningTimer;
         private DeferredActionTimer _timeoutTimer;
 
-        private readonly InterlockedFlag<PoolStates> _poolState = PoolStates.NotRunning;
+        private InterlockedFlag<PoolStates> _poolState = PoolStates.NotRunning;
 
         public bool PoolRunning => _poolState == PoolStates.Running;
 
