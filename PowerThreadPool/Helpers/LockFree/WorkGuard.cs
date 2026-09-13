@@ -49,10 +49,10 @@ namespace PowerThreadPool.Helpers.LockFree
                 if (!_work.IsCurrentDone)
                 {
                     // Prevent the target work from being stolen by other workers using the work-stealing algorithm when it is stopped or canceled
-                    Spinner.Start(() => _worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed));
+                    Spinner.Start(() => _worker._workStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed));
 
                     // Temporarily prevent the executing work from allowing the worker to switch to the next work when the current work is completed
-                    Spinner.Start(() => _worker.WorkHeldState.TrySet(WorkHeldStates.Held, WorkHeldStates.NotHeld));
+                    Spinner.Start(() => _worker._workHeldState.TrySet(WorkHeldStates.Held, WorkHeldStates.NotHeld));
                 }
             }
             while (_work.Worker?.ID != _worker?.ID);
@@ -64,9 +64,9 @@ namespace PowerThreadPool.Helpers.LockFree
         {
             if (_worker != null)
             {
-                _worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
+                _worker._workStealability.InterlockedValue = WorkStealability.Allowed;
 
-                _worker.WorkHeldState.InterlockedValue = WorkHeldStates.NotHeld;
+                _worker._workHeldState.InterlockedValue = WorkHeldStates.NotHeld;
             }
         }
 

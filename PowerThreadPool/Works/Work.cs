@@ -108,7 +108,7 @@ namespace PowerThreadPool.Works
                     {
                         if (Worker.WorkID == ID)
                         {
-                            if (Worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed))
+                            if (Worker._canForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed))
                             {
                                 Worker.ForceStop();
                             }

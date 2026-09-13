@@ -49,7 +49,7 @@ namespace PowerThreadPool.Collections
         private static readonly TValue[] s_empty = new TValue[0];
 
         internal ConcurrentDictionary<TKey, TValue> _innerDict = new ConcurrentDictionary<TKey, TValue>();
-        private readonly InterlockedFlag<CanRebuildSnapshot> _canRebuildSnapshot = CanRebuildSnapshot.Allowed;
+        private InterlockedFlag<CanRebuildSnapshot> _canRebuildSnapshot = CanRebuildSnapshot.Allowed;
         private volatile TValue[] _snapshot = s_empty;
         private int _cursor = -1;
         private volatile int _jumpCount = 0;

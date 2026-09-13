@@ -27,18 +27,17 @@ namespace PowerThreadPool
     internal class Worker : IDisposable
     {
         private StatusPingPongChecker _statusPingPongChecker = new StatusPingPongChecker();
-
-        internal InterlockedFlag<CanDispose> CanDispose { get; } = Constants.CanDispose.Allowed;
-        internal InterlockedFlag<CanForceStop> CanForceStop { get; } = Constants.CanForceStop.Allowed;
+        internal InterlockedFlag<CanDispose> _canDispose = Constants.CanDispose.Allowed;
+        internal InterlockedFlag<CanForceStop> _canForceStop = Constants.CanForceStop.Allowed;
 
         internal Thread _thread;
 
         internal int ID { get; set; }
 
-        internal InterlockedFlag<WorkerStates> WorkerState { get; } = WorkerStates.Idle;
-        internal InterlockedFlag<CanGetWork> CanGetWork { get; } = Constants.CanGetWork.NotAllowed;
-        internal InterlockedFlag<WorkHeldStates> WorkHeldState { get; } = WorkHeldStates.NotHeld;
-        internal InterlockedFlag<WorkStealability> WorkStealability { get; } = Constants.WorkStealability.Allowed;
+        internal InterlockedFlag<WorkerStates> _workerState = WorkerStates.Idle;
+        internal InterlockedFlag<CanGetWork> _canGetWork = Constants.CanGetWork.NotAllowed;
+        internal InterlockedFlag<WorkHeldStates> _workHeldState = WorkHeldStates.NotHeld;
+        internal InterlockedFlag<WorkStealability> _workStealability = Constants.WorkStealability.Allowed;
 
         private ConcurrentQueue<WorkBase> _workInbox;
 
@@ -110,7 +109,7 @@ namespace PowerThreadPool
 
                         AssignWork(null);
                         // May be disposed at WorkerCountOutOfRange().
-                        if (CanDispose == Constants.CanDispose.NotAllowed)
+                        if (_canDispose == Constants.CanDispose.NotAllowed)
                         {
                             return;
                         }
@@ -145,7 +144,7 @@ namespace PowerThreadPool
             _powerPool = powerPool;
             ID = Thread.CurrentThread.ManagedThreadId;
             _helpingWorker = null;
-            WorkerState.InterlockedValue = WorkerStates.Running;
+            _workerState.InterlockedValue = WorkerStates.Running;
             if (_powerPool.GetCurrentThreadWorker(out _helpingWorker))
             {
                 if (_helpingWorker._isHelper)
@@ -175,7 +174,7 @@ namespace PowerThreadPool
             ExecuteWork();
             WorkerContext.s_current = workerTemp;
 
-            WorkerState.InterlockedValue = WorkerStates.Idle;
+            _workerState.InterlockedValue = WorkerStates.Idle;
 
             if (_baseHelpingWorker != null)
             {
@@ -311,10 +310,10 @@ namespace PowerThreadPool
 
         private void ThreadInterrupted(ThreadInterruptedException ex)
         {
-            CanGetWork.InterlockedValue = Constants.CanGetWork.Disabled;
+            _canGetWork.InterlockedValue = Constants.CanGetWork.Disabled;
 
-            WorkerStates origWorkState = WorkerState.InterlockedValue;
-            WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
+            WorkerStates origWorkState = _workerState.InterlockedValue;
+            _workerState.InterlockedValue = WorkerStates.ToBeDisposed;
 
             if (Work.LongRunning)
             {
@@ -388,17 +387,17 @@ namespace PowerThreadPool
             bool resWorkStealability = false;
 
             if ((resCanDeleteRedundantWorker = _powerPool._canDeleteRedundantWorker.TrySet(CanDeleteRedundantWorker.NotAllowed, CanDeleteRedundantWorker.Allowed, out origCanDeleteRedundantWorker))
-                && (resCanGetWork = CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.Allowed, out origCanGetWork))
-                && (resWorkStealability = WorkStealability.TrySet(Constants.WorkStealability.NotAllowed, Constants.WorkStealability.Allowed, out origWorkStealability)))
+                && (resCanGetWork = _canGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.Allowed, out origCanGetWork))
+                && (resWorkStealability = _workStealability.TrySet(Constants.WorkStealability.NotAllowed, Constants.WorkStealability.Allowed, out origWorkStealability)))
             {
                 if (_powerPool.AliveWorkerCount - _powerPool.LongRunningWorkerCount <= _powerPool.PowerPoolOption.MaxThreads)
                 {
                     _powerPool._canDeleteRedundantWorker.InterlockedValue = CanDeleteRedundantWorker.Allowed;
-                    CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
+                    _canGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
                 }
                 else if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
                 {
-                    WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
+                    _workerState.InterlockedValue = WorkerStates.ToBeDisposed;
 
                     Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
 
@@ -429,11 +428,11 @@ namespace PowerThreadPool
                 }
                 if (resCanGetWork)
                 {
-                    CanGetWork.InterlockedValue = origCanGetWork;
+                    _canGetWork.InterlockedValue = origCanGetWork;
                 }
                 if (resWorkStealability)
                 {
-                    WorkStealability.InterlockedValue = origWorkStealability;
+                    _workStealability.InterlockedValue = origWorkStealability;
                 }
             }
             return res;
@@ -541,7 +540,7 @@ namespace PowerThreadPool
 #else
             while (true)
             {
-                if (WorkHeldState == WorkHeldStates.NotHeld)
+                if (_workHeldState == WorkHeldStates.NotHeld)
                 {
                     break;
                 }
@@ -581,7 +580,7 @@ namespace PowerThreadPool
         // it cannot guarantee that business logic will not encounter unexpected issues as a result.
         internal void ForceStop()
         {
-            if (WorkerState == WorkerStates.Running)
+            if (_workerState == WorkerStates.Running)
             {
                 if (_thread != null)
                 {
@@ -590,7 +589,7 @@ namespace PowerThreadPool
             }
             else
             {
-                CanForceStop.InterlockedValue = Constants.CanForceStop.Allowed;
+                _canForceStop.InterlockedValue = Constants.CanForceStop.Allowed;
             }
         }
 
@@ -600,7 +599,7 @@ namespace PowerThreadPool
 
             work.Worker = this;
             Interlocked.Increment(ref _waitingWorkCount);
-            WorkerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
+            _workerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
 
             if (_killTimer != null)
             {
@@ -609,7 +608,7 @@ namespace PowerThreadPool
 
             if (shouldSetCanGetWork)
             {
-                CanGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
+                _canGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
             }
 
             if (originalWorkerState == WorkerStates.Idle)
@@ -661,7 +660,7 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckIfWorkerIsToBeDisposed()
         {
-            if (WorkerState.InterlockedValue == WorkerStates.ToBeDisposed)
+            if (_workerState.InterlockedValue == WorkerStates.ToBeDisposed)
             {
                 RequeueAllWaitingWork(Work);
             }
@@ -793,7 +792,7 @@ namespace PowerThreadPool
                 Worker runningWorker = workers[(start + step) % workerCount];
                 ++step;
 
-                if (runningWorker.WorkerState != WorkerStates.Running || runningWorker.ID == ID)
+                if (runningWorker._workerState != WorkerStates.Running || runningWorker.ID == ID)
                 {
                     continue;
                 }
@@ -801,13 +800,13 @@ namespace PowerThreadPool
                 int waitingWorkCountTemp = runningWorker.WaitingWorkCount;
                 if (waitingWorkCountTemp >= 1 && waitingWorkCountTemp > max)
                 {
-                    if (!runningWorker.WorkStealability.TrySet(Constants.WorkStealability.NotAllowed, Constants.WorkStealability.Allowed))
+                    if (!runningWorker._workStealability.TrySet(Constants.WorkStealability.NotAllowed, Constants.WorkStealability.Allowed))
                     {
                         continue;
                     }
                     if (worker != null)
                     {
-                        worker.WorkStealability.InterlockedValue = Constants.WorkStealability.Allowed;
+                        worker._workStealability.InterlockedValue = Constants.WorkStealability.Allowed;
                     }
                     max = waitingWorkCountTemp;
                     worker = runningWorker;
@@ -829,7 +828,7 @@ namespace PowerThreadPool
                 {
                     stolenWorkList = worker.Steal(count);
                 }
-                worker.WorkStealability.InterlockedValue = Constants.WorkStealability.Allowed;
+                worker._workStealability.InterlockedValue = Constants.WorkStealability.Allowed;
                 return stolenWorkList;
             }
             return null;
@@ -870,7 +869,7 @@ namespace PowerThreadPool
                 }
             }
 
-            if (CanGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed))
+            if (_canGetWork.TrySet(Constants.CanGetWork.ToBeDisabled, Constants.CanGetWork.Allowed))
             {
                 work = Get();
 
@@ -878,7 +877,7 @@ namespace PowerThreadPool
                 {
                     Interlocked.Decrement(ref _waitingWorkCount);
 
-                    CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
+                    _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
                     return false;
                 }
@@ -895,7 +894,7 @@ namespace PowerThreadPool
 
                     if (destroyThreadOption != null && destroyThreadOption.KeepAliveTime == 0 && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
                     {
-                        CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.ToBeDisabled);
+                        _canGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.ToBeDisabled);
                         TryDisposeSelf(false);
                     }
                     else
@@ -906,7 +905,7 @@ namespace PowerThreadPool
                             SetKillTimer();
                         }
 
-                        WorkerState.InterlockedValue = WorkerStates.Idle;
+                        _workerState.InterlockedValue = WorkerStates.Idle;
 
                         List<WorkBase> waitingWorkList = ResetAllWaitingWorkWhenIdle();
 
@@ -917,11 +916,11 @@ namespace PowerThreadPool
                                 SetWork(workBase, true);
                             }
 
-                            CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
+                            _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
                         }
                         else
                         {
-                            CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
+                            _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
                             if (_powerPool._idleWorkerDic.TryAdd(ID, this))
                             {
@@ -1081,7 +1080,7 @@ namespace PowerThreadPool
                 // time the _killTimer triggers OnKillTimerElapsed and when CanGetWork is set to Disabled. 
                 Spinner.Start(() =>
                 {
-                    CanGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.Allowed, out CanGetWork origValue);
+                    _canGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.Allowed, out CanGetWork origValue);
                     // If situation ① occurs and _killTimer.Stop() has not yet been executed, the current state 
                     // of CanGetWork will be Disabled, although this is an extremely rare case.
                     // Therefore, SpinUntil will exit either when CanGetWork is successfully set from Allowed to Disabled, 
@@ -1089,7 +1088,7 @@ namespace PowerThreadPool
                     return origValue == Constants.CanGetWork.Allowed || origValue == Constants.CanGetWork.Disabled;
                 });
 
-                if (!isIdle || WorkerState.TrySet(WorkerStates.ToBeDisposed, WorkerStates.Idle))
+                if (!isIdle || _workerState.TrySet(WorkerStates.ToBeDisposed, WorkerStates.Idle))
                 {
                     Dispose();
                     // Although reaching this point means that WorkerState has been set from Idle to ToBeDisposed, 
@@ -1102,7 +1101,7 @@ namespace PowerThreadPool
                 // Reaching this point means that WorkerState was not set from Idle to ToBeDisposed, 
                 // indicating that situation ① has occurred and that work is currently running. 
                 // Therefore, reset the CanGetWork. This is also an extremely rare case. 
-                CanGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.Disabled);
+                _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.Disabled);
             }
         }
 
@@ -1263,7 +1262,7 @@ namespace PowerThreadPool
         /// <param name="join"></param>
         protected virtual void Dispose(bool join)
         {
-            if (CanDispose.TrySet(Constants.CanDispose.NotAllowed, Constants.CanDispose.Allowed))
+            if (_canDispose.TrySet(Constants.CanDispose.NotAllowed, Constants.CanDispose.Allowed))
             {
                 RemoveSelf();
 

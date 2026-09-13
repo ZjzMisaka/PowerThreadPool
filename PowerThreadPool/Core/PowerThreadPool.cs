@@ -66,8 +66,8 @@ namespace PowerThreadPool
         private DateTime _startDateTime;
         private DateTime _endDateTime;
 
-        private readonly InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
-        internal readonly InterlockedFlag<CanDeleteRedundantWorker> _canDeleteRedundantWorker = CanDeleteRedundantWorker.Allowed;
+        private InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
+        internal InterlockedFlag<CanDeleteRedundantWorker> _canDeleteRedundantWorker = CanDeleteRedundantWorker.Allowed;
 
 #if (NET46_OR_GREATER || NET5_0_OR_GREATER)
         internal TaskCompletionSource<T> NewTcs<T>()
@@ -98,7 +98,7 @@ namespace PowerThreadPool
         private DeferredActionTimer _runningTimer;
         private DeferredActionTimer _timeoutTimer;
 
-        private readonly InterlockedFlag<PoolStates> _poolState = PoolStates.NotRunning;
+        private InterlockedFlag<PoolStates> _poolState = PoolStates.NotRunning;
 
         public bool PoolRunning => _poolState == PoolStates.Running;
 
@@ -349,7 +349,7 @@ namespace PowerThreadPool
 
                     if (PoolRunning && WaitingWorkCount > 0 && worker.TryAssignWorkForNewWorker())
                     {
-                        worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
+                        worker._canGetWork.InterlockedValue = CanGetWork.Allowed;
                         continue;
                     }
 
@@ -357,7 +357,7 @@ namespace PowerThreadPool
                     Interlocked.Increment(ref _idleWorkerCount);
                     _idleWorkerQueue.Enqueue(worker.ID);
 
-                    worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
+                    worker._canGetWork.InterlockedValue = CanGetWork.Allowed;
                 }
             }
         }
@@ -585,7 +585,7 @@ namespace PowerThreadPool
                 {
                     Interlocked.Decrement(ref _idleWorkerCount);
 
-                    if (worker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
+                    if (worker._canGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
                     {
                         if (longRunning)
                         {
@@ -690,11 +690,11 @@ namespace PowerThreadPool
 
                 if (waitingWorkCountTemp < minWaitingWorkCount)
                 {
-                    if (aliveWorker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
+                    if (aliveWorker._canGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
                     {
                         if (selectedWorker != null)
                         {
-                            selectedWorker.CanGetWork.TrySet(CanGetWork.Allowed, CanGetWork.NotAllowed);
+                            selectedWorker._canGetWork.TrySet(CanGetWork.Allowed, CanGetWork.NotAllowed);
                         }
 
                         selectedWorker = aliveWorker;
@@ -918,8 +918,8 @@ namespace PowerThreadPool
 
         private void StopAndDisposeWorker(Worker worker)
         {
-            worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed, out CanForceStop origCanForceStop);
-            if (worker.CanForceStop == CanForceStop.NotAllowed)
+            worker._canForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed, out CanForceStop origCanForceStop);
+            if (worker._canForceStop == CanForceStop.NotAllowed)
             {
                 if (origCanForceStop == CanForceStop.Allowed)
                 {

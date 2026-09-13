@@ -7489,13 +7489,13 @@ namespace UnitTest
 
             var worker = new Worker(powerPool);
 
-            worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
-            worker.WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
+            worker._canGetWork.InterlockedValue = CanGetWork.Allowed;
+            worker._workerState.InterlockedValue = WorkerStates.ToBeDisposed;
 
             worker.TryDisposeSelf(isIdle: true);
 
-            Assert.Equal(CanGetWork.Allowed, worker.CanGetWork.InterlockedValue);
-            Assert.Equal(WorkerStates.ToBeDisposed, worker.WorkerState.InterlockedValue);
+            Assert.Equal(CanGetWork.Allowed, worker._canGetWork.InterlockedValue);
+            Assert.Equal(WorkerStates.ToBeDisposed, worker._workerState.InterlockedValue);
         }
 
         [Fact]
@@ -7528,13 +7528,13 @@ namespace UnitTest
 
             var worker = new Worker(powerPool);
 
-            worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
-            worker.WorkerState.InterlockedValue = WorkerStates.ToBeDisposed;
+            worker._canGetWork.InterlockedValue = CanGetWork.Allowed;
+            worker._workerState.InterlockedValue = WorkerStates.ToBeDisposed;
 
             worker.TryDisposeSelf(isIdle: true);
 
-            Assert.Equal(CanGetWork.Allowed, worker.CanGetWork.InterlockedValue);
-            Assert.Equal(WorkerStates.ToBeDisposed, worker.WorkerState.InterlockedValue);
+            Assert.Equal(CanGetWork.Allowed, worker._canGetWork.InterlockedValue);
+            Assert.Equal(WorkerStates.ToBeDisposed, worker._workerState.InterlockedValue);
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]
@@ -7559,13 +7559,13 @@ namespace UnitTest
             Work<string> work = new WorkFunc<string>(powerPool, null, () => { return ""; }, workOption, null);
             work.IsDone = false;
             Worker worker = new Worker(powerPool);
-            worker.WorkStealability.InterlockedValue = WorkStealability.NotAllowed;
+            worker._workStealability.InterlockedValue = WorkStealability.NotAllowed;
             work.Worker = worker;
             Task task1 = Task.Run(async () =>
             {
                 await Task.Delay(1000);
                 work.Worker = null;
-                worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
+                worker._workStealability.InterlockedValue = WorkStealability.Allowed;
             });
             Task task2 = Task.Run(async () =>
             {
@@ -7594,7 +7594,7 @@ namespace UnitTest
             Work<string> work = new WorkFunc<string>(powerPool, null, () => { return ""; }, workOption, null);
             work.IsDone = false;
             Worker worker = new Worker(powerPool);
-            worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
+            worker._workStealability.InterlockedValue = WorkStealability.Allowed;
             work.Worker = worker;
             WorkGuard workGuard = new WorkGuard(work, true);
             Assert.NotNull(work.Worker);

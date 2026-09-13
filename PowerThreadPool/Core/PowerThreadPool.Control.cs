@@ -214,7 +214,7 @@ namespace PowerThreadPool
                 return true;
             }
 
-            if (GetCurrentThreadWorker(out Worker worker) && worker.WorkerState == WorkerStates.Running)
+            if (GetCurrentThreadWorker(out Worker worker) && worker._workerState == WorkerStates.Running)
             {
                 if (worker.IsCancellationRequested())
                 {
@@ -1024,7 +1024,7 @@ namespace PowerThreadPool
                 foreach (var kv in _aliveWorkerDic)
                 {
                     Worker worker = kv.Value;
-                    if (worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed))
+                    if (worker._canForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed))
                     {
                         worker.ForceStop();
                     }
@@ -1367,10 +1367,10 @@ namespace PowerThreadPool
             if (GetCurrentThreadBaseWorker(out Worker workerCurrentThread))
             {
                 if (workerCurrentThread.WaitingWorkCount >= 1
-                    && workerCurrentThread.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed))
+                    && workerCurrentThread._workStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed))
                 {
                     works = workerCurrentThread.Steal(1);
-                    workerCurrentThread.WorkStealability.InterlockedValue = WorkStealability.Allowed;
+                    workerCurrentThread._workStealability.InterlockedValue = WorkStealability.Allowed;
                 }
             }
 
@@ -1380,10 +1380,10 @@ namespace PowerThreadPool
                 {
                     Worker worker = kv.Value;
                     if (worker.WaitingWorkCount >= 1
-                        && worker.WorkStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed))
+                        && worker._workStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed))
                     {
                         works = worker.Steal(1);
-                        worker.WorkStealability.InterlockedValue = WorkStealability.Allowed;
+                        worker._workStealability.InterlockedValue = WorkStealability.Allowed;
                         if (works != null && works.Count > 0)
                             break;
                     }
