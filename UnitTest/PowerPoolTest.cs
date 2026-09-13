@@ -10235,5 +10235,33 @@ namespace UnitTest
 
             Assert.Equal(1, powerPool.FailedWorkList.FirstOrDefault());
         }
+
+        [Fact]
+        public void TestWorkListEmptyWhenTrySelectExistingWorker()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+                DestroyThreadOption = new DestroyThreadOption
+                {
+                    KeepAliveTime = 0,
+                    MinThreads = 0
+                }
+            });
+
+            for (int i = 0; i < 5000; ++i)
+            {
+                powerPool.QueueWorkItem(async () =>
+                {
+                });
+                powerPool.QueueWorkItem(async () =>
+                {
+                });
+
+                powerPool.Wait();
+            }
+        }
     }
 }
