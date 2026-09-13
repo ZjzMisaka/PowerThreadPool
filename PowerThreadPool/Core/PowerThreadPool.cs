@@ -66,8 +66,6 @@ namespace PowerThreadPool
         private DateTime _startDateTime;
         private DateTime _endDateTime;
 
-        // InterlockedFlag is a mutable struct: must not be readonly,
-        // otherwise mutating members would act on a defensive copy of the field.
         private InterlockedFlag<CanCreateNewWorker> _canCreateNewWorker = CanCreateNewWorker.Allowed;
         internal InterlockedFlag<CanDeleteRedundantWorker> _canDeleteRedundantWorker = CanDeleteRedundantWorker.Allowed;
 
@@ -351,7 +349,7 @@ namespace PowerThreadPool
 
                     if (PoolRunning && WaitingWorkCount > 0 && worker.TryAssignWorkForNewWorker())
                     {
-                        worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
+                        worker._canGetWork.InterlockedValue = CanGetWork.Allowed;
                         continue;
                     }
 
@@ -359,7 +357,7 @@ namespace PowerThreadPool
                     Interlocked.Increment(ref _idleWorkerCount);
                     _idleWorkerQueue.Enqueue(worker.ID);
 
-                    worker.CanGetWork.InterlockedValue = CanGetWork.Allowed;
+                    worker._canGetWork.InterlockedValue = CanGetWork.Allowed;
                 }
             }
         }
@@ -587,7 +585,7 @@ namespace PowerThreadPool
                 {
                     Interlocked.Decrement(ref _idleWorkerCount);
 
-                    if (worker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
+                    if (worker._canGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
                     {
                         if (longRunning)
                         {
@@ -692,11 +690,11 @@ namespace PowerThreadPool
 
                 if (waitingWorkCountTemp < minWaitingWorkCount)
                 {
-                    if (aliveWorker.CanGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
+                    if (aliveWorker._canGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
                     {
                         if (selectedWorker != null)
                         {
-                            selectedWorker.CanGetWork.TrySet(CanGetWork.Allowed, CanGetWork.NotAllowed);
+                            selectedWorker._canGetWork.TrySet(CanGetWork.Allowed, CanGetWork.NotAllowed);
                         }
 
                         selectedWorker = aliveWorker;
@@ -920,8 +918,8 @@ namespace PowerThreadPool
 
         private void StopAndDisposeWorker(Worker worker)
         {
-            worker.CanForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed, out CanForceStop origCanForceStop);
-            if (worker.CanForceStop == CanForceStop.NotAllowed)
+            worker._canForceStop.TrySet(CanForceStop.NotAllowed, CanForceStop.Allowed, out CanForceStop origCanForceStop);
+            if (worker._canForceStop == CanForceStop.NotAllowed)
             {
                 if (origCanForceStop == CanForceStop.Allowed)
                 {

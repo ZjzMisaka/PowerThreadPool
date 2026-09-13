@@ -11,13 +11,6 @@ namespace PowerThreadPool.Helpers.LockFree
     /// Provide support for lock-free algorithms.
     /// Use enumeration as the status flag of the lock-free algorithm and implement thread-safe state switching through atomic operations.
     ///
-    /// This is a mutable struct ON PURPOSE: it must be held as a field of the owner object
-    /// so that all threads share one storage location and the atomic operations below act
-    /// on that location (this is what replaced a heap-allocated class: one object per flag
-    /// used to be allocated per Work/Worker/PowerPool instance).
-    /// NEVER copy it into a local/readonly field/property getter and then call mutating
-    /// members (TrySet/Set/InterlockedValue setter) on the copy - the copy is a separate
-    /// storage and the change would be silently lost.
     /// All flag enums are defined so that their 0 member is the initial state, therefore
     /// default(InterlockedFlag&lt;T&gt;) is a validly-initialized flag.
     /// </summary>
