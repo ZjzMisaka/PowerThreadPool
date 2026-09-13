@@ -278,10 +278,21 @@ namespace PowerThreadPool
 
         private void CleanUpAndSetSignalAfterExecute(ExecuteResultBase executeResult)
         {
+            if (executeResult == null && !Work.AllowEventsAndCallback)
+            {
+                // Async continuation cleanup ordering race: a non-final
+                // continuation can run its cleanup after the final continuation already
+                // finalized the work. executeResult is null and AllowEventsAndCallback was
+                // never set for this continuation, so the finalization state, IsCurrentDone
+                // and the wait signal are owned by the final continuation, bail out here.
+                return;
+            }
             bool finalizeWork = false;
             if (Work.AllowEventsAndCallback
                 && (finalizeWork = Work._canFinalizeWork.TrySet(CanFinalizeWork.NotAllowed, CanFinalizeWork.Allowed) == true))
             {
+                // A lazily-skipped success result arrives as null with AllowEventsAndCallback == true:
+                // the work status carries the outcome for the finalization callbacks.
                 _powerPool.WorkCallbackEnd(Work, executeResult != null ? executeResult.Status : Work.Status);
                 Work.IsDone = true;
             }
