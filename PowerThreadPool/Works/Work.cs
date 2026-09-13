@@ -360,11 +360,7 @@ namespace PowerThreadPool.Works
             if (PowerPool._aliveWorkDic.TryGetValue(ID, out WorkBase work))
             {
                 Work<T> workT = work as Work<T>;
-                Spinner.Start(() => workT.ExecuteResult != null || workT.IsDone, true);
-                if (workT.ExecuteResult == null && workT.IsDone)
-                {
-                    workT.SetExecuteResult(workT._lastResult, null, Status.Succeed);
-                }
+                Spinner.Start(() => workT.ExecuteResult != null, true);
                 return workT.ExecuteResult.ToTypedResult<T>();
             }
             else
