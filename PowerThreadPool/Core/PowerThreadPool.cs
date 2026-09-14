@@ -41,8 +41,7 @@ namespace PowerThreadPool
 
         internal LoopWithStepDictionary<int, Worker> _aliveWorkerDic = new LoopWithStepDictionary<int, Worker>();
 
-        internal ConcurrentDictionary<int, Worker> _idleWorkerDic = new ConcurrentDictionary<int, Worker>();
-        internal ConcurrentQueue<int> _idleWorkerQueue = new ConcurrentQueue<int>();
+        internal ConcurrentQueue<Worker> _idleWorkerQueue = new ConcurrentQueue<Worker>();
 
         internal ConcurrentQueue<WorkID> _suspendedWorkQueue = new ConcurrentQueue<WorkID>();
         internal ConcurrentDictionary<WorkID, WorkBase> _suspendedWork = new ConcurrentDictionary<WorkID, WorkBase>();
@@ -353,9 +352,8 @@ namespace PowerThreadPool
                         continue;
                     }
 
-                    _idleWorkerDic[worker.ID] = worker;
                     Interlocked.Increment(ref _idleWorkerCount);
-                    _idleWorkerQueue.Enqueue(worker.ID);
+                    _idleWorkerQueue.Enqueue(worker);
 
                     worker._canGetWork.InterlockedValue = CanGetWork.Allowed;
                 }
@@ -579,26 +577,28 @@ namespace PowerThreadPool
         private Worker TryDequeueIdleWorker(bool longRunning)
         {
             Worker worker = null;
-            while (_idleWorkerQueue.TryDequeue(out int firstWorkerID))
+            while (_idleWorkerQueue.TryDequeue(out worker))
             {
-                if (_idleWorkerDic.TryRemove(firstWorkerID, out worker))
+                if (worker._workerState == WorkerStates.ToBeDisposed)
                 {
-                    Interlocked.Decrement(ref _idleWorkerCount);
+                    continue;
+                }
 
-                    if (worker._canGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
-                    {
-                        if (longRunning)
-                        {
-                            Interlocked.Increment(ref _longRunningWorkerCount);
-                        }
+                Interlocked.Decrement(ref _idleWorkerCount);
 
-                        return worker;
-                    }
-                    else if (_idleWorkerDic.TryAdd(firstWorkerID, worker))
+                if (worker._canGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
+                {
+                    if (longRunning)
                     {
-                        Interlocked.Increment(ref _idleWorkerCount);
-                        _idleWorkerQueue.Enqueue(firstWorkerID);
+                        Interlocked.Increment(ref _longRunningWorkerCount);
                     }
+
+                    return worker;
+                }
+                else
+                {
+                    Interlocked.Increment(ref _idleWorkerCount);
+                    _idleWorkerQueue.Enqueue(worker);
                 }
             }
             return null;
@@ -955,9 +955,8 @@ namespace PowerThreadPool
                         while (AliveWorkerCount > 0)
                         {
                             Cancel();
-                            foreach (var kv in _idleWorkerDic)
+                            while (_idleWorkerQueue.TryDequeue(out Worker worker))
                             {
-                                Worker worker = kv.Value;
                                 StopAndDisposeWorkerAndHelpingWorkers(worker);
                             }
                             foreach (var kv in _aliveWorkerDic)
@@ -975,7 +974,6 @@ namespace PowerThreadPool
                     finally
                     {
                         _aliveWorkerDic.Clear();
-                        _idleWorkerDic.Clear();
                         _pausingWorkSet.Clear();
                         _runningWorkerCount = 0;
                         _cancellationTokenSource.Dispose();
