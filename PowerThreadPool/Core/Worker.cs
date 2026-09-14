@@ -338,7 +338,7 @@ namespace PowerThreadPool
             {
                 Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
             }
-            if (_powerPool._idleWorkerDic.TryRemove(ID, out _))
+            if (origWorkState == WorkerStates.Idle)
             {
                 Interlocked.Decrement(ref _powerPool._idleWorkerCount);
             }
@@ -935,11 +935,8 @@ namespace PowerThreadPool
                         {
                             _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
-                            if (_powerPool._idleWorkerDic.TryAdd(ID, this))
-                            {
-                                Interlocked.Increment(ref _powerPool._idleWorkerCount);
-                                _powerPool._idleWorkerQueue.Enqueue(ID);
-                            }
+                            Interlocked.Increment(ref _powerPool._idleWorkerCount);
+                            _powerPool._idleWorkerQueue.Enqueue(this);
 
                             _lastIsBackground = true;
                         }
@@ -1101,8 +1098,14 @@ namespace PowerThreadPool
                     return origValue == Constants.CanGetWork.Allowed || origValue == Constants.CanGetWork.Disabled;
                 });
 
-                if (!isIdle || _workerState.TrySet(WorkerStates.ToBeDisposed, WorkerStates.Idle))
+                bool stateSet = false;
+
+                if (!isIdle || (stateSet = _workerState.TrySet(WorkerStates.ToBeDisposed, WorkerStates.Idle) == true))
                 {
+                    if (stateSet)
+                    {
+                        Interlocked.Decrement(ref _powerPool._idleWorkerCount);
+                    }
                     Dispose();
                     // Although reaching this point means that WorkerState has been set from Idle to ToBeDisposed, 
                     // indicating that no work is currently running, there is still a possibility that situation ① has occurred, 
@@ -1120,7 +1123,7 @@ namespace PowerThreadPool
 
         private void RemoveSelf()
         {
-            if (_powerPool._idleWorkerDic.TryRemove(ID, out _))
+            if (_workerState.TrySet(WorkerStates.ToBeDisposed, WorkerStates.Idle))
             {
                 Interlocked.Decrement(ref _powerPool._idleWorkerCount);
             }
