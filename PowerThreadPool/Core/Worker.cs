@@ -553,7 +553,7 @@ namespace PowerThreadPool
                 _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
             }
 #if DEBUG
-            Spinner.Start(() => _workHeldState == WorkHeldStates.NotHeld);
+            Spinner.Start(() => _workHeldState == WorkHeldStates.NotHeld, true);
 #else
             while (true)
             {
