@@ -34,7 +34,7 @@ namespace PowerThreadPoolConsoleTest
             }
             s_powerPool.Wait();
             int count = powerThreadPoolRunCount;
-            
+
             Console.WriteLine(count);
         }
 
