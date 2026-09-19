@@ -61,7 +61,7 @@ namespace PowerThreadPool
 
         private PowerPool _powerPool;
 
-        internal bool LongRunning { get; set; } = true;
+        internal bool LongRunning { get; set; }
 
         internal int _waitingWorkCount = 0;
 
