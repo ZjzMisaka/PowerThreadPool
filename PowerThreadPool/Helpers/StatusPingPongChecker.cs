@@ -9,15 +9,17 @@ namespace PowerThreadPool.Helpers
         private Stopwatch _spinWatch = new Stopwatch();
         private HitChecker _hitChecker = new HitChecker(10);
         private long _statusPingPongThresholdTicks;
+        private long _statusPingPongSpinTicks;
 
         internal bool HasPingedPong { get; set; }
 
-        internal bool CanSpin => _spinWatch.ElapsedTicks < _statusPingPongThresholdTicks;
+        internal bool CanSpin => _spinWatch.ElapsedTicks < _statusPingPongSpinTicks;
 
         internal StatusPingPongChecker()
         {
             _timeSinceLastIdle.Start();
             _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
+            _statusPingPongSpinTicks = _statusPingPongThresholdTicks * 2;
         }
 
         internal void CheckIsPingedPong()
@@ -53,11 +55,13 @@ namespace PowerThreadPool.Helpers
                 {
                     _pingPongThresholdDivisor += 500;
                     _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
+                    _statusPingPongSpinTicks = _statusPingPongThresholdTicks * 2;
                 }
                 else if (_hitChecker.MissCount <= 1 && _pingPongThresholdDivisor > 2000)
                 {
                     _pingPongThresholdDivisor -= 500;
                     _statusPingPongThresholdTicks = Stopwatch.Frequency / _pingPongThresholdDivisor;
+                    _statusPingPongSpinTicks = _statusPingPongThresholdTicks * 2;
                 }
             }
         }
