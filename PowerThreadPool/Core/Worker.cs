@@ -46,7 +46,6 @@ namespace PowerThreadPool
         private DeferredActionTimer _killTimer;
 
         private ManualResetEventSlim _runSignal = new ManualResetEventSlim(false);
-        private volatile bool _hasPendingWork;
 
         internal WorkID WorkID => Work.ID;
 
@@ -93,10 +92,7 @@ namespace PowerThreadPool
                     {
                         SetKillTimer();
 
-                        if (!_hasPendingWork)
-                        {
-                            _runSignal.Wait();
-                        }
+                        _runSignal.Wait();
 
                         if (_killFlag)
                         {
@@ -765,7 +761,6 @@ namespace PowerThreadPool
 
                 SetWorkToRun(work);
 
-                _hasPendingWork = true;
                 _runSignal.Set();
                 break;
             }
@@ -901,7 +896,6 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    _hasPendingWork = false;
                     _runSignal.Reset();
 
                     PowerPoolOption powerPoolOption = _powerPool.PowerPoolOption;
@@ -1143,7 +1137,6 @@ namespace PowerThreadPool
         internal void Kill()
         {
             _killFlag = true;
-            _hasPendingWork = true;
             _runSignal.Set();
         }
 
