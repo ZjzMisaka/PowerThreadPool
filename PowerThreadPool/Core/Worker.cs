@@ -1014,12 +1014,8 @@ namespace PowerThreadPool
             // perform a limited number of spins to fetch Work before transitioning to Idle.
             WorkBase work = null;
             _statusPingPongChecker.StartSpin();
-            for (int i = 0; _statusPingPongChecker.CanSpin && work == null; ++i)
+            while (_statusPingPongChecker.SpinOnce() && work == null)
             {
-                if (i > 100)
-                {
-                    Thread.Yield();
-                }
                 work = Get();
             }
 
