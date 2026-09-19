@@ -761,11 +761,12 @@ namespace PowerThreadPool
                     _killTimer.Cancel();
                 }
 
+                // use Interlocked.Decrement's MemoryBarrier here
+                _hasPendingWork = true;
                 Interlocked.Decrement(ref _powerPool._waitingWorkCount);
 
                 SetWorkToRun(work);
 
-                _hasPendingWork = true;
                 _runSignal.Set();
                 break;
             }
