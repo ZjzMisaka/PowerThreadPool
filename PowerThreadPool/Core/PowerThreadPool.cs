@@ -666,6 +666,7 @@ namespace PowerThreadPool
             int start = _aliveWorkerDic.GetNextStartIndex(workerCount);
 
             int step = 0;
+            int average = _waitingWorkCount / workerCount;
 
             while (step < workerCount)
             {
@@ -699,7 +700,7 @@ namespace PowerThreadPool
 
                         selectedWorker = aliveWorker;
 
-                        if (waitingWorkCountTemp == 0)
+                        if (waitingWorkCountTemp <= average)
                         {
                             break;
                         }
