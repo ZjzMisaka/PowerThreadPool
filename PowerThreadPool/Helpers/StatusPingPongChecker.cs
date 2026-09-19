@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Threading;
+using PowerThreadPool.Helpers.LockFree;
 
 namespace PowerThreadPool.Helpers
 {
@@ -8,12 +10,13 @@ namespace PowerThreadPool.Helpers
         private Stopwatch _timeSinceLastIdle = new Stopwatch();
         private Stopwatch _spinWatch = new Stopwatch();
         private HitChecker _hitChecker = new HitChecker(10);
+        private int _spinCount = 0;
         private long _statusPingPongThresholdTicks;
         private long _statusPingPongSpinTicks;
 
         internal bool HasPingedPong { get; set; }
 
-        internal bool CanSpin => _spinWatch.ElapsedTicks < _statusPingPongSpinTicks;
+        private bool CanSpin => _spinWatch.ElapsedTicks < _statusPingPongSpinTicks;
 
         internal StatusPingPongChecker()
         {
@@ -34,7 +37,37 @@ namespace PowerThreadPool.Helpers
 
         internal void StartSpin()
         {
+            _spinCount = 0;
             _spinWatch.Restart();
+        }
+
+        internal bool SpinOnce()
+        {
+            if (!CanSpin)
+            {
+                return false;
+            }
+
+            if (_spinCount <= 10)
+            {
+                // Do Nothing
+            }
+            else if (_spinCount <= 50)
+            {
+                Spinner.SpinOnce();
+            }
+            else if (_spinCount <= 500)
+            {
+                Thread.Yield();
+            }
+            else
+            {
+                Thread.Sleep(0);
+            }
+
+            ++_spinCount;
+
+            return true;
         }
 
         internal void HandleSpinRes(bool result)
