@@ -827,7 +827,7 @@ namespace PowerThreadPool
             WorkID workID = CreateID(option);
             WorkBase work = InitWork(workID, action, function, option, cts, workBase);
 
-            bool registeredDependents = _workDependencyController.Register(work, option.Dependents, out bool workNotSuccessfullyCompleted);
+            bool registeredDependents = _workDependencyController.Register(work, option.Dependents);
             if (work._dependencyStatus.InterlockedValue == DependencyStatus.Failed)
             {
                 return workID;
@@ -843,11 +843,6 @@ namespace PowerThreadPool
                 _stopSuspendedWork[workID] = work;
                 _stopSuspendedWorkQueue.Enqueue(workID);
                 return workID;
-            }
-
-            if (!workNotSuccessfullyCompleted)
-            {
-                Interlocked.Increment(ref _waitingWorkCount);
             }
 
             SuspendOrSetWork(PowerPoolOption.StartSuspended, registeredDependents, workID, work);

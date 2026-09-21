@@ -888,7 +888,7 @@ namespace UnitTest
 
             Assert.Equal(2, doneCount);
             Assert.Equal(0, powerPool.FailedWorkCount);
-            Assert.Equal(1, powerPool.WaitingWorkCount);
+            Assert.Equal(0, powerPool.WaitingWorkCount);
 
             powerPool.Stop();
 
