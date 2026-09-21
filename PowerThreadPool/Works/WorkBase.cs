@@ -119,6 +119,7 @@ namespace PowerThreadPool.Works
         internal abstract bool ShouldStoreResult { get; }
         internal abstract ExecuteResultBase ExecuteResultBase { get; }
         internal abstract bool AutoCheckStopOnAsyncTask { get; }
+        internal abstract bool EnableWorkTracking { get; }
         internal abstract WorkPlacementPolicy WorkPlacementPolicy { get; }
         internal abstract ConcurrentSet<WorkID> Dependents { get; }
         internal abstract bool AllowEventsAndCallback { get; set; }

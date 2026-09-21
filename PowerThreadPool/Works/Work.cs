@@ -48,6 +48,7 @@ namespace PowerThreadPool.Works
         internal override bool ShouldStoreResult => WorkOption.ShouldStoreResult;
         internal override ExecuteResultBase ExecuteResultBase => ExecuteResult;
         internal override bool AutoCheckStopOnAsyncTask => WorkOption.AutoCheckStopOnAsyncTask;
+        internal override bool EnableWorkTracking => WorkOption.EnableWorkTracking;
         internal override WorkPlacementPolicy WorkPlacementPolicy => WorkOption.WorkPlacementPolicy;
         internal override ConcurrentSet<WorkID> Dependents => WorkOption.Dependents;
         internal bool _allowEventsAndCallback;
