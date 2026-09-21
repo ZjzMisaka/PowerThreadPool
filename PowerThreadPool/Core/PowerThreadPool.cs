@@ -852,7 +852,10 @@ namespace PowerThreadPool
             if (!work.IsAlive)
             {
                 work.IsAlive = true;
-                _aliveWorkDic[work.ID] = work;
+                if (_powerPoolOption.EnableWorkTracking)
+                {
+                    _aliveWorkDic[work.ID] = work;
+                }
             }
         }
 
