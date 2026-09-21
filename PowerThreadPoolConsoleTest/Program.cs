@@ -15,7 +15,8 @@ namespace PowerThreadPoolConsoleTest
         {
             s_powerPool = new PowerPool(new PowerPoolOption
             {
-                MaxThreads = Environment.ProcessorCount
+                MaxThreads = Environment.ProcessorCount,
+                EnableWorkTracking = false
             });
 
             TestPowerThreadPool();

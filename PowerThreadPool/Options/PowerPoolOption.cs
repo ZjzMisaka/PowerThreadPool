@@ -136,6 +136,12 @@ namespace PowerThreadPool.Options
         /// </summary>
         public bool EnableStatisticsCollection { get; set; } = false;
 
+        /// <summary>
+        /// Enable work tracking.
+        /// If true, Work can be controlled via WorkID.
+        /// </summary>
+        public bool EnableWorkTracking { get; set; } = true;
+
         internal void OnThreadCountSettingChanged()
         {
             foreach (PowerPool powerPool in PowerPoolList)

@@ -113,5 +113,28 @@ namespace Benchmark
                 _ptpErrorCount = count;
             }
         }
+
+        [Benchmark]
+        public async Task TestPowerThreadPoolWaitAsyncDisableWorkTracking()
+        {
+            int powerThreadPoolRunCount = 0;
+            _powerPool.PowerPoolOption.EnableWorkTracking = false;
+            for (int i = 0; i < _maxCount; ++i)
+            {
+                _powerPool.QueueWorkItem(async () =>
+                {
+                    await Task.Yield();
+                    Interlocked.Increment(ref powerThreadPoolRunCount);
+                });
+            }
+
+            await _powerPool.WaitAsync();
+
+            int count = powerThreadPoolRunCount;
+            if (count != _maxCount)
+            {
+                _ptpErrorCount = count;
+            }
+        }
     }
 }
