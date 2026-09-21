@@ -87,5 +87,11 @@ namespace PowerThreadPool.Options
         /// Indicates whether to automatically check for task stop when posting an async continuation.
         /// </summary>
         public bool AutoCheckStopOnAsyncTask { get; set; } = true;
+
+        /// <summary>
+        /// Enable work tracking.
+        /// If true, Work can be controlled via WorkID.
+        /// </summary>
+        public bool EnableWorkTracking { get; set; } = true;
     }
 }
