@@ -3903,6 +3903,35 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestDisableWorkTracking()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                EnableWorkTracking = false,
+            };
+
+            powerPool.EnablePoolIdleCheck = false;
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(300);
+                return "0";
+            }, new WorkOption()
+            {
+                ShouldStoreResult = true,
+            });
+
+            powerPool.EnablePoolIdleCheck = true;
+
+            var res = powerPool.Fetch(id0).Result;
+
+            Assert.Null(res);
+        }
+
+        [Fact]
         public void TestWorkGroupRelation()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
