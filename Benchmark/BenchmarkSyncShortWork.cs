@@ -141,26 +141,6 @@ namespace Benchmark
         }
 
         [Benchmark]
-        public void TestPowerThreadPoolHelpWhileWaiting()
-        {
-            int powerThreadPoolRunCount = 0;
-            for (int i = 0; i < _maxCount; ++i)
-            {
-                _powerPool.QueueWorkItem(() =>
-                {
-                    Interlocked.Increment(ref powerThreadPoolRunCount);
-                    DoWork();
-                });
-            }
-            _powerPool.Wait(true);
-            int count = powerThreadPoolRunCount;
-            if (count != _maxCount)
-            {
-                _ptpErrorCount = count;
-            }
-        }
-
-        [Benchmark]
         public void TestPowerThreadPoolDisableWorkTracking()
         {
             _powerPool.PowerPoolOption.EnableWorkTracking = false;
@@ -175,28 +155,6 @@ namespace Benchmark
                 });
             }
             _powerPool.Wait();
-            int count = powerThreadPoolRunCount;
-            if (count != _maxCount)
-            {
-                _ptpErrorCount = count;
-            }
-        }
-
-        [Benchmark]
-        public void TestPowerThreadPoolDisableWorkTrackingHelpWhileWaiting()
-        {
-            _powerPool.PowerPoolOption.EnableWorkTracking = false;
-
-            int powerThreadPoolRunCount = 0;
-            for (int i = 0; i < _maxCount; ++i)
-            {
-                _powerPool.QueueWorkItem(() =>
-                {
-                    Interlocked.Increment(ref powerThreadPoolRunCount);
-                    DoWork();
-                });
-            }
-            _powerPool.Wait(true);
             int count = powerThreadPoolRunCount;
             if (count != _maxCount)
             {
