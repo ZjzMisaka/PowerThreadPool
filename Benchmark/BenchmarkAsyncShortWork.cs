@@ -13,7 +13,7 @@ namespace Benchmark
         private int _tpErrorCount = -1;
         private int _ptpErrorCount = -1;
 
-        private readonly int _maxCount = 500000;
+        private readonly int _maxCount = 100000;
 
         [IterationSetup]
         public void Setup()
