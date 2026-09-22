@@ -1010,6 +1010,7 @@ namespace PowerThreadPool
         {
             if (_poolState == PoolStates.NotRunning)
             {
+                _workDependencyController.Cancel();
                 return false;
             }
 

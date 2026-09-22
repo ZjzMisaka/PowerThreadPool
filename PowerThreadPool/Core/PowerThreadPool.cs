@@ -133,6 +133,8 @@ namespace PowerThreadPool
                 {
                     count += kv.Value.WaitingWorkCount;
                 }
+                count += _suspendedWork.Count;
+                count += _workDependencyController._workDict.Count;
                 return count;
             }
         }

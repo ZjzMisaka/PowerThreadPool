@@ -84,6 +84,7 @@ namespace PowerThreadPool.Helpers.Dependency
                 if (dependents.Count == 0 &&
                     work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
                 {
+                    _workDict.TryRemove(work.ID, out _);
                     return false;
                 }
                 else
@@ -129,6 +130,7 @@ namespace PowerThreadPool.Helpers.Dependency
             if (dependents.Count == 0 &&
                 work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
             {
+                _workDict.TryRemove(work.ID, out _);
                 _powerPool.SetWork(work);
             }
         }
@@ -285,9 +287,9 @@ namespace PowerThreadPool.Helpers.Dependency
                 {
                     foreach (WorkID workID in failedChildWorkSet)
                     {
-                        WorkBase work = _workDict[workID];
-                        if (work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
+                        if (_workDict.TryGetValue(workID, out WorkBase work) && work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
                         {
+                            _workDict.TryRemove(work.ID, out _);
                             newlyFailed.Add(work);
 
                             if (visited.Add(work.ID))

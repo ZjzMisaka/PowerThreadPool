@@ -577,7 +577,9 @@ namespace UnitTest
                 item => Assert.Equal("Work2 denpend on work0, work1 END", item),
                 item => Assert.Equal("Work3 callback END", item),
                 item => Assert.Equal("PoolIdle", item)
-                );
+            );
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
         }
 
         [Fact]
@@ -879,16 +881,16 @@ namespace UnitTest
             powerPool.QueueWorkItem(() =>
             {
             },
-           new WorkOption()
-           {
-               Dependents = new ConcurrentSet<WorkID>() { id0, id1 }
-           });
+            new WorkOption()
+            {
+                Dependents = new ConcurrentSet<WorkID>() { id0, id1 }
+            });
 
             powerPool.EnablePoolIdleCheck = true;
 
             Assert.Equal(2, doneCount);
             Assert.Equal(0, powerPool.FailedWorkCount);
-            Assert.Equal(0, powerPool.WaitingWorkCount);
+            Assert.Equal(1, powerPool.WaitingWorkCount);
 
             powerPool.Stop();
 
