@@ -62,7 +62,6 @@ namespace PowerThreadPool.Helpers.Asynchronous
                     _workBase.AllowEventsAndCallback = true;
                 }
             }, false);
-            Interlocked.Increment(ref _powerPool._waitingWorkCount);
             _powerPool.SetWork(_workBase);
         }
     }

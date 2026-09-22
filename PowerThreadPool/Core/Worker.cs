@@ -168,7 +168,6 @@ namespace PowerThreadPool
             work._canCancel.InterlockedValue = CanCancel.NotAllowed;
 
             work.Worker = this;
-            Interlocked.Decrement(ref _powerPool._waitingWorkCount);
             SetWorkToRun(work);
             Work = work;
             ExecuteWork();
@@ -227,7 +226,6 @@ namespace PowerThreadPool
             if (Work.ShouldRequeue(executeResult))
             {
                 BeforeRetry();
-                Interlocked.Increment(ref _powerPool._waitingWorkCount);
                 _powerPool.SetWork(Work);
             }
             else
@@ -757,8 +755,6 @@ namespace PowerThreadPool
                     _killTimer.Cancel();
                 }
 
-                Interlocked.Decrement(ref _powerPool._waitingWorkCount);
-
                 SetWorkToRun(work);
 
                 _runSignal.Set();
@@ -900,13 +896,13 @@ namespace PowerThreadPool
 
                     PowerPoolOption powerPoolOption = _powerPool.PowerPoolOption;
 
-                    Interlocked.Decrement(ref _powerPool._runningWorkerCount);
-                    _powerPool.InvokeRunningWorkerCountChangedEvent(false);
-
                     DestroyThreadOption destroyThreadOption = powerPoolOption.DestroyThreadOption;
 
                     if (destroyThreadOption != null && destroyThreadOption.KeepAliveTime == 0 && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
                     {
+                        Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                        _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
                         _canGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.ToBeDisabled);
                         TryDisposeSelf(false);
                     }
@@ -929,10 +925,16 @@ namespace PowerThreadPool
                                 SetWork(workBase, true);
                             }
 
+                            Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                            _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
                             _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
                         }
                         else
                         {
+                            Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                            _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
                             _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
                             Interlocked.Increment(ref _powerPool._idleWorkerCount);

@@ -1052,7 +1052,7 @@ namespace UnitTest
 
                 Thread.Yield();
 
-                if (runCount != powerPool.WaitingWorkCount)
+                if (runCount != powerPool.AsyncWorkCount)
                 {
                     Assert.Fail();
                 }
@@ -1118,7 +1118,7 @@ namespace UnitTest
 
                 Thread.Yield();
 
-                if (runCount != powerPool.WaitingWorkCount)
+                if (runCount != powerPool.AsyncWorkCount)
                 {
                     Assert.Fail();
                 }

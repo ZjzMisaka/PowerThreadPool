@@ -1010,6 +1010,7 @@ namespace PowerThreadPool
         {
             if (_poolState == PoolStates.NotRunning)
             {
+                _workDependencyController.Cancel();
                 return false;
             }
 
@@ -1294,7 +1295,6 @@ namespace PowerThreadPool
             }
             else if (_suspendedWork.TryRemove(id, out work))
             {
-                Interlocked.Decrement(ref _waitingWorkCount);
                 res = true;
                 isQueuedAndDidNotDecreasedCountInside = true;
             }
