@@ -5,7 +5,12 @@ namespace PowerThreadPool.Helpers.Asynchronous
 {
     internal class TaskCompletionSourceBox<T> : ITaskCompletionSource
     {
-        private readonly TaskCompletionSource<T> _tcs = new TaskCompletionSource<T>();
+        private readonly TaskCompletionSource<T> _tcs;
+
+        public TaskCompletionSourceBox(TaskCompletionSource<T> tcs)
+        {
+            _tcs = tcs;
+        }
 
         public Task Task => _tcs.Task;
         public void SetResult(object result) => _tcs.SetResult((T)result);

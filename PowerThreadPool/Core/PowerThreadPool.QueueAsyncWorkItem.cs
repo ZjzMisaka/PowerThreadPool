@@ -924,7 +924,7 @@ namespace PowerThreadPool
         /// <returns></returns>
         public WorkID QueueWorkItem(Func<Task> asyncFunc, out Task task, WorkOption option)
         {
-            TaskCompletionSourceBox<ExecuteResult<object>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<object>>();
+            TaskCompletionSourceBox<ExecuteResult<object>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<object>>(NewTcs<ExecuteResult<object>>());
             task = taskCompletionSource.Task;
 
             PrepareAsyncWork(option);
@@ -956,7 +956,7 @@ namespace PowerThreadPool
         /// <returns></returns>
         public WorkID QueueWorkItem(Func<CancellationToken, Task> asyncFunc, out Task task, WorkOption option)
         {
-            TaskCompletionSourceBox<ExecuteResult<object>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<object>>();
+            TaskCompletionSourceBox<ExecuteResult<object>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<object>>(NewTcs<ExecuteResult<object>>());
             task = taskCompletionSource.Task;
 
             PrepareAsyncWork(option);
@@ -1443,7 +1443,7 @@ namespace PowerThreadPool
         /// <returns></returns>
         public WorkID QueueWorkItem<TResult>(Func<Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, WorkOption option)
         {
-            TaskCompletionSourceBox<ExecuteResult<TResult>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<TResult>>();
+            TaskCompletionSourceBox<ExecuteResult<TResult>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<TResult>>(NewTcs<ExecuteResult<TResult>>());
             task = taskCompletionSource.TypedTask;
 
             PrepareAsyncWork(option);
@@ -1478,7 +1478,7 @@ namespace PowerThreadPool
         /// <returns></returns>
         public WorkID QueueWorkItem<TResult>(Func<CancellationToken, Task<TResult>> asyncFunc, out Task<ExecuteResult<TResult>> task, WorkOption option)
         {
-            TaskCompletionSourceBox<ExecuteResult<TResult>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<TResult>>();
+            TaskCompletionSourceBox<ExecuteResult<TResult>> taskCompletionSource = new TaskCompletionSourceBox<ExecuteResult<TResult>>(NewTcs<ExecuteResult<TResult>>());
             task = taskCompletionSource.TypedTask;
 
             PrepareAsyncWork(option);
