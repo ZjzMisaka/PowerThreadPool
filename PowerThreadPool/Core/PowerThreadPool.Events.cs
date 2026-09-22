@@ -167,7 +167,10 @@ namespace PowerThreadPool
             // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
             if (work.Group == null || !work.ShouldStoreResult)
             {
-                _aliveWorkDic.TryRemove(work.ID, out _);
+                if (_powerPoolOption.EnableWorkTracking && work.EnableWorkTracking)
+                {
+                    _aliveWorkDic.TryRemove(work.ID, out _);
+                }
                 if (work.WaitSignal != null)
                 {
                     work.WaitSignal.Set();
