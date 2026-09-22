@@ -13,7 +13,7 @@ namespace Benchmark
         private int _tpErrorCount = -1;
         private int _ptpErrorCount = -1;
 
-        private readonly int _maxCount = 10000;
+        private readonly int _maxCount = 500000;
 
         [IterationSetup]
         public void Setup()
@@ -56,7 +56,10 @@ namespace Benchmark
             {
                 tasks[i] = Task.Run(async () =>
                 {
-                    await Task.Yield();
+                    for (int j = 0; j < 10; ++j)
+                    {
+                        await Task.Yield();
+                    }
                     Interlocked.Increment(ref threadPoolRunCount);
                 });
             }
@@ -78,7 +81,10 @@ namespace Benchmark
             {
                 _powerPool.QueueWorkItem(async () =>
                 {
-                    await Task.Yield();
+                    for (int j = 0; j < 10; ++j)
+                    {
+                        await Task.Yield();
+                    }
                     Interlocked.Increment(ref powerThreadPoolRunCount);
                 });
             }
@@ -100,7 +106,10 @@ namespace Benchmark
             {
                 _powerPool.QueueWorkItem(async () =>
                 {
-                    await Task.Yield();
+                    for (int j = 0; j < 10; ++j)
+                    {
+                        await Task.Yield();
+                    }
                     Interlocked.Increment(ref powerThreadPoolRunCount);
                 });
             }
@@ -123,7 +132,10 @@ namespace Benchmark
             {
                 _powerPool.QueueWorkItem(async () =>
                 {
-                    await Task.Yield();
+                    for (int j = 0; j < 10; ++j)
+                    {
+                        await Task.Yield();
+                    }
                     Interlocked.Increment(ref powerThreadPoolRunCount);
                 });
             }
