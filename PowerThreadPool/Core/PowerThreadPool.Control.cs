@@ -1363,18 +1363,18 @@ namespace PowerThreadPool
 
         internal bool HelpWhileWaiting()
         {
-            List<WorkBase> works = null;
+            WorkBase work = null;
             if (GetCurrentThreadBaseWorker(out Worker workerCurrentThread))
             {
                 if (workerCurrentThread.WaitingWorkCount >= 1
                     && workerCurrentThread._workStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed))
                 {
-                    works = workerCurrentThread.Steal(1);
+                    workerCurrentThread.TryStealOne(out work);
                     workerCurrentThread._workStealability.InterlockedValue = WorkStealability.Allowed;
                 }
             }
 
-            if (works == null || works.Count == 0)
+            if (work == null)
             {
                 foreach (var kv in _aliveWorkerDic)
                 {
@@ -1382,18 +1382,16 @@ namespace PowerThreadPool
                     if (worker.WaitingWorkCount >= 1
                         && worker._workStealability.TrySet(WorkStealability.NotAllowed, WorkStealability.Allowed))
                     {
-                        works = worker.Steal(1);
+                        worker.TryStealOne(out work);
                         worker._workStealability.InterlockedValue = WorkStealability.Allowed;
-                        if (works != null && works.Count > 0)
+                        if (work != null)
                             break;
                     }
                 }
             }
 
-            if (works != null && works.Count > 0)
+            if (work != null)
             {
-                WorkBase work = works[0];
-
                 HelpWhileWaitingCore(work);
 
                 CheckPoolIdle();

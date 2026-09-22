@@ -26,6 +26,11 @@ namespace PowerThreadPool
     /// </summary>
     internal class Worker : IDisposable
     {
+        [ThreadStatic]
+        private static List<WorkBase> s_stolenListCache;
+        [ThreadStatic]
+        private static List<WorkBase> s_detainedListCache;
+
         private StatusPingPongChecker _statusPingPongChecker = new StatusPingPongChecker();
         internal InterlockedFlag<CanDispose> _canDispose = Constants.CanDispose.Allowed;
         internal InterlockedFlag<CanForceStop> _canForceStop = Constants.CanForceStop.Allowed;
@@ -694,7 +699,8 @@ namespace PowerThreadPool
                     stolenWork.Worker = null;
                     if (stolenList == null)
                     {
-                        stolenList = new List<WorkBase>();
+                        stolenList = s_stolenListCache ?? (s_stolenListCache = new List<WorkBase>());
+                        stolenList.Clear();
                     }
                     stolenList.Add(stolenWork);
 
@@ -703,6 +709,18 @@ namespace PowerThreadPool
             }
 
             return stolenList;
+        }
+
+        internal bool TryStealOne(out WorkBase work)
+        {
+            work = Steal();
+            if (work != null)
+            {
+                Interlocked.Decrement(ref _waitingWorkCount);
+                work.Worker = null;
+                return true;
+            }
+            return false;
         }
 
         private void AssignWork(WorkBase work)
@@ -998,7 +1016,8 @@ namespace PowerThreadPool
                 {
                     if (workList == null)
                     {
-                        workList = new List<WorkBase>();
+                        workList = s_detainedListCache ?? (s_detainedListCache = new List<WorkBase>());
+                        workList.Clear();
                     }
                     Interlocked.Decrement(ref _waitingWorkCount);
                     work._canCancel.TrySet(CanCancel.Allowed, CanCancel.NotAllowed);
