@@ -918,9 +918,6 @@ namespace PowerThreadPool
 
                         List<WorkBase> waitingWorkList = ResetAllWaitingWorkWhenIdle();
 
-                        Interlocked.Decrement(ref _powerPool._runningWorkerCount);
-                        _powerPool.InvokeRunningWorkerCountChangedEvent(false);
-
                         if (waitingWorkList != null)
                         {
                             foreach (WorkBase workBase in waitingWorkList)
@@ -928,10 +925,16 @@ namespace PowerThreadPool
                                 SetWork(workBase, true);
                             }
 
+                            Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                            _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
                             _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
                         }
                         else
                         {
+                            Interlocked.Decrement(ref _powerPool._runningWorkerCount);
+                            _powerPool.InvokeRunningWorkerCountChangedEvent(false);
+
                             _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
                             Interlocked.Increment(ref _powerPool._idleWorkerCount);
