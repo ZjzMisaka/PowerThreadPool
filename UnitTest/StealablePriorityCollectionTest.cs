@@ -85,7 +85,27 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            var deque = new ConcurrentStealablePriorityDeque<int>(true, new Thread(() => { }));
+            ConcurrentStealablePriorityDeque<int> deque = null;
+            Thread thread = new Thread(() =>
+            {
+                Thread.Sleep(100);
+
+                Assert.Equal(6, deque.Get());
+                Assert.Equal(5, deque.Get());
+                Assert.Equal(8, deque.Get());
+                Assert.Equal(7, deque.Get());
+                Assert.Equal(4, deque.Get());
+                Assert.Equal(3, deque.Get());
+                Assert.Equal(10, deque.Get());
+                Assert.Equal(9, deque.Get());
+                Assert.Equal(2, deque.Get());
+                Assert.Equal(1, deque.Get());
+                Assert.Equal(12, deque.Get());
+                Assert.Equal(11, deque.Get());
+            });
+            deque = new ConcurrentStealablePriorityDeque<int>(true, thread);
+            thread.Start();
+
             deque.Set(1, 2);
             deque.Set(2, 2);
             deque.Set(3, 4);
@@ -99,18 +119,7 @@ namespace UnitTest
             deque.Set(11, 1);
             deque.Set(12, 1);
 
-            Assert.Equal(6, deque.Get());
-            Assert.Equal(5, deque.Get());
-            Assert.Equal(8, deque.Get());
-            Assert.Equal(7, deque.Get());
-            Assert.Equal(4, deque.Get());
-            Assert.Equal(3, deque.Get());
-            Assert.Equal(10, deque.Get());
-            Assert.Equal(9, deque.Get());
-            Assert.Equal(2, deque.Get());
-            Assert.Equal(1, deque.Get());
-            Assert.Equal(12, deque.Get());
-            Assert.Equal(11, deque.Get());
+            Thread.Sleep(500);
         }
 
         [Fact]
@@ -514,12 +523,18 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            var d = new ConcurrentStealablePriorityDeque<int>(true, new Thread(() => { }));
+            ConcurrentStealablePriorityDeque<int> d = null;
+            d = new ConcurrentStealablePriorityDeque<int>(true, new Thread(() =>
+            {
+                Thread.Sleep(100);
+
+                Assert.Equal(2, d.Discard());
+                Assert.Equal(1, d.Discard());
+            }));
             d.Set(1, -1);
             d.Set(2, -1);
 
-            Assert.Equal(2, d.Discard());
-            Assert.Equal(1, d.Discard());
+            Thread.Sleep(500);
         }
 
         [Fact]
