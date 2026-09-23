@@ -1109,7 +1109,7 @@ namespace UnitTest
                 }
             }), new WorkOption
             {
-                CustomWorkID = "3",
+                CustomWorkID = "3a",
             });
             powerPool.QueueWorkItem<object>((Func<object>)(() =>//b
             {
@@ -1120,7 +1120,7 @@ namespace UnitTest
                 }
             }), new WorkOption
             {
-                CustomWorkID = "2",
+                CustomWorkID = "2a",
                 Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("3") }
             });
             powerPool.QueueWorkItem<object>((Func<object>)(() =>//d
@@ -1132,7 +1132,7 @@ namespace UnitTest
                 }
             }), new WorkOption
             {
-                CustomWorkID = "4",
+                CustomWorkID = "4a",
                 Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("2") }
             });
             powerPool.QueueWorkItem<object>((Func<object>)(() =>//a
@@ -1144,7 +1144,7 @@ namespace UnitTest
                 }
             }), new WorkOption
             {
-                CustomWorkID = "1",
+                CustomWorkID = "1a",
                 Dependents = new ConcurrentSet<WorkID> { WorkID.FromString("2"), WorkID.FromString("4") }
             });
 
@@ -1509,14 +1509,14 @@ namespace UnitTest
             },
             new WorkOption()
             {
-                CustomWorkID = "1024"
+                CustomWorkID = "1024a"
             });
 
             powerPool.WorkEnded += (s, e) =>
             {
-                Assert.Equal(WorkID.FromString("1024"), e.ID);
+                Assert.Equal(WorkID.FromString("1024a"), e.ID);
             };
-            Assert.Equal(WorkID.FromString("1024"), id);
+            Assert.Equal(WorkID.FromString("1024a"), id);
         }
 
         [Fact]
@@ -1531,7 +1531,7 @@ namespace UnitTest
             },
             new WorkOption()
             {
-                CustomWorkID = "1024"
+                CustomWorkID = "1024a"
             });
             InvalidOperationException ex = null;
             try
@@ -1542,7 +1542,7 @@ namespace UnitTest
                 },
                 new WorkOption()
                 {
-                    CustomWorkID = "1024"
+                    CustomWorkID = "1024a"
                 });
             }
             catch (InvalidOperationException e)
@@ -1550,7 +1550,7 @@ namespace UnitTest
                 ex = e;
             }
 
-            Assert.Equal("The work ID '1024' already exists.", ex.Message);
+            Assert.Equal("The work ID '1024a' already exists.", ex.Message);
         }
 
         [Fact]
@@ -1565,7 +1565,7 @@ namespace UnitTest
             },
             new WorkOption()
             {
-                CustomWorkID = "1024"
+                CustomWorkID = "1024a"
             });
             InvalidOperationException ex = null;
             try
@@ -1576,7 +1576,7 @@ namespace UnitTest
                 },
                 new WorkOption()
                 {
-                    CustomWorkID = "1024"
+                    CustomWorkID = "1024a"
                 });
             }
             catch (InvalidOperationException e)
@@ -1586,7 +1586,63 @@ namespace UnitTest
 
             powerPool.Start();
 
-            Assert.Equal("The work ID '1024' already exists.", ex.Message);
+            Assert.Equal("The work ID '1024a' already exists.", ex.Message);
+        }
+
+        [Fact]
+        public void TestNumberCustomWorkID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
+            InvalidOperationException ex = null;
+            try
+            {
+                WorkID id1 = powerPool.QueueWorkItem(() =>
+                {
+                    Thread.Sleep(1000);
+                },
+                new WorkOption()
+                {
+                    CustomWorkID = "123"
+                });
+            }
+            catch (InvalidOperationException e)
+            {
+                ex = e;
+            }
+
+            powerPool.Start();
+
+            Assert.Equal("The custom work ID cannot be a number or a GUID.", ex.Message);
+        }
+
+        [Fact]
+        public void TestGuidCustomWorkID()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { StartSuspended = true });
+            InvalidOperationException ex = null;
+            try
+            {
+                WorkID id1 = powerPool.QueueWorkItem(() =>
+                {
+                    Thread.Sleep(1000);
+                },
+                new WorkOption()
+                {
+                    CustomWorkID = Guid.NewGuid().ToString()
+                });
+            }
+            catch (InvalidOperationException e)
+            {
+                ex = e;
+            }
+
+            powerPool.Start();
+
+            Assert.Equal("The custom work ID cannot be a number or a GUID.", ex.Message);
         }
 
         [Fact]
