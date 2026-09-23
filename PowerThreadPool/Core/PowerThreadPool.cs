@@ -760,6 +760,8 @@ namespace PowerThreadPool
                     _canceledWorkSet.Clear();
                 }
 
+                _customWorkIDSet.Clear();
+
                 _waitAllSignal.Reset();
 
                 if (PowerPoolOption.RunningTimerOption != null)
