@@ -71,19 +71,18 @@ namespace PowerThreadPool.Helpers.Asynchronous
 #else
             ContinuationState slot = Interlocked.CompareExchange(ref _slot, null, null);
 #endif
-            if (slot == null)
+            bool shouldEnqueueOverflow = false;
+            bool slotIsNull = slot == null;
+            if (slotIsNull)
             {
                 slot = new ContinuationState
                 {
                     _callback = d,
                     _state = state,
                 };
-                if (Interlocked.CompareExchange(ref _slot, slot, null) != null)
-                {
-                    EnqueueOverflow(d, state);
-                }
+                shouldEnqueueOverflow = Interlocked.CompareExchange(ref _slot, slot, null) != null;
             }
-            else
+            if (!slotIsNull || shouldEnqueueOverflow)
             {
                 EnqueueOverflow(d, state);
             }
