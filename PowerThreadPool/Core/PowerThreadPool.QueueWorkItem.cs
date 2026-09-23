@@ -888,7 +888,6 @@ namespace PowerThreadPool
 
             if (option.CustomWorkID != null)
             {
-                workID = WorkID.FromString(option.CustomWorkID);
                 if (long.TryParse(option.CustomWorkID, out _) || Guid.TryParse(option.CustomWorkID, out _))
                 {
                     throw new InvalidOperationException($"The custom work ID cannot be a number or a GUID.");
@@ -897,6 +896,7 @@ namespace PowerThreadPool
                 {
                     throw new InvalidOperationException($"The work ID '{option.CustomWorkID}' already exists.");
                 }
+                workID = WorkID.FromString(option.CustomWorkID);
             }
             else
             {

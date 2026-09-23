@@ -79,14 +79,6 @@ namespace PowerThreadPool
         {
             _powerPool = powerPool;
 
-            _waitingWorkPriorityCollection = QueueFactory();
-            _enforceDequeOwnership = _waitingWorkPriorityCollection.EnforceDequeOwnership;
-
-            if (EnforceDequeOwnership)
-            {
-                _workInbox = new ConcurrentQueue<WorkBase>();
-            }
-
             _thread = new Thread(() =>
             {
                 WorkerContext.s_current = this;
@@ -129,6 +121,14 @@ namespace PowerThreadPool
                     WorkerContext.s_current = null;
                 }
             });
+
+            _waitingWorkPriorityCollection = QueueFactory();
+            _enforceDequeOwnership = _waitingWorkPriorityCollection.EnforceDequeOwnership;
+            if (EnforceDequeOwnership)
+            {
+                _workInbox = new ConcurrentQueue<WorkBase>();
+            }
+
             ID = _thread.ManagedThreadId;
             _thread.IsBackground = true;
             _thread.Start();
@@ -204,7 +204,7 @@ namespace PowerThreadPool
             }
             else
             {
-                return new ConcurrentStealablePriorityDeque<WorkItemBase>(true);
+                return new ConcurrentStealablePriorityDeque<WorkItemBase>(true, _thread);
             }
         }
 

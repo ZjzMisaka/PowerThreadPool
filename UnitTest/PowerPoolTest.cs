@@ -1525,6 +1525,8 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
+            powerPool.EnablePoolIdleCheck = false;
+
             WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
@@ -1549,6 +1551,7 @@ namespace UnitTest
             {
                 ex = e;
             }
+            powerPool.EnablePoolIdleCheck = true;
 
             Assert.Equal("The work ID '1024a' already exists.", ex.Message);
         }
