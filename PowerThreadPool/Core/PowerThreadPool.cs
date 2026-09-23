@@ -760,8 +760,6 @@ namespace PowerThreadPool
                     _canceledWorkSet.Clear();
                 }
 
-                _customWorkIDSet.Clear();
-
                 _waitAllSignal.Reset();
 
                 if (PowerPoolOption.RunningTimerOption != null)
@@ -829,6 +827,8 @@ namespace PowerThreadPool
         {
             _runningTimer.Cancel();
             _timeoutTimer.Cancel();
+
+            _customWorkIDSet.Clear();
 
             CancellationTokenSource cancellationTokenSource = _cancellationTokenSource;
             _cancellationTokenSource = new CancellationTokenSource();
