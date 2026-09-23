@@ -889,9 +889,13 @@ namespace PowerThreadPool
             if (option.CustomWorkID != null)
             {
                 workID = WorkID.FromString(option.CustomWorkID);
-                if (_suspendedWork.ContainsKey(workID) || _aliveWorkDic.ContainsKey(workID))
+                if (!_customWorkIDSet.Add(option.CustomWorkID))
                 {
                     throw new InvalidOperationException($"The work ID '{option.CustomWorkID}' already exists.");
+                }
+                if (long.TryParse(option.CustomWorkID, out _) || Guid.TryParse(option.CustomWorkID, out _))
+                {
+                    throw new InvalidOperationException($"The custom work ID cannot be a number or a GUID.");
                 }
             }
             else
