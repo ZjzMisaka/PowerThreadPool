@@ -305,7 +305,6 @@ namespace PowerThreadPool
                             _stopSuspendedWork[work.ID] = work;
                             _stopSuspendedWorkQueue.Enqueue(work.ID);
                             Interlocked.Decrement(ref _waitingWorkCount);
-
                         }
                         else
                         {
