@@ -36,11 +36,13 @@ namespace PowerThreadPool.Collections
         private readonly ChaseLevDeque<T> _zeroQueue = new ChaseLevDeque<T>();
 
         public bool EnforceDequeOwnership { get; }
+        private Thread OwnerThread { get; }
 
-        public ConcurrentStealablePriorityDeque(bool enforceDequeOwnership)
+        public ConcurrentStealablePriorityDeque(bool enforceDequeOwnership, Thread ownerThread)
         {
             _sortedPriorityList.Add(0);
             EnforceDequeOwnership = enforceDequeOwnership;
+            OwnerThread = ownerThread;
         }
 
         private bool TryGetQueue(int priority, out ChaseLevDeque<T> queue)
@@ -146,9 +148,18 @@ namespace PowerThreadPool.Collections
 
             List<int> priorities = _sortedPriorityList;
 
+            bool isOwnerThread = Thread.CurrentThread.ManagedThreadId == OwnerThread.ManagedThreadId;
+
             if (priorities.Count == 1)
             {
-                _zeroQueue.TryPopBottom(out item);
+                if (isOwnerThread)
+                {
+                    _zeroQueue.TryPopBottom(out item);
+                }
+                else
+                {
+                    _zeroQueue.TrySteal(out item);
+                }
                 return item;
             }
 
@@ -170,7 +181,16 @@ namespace PowerThreadPool.Collections
             {
                 return false;
             }
-            bool res = q.TryPopBottom(out item);
+            bool isOwnerThread = Thread.CurrentThread.ManagedThreadId == OwnerThread.ManagedThreadId;
+            bool res = false;
+            if (isOwnerThread)
+            {
+                res = q.TryPopBottom(out item);
+            }
+            else
+            {
+                res = q.TrySteal(out item);
+            }
             if (q.IsEmpty)
             {
                 TryRemoveEmptyPriority(priority, q);

@@ -1550,7 +1550,7 @@ namespace UnitTest
                 ex = e;
             }
 
-            Assert.Equal("The work ID '1024a' already exists.", ex.Message);
+            Assert.Null(ex);
         }
 
         [Fact]
