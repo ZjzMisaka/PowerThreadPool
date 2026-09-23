@@ -2145,6 +2145,56 @@ namespace UnitTest
             }
         }
 
+        [Fact(Timeout = 20000)]
+        public async Task TestFanOutAwaitsUnderOneWorkBothResume()
+        {
+            const int childCount = 2;
+            var pool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+            });
+
+            using var childrenAwaiting = new ManualResetEventSlim(false);
+            using var releaseWorker = new ManualResetEventSlim(false);
+            var gate = new TaskCompletionSource<bool>();
+            var resumed = 0;
+
+            var id = pool.QueueWorkItem(async () =>
+            {
+                async Task Child()
+                {
+                    await gate.Task;
+                    Interlocked.Increment(ref resumed);
+                }
+
+                var first = Child();
+                var second = Child();
+                childrenAwaiting.Set();
+                releaseWorker.Wait();
+                await Task.WhenAll(first, second);
+            });
+
+            Assert.True(
+                childrenAwaiting.Wait(TimeSpan.FromSeconds(5)),
+                "queued work did not reach the fan-out point");
+
+            Assert.True(gate.TrySetResult(true));
+            releaseWorker.Set();
+
+            // Bounded wait off-thread: a broken pool hangs pool.Wait itself,
+            // so the timeout has to come from the outside.
+            var boundedWait = Task.Run(() => pool.Wait(id));
+            Assert.True(
+                await Task.WhenAny(boundedWait, Task.Delay(TimeSpan.FromSeconds(5))) == boundedWait,
+                $"work did not complete; resumed={Volatile.Read(ref resumed)}/{childCount}");
+            Assert.Equal(childCount, Volatile.Read(ref resumed));
+
+            // Dispose only on the success path: on a hung pool it would block forever.
+            releaseWorker.Set();
+            pool.Stop();
+            pool.Dispose();
+        }
+
         private async Task<string> OuterAsync()
         {
             string result = await InnerAsync();
