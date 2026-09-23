@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using PowerThreadPool.Helpers.LockFree;
@@ -19,9 +20,12 @@ namespace PowerThreadPool.Helpers.Asynchronous
         private volatile Task _originalTask;
         private int _done = 0;
 
-        private readonly ContinuationState _continuationState = new ContinuationState();
         private readonly Action _cachedContinuation;
         private readonly Func<bool> _cachedBeforeStop;
+
+        private ContinuationState _slot;
+        private ConcurrentQueue<ContinuationState> _overflow;
+        private int _drainScheduled;
 
         internal PowerPoolSynchronizationContext(PowerPool powerPool, WorkBase workBase)
         {
@@ -50,19 +54,111 @@ namespace PowerThreadPool.Helpers.Asynchronous
             }
             _workBase._canCancel.TrySet(Constants.CanCancel.Allowed, Constants.CanCancel.NotAllowed);
             _workBase.IsCurrentDone = false;
-            ContinuationState continuationState = _continuationState;
-            continuationState._callback = d;
-            continuationState._state = state;
             _workBase.SetAction(_cachedContinuation, false);
-            _powerPool.SetWork(_workBase);
+
+            EnqueuePost(d, state);
+
+            if (Interlocked.CompareExchange(ref _drainScheduled, 1, 0) == 0)
+            {
+                _powerPool.SetWork(_workBase);
+            }
+        }
+
+        private void EnqueuePost(SendOrPostCallback d, object state)
+        {
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+            ContinuationState slot = Volatile.Read(ref _slot);
+#else
+            ContinuationState slot = Interlocked.CompareExchange(ref _slot, null, null);
+#endif
+            if (slot == null)
+            {
+                slot = new ContinuationState
+                {
+                    _callback = d,
+                    _state = state,
+                };
+                if (Interlocked.CompareExchange(ref _slot, slot, null) != null)
+                {
+                    EnqueueOverflow(d, state);
+                }
+            }
+            else
+            {
+                EnqueueOverflow(d, state);
+            }
+        }
+
+        private void EnqueueOverflow(SendOrPostCallback d, object state)
+        {
+            ConcurrentQueue<ContinuationState> overflow = _overflow;
+            if (overflow == null)
+            {
+                overflow = new ConcurrentQueue<ContinuationState>();
+                if (Interlocked.CompareExchange(ref _overflow, overflow, null) != null)
+                {
+                    overflow = _overflow;
+                }
+            }
+            overflow.Enqueue(new ContinuationState
+            {
+                _callback = d,
+                _state = state,
+            });
+        }
+
+        private bool TryDequeuePost(out ContinuationState item)
+        {
+            ContinuationState slot = Interlocked.Exchange(ref _slot, null);
+            if (slot != null)
+            {
+                item = slot;
+                return true;
+            }
+            ConcurrentQueue<ContinuationState> overflow = _overflow;
+            if (overflow != null && overflow.TryDequeue(out item))
+            {
+                return true;
+            }
+            item = null;
+            return false;
+        }
+
+        private bool HasPendingPosts()
+        {
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+            if (Volatile.Read(ref _slot) != null)
+#else
+            if (Interlocked.CompareExchange(ref _slot, null, null) != null)
+#endif
+            {
+                return true;
+            }
+            ConcurrentQueue<ContinuationState> overflow = _overflow;
+            return overflow != null && !overflow.IsEmpty;
         }
 
         private void RunContinuation()
         {
-            ContinuationState continuationState = _continuationState;
-            SendOrPostCallback d = continuationState._callback;
-            object state = continuationState._state;
+            do
+            {
+                ContinuationState item;
+                while (TryDequeuePost(out item))
+                {
+                    InvokeOne(item._callback, item._state);
+                }
 
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+                Volatile.Write(ref _drainScheduled, 0);
+#else
+                Interlocked.Exchange(ref _drainScheduled, 0);
+#endif
+            }
+            while (HasPendingPosts() && Interlocked.CompareExchange(ref _drainScheduled, 1, 0) == 0);
+        }
+
+        private void InvokeOne(SendOrPostCallback d, object state)
+        {
             SetSynchronizationContext(this);
             if (_workBase.AutoCheckStopOnAsyncTask)
             {
