@@ -788,18 +788,24 @@ namespace PowerThreadPool
                 return;
             }
 
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
             int rwcSnapshot = Volatile.Read(ref _runningWorkerCount);
             int awcSnapshot = Volatile.Read(ref _asyncWorkCount);
             int wwcSnapshot = Volatile.Read(ref _waitingWorkCount);
+#else
+            int rwcSnapshot = Thread.VolatileRead(ref _runningWorkerCount);
+            int awcSnapshot = Thread.VolatileRead(ref _asyncWorkCount);
+            int wwcSnapshot = Thread.VolatileRead(ref _waitingWorkCount);
+#endif
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
             if (rwcSnapshot == 0 &&
                awcSnapshot == 0 &&
                wwcSnapshot == 0 &&
 #else
-            if (Thread.VolatileRead(ref _runningWorkerCount) == 0 &&
-               Thread.VolatileRead(ref _asyncWorkCount) == 0 &&
-               Thread.VolatileRead(ref _waitingWorkCount) == 0 &&
+            if (rwcSnapshot == 0 &&
+               awcSnapshot == 0 &&
+               wwcSnapshot == 0 &&
 #endif
             _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
                 )
