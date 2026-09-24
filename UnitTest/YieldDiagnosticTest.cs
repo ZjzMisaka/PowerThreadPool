@@ -1,7 +1,5 @@
-using System.Reflection;
 using System.Text;
 using PowerThreadPool;
-using PowerThreadPool.EventArguments;
 using Xunit.Abstractions;
 
 namespace UnitTest
