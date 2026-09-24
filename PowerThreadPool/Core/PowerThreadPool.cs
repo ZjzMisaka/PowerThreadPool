@@ -755,7 +755,6 @@ namespace PowerThreadPool
                 }
 
                 _waitAllSignal.Reset();
-                Diag("WAIT-ALL-SIGNAL-RESET");
 
                 if (PowerPoolOption.RunningTimerOption != null)
                 {
@@ -789,28 +788,17 @@ namespace PowerThreadPool
             }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-            int rwcSnapshot = Volatile.Read(ref _runningWorkerCount);
-            int awcSnapshot = Volatile.Read(ref _asyncWorkCount);
-            int wwcSnapshot = Volatile.Read(ref _waitingWorkCount);
+            if (Volatile.Read(ref _runningWorkerCount) == 0 &&
+               Volatile.Read(ref _asyncWorkCount) == 0 &&
+               Volatile.Read(ref _waitingWorkCount) == 0 &&
 #else
-            int rwcSnapshot = Thread.VolatileRead(ref _runningWorkerCount);
-            int awcSnapshot = Thread.VolatileRead(ref _asyncWorkCount);
-            int wwcSnapshot = Thread.VolatileRead(ref _waitingWorkCount);
-#endif
-
-#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-            if (rwcSnapshot == 0 &&
-               awcSnapshot == 0 &&
-               wwcSnapshot == 0 &&
-#else
-            if (rwcSnapshot == 0 &&
-               awcSnapshot == 0 &&
-               wwcSnapshot == 0 &&
+            if (Thread.VolatileRead(ref _runningWorkerCount) == 0 &&
+               Thread.VolatileRead(ref _asyncWorkCount) == 0 &&
+               Thread.VolatileRead(ref _waitingWorkCount) == 0 &&
 #endif
             _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
                 )
             {
-                Diag($"IDLE-OK rwc={rwcSnapshot} awc={awcSnapshot} wwc={wwcSnapshot} pool={_poolState}");
                 if (PowerPoolOption.EnableStatisticsCollection)
                 {
                     _endDateTime = DateTime.UtcNow;
@@ -825,11 +813,6 @@ namespace PowerThreadPool
                     SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorFrom.PoolIdled, null);
                 }
                 IdleSetting();
-            }
-            else if (rwcSnapshot == 0 && awcSnapshot == 0 && wwcSnapshot == 0)
-            {
-                // TrySet failed: another thread already did IdleChecked.
-                Diag($"IDLE-RACE-LOST rwc={rwcSnapshot} awc={awcSnapshot} wwc={wwcSnapshot} pool={_poolState}");
             }
         }
 
@@ -848,7 +831,6 @@ namespace PowerThreadPool
             cancellationTokenSource.Dispose();
 
             _poolState.InterlockedValue = PoolStates.NotRunning;
-            Diag("IDLE-SETTING begin");
             if (_poolStopping)
             {
                 _poolStopping = false;
@@ -863,7 +845,6 @@ namespace PowerThreadPool
             }
 
             _waitAllSignal.Set();
-            Diag("WAIT-ALL-SIGNAL-SET");
         }
 
         /// <summary>
