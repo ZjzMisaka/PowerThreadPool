@@ -16,23 +16,25 @@ namespace UnitTest
         [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestYieldDiagnostic()
         {
-            const int cap = 2000;
+            const int cap = 3000;
             string[] ring = new string[cap];
             long seq = 0;
+
+            void Record(string msg)
+            {
+                ring[(int)(System.Threading.Interlocked.Increment(ref seq) % cap)] =
+                    $"[seq{seq} {msg}";
+            }
+
+            PowerPool.DiagnosticSink = msg => Record(msg);
 
             PowerPool powerPool = new PowerPool();
 
             powerPool.RunningWorkerCountChanged += (s, e) =>
-            {
-                ring[(int)(System.Threading.Interlocked.Increment(ref seq) % cap)] =
-                    $"[seq{seq} t{Environment.TickCount64} th{Thread.CurrentThread.ManagedThreadId}] RWC {e.PreviousCount}->{e.NowCount}";
-            };
+                Record($"t{Environment.TickCount64} th{Thread.CurrentThread.ManagedThreadId}] RWC {e.PreviousCount}->{e.NowCount}");
 
             powerPool.PoolIdled += (s, e) =>
-            {
-                ring[(int)(System.Threading.Interlocked.Increment(ref seq) % cap)] =
-                    $"[seq{seq} t{Environment.TickCount64} th{Thread.CurrentThread.ManagedThreadId}] POOL-IDLED";
-            };
+                Record($"t{Environment.TickCount64} th{Thread.CurrentThread.ManagedThreadId}] POOL-IDLED");
 
             int failRound = -1;
             int failRwc = -1;
@@ -49,10 +51,12 @@ namespace UnitTest
                     await Task.Yield();
                 });
 
-                await powerPool.WaitAsync();
+                var waitTask = powerPool.WaitAsync();
+                Record($"t{Environment.TickCount64} th{Thread.CurrentThread.ManagedThreadId}] WAIT-CALLED r{round}");
 
-                ring[(int)(System.Threading.Interlocked.Increment(ref seq) % cap)] =
-                    $"[seq{seq} t{Environment.TickCount64} th{Thread.CurrentThread.ManagedThreadId}] WAIT-RETURNED r{round}";
+                await waitTask;
+
+                Record($"t{Environment.TickCount64} th{Thread.CurrentThread.ManagedThreadId}] WAIT-RETURNED r{round}");
 
                 if (powerPool.RunningWorkerCount != 0 || powerPool.WaitingWorkCount != 0)
                 {
@@ -63,6 +67,8 @@ namespace UnitTest
                     break;
                 }
             }
+
+            PowerPool.DiagnosticSink = null;
 
             var sb = new StringBuilder();
             sb.AppendLine($"RESULT failRound={failRound} RWC={failRwc} WWC={failWwc} AWC={failAwc} totalSeq={seq}");

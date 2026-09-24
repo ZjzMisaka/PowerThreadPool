@@ -16,8 +16,18 @@ namespace PowerThreadPool
 {
     public partial class PowerPool
     {
+        internal static Action<string> DiagnosticSink;
+        internal static void Diag(string msg)
+        {
+            var sink = DiagnosticSink;
+            if (sink != null)
+            {
+                sink($"[t{Environment.TickCount64} th{Thread.CurrentThread.ManagedThreadId}] {msg}");
+            }
+        }
+
         /// <summary>
-        /// Call this function inside the work logic where you want to pause when user call Pause(...)
+        /// Call this function inside the work logic where you want to pause when user call PauseIfRequested(...)
         /// </summary>
         public void PauseIfRequested()
         {
@@ -377,9 +387,12 @@ namespace PowerThreadPool
             RegisteredWaitHandle rwh = null;
             WaitOrTimerCallback cb = (state, timedOut) =>
             {
+                Diag("WAITASYNC-RW-CALLBACK");
                 SetTcsResult(tcs);
             };
             rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal.WaitHandle, cb, null, Timeout.Infinite, true);
+
+            Diag("WAITASYNC-REGISTERED");
 
             _waitRegDict[tcs.Task] = rwh;
 
@@ -427,6 +440,8 @@ namespace PowerThreadPool
             if (_waitAllSignal.Wait(0))
             {
                 res = true;
+
+                Diag($"WAITASYNC-FAST-PATH tcsnull={tcs == null}");
 
                 SetTcsResult(tcs);
 
