@@ -22,7 +22,7 @@ namespace PowerThreadPool
             var sink = DiagnosticSink;
             if (sink != null)
             {
-                sink($"[t{Environment.TickCount64} th{Thread.CurrentThread.ManagedThreadId}] {msg}");
+                sink($"[t{System.Diagnostics.Stopwatch.GetTimestamp()} th{Thread.CurrentThread.ManagedThreadId}] {msg}");
             }
         }
 
