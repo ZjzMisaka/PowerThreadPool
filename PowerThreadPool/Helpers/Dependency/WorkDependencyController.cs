@@ -25,8 +25,9 @@ namespace PowerThreadPool.Helpers.Dependency
             _powerPool = powerPool;
         }
 
-        internal bool Register(WorkBase work, ConcurrentSet<WorkID> dependents)
+        internal bool Register(WorkBase work, ConcurrentSet<WorkID> dependents, out bool workNotSuccessfullyCompleted)
         {
+            workNotSuccessfullyCompleted = false;
             if (dependents != null && dependents.Count != 0)
             {
                 if (CheckHasCycle(work.ID, dependents))
@@ -48,7 +49,7 @@ namespace PowerThreadPool.Helpers.Dependency
                 {
                     if (PrecedingWorkNotSuccessfullyCompleted(dependedId))
                     {
-                        OnPrecedingWorkNotSuccessfullyCompletedWhenRegister(work, dependedId);
+                        workNotSuccessfullyCompleted = OnPrecedingWorkNotSuccessfullyCompletedWhenRegister(work, dependedId);
                         return true;
                     }
                     else
@@ -96,8 +97,9 @@ namespace PowerThreadPool.Helpers.Dependency
             return false;
         }
 
-        private void OnPrecedingWorkNotSuccessfullyCompletedWhenRegister(WorkBase work, WorkID dependedId)
+        private bool OnPrecedingWorkNotSuccessfullyCompletedWhenRegister(WorkBase work, WorkID dependedId)
         {
+            bool workNotSuccessfullyCompleted;
             work._dependencyStatus.InterlockedValue = DependencyStatus.Failed;
             _workDict.TryRemove(work.ID, out _);
 
@@ -123,6 +125,8 @@ namespace PowerThreadPool.Helpers.Dependency
             _powerPool.WorkCallbackEnd(work, Status.Failed);
 
             _powerPool.CheckPoolIdle();
+            workNotSuccessfullyCompleted = true;
+            return workNotSuccessfullyCompleted;
         }
 
         private void SetWorkIfDependencySolved(ConcurrentSet<WorkID> dependents, WorkBase work)
@@ -149,7 +153,10 @@ namespace PowerThreadPool.Helpers.Dependency
             List<WorkID> idList = _workDict.Keys.ToList();
             foreach (WorkID id in idList)
             {
-                _workDict.TryRemove(id, out _);
+                if (_workDict.TryRemove(id, out _))
+                {
+                    Interlocked.Decrement(ref _powerPool._waitingWorkCount);
+                }
             }
             _powerPool.CheckPoolIdle();
         }
@@ -159,6 +166,7 @@ namespace PowerThreadPool.Helpers.Dependency
             bool res = false;
             if (_workDict.TryRemove(id, out work))
             {
+                Interlocked.Decrement(ref _powerPool._waitingWorkCount);
                 _powerPool.CheckPoolIdle();
                 res = true;
             }
@@ -289,6 +297,7 @@ namespace PowerThreadPool.Helpers.Dependency
                     {
                         if (_workDict.TryGetValue(workID, out WorkBase work) && work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
                         {
+                            Interlocked.Decrement(ref _powerPool._waitingWorkCount);
                             _workDict.TryRemove(work.ID, out _);
                             newlyFailed.Add(work);
 
