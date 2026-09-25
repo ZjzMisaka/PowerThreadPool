@@ -257,9 +257,13 @@ namespace PowerThreadPool
                 while (true)
                 {
                     if (cancellationToken == default)
+                    {
                         _waitAllSignal.Wait();
+                    }
                     else if (WaitHandle.WaitAny(new WaitHandle[] { _waitAllSignal.WaitHandle, cancellationToken.WaitHandle }) == 1)
+                    {
                         cancellationToken.ThrowIfCancellationRequested();
+                    }
 
                     if (ConfirmPoolIdle())
                     {
@@ -273,12 +277,6 @@ namespace PowerThreadPool
 
         private bool ConfirmPoolIdle()
         {
-            // Dispose terminates all waits by setting the signal; there is no idle
-            // transition to confirm at that point.
-            if (_disposing || _disposed)
-            {
-                return true;
-            }
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
             return _poolState.InterlockedValue == PoolStates.NotRunning
                 && Volatile.Read(ref _runningWorkerCount) == 0
@@ -295,7 +293,9 @@ namespace PowerThreadPool
             while (true)
             {
                 if (cancellationToken.IsCancellationRequested)
+                {
                     cancellationToken.ThrowIfCancellationRequested();
+                }
 
                 if (!HelpWhileWaiting())
                 {
