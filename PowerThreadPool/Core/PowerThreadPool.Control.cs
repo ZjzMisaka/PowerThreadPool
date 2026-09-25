@@ -277,6 +277,10 @@ namespace PowerThreadPool
 
         private bool ConfirmPoolIdle()
         {
+            if (_disposing || _disposed)
+            {
+                return true;
+            }
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
             return _poolState.InterlockedValue == PoolStates.NotRunning
                 && Volatile.Read(ref _runningWorkerCount) == 0
