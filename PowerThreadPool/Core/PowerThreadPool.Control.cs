@@ -265,24 +265,12 @@ namespace PowerThreadPool
                     {
                         return;
                     }
-                    // A set signal observed here can be a spillover from the previous
-                    // idle transition landing after a new round's reset, or a premature
-                    // transition published while a work was being enqueued. Both cases
-                    // imply an active round; its completion re-sets the signal, so
-                    // simply wait again - no wakeup can be lost.
+
                     _waitAllSignal.Reset();
                 }
             }
         }
 
-        /// <summary>
-        /// Confirm that a set wait-all signal reflects a real "all works done"
-        /// state: the pool must have finished its idle transition (NotRunning) and
-        /// no work/worker may be in flight. Enqueuers flip the state to Running
-        /// before resetting the signal and increment their counters before that,
-        /// so seeing NotRunning with all-zero counters guarantees the signal is
-        /// neither stale nor premature.
-        /// </summary>
         private bool ConfirmPoolIdle()
         {
             // Dispose terminates all waits by setting the signal; there is no idle
@@ -427,9 +415,6 @@ namespace PowerThreadPool
                 }
                 else
                 {
-                    // Stale or premature signal (see ConfirmPoolIdle). An active round
-                    // exists and its completion sets the signal again, so simply arm a
-                    // new registration and keep waiting; no wakeup can be lost.
                     rwh.Unregister(null);
                     rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal.WaitHandle, cb, null, Timeout.Infinite, true);
                     _waitRegDict[tcs.Task] = rwh;
