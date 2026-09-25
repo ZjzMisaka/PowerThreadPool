@@ -167,7 +167,8 @@ namespace PowerThreadPool.Works
                     InvokeCallback(executeResult, PowerPool.PowerPoolOption);
                     PowerPool.WorkCallbackEnd(this, Status.Canceled);
 
-                    int waitingWorkCount = Interlocked.Decrement(ref Worker._waitingWorkCount);
+                    Interlocked.Decrement(ref Worker._waitingWorkCount);
+                    int waitingWorkCount = Interlocked.Decrement(ref PowerPool._waitingWorkCount);
 
                     if (waitingWorkCount == 0)
                     {
