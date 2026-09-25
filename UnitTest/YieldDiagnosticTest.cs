@@ -3,13 +3,6 @@ using Xunit.Abstractions;
 
 namespace UnitTest
 {
-    /// <summary>
-    /// Regression test for the _waitAllSignal lifecycle race found on CI (Linux):
-    /// a WaitAsync() registered right after a new round started could be satisfied
-    /// by a leftover signal Set from the previous round's IdleSetting (the Reset in
-    /// CheckPoolStart is skipped while the pool state is still IdleChecked), letting
-    /// the wait return while RunningWorkerCount/AsyncWorkCount are still non-zero.
-    /// </summary>
     public class YieldDiagnosticTest
     {
         private readonly ITestOutputHelper _output;
