@@ -254,11 +254,54 @@ namespace PowerThreadPool
             }
             else
             {
-                if (cancellationToken == default)
-                    _waitAllSignal.Wait();
-                else if (WaitHandle.WaitAny(new WaitHandle[] { _waitAllSignal.WaitHandle, cancellationToken.WaitHandle }) == 1)
-                    cancellationToken.ThrowIfCancellationRequested();
+                while (true)
+                {
+                    if (cancellationToken == default)
+                        _waitAllSignal.Wait();
+                    else if (WaitHandle.WaitAny(new WaitHandle[] { _waitAllSignal.WaitHandle, cancellationToken.WaitHandle }) == 1)
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                    if (ConfirmPoolIdle())
+                    {
+                        return;
+                    }
+                    // A set signal observed here can be a spillover from the previous
+                    // idle transition landing after a new round's reset, or a premature
+                    // transition published while a work was being enqueued. Both cases
+                    // imply an active round; its completion re-sets the signal, so
+                    // simply wait again - no wakeup can be lost.
+                    _waitAllSignal.Reset();
+                }
             }
+        }
+
+        /// <summary>
+        /// Confirm that a set wait-all signal reflects a real "all works done"
+        /// state: the pool must have finished its idle transition (NotRunning) and
+        /// no work/worker may be in flight. Enqueuers flip the state to Running
+        /// before resetting the signal and increment their counters before that,
+        /// so seeing NotRunning with all-zero counters guarantees the signal is
+        /// neither stale nor premature.
+        /// </summary>
+        private bool ConfirmPoolIdle()
+        {
+            // Dispose terminates all waits by setting the signal; there is no idle
+            // transition to confirm at that point.
+            if (_disposing || _disposed)
+            {
+                return true;
+            }
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+            return _poolState.InterlockedValue == PoolStates.NotRunning
+                && Volatile.Read(ref _runningWorkerCount) == 0
+                && Volatile.Read(ref _asyncWorkCount) == 0
+                && Volatile.Read(ref _waitingWorkCount) == 0;
+#else
+            return _poolState.InterlockedValue == PoolStates.NotRunning
+                && Thread.VolatileRead(ref _runningWorkerCount) == 0
+                && Thread.VolatileRead(ref _asyncWorkCount) == 0
+                && Thread.VolatileRead(ref _waitingWorkCount) == 0;
+#endif
         }
 
         private void HelpWhileWaitingUntilPoolIdle(CancellationToken cancellationToken)
@@ -375,9 +418,22 @@ namespace PowerThreadPool
 
             TaskCompletionSource<object> tcs = NewTcs<object>();
             RegisteredWaitHandle rwh = null;
-            WaitOrTimerCallback cb = (state, timedOut) =>
+            WaitOrTimerCallback cb = null;
+            cb = (state, timedOut) =>
             {
-                SetTcsResult(tcs);
+                if (ConfirmPoolIdle())
+                {
+                    SetTcsResult(tcs);
+                }
+                else
+                {
+                    // Stale or premature signal (see ConfirmPoolIdle). An active round
+                    // exists and its completion sets the signal again, so simply arm a
+                    // new registration and keep waiting; no wakeup can be lost.
+                    rwh.Unregister(null);
+                    rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal.WaitHandle, cb, null, Timeout.Infinite, true);
+                    _waitRegDict[tcs.Task] = rwh;
+                }
             };
             rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal.WaitHandle, cb, null, Timeout.Infinite, true);
 
@@ -426,15 +482,18 @@ namespace PowerThreadPool
 
             if (_waitAllSignal.Wait(0))
             {
-                res = true;
+                if (ConfirmPoolIdle())
+                {
+                    res = true;
 
-                SetTcsResult(tcs);
+                    SetTcsResult(tcs);
 
 #if (NET46_OR_GREATER || NET5_0_OR_GREATER)
-                task = Task.CompletedTask;
+                    task = Task.CompletedTask;
 #else
-                task = Task.FromResult(0);
+                    task = Task.FromResult(0);
 #endif
+                }
             }
 
             return res;
