@@ -254,11 +254,42 @@ namespace PowerThreadPool
             }
             else
             {
-                if (cancellationToken == default)
-                    _waitAllSignal.Wait();
-                else if (WaitHandle.WaitAny(new WaitHandle[] { _waitAllSignal.WaitHandle, cancellationToken.WaitHandle }) == 1)
-                    cancellationToken.ThrowIfCancellationRequested();
+                while (true)
+                {
+                    if (cancellationToken == default)
+                        _waitAllSignal.Wait();
+                    else if (WaitHandle.WaitAny(new WaitHandle[] { _waitAllSignal.WaitHandle, cancellationToken.WaitHandle }) == 1)
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                    if (ConfirmPoolIdle())
+                    {
+                        return;
+                    }
+
+                    _waitAllSignal.Reset();
+                }
             }
+        }
+
+        private bool ConfirmPoolIdle()
+        {
+            // Dispose terminates all waits by setting the signal; there is no idle
+            // transition to confirm at that point.
+            if (_disposing || _disposed)
+            {
+                return true;
+            }
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+            return _poolState.InterlockedValue == PoolStates.NotRunning
+                && Volatile.Read(ref _runningWorkerCount) == 0
+                && Volatile.Read(ref _asyncWorkCount) == 0
+                && Volatile.Read(ref _waitingWorkCount) == 0;
+#else
+            return _poolState.InterlockedValue == PoolStates.NotRunning
+                && Thread.VolatileRead(ref _runningWorkerCount) == 0
+                && Thread.VolatileRead(ref _asyncWorkCount) == 0
+                && Thread.VolatileRead(ref _waitingWorkCount) == 0;
+#endif
         }
 
         private void HelpWhileWaitingUntilPoolIdle(CancellationToken cancellationToken)
@@ -375,9 +406,19 @@ namespace PowerThreadPool
 
             TaskCompletionSource<object> tcs = NewTcs<object>();
             RegisteredWaitHandle rwh = null;
-            WaitOrTimerCallback cb = (state, timedOut) =>
+            WaitOrTimerCallback cb = null;
+            cb = (state, timedOut) =>
             {
-                SetTcsResult(tcs);
+                if (ConfirmPoolIdle())
+                {
+                    SetTcsResult(tcs);
+                }
+                else
+                {
+                    rwh.Unregister(null);
+                    rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal.WaitHandle, cb, null, Timeout.Infinite, true);
+                    _waitRegDict[tcs.Task] = rwh;
+                }
             };
             rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal.WaitHandle, cb, null, Timeout.Infinite, true);
 
@@ -426,15 +467,18 @@ namespace PowerThreadPool
 
             if (_waitAllSignal.Wait(0))
             {
-                res = true;
+                if (ConfirmPoolIdle())
+                {
+                    res = true;
 
-                SetTcsResult(tcs);
+                    SetTcsResult(tcs);
 
 #if (NET46_OR_GREATER || NET5_0_OR_GREATER)
-                task = Task.CompletedTask;
+                    task = Task.CompletedTask;
 #else
-                task = Task.FromResult(0);
+                    task = Task.FromResult(0);
 #endif
+                }
             }
 
             return res;
