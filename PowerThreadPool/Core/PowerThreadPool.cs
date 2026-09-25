@@ -727,6 +727,11 @@ namespace PowerThreadPool
         /// </summary>
         private void CheckPoolStart()
         {
+            while (_poolState == PoolStates.IdleChecked)
+            {
+                Spinner.SpinOnce();
+            }
+
             if (_poolState == PoolStates.NotRunning && _poolState.TrySet(PoolStates.Running, PoolStates.NotRunning))
             {
                 if (PoolStarted != null)
@@ -830,21 +835,29 @@ namespace PowerThreadPool
             _cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Dispose();
 
-            _poolState.InterlockedValue = PoolStates.NotRunning;
-            if (_poolStopping)
+            if (_poolState.TrySet(PoolStates.NotRunning, PoolStates.IdleChecked))
             {
-                _poolStopping = false;
-
-                while (_stopSuspendedWorkQueue.TryDequeue(out WorkID key))
+                if (_poolStopping)
                 {
-                    if (_stopSuspendedWork.TryGetValue(key, out WorkBase work))
+                    _poolStopping = false;
+
+                    while (_stopSuspendedWorkQueue.TryDequeue(out WorkID key))
                     {
-                        SetWork(work);
+                        if (_stopSuspendedWork.TryGetValue(key, out WorkBase work))
+                        {
+                            // Works reach _stopSuspendedWork without an outstanding
+                            // _waitingWorkCount (the stop-suspend enqueue paths never
+                            // added one), but the worker pickup decrements it - add the
+                            // count here or it leaks to -1 and the pool can never go
+                            // idle again.
+                            Interlocked.Increment(ref _waitingWorkCount);
+                            SetWork(work);
+                        }
                     }
                 }
-            }
 
-            _waitAllSignal.Set();
+                _waitAllSignal.Set();
+            }
         }
 
         /// <summary>
