@@ -417,6 +417,7 @@ namespace PowerThreadPool
                 }
                 else
                 {
+                    _waitAllSignal.Reset();
                     rwh.Unregister(null);
                     rwh = ThreadPool.RegisterWaitForSingleObject(_waitAllSignal.WaitHandle, cb, null, Timeout.Infinite, true);
                     _waitRegDict[tcs.Task] = rwh;
