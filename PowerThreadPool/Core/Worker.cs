@@ -173,7 +173,6 @@ namespace PowerThreadPool
             work._canCancel.InterlockedValue = CanCancel.NotAllowed;
 
             work.Worker = this;
-            Interlocked.Decrement(ref _powerPool._waitingWorkCount);
             SetWorkToRun(work);
             Work = work;
             ExecuteWork();
@@ -232,7 +231,6 @@ namespace PowerThreadPool
             if (Work.ShouldRequeue(executeResult))
             {
                 BeforeRetry();
-                Interlocked.Increment(ref _powerPool._waitingWorkCount);
                 _powerPool.SetWork(Work);
             }
             else
@@ -774,8 +772,6 @@ namespace PowerThreadPool
                 {
                     _killTimer.Cancel();
                 }
-
-                Interlocked.Decrement(ref _powerPool._waitingWorkCount);
 
                 SetWorkToRun(work);
 
