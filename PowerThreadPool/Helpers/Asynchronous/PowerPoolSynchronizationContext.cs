@@ -60,7 +60,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
 
             if (Interlocked.CompareExchange(ref _drainScheduled, 1, 0) == 0)
             {
-                _powerPool.SetWork(_workBase);
+                _powerPool.SetWork(_workBase, true);
             }
         }
 

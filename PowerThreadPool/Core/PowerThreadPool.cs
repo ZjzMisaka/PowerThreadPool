@@ -426,20 +426,30 @@ namespace PowerThreadPool
         /// Set a work into a worker's queue.
         /// </summary>
         /// <param name="work"></param>
-        internal void SetWork(WorkBase work)
+        /// <param name="isCoveredByAsyncCount"></param>
+        internal void SetWork(WorkBase work, bool isCoveredByAsyncCount = false)
         {
             int slot = Thread.CurrentThread.ManagedThreadId % _setWorkGate.Length;
-            Interlocked.Increment(ref _setWorkGate[slot]);
+            if (!isCoveredByAsyncCount)
+            {
+                Interlocked.Increment(ref _setWorkGate[slot]);
+            }
             try
             {
                 SetWorkCore(work);
             }
             finally
             {
-                Interlocked.Decrement(ref _setWorkGate[slot]);
+                if (!isCoveredByAsyncCount)
+                {
+                    Interlocked.Decrement(ref _setWorkGate[slot]);
+                }
             }
 
-            CheckPoolIdle();
+            if (!isCoveredByAsyncCount)
+            {
+                CheckPoolIdle();
+            }
         }
 
         private void SetWorkCore(WorkBase work)
