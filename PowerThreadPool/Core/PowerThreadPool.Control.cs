@@ -270,10 +270,7 @@ namespace PowerThreadPool
                         return;
                     }
 
-                    if (_poolState.TrySet(PoolStates.Running, PoolStates.NotRunning))
-                    {
-                        _waitAllSignal.Reset();
-                    }
+                    _waitAllSignal.Reset();
                 }
             }
         }
