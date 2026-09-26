@@ -108,6 +108,7 @@ namespace PowerThreadPool.Collections
                 if (innerDict.IsEmpty)
                 {
                     _snapshot = s_empty;
+                    _canRebuildSnapshot.InterlockedValue = CanRebuildSnapshot.Allowed;
                     return;
                 }
                 TValue[] snapshot = new TValue[innerDict.Count];
