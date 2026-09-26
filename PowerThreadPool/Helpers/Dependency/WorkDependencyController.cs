@@ -29,6 +29,11 @@ namespace PowerThreadPool.Helpers.Dependency
         {
             if (dependents != null && dependents.Count != 0)
             {
+                if (!_powerPool.PowerPoolOption.ShouldStoreResult)
+                {
+                    throw new InvalidOperationException($"WorkOption.Dependents requires PowerPoolOption.ShouldStoreResult to be enabled, otherwise a dependency whose preceding work has already finished can never be resolved.");
+                }
+
                 if (CheckHasCycle(work.ID, dependents))
                 {
                     throw new CycleDetectedException
@@ -211,7 +216,7 @@ namespace PowerThreadPool.Helpers.Dependency
         {
             WorkID id = endWork.ID;
 
-            if (status == Status.Failed || status == Status.Canceled)
+            if (status != Status.Succeed)
             {
                 OnCallbackFailed(id);
                 return;
@@ -304,7 +309,8 @@ namespace PowerThreadPool.Helpers.Dependency
 
         private bool PrecedingWorkNotSuccessfullyCompleted(WorkID dependedId)
         {
-            return _powerPool._resultDic.ContainsKey(dependedId) && _powerPool._resultDic[dependedId].Status != Status.Succeed;
+            return _powerPool._resultDic.TryGetValue(dependedId, out ExecuteResultBase result)
+                && result.Status != Status.Succeed;
         }
     }
 }

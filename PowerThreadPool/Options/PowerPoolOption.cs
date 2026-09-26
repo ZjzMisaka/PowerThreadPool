@@ -107,7 +107,7 @@ namespace PowerThreadPool.Options
         /// <summary>
         /// Determines whether to clear the result storage when the pool starts.
         /// </summary>
-        public bool ClearResultStorageWhenPoolStart { get; set; } = true;
+        public bool ClearResultStorageWhenPoolStart { get; set; } = false;
 
         /// <summary>
         /// A factory function that creates instances of 
