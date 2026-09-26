@@ -270,7 +270,10 @@ namespace PowerThreadPool
                         return;
                     }
 
-                    _waitAllSignal.Reset();
+                    if (_poolState.TrySet(PoolStates.Running, PoolStates.NotRunning))
+                    {
+                        _waitAllSignal.Reset();
+                    }
                 }
             }
         }
@@ -281,16 +284,17 @@ namespace PowerThreadPool
             {
                 return true;
             }
+
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
             return _poolState.InterlockedValue == PoolStates.NotRunning
                 && Volatile.Read(ref _runningWorkerCount) == 0
                 && Volatile.Read(ref _asyncWorkCount) == 0
-                && Volatile.Read(ref _waitingWorkCount) == 0;
+                && !HasInFlightSetWork();
 #else
             return _poolState.InterlockedValue == PoolStates.NotRunning
                 && Thread.VolatileRead(ref _runningWorkerCount) == 0
                 && Thread.VolatileRead(ref _asyncWorkCount) == 0
-                && Thread.VolatileRead(ref _waitingWorkCount) == 0;
+                && !HasInFlightSetWork();
 #endif
         }
 
@@ -1344,7 +1348,6 @@ namespace PowerThreadPool
             }
             else if (_suspendedWork.TryRemove(id, out work))
             {
-                Interlocked.Decrement(ref _waitingWorkCount);
                 res = true;
                 isQueuedAndDidNotDecreasedCountInside = true;
             }

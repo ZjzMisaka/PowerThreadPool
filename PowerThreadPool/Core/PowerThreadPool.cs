@@ -100,6 +100,25 @@ namespace PowerThreadPool
 
         private InterlockedFlag<PoolStates> _poolState = PoolStates.NotRunning;
 
+        private readonly int[] _setWorkGate = new int[128];
+
+        internal bool HasInFlightSetWork()
+        {
+            int[] gate = _setWorkGate;
+            for (int i = 0; i < gate.Length; ++i)
+            {
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+                if (Volatile.Read(ref gate[i]) != 0)
+#else
+                if (Thread.VolatileRead(ref gate[i]) != 0)
+#endif
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public bool PoolRunning => _poolState == PoolStates.Running;
 
         private bool _poolStopping = false;
@@ -125,8 +144,20 @@ namespace PowerThreadPool
         internal int _idleWorkerCount = 0;
         public int IdleWorkerCount => _idleWorkerCount;
 
-        internal int _waitingWorkCount = 0;
-        public int WaitingWorkCount => _waitingWorkCount;
+        public int WaitingWorkCount
+        {
+            get
+            {
+                int count = 0;
+                foreach (var kv in _aliveWorkerDic)
+                {
+                    count += kv.Value.WaitingWorkCount;
+                }
+                count += _suspendedWork.Count;
+                count += _workDependencyController._workDict.Count;
+                return count;
+            }
+        }
 
         public IEnumerable<WorkID> WaitingWorkList
         {
@@ -304,7 +335,6 @@ namespace PowerThreadPool
                         {
                             _stopSuspendedWork[work.ID] = work;
                             _stopSuspendedWorkQueue.Enqueue(work.ID);
-                            Interlocked.Decrement(ref _waitingWorkCount);
                         }
                         else
                         {
@@ -393,10 +423,36 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Set a work into a worker's work queue.
+        /// Set a work into a worker's queue.
         /// </summary>
         /// <param name="work"></param>
-        internal void SetWork(WorkBase work)
+        /// <param name="isCoveredByAsyncCount"></param>
+        internal void SetWork(WorkBase work, bool isCoveredByAsyncCount = false)
+        {
+            int slot = Thread.CurrentThread.ManagedThreadId % _setWorkGate.Length;
+            if (!isCoveredByAsyncCount)
+            {
+                Interlocked.Increment(ref _setWorkGate[slot]);
+            }
+            try
+            {
+                SetWorkCore(work);
+            }
+            finally
+            {
+                if (!isCoveredByAsyncCount)
+                {
+                    Interlocked.Decrement(ref _setWorkGate[slot]);
+                }
+            }
+
+            if (!isCoveredByAsyncCount)
+            {
+                CheckPoolIdle();
+            }
+        }
+
+        private void SetWorkCore(WorkBase work)
         {
             CheckPoolStart();
 
@@ -480,7 +536,6 @@ namespace PowerThreadPool
                 {
                     ID = rejectID,
                 };
-                Interlocked.Decrement(ref _waitingWorkCount);
 
                 throw workRejectedException;
             }
@@ -494,8 +549,6 @@ namespace PowerThreadPool
             }
             else if (rejectType == RejectType.DiscardPolicy)
             {
-                Interlocked.Decrement(ref _waitingWorkCount);
-
                 OnWorkDiscarded(work, rejectType);
 
                 CheckPoolIdle();
@@ -515,7 +568,6 @@ namespace PowerThreadPool
                     if (workerDiscard.DiscardOneWork(out WorkBase discardWork))
                     {
                         OnWorkDiscarded(discardWork, rejectType);
-                        Interlocked.Decrement(ref _waitingWorkCount);
                         worker = workerDiscard;
                         break;
                     }
@@ -795,11 +847,11 @@ namespace PowerThreadPool
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
             if (Volatile.Read(ref _runningWorkerCount) == 0 &&
                Volatile.Read(ref _asyncWorkCount) == 0 &&
-               Volatile.Read(ref _waitingWorkCount) == 0 &&
+               !HasInFlightSetWork() &&
 #else
             if (Thread.VolatileRead(ref _runningWorkerCount) == 0 &&
                Thread.VolatileRead(ref _asyncWorkCount) == 0 &&
-               Thread.VolatileRead(ref _waitingWorkCount) == 0 &&
+               !HasInFlightSetWork() &&
 #endif
             _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
                 )
@@ -845,12 +897,6 @@ namespace PowerThreadPool
                     {
                         if (_stopSuspendedWork.TryGetValue(key, out WorkBase work))
                         {
-                            // Works reach _stopSuspendedWork without an outstanding
-                            // _waitingWorkCount (the stop-suspend enqueue paths never
-                            // added one), but the worker pickup decrements it - add the
-                            // count here or it leaks to -1 and the pool can never go
-                            // idle again.
-                            Interlocked.Increment(ref _waitingWorkCount);
                             SetWork(work);
                         }
                     }
