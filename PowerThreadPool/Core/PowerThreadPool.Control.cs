@@ -281,14 +281,17 @@ namespace PowerThreadPool
             {
                 return true;
             }
+
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
             return _poolState.InterlockedValue == PoolStates.NotRunning
                 && Volatile.Read(ref _runningWorkerCount) == 0
-                && Volatile.Read(ref _asyncWorkCount) == 0;
+                && Volatile.Read(ref _asyncWorkCount) == 0
+                && !HasInFlightSetWork();
 #else
             return _poolState.InterlockedValue == PoolStates.NotRunning
                 && Thread.VolatileRead(ref _runningWorkerCount) == 0
-                && Thread.VolatileRead(ref _asyncWorkCount) == 0;
+                && Thread.VolatileRead(ref _asyncWorkCount) == 0
+                && !HasInFlightSetWork();
 #endif
         }
 

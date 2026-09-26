@@ -100,6 +100,25 @@ namespace PowerThreadPool
 
         private InterlockedFlag<PoolStates> _poolState = PoolStates.NotRunning;
 
+        private readonly int[] _setWorkGate = new int[128];
+
+        internal bool HasInFlightSetWork()
+        {
+            int[] gate = _setWorkGate;
+            for (int i = 0; i < gate.Length; ++i)
+            {
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+                if (Volatile.Read(ref gate[i]) != 0)
+#else
+                if (Thread.VolatileRead(ref gate[i]) != 0)
+#endif
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public bool PoolRunning => _poolState == PoolStates.Running;
 
         private bool _poolStopping = false;
@@ -404,10 +423,26 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Set a work into a worker's work queue.
+        /// Set a work into a worker's queue.
         /// </summary>
         /// <param name="work"></param>
         internal void SetWork(WorkBase work)
+        {
+            int slot = Thread.CurrentThread.ManagedThreadId % _setWorkGate.Length;
+            Interlocked.Increment(ref _setWorkGate[slot]);
+            try
+            {
+                SetWorkCore(work);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _setWorkGate[slot]);
+            }
+
+            CheckPoolIdle();
+        }
+
+        private void SetWorkCore(WorkBase work)
         {
             CheckPoolStart();
 
@@ -802,9 +837,11 @@ namespace PowerThreadPool
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
             if (Volatile.Read(ref _runningWorkerCount) == 0 &&
                Volatile.Read(ref _asyncWorkCount) == 0 &&
+               !HasInFlightSetWork() &&
 #else
             if (Thread.VolatileRead(ref _runningWorkerCount) == 0 &&
                Thread.VolatileRead(ref _asyncWorkCount) == 0 &&
+               !HasInFlightSetWork() &&
 #endif
             _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
                 )
