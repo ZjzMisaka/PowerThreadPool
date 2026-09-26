@@ -149,15 +149,6 @@ namespace PowerThreadPool
         /// <param name="status"></param>
         internal void WorkCallbackEnd(WorkBase work, Status status)
         {
-            if (status == Status.Failed)
-            {
-                _failedWorkSet.Add(work.ID);
-            }
-            else if (status == Status.Canceled)
-            {
-                _canceledWorkSet.Add(work.ID);
-            }
-
             if (CallbackEnd != null)
             {
                 CallbackEnd.Invoke(work, status);
@@ -165,7 +156,7 @@ namespace PowerThreadPool
 
             // If the result needs to be stored, there is a possibility of fetching the result through Group.
             // Therefore, Work should not be removed from _aliveWorkDic and _workGroupDic for the time being
-            if (work.Group == null || !work.ShouldStoreResult)
+            if (work.Group == null || (!work.ShouldStoreResult && !PowerPoolOption.ShouldStoreResult))
             {
                 if (_powerPoolOption.EnableWorkTracking && work.EnableWorkTracking)
                 {
@@ -177,7 +168,7 @@ namespace PowerThreadPool
                 }
                 work.Dispose();
             }
-            if (work.Group != null && !work.ShouldStoreResult)
+            if (work.Group != null && (!work.ShouldStoreResult && !PowerPoolOption.ShouldStoreResult))
             {
                 if (_workGroupDic.TryGetValue(work.Group, out ConcurrentSet<WorkID> idSet))
                 {

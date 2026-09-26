@@ -5863,6 +5863,7 @@ namespace UnitTest
             {
                 StartSuspended = true,
                 EnableStatisticsCollection = true,
+                ShouldStoreResult = true,
             });
             WorkID id = powerPool.QueueWorkItem(() =>
             {
