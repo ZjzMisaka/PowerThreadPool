@@ -1338,7 +1338,7 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool();
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { ShouldStoreResult = true });
 
             object r1 = null;
             object r2 = null;

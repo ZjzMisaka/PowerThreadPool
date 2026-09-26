@@ -304,7 +304,7 @@ namespace PowerThreadPool.Helpers.Dependency
 
         private bool PrecedingWorkNotSuccessfullyCompleted(WorkID dependedId)
         {
-            return _powerPool._failedWorkSet.Contains(dependedId) || _powerPool._canceledWorkSet.Contains(dependedId);
+            return _powerPool._resultDic.ContainsKey(dependedId) && _powerPool._resultDic[dependedId].Status != Status.Succeed;
         }
     }
 }

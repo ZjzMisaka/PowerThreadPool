@@ -84,7 +84,7 @@ namespace PowerThreadPool.Works
             IsPausing = false;
             CancellationTokenSource = cancellationTokenSource;
             NeedsExecuteResult = TaskCompletionSource != null
-                || WorkOption.ShouldStoreResult
+                || WorkOption.ShouldStoreResult || powerPool.PowerPoolOption.ShouldStoreResult
                 || WorkOption.Callback != null
                 || (WorkOption is WorkOption<TResult> wor2 && wor2.Callback != null)
                 || powerPool.PowerPoolOption.DefaultCallback != null
@@ -429,7 +429,7 @@ namespace PowerThreadPool.Works
                 ExecuteResult = executeResult;
             }
             executeResult.SetExecuteResult(result, exception, status, QueueDateTime, RetryOption, _retryCount);
-            if (WorkOption.ShouldStoreResult)
+            if (WorkOption.ShouldStoreResult || PowerPool.PowerPoolOption.ShouldStoreResult)
             {
                 PowerPool._resultDic[ID] = ExecuteResult;
             }

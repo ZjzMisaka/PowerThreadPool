@@ -519,7 +519,8 @@ namespace UnitTest
             powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 8,
-                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 }
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
+                ShouldStoreResult = true,
             };
             powerPool.PoolStarted += (s, e) =>
             {
@@ -588,17 +589,23 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             int doneCount = 0;
+            int failedCount = 0;
 
             PowerPool powerPool = new PowerPool();
             powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 1,
-                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 },
+                ShouldStoreResult = true,
             };
 
             powerPool.WorkEnded += (s, e) =>
             {
                 Interlocked.Increment(ref doneCount);
+                if (!e.Succeed)
+                {
+                    Interlocked.Increment(ref failedCount);
+                }
             };
 
             WorkID id0 = powerPool.QueueWorkItem(() =>
@@ -627,8 +634,7 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(3, doneCount);
-            Assert.Equal(2, powerPool.FailedWorkCount);
-            Assert.Equal(id0, powerPool.FailedWorkList.First());
+            Assert.Equal(2, failedCount);
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
 
@@ -638,6 +644,8 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             int doneCount = 0;
+            int failedCount = 0;
+            List<WorkID> failedIDList = new List<WorkID>();
 
             PowerPool powerPool = new PowerPool();
             powerPool.PowerPoolOption = new PowerPoolOption()
@@ -649,6 +657,14 @@ namespace UnitTest
             powerPool.WorkEnded += (s, e) =>
             {
                 Interlocked.Increment(ref doneCount);
+                if (!e.Succeed)
+                {
+                    Interlocked.Add(ref failedCount, 1);
+                    lock (failedIDList)
+                    {
+                        failedIDList.Add(e.ID);
+                    }
+                }
             };
 
             WorkID id0 = powerPool.QueueWorkItem(() =>
@@ -682,8 +698,8 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(3, doneCount);
-            Assert.Equal(3, powerPool.FailedWorkCount);
-            Assert.Equal(id0, powerPool.FailedWorkList.First());
+            Assert.Equal(3, failedCount);
+            Assert.Contains(id0, failedIDList);
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
 
@@ -739,18 +755,26 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             int doneCount = 0;
+            int failedCount = 0;
 
             PowerPool powerPool = new PowerPool();
             powerPool.PowerPoolOption = new PowerPoolOption()
             {
                 MaxThreads = 1,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 },
-                ClearFailedWorkRecordWhenPoolStart = false,
+                // Keep the stored results across pool restarts so a work registered later
+                // can still observe that its dependency failed before the work was queued.
+                ShouldStoreResult = true,
+                ClearResultStorageWhenPoolStart = false,
             };
 
             powerPool.WorkEnded += (s, e) =>
             {
                 Interlocked.Increment(ref doneCount);
+                if (!e.Succeed)
+                {
+                    Interlocked.Increment(ref failedCount);
+                }
             };
 
             WorkID id0 = powerPool.QueueWorkItem(() =>
@@ -781,8 +805,7 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(3, doneCount);
-            Assert.Equal(2, powerPool.FailedWorkCount);
-            Assert.Equal(id0, powerPool.FailedWorkList.First());
+            Assert.Equal(2, failedCount);
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
 
@@ -792,6 +815,8 @@ namespace UnitTest
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             int doneCount = 0;
+            int failedCount = 0;
+            List<WorkID> failedIDList = new List<WorkID>();
 
             PowerPool powerPool = new PowerPool();
             powerPool.PowerPoolOption = new PowerPoolOption()
@@ -799,12 +824,23 @@ namespace UnitTest
                 MaxThreads = 1,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 },
                 EnableStatisticsCollection = true,
+                // The dependency works (id0, id1) have already finished when the dependent
+                // work is queued, so their results must be stored for the dependency check.
+                ShouldStoreResult = true,
             };
             powerPool.EnablePoolIdleCheck = false;
 
             powerPool.WorkEnded += (s, e) =>
             {
                 Interlocked.Increment(ref doneCount);
+                if (!e.Succeed)
+                {
+                    Interlocked.Increment(ref failedCount);
+                    lock (failedIDList)
+                    {
+                        failedIDList.Add(e.ID);
+                    }
+                }
             };
 
             WorkID id0 = powerPool.QueueWorkItem(() =>
@@ -842,8 +878,8 @@ namespace UnitTest
             powerPool.Wait();
 
             Assert.Equal(4, doneCount);
-            Assert.Equal(2, powerPool.FailedWorkCount);
-            Assert.Equal(id1, powerPool.FailedWorkList.First());
+            Assert.Equal(2, failedCount);
+            Assert.Contains(id1, failedIDList);
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
 
@@ -860,6 +896,9 @@ namespace UnitTest
                 MaxThreads = 1,
                 DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 },
                 EnableStatisticsCollection = true,
+                // The dependency works (id0, id1) have already succeeded when the dependent
+                // work is queued, so their results must be stored for the dependency check.
+                ShouldStoreResult = true,
             };
             powerPool.EnablePoolIdleCheck = false;
 
@@ -888,12 +927,11 @@ namespace UnitTest
 
             powerPool.EnablePoolIdleCheck = true;
 
-            Assert.Equal(2, doneCount);
-            Assert.Equal(0, powerPool.FailedWorkCount);
-            Assert.Equal(1, powerPool.WaitingWorkCount);
+            // Both dependencies already succeeded and their results are stored,
+            // so the dependency is solved at registration time and the work runs.
+            powerPool.Wait();
 
-            powerPool.Stop();
-
+            Assert.Equal(3, doneCount);
             Assert.Equal(0, powerPool.WaitingWorkCount);
         }
 
@@ -3810,34 +3848,6 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestClearFailedWorkRecord()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
-
-            PowerPool powerPool = new PowerPool();
-            powerPool.PowerPoolOption = new PowerPoolOption()
-            {
-                MaxThreads = 1,
-                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 }
-            };
-
-            WorkID id0 = powerPool.QueueWorkItem(() =>
-            {
-                throw new Exception();
-#pragma warning disable CS0162
-                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
-                return;
-#pragma warning restore CS0162
-            });
-
-            powerPool.Wait();
-            Assert.Equal(1, powerPool.FailedWorkCount);
-
-            powerPool.ClearFailedWorkRecord();
-            Assert.Equal(0, powerPool.FailedWorkCount);
-        }
-
-        [Fact]
         public void TestClearResultStorage()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
@@ -3961,6 +3971,389 @@ namespace UnitTest
             res1 = powerPool.Fetch<string>(id1);
             Assert.Null(res0.Result);
             Assert.Equal("1", res1.Result);
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultDefaultFalse()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1 });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return "0";
+            });
+
+            powerPool.Wait();
+
+            Assert.False(powerPool.PowerPoolOption.ShouldStoreResult);
+            Assert.False(powerPool._resultDic.ContainsKey(id0));
+            Assert.False(powerPool._resultDic.Values.Any());
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultStoreAndFetch()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1, ShouldStoreResult = true });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return "0";
+            });
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+            });
+
+            powerPool.Wait();
+
+            ExecuteResult<string> res0 = powerPool.Fetch<string>(id0);
+            Assert.True(res0.IsFound);
+            Assert.Equal("0", res0.Result);
+            Assert.Equal(Status.Succeed, res0.Status);
+
+            // Non-generic works are stored too (as object results).
+            ExecuteResult<object> res1 = powerPool.Fetch(id1);
+            Assert.True(res1.IsFound);
+            Assert.Equal(Status.Succeed, res1.Status);
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultOverrulesWorkOption()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1, ShouldStoreResult = true });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return "0";
+            }, new WorkOption { ShouldStoreResult = false });
+
+            powerPool.Wait();
+
+            // The pool-level option takes effect even when the work-level option opts out.
+            ExecuteResult<string> res0 = powerPool.Fetch<string>(id0);
+            Assert.True(res0.IsFound);
+            Assert.Equal("0", res0.Result);
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultWorkOptionStillWorks()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1, ShouldStoreResult = false });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return "0";
+            }, new WorkOption { ShouldStoreResult = true });
+
+            powerPool.Wait();
+
+            // The work-level option still stores the result when the pool-level option is off.
+            ExecuteResult<string> res0 = powerPool.Fetch<string>(id0);
+            Assert.True(res0.IsFound);
+            Assert.Equal("0", res0.Result);
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultAsyncWork()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1, ShouldStoreResult = true });
+
+            WorkID id0 = powerPool.QueueWorkItem(async () =>
+            {
+                await Task.Delay(10);
+            }, out _);
+            WorkID id1 = powerPool.QueueWorkItem<string>(async () =>
+            {
+                await Task.Delay(10);
+                return "1";
+            }, out _);
+
+            powerPool.Wait();
+
+            ExecuteResult<object> res0 = powerPool.Fetch(id0);
+            Assert.True(res0.IsFound);
+            Assert.Equal(Status.Succeed, res0.Status);
+
+            ExecuteResult<string> res1 = powerPool.Fetch<string>(id1);
+            Assert.True(res1.IsFound);
+            Assert.Equal("1", res1.Result);
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultFailedWork()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1, ShouldStoreResult = true });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                throw new InvalidOperationException("Fail");
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as a Func and binds to the correct QueueWorkItem overload.
+                return "0";
+#pragma warning restore CS0162
+            });
+
+            powerPool.Wait();
+
+            ExecuteResult<string> res0 = powerPool.Fetch<string>(id0);
+            Assert.True(res0.IsFound);
+            Assert.Equal(Status.Failed, res0.Status);
+            Assert.IsType<InvalidOperationException>(res0.Exception);
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultCanceledWork()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+                ShouldStoreResult = true,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 1, KeepAliveTime = 3000 },
+            });
+
+            // Occupy the only thread so the dependent work stays queued and can be canceled.
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(500);
+            });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+            });
+
+            Assert.True(powerPool.Cancel(id0));
+
+            powerPool.Wait();
+
+            ExecuteResult<object> res0 = powerPool.Fetch(id0);
+            Assert.True(res0.IsFound);
+            Assert.Equal(Status.Canceled, res0.Status);
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultKeepsGroupAndWorkAliveForFetch()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1, ShouldStoreResult = true });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return "0";
+            }, new WorkOption { Group = "G" });
+
+            powerPool.Wait();
+
+            // While the result is stored, the work stays trackable so its result can be
+            // fetched through the group.
+            Assert.True(powerPool._aliveWorkDic.ContainsKey(id0));
+            Assert.Contains(id0, powerPool.GetGroupMemberSet("G"));
+
+            List<ExecuteResult<string>> resList = powerPool.GetGroup("G").Fetch<string>(true);
+            Assert.Single(resList);
+            Assert.Equal("0", resList[0].Result);
+
+            // Once the stored result is fetched with removeAfterFetch, the work is cleaned up.
+            Assert.False(powerPool._resultDic.ContainsKey(id0));
+            Assert.False(powerPool._aliveWorkDic.ContainsKey(id0));
+            Assert.Empty(powerPool.GetGroupMemberSet("G"));
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultRemoveAfterFetch()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1, ShouldStoreResult = true });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return "0";
+            });
+
+            powerPool.Wait();
+
+            // Non-group works are cleaned up right away even when the pool stores results;
+            // the result itself remains available from the result storage.
+            Assert.False(powerPool._aliveWorkDic.ContainsKey(id0));
+
+            ExecuteResult<string> res0 = powerPool.Fetch<string>(id0, true);
+            Assert.True(res0.IsFound);
+            Assert.Equal("0", res0.Result);
+
+            Assert.False(powerPool._resultDic.ContainsKey(id0));
+
+            ExecuteResult<string> res1 = powerPool.Fetch<string>(id0);
+            Assert.False(res1.IsFound);
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultClearWhenPoolStart()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+                ShouldStoreResult = true,
+                ClearResultStorageWhenPoolStart = true,
+            });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return "0";
+            });
+
+            powerPool.Wait();
+            Assert.True(powerPool._resultDic.ContainsKey(id0));
+
+            // Queueing new work restarts the pool, which clears the result storage by default.
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return "1";
+            });
+
+            powerPool.Wait();
+
+            Assert.False(powerPool._resultDic.ContainsKey(id0));
+            Assert.True(powerPool._resultDic.ContainsKey(id1));
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultKeepWhenPoolStart()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+                ShouldStoreResult = true,
+                ClearResultStorageWhenPoolStart = false,
+            });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return "0";
+            });
+
+            powerPool.Wait();
+
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                return "1";
+            });
+
+            powerPool.Wait();
+
+            Assert.True(powerPool._resultDic.ContainsKey(id0));
+            Assert.True(powerPool._resultDic.ContainsKey(id1));
+
+            ExecuteResult<string> res0 = powerPool.Fetch<string>(id0);
+            Assert.Equal("0", res0.Result);
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultStoppedWork()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1, ShouldStoreResult = true });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                while (true)
+                {
+                    powerPool.StopIfRequested();
+                    Thread.Sleep(50);
+                }
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as a Func and binds to the correct QueueWorkItem overload.
+                return "0";
+#pragma warning restore CS0162
+            });
+
+            Thread.Sleep(200);
+            powerPool.Stop(id0);
+
+            powerPool.Wait();
+
+            ExecuteResult<string> res0 = powerPool.Fetch<string>(id0);
+            Assert.True(res0.IsFound);
+            Assert.Equal(Status.Stopped, res0.Status);
+            Assert.True(powerPool._resultDic.ContainsKey(id0));
+        }
+
+        [Fact]
+        public void TestPoolShouldStoreResultDependentsReadStoredResults()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1, ShouldStoreResult = true });
+
+            int doneCount = 0;
+            powerPool.WorkEnded += (s, e) =>
+            {
+                Interlocked.Increment(ref doneCount);
+            };
+
+            WorkID idSucceed = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+            });
+            WorkID idFailed = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(10);
+                throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
+            });
+
+            powerPool.Wait();
+
+            // Both dependencies have already finished: the succeeded one is resolved from
+            // the stored result, the failed one makes the dependent work fail immediately
+            // at registration time.
+            bool dependentDone = false;
+            powerPool.QueueWorkItem(() =>
+            {
+                dependentDone = true;
+            }, new WorkOption
+            {
+                Dependents = new ConcurrentSet<WorkID> { idSucceed, idFailed }
+            });
+
+            powerPool.Wait();
+
+            Assert.Equal(3, doneCount);
+            Assert.False(dependentDone);
+            Assert.Equal(0, powerPool.WaitingWorkCount);
         }
 
         [Fact]
@@ -10335,8 +10728,17 @@ namespace UnitTest
             PowerPool powerPool = new PowerPool(new PowerPoolOption { EnableStatisticsCollection = true });
 
             bool b = true;
+            WorkID endedID = null;
 
-            powerPool.QueueWorkItem(async () =>
+            powerPool.WorkEnded += (s, e) =>
+            {
+                if (!e.Succeed)
+                {
+                    endedID = e.ID;
+                }
+            };
+
+            WorkID id = powerPool.QueueWorkItem(async () =>
             {
                 await Task.Delay(1);
                 await Task.Delay(1);
@@ -10349,7 +10751,8 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.Equal(1, powerPool.FailedWorkList.FirstOrDefault());
+            Assert.NotNull(endedID);
+            Assert.Equal(id, endedID);
         }
 
         [Fact]

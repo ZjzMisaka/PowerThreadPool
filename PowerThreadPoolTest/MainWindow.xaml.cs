@@ -19,6 +19,7 @@ namespace PowerThreadPoolTest
         Random _random = new Random();
         bool _run = false;
         int _doneCount = 0;
+        int _failedCount = 0;
 
         public MainWindow()
         {
@@ -34,6 +35,13 @@ namespace PowerThreadPoolTest
                     Interlocked.Increment(ref _doneCount);
                 },
             };
+            _powerPool.WorkEnded += (s, e) =>
+            {
+                if (!e.Succeed)
+                {
+                    Interlocked.Increment(ref _failedCount);
+                }
+            };
             _powerPool.PoolStarted += (s, e) => { OutputMsg("PoolStart"); };
             _powerPool.PoolIdled += (s, e) => { OutputMsg("PoolIdle"); };
         }
@@ -47,6 +55,7 @@ namespace PowerThreadPoolTest
             {
                 int runCount = _random.Next(10, 200);
                 _doneCount = 0;
+                _failedCount = 0;
                 ConcurrentSet<int> cases = new ConcurrentSet<int>();
                 for (int i = 0; i < runCount; ++i)
                 {
@@ -159,7 +168,7 @@ namespace PowerThreadPoolTest
                     OutputMsg("AliveWorkerCount: " + _powerPool.AliveWorkerCount + " | RunningWorkerCount: " + _powerPool.RunningWorkerCount);
                     OutputMsg("IdleWorkerCount: " + _powerPool.IdleWorkerCount);
                     OutputMsg("WaitingWorkCount: " + _powerPool.WaitingWorkCount);
-                    OutputMsg("FailedWorkCount: " + _powerPool.FailedWorkCount);
+                    OutputMsg("FailedWorkCount: " + _failedCount);
                     OutputMsg("DoneCount: " + _doneCount);
                     if (_powerPool.RunningWorkerCount > 0 || _powerPool.WaitingWorkCount > 0)
                     {
@@ -182,7 +191,7 @@ namespace PowerThreadPoolTest
                     OutputMsg("AliveWorkerCount: " + _powerPool.AliveWorkerCount + " | RunningWorkerCount: " + _powerPool.RunningWorkerCount);
                     OutputMsg("IdleWorkerCount: " + _powerPool.IdleWorkerCount);
                     OutputMsg("WaitingWorkCount: " + _powerPool.WaitingWorkCount);
-                    OutputMsg("FailedWorkCount: " + _powerPool.FailedWorkCount);
+                    OutputMsg("FailedWorkCount: " + _failedCount);
                     OutputMsg("DoneCount: " + _doneCount);
                     if (_powerPool.RunningWorkerCount > 0 || _powerPool.WaitingWorkCount > 0)
                     {
@@ -204,7 +213,7 @@ namespace PowerThreadPoolTest
                     OutputMsg("AliveWorkerCount: " + _powerPool.AliveWorkerCount + " | RunningWorkerCount: " + _powerPool.RunningWorkerCount);
                     OutputMsg("IdleWorkerCount: " + _powerPool.IdleWorkerCount);
                     OutputMsg("WaitingWorkCount: " + _powerPool.WaitingWorkCount);
-                    OutputMsg("FailedWorkCount: " + _powerPool.FailedWorkCount);
+                    OutputMsg("FailedWorkCount: " + _failedCount);
                     OutputMsg("DoneCount: " + _doneCount);
                     if (_powerPool.RunningWorkerCount > 0 || _powerPool.WaitingWorkCount > 0 || runCount != _doneCount)
                     {

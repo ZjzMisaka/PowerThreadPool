@@ -95,6 +95,11 @@ namespace PowerThreadPool.Options
         public bool StartSuspended { get; set; } = false;
 
         /// <summary>
+        /// Should store the work result.
+        /// </summary>
+        public bool ShouldStoreResult { get; set; } = false;
+
+        /// <summary>
         /// FIFO, LIFO or Deque.
         /// </summary>
         public QueueType QueueType { get; set; } = QueueType.FIFO;
@@ -103,11 +108,6 @@ namespace PowerThreadPool.Options
         /// Determines whether to clear the result storage when the pool starts.
         /// </summary>
         public bool ClearResultStorageWhenPoolStart { get; set; } = true;
-
-        /// <summary>
-        /// Determines whether to clear the records of failed work when the pool starts.
-        /// </summary>
-        public bool ClearFailedWorkRecordWhenPoolStart { get; set; } = true;
 
         /// <summary>
         /// A factory function that creates instances of 

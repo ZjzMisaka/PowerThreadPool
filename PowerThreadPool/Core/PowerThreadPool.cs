@@ -36,9 +36,6 @@ namespace PowerThreadPool
         private readonly AsyncManualResetEvent _pauseAsyncSignal = new AsyncManualResetEvent(true);
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
-        internal ConcurrentSet<WorkID> _failedWorkSet = new ConcurrentSet<WorkID>();
-        internal ConcurrentSet<WorkID> _canceledWorkSet = new ConcurrentSet<WorkID>();
-
         internal LoopWithStepDictionary<int, Worker> _aliveWorkerDic = new LoopWithStepDictionary<int, Worker>();
 
         internal ConcurrentQueue<Worker> _idleWorkerQueue = new ConcurrentQueue<Worker>();
@@ -170,17 +167,6 @@ namespace PowerThreadPool
             }
         }
 
-        /// <summary>
-        /// Failed work count
-        /// Will be reset to zero when the thread pool starts again
-        /// </summary>
-        public int FailedWorkCount => _failedWorkSet.Count;
-
-        /// <summary>
-        /// ID list of failed works
-        /// Will be cleared when the thread pool starts again
-        /// </summary>
-        public IEnumerable<WorkID> FailedWorkList => _failedWorkSet;
         internal int _asyncWorkCount = 0;
         public int AsyncWorkCount => _asyncWorkCount;
 
@@ -805,11 +791,6 @@ namespace PowerThreadPool
                 {
                     _resultDic.Clear();
                 }
-                if (PowerPoolOption.ClearFailedWorkRecordWhenPoolStart)
-                {
-                    _failedWorkSet.Clear();
-                    _canceledWorkSet.Clear();
-                }
 
                 _waitAllSignal.Reset();
 
@@ -968,15 +949,6 @@ namespace PowerThreadPool
             {
                 _resultDic.TryRemove(workID, out _);
             }
-        }
-
-        /// <summary>
-        /// Clear failed work record
-        /// </summary>
-        public void ClearFailedWorkRecord()
-        {
-            _failedWorkSet.Clear();
-            _canceledWorkSet.Clear();
         }
 
         private void CheckDisposed()
