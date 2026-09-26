@@ -1543,6 +1543,26 @@ namespace UnitTest
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestTaskAwaitDelayForceStop()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            WorkID id = powerPool.QueueWorkItem<string>(async () =>
+            {
+                await Task.Delay(1000);
+                return "100";
+            },
+            out Task<ExecuteResult<string>> task);
+            Thread.Sleep(500);
+            powerPool.ForceStop(id);
+
+            var res = await task;
+
+            Assert.Equal("100", res.Result);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
         public async void TestTaskAwaitCancel()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
