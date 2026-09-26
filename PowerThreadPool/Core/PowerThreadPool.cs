@@ -845,16 +845,35 @@ namespace PowerThreadPool
             }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-            if (Volatile.Read(ref _runningWorkerCount) == 0 &&
-               Volatile.Read(ref _asyncWorkCount) == 0 &&
-               !HasInFlightSetWork() &&
+            if (Volatile.Read(ref _runningWorkerCount) != 0 ||
+               Volatile.Read(ref _asyncWorkCount) != 0 ||
+               HasInFlightSetWork())
 #else
-            if (Thread.VolatileRead(ref _runningWorkerCount) == 0 &&
-               Thread.VolatileRead(ref _asyncWorkCount) == 0 &&
-               !HasInFlightSetWork() &&
+            if (Thread.VolatileRead(ref _runningWorkerCount) != 0 ||
+               Thread.VolatileRead(ref _asyncWorkCount) != 0 ||
+               HasInFlightSetWork())
 #endif
-            _poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running)
-                )
+            {
+                return;
+            }
+
+            if (_poolState.InterlockedValue == PoolStates.NotRunning)
+            {
+                // The pool already finished an idle transition, yet the wait all
+                // signal is not set. A waiter consumed a set signal between its
+                // ConfirmPoolIdle probe and the pool actually settling (the probe's
+                // counter reads can straddle a whole handover), or a round was
+                // restarted and drained again. The Running->IdleChecked CAS below
+                // cannot fire in this state, so without this branch no one would
+                // ever publish the signal again and Wait/WaitAsync would block
+                // forever. Republishing is safe: the counters are all drained and
+                // CheckPoolStart resets the signal before any new round's work
+                // becomes visible.
+                _waitAllSignal.Set();
+                return;
+            }
+
+            if (_poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running))
             {
                 if (PowerPoolOption.EnableStatisticsCollection)
                 {
