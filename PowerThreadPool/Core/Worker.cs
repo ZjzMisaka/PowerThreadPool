@@ -922,7 +922,7 @@ namespace PowerThreadPool
                     if (destroyThreadOption != null && destroyThreadOption.KeepAliveTime == 0 && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
                     {
                         _canGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.ToBeDisabled);
-                        
+
                         List<WorkBase> waitingWorkList = ResetAllWaitingWorkWhenIdle();
 
                         if (waitingWorkList != null)
