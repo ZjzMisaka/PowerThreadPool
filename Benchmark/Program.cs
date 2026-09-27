@@ -16,7 +16,6 @@ namespace Benchmark
             BenchmarkRunner.Run<BenchmarkAsyncWork>(config);
             BenchmarkRunner.Run<BenchmarkSyncShortWork>(config);
             BenchmarkRunner.Run<BenchmarkAsyncShortWork>(config);
-            BenchmarkRunner.Run<BenchmarkAsyncShortWorkLIFO>(config);
             BenchmarkRunner.Run<BenchmarkTotalExecutionTimeOfHighPriorityWork>(config);
             BenchmarkRunner.Run<BenchmarkTotalExecutionTimeOfAllPriorityWork>(config);
             Console.WriteLine("OK");
