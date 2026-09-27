@@ -58,6 +58,7 @@ namespace PowerThreadPool.Results
                     EndDateTime = UtcEndDateTime,
                     Duration = Duration,
                     RetryInfo = RetryInfo,
+                    Status = Status,
                 };
             }
             return result;
