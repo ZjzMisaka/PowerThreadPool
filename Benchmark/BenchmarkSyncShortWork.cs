@@ -31,8 +31,6 @@ namespace Benchmark
             {
                 MaxThreads = Environment.ProcessorCount
             });
-            ThreadPool.SetMinThreads(Environment.ProcessorCount, Environment.ProcessorCount);
-            ThreadPool.SetMaxThreads(Environment.ProcessorCount, Environment.ProcessorCount);
 
             _tpErrorCount = -1;
             _stpErrorCount = -1;
