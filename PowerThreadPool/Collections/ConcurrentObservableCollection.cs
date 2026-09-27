@@ -12,6 +12,8 @@ namespace PowerThreadPool.Collections
         internal InterlockedFlag<WatchStates> _watchState = WatchStates.Idle;
         internal InterlockedFlag<CanWatch> _canWatch = CanWatch.Allowed;
 
+        internal volatile bool _registering;
+
         private readonly IProducerConsumerCollection<T> _innerProducerConsumerCollection;
         private readonly BlockingCollection<T> _innerBlockingCollection;
         internal Group _group = null;

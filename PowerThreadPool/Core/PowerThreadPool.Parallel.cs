@@ -384,7 +384,7 @@ namespace PowerThreadPool
             {
                 Spinner.Start(() =>
                     TryAddBackFromDict(source, idDict, id)
-                    || source._watchState == WatchStates.Idle, true);
+                    || !source._registering, true);
             }
 
             if (addBackWhenWorkCanceled)
@@ -399,16 +399,19 @@ namespace PowerThreadPool
                 WorkStopped += onStopped;
                 source._watchStoppedHandler = onStopped;
             }
-            if (addBackWhenWorkFailed)
+            onEnded = (_, e) =>
             {
-                onEnded = (_, e) =>
+                if (e.Succeed)
                 {
-                    if (e.Succeed) return;
+                    Spinner.Start(() => idDict.TryRemove(e.ID, out TSource _) || !source._registering, true);
+                }
+                else if (addBackWhenWorkFailed)
+                {
                     TryAddBack(e.ID);
-                };
-                WorkEnded += onEnded;
-                source._watchEndedHandler = onEnded;
-            }
+                }
+            };
+            WorkEnded += onEnded;
+            source._watchEndedHandler = onEnded;
         }
 
         private bool TryAddBackFromDict<TSource>(ConcurrentObservableCollection<TSource> source, ConcurrentDictionary<WorkID, TSource> idDict, WorkID id)
@@ -433,22 +436,30 @@ namespace PowerThreadPool
 
             if (source._canWatch.TrySet(CanWatch.NotAllowed, CanWatch.Allowed))
             {
-                while (source.TryTake(out TSource item))
+                source._registering = true;
+                try
                 {
-                    WorkID id = null;
-                    if (bodyAction != null)
+                    while (source.TryTake(out TSource item))
                     {
-                        id = QueueWorkItem(() => bodyAction(item), workOption);
-                    }
-                    else
-                    {
+                        WorkID id = null;
+                        if (bodyAction != null)
+                        {
+                            id = QueueWorkItem(() => bodyAction(item), workOption);
+                        }
+                        else
+                        {
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-                        id = QueueWorkItem(async () => await bodyFunc(item), out _, workOption);
+                            id = QueueWorkItem(async () => await bodyFunc(item), out _, workOption);
 #else
-                        throw new InvalidOperationException("Asynchronous body function is not supported in this framework version.");
+                            throw new InvalidOperationException("Asynchronous body function is not supported in this framework version.");
 #endif
+                        }
+                        idDict[id] = item;
                     }
-                    idDict[id] = item;
+                }
+                finally
+                {
+                    source._registering = false;
                 }
 
                 source._canWatch.InterlockedValue = CanWatch.Allowed;
