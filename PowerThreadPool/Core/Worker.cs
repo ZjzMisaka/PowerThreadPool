@@ -922,7 +922,24 @@ namespace PowerThreadPool
                     if (destroyThreadOption != null && destroyThreadOption.KeepAliveTime == 0 && _powerPool.IdleWorkerCount >= destroyThreadOption.MinThreads)
                     {
                         _canGetWork.TrySet(Constants.CanGetWork.Disabled, Constants.CanGetWork.ToBeDisabled);
-                        TryDisposeSelf(false);
+                        
+                        List<WorkBase> waitingWorkList = ResetAllWaitingWorkWhenIdle();
+
+                        if (waitingWorkList != null)
+                        {
+                            _workerState.InterlockedValue = WorkerStates.Idle;
+
+                            foreach (WorkBase workBase in waitingWorkList)
+                            {
+                                SetWork(workBase, true);
+                            }
+
+                            _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
+                        }
+                        else
+                        {
+                            TryDisposeSelf(false);
+                        }
                     }
                     else
                     {

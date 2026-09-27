@@ -10996,6 +10996,34 @@ namespace UnitTest
 
             for (int i = 0; i < 5000; ++i)
             {
+                powerPool.QueueWorkItem(() =>
+                {
+                });
+                powerPool.QueueWorkItem(() =>
+                {
+                });
+
+                powerPool.Wait();
+            }
+        }
+
+        [Fact]
+        public void TestWorkListEmptyWhenTrySelectExistingWorkerAsyncWork()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+                DestroyThreadOption = new DestroyThreadOption
+                {
+                    KeepAliveTime = 0,
+                    MinThreads = 0
+                }
+            });
+
+            for (int i = 0; i < 5000; ++i)
+            {
                 powerPool.QueueWorkItem(async () =>
                 {
                 });
@@ -11004,6 +11032,32 @@ namespace UnitTest
                 });
 
                 powerPool.Wait();
+            }
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async void TestYieldDiagnostic()
+        {
+            PowerPool powerPool = new PowerPool();
+
+            for (int round = 0; round < 50000; ++round)
+            {
+                powerPool.QueueWorkItem(async () =>
+                {
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                    await Task.Yield();
+                });
+
+                await powerPool.WaitAsync();
+
+                Assert.True(powerPool.RunningWorkerCount == 0,
+                    $"round {round}: RunningWorkerCount={powerPool.RunningWorkerCount}");
+                Assert.True(powerPool.WaitingWorkCount == 0,
+                    $"round {round}: WaitingWorkCount={powerPool.WaitingWorkCount}");
+                Assert.True(powerPool.AsyncWorkCount == 0,
+                    $"round {round}: AsyncWorkCount={powerPool.AsyncWorkCount}");
             }
         }
     }
