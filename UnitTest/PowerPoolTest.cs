@@ -6749,6 +6749,45 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestWatchUnrelatedWorkEventsDoNotBlock()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { MaxThreads = 1 });
+
+            ConcurrentObservableCollection<int> list = new ConcurrentObservableCollection<int>();
+            ConcurrentSet<int> result = new ConcurrentSet<int>();
+            list.TryAdd(1);
+
+            powerPool.Watch(list, (i) => result.Add(i));
+
+            ManualResetEventSlim gate = new ManualResetEventSlim(false);
+            powerPool.QueueWorkItem(() => gate.Wait(20000));
+
+            for (int i = 0; i < 100; ++i)
+            {
+                WorkID canceledID = powerPool.QueueWorkItem(() => { });
+                Assert.True(powerPool.Cancel(canceledID));
+            }
+
+            for (int i = 0; i < 100; ++i)
+            {
+                powerPool.QueueWorkItem(() => throw new Exception("Test Exception"));
+            }
+
+            gate.Set();
+
+            powerPool.Wait();
+
+            Assert.Single(result);
+            Assert.Equal(0, list.Count);
+
+            powerPool.StopWatching(list);
+            powerPool.Dispose();
+            gate.Dispose();
+        }
+
+        [Fact]
         public void TestStopWatchingHalfFailedNotAddBack()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
