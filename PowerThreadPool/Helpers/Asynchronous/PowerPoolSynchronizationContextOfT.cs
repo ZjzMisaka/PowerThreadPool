@@ -60,7 +60,15 @@ namespace PowerThreadPool.Helpers.Asynchronous
 
             if (Interlocked.CompareExchange(ref _drainScheduled, 1, 0) == 0)
             {
-                _powerPool.SetWork(_work, true);
+                Worker worker = _work.Worker;
+                if (worker != null && worker._canGetWork.TrySet(Constants.CanGetWork.NotAllowed, Constants.CanGetWork.Allowed))
+                {
+                    worker.SetWork(_work, true);
+                }
+                else
+                {
+                    _powerPool.SetWork(_work, true);
+                }
             }
         }
 
