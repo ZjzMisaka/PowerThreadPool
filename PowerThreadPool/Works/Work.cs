@@ -12,11 +12,12 @@ namespace PowerThreadPool.Works
 {
     internal abstract class Work<TResult> : WorkBase
     {
+        // Holds either a WorkOption or a WorkOption<TResult>; the distinction is recovered
+        // by "is WorkOption<TResult>" at the few call sites that need the typed callback.
         private WorkOption _workOption;
-        private WorkOption<TResult> _workOptionResult;
         private WorkOption WorkOption
         {
-            get => _workOptionResult ?? _workOption;
+            get => _workOption;
             set => _workOption = value;
         }
 
@@ -69,20 +70,16 @@ namespace PowerThreadPool.Works
 
         internal override WorkBase Init(PowerPool powerPool, WorkID id, WorkOption option, CancellationTokenSource cancellationTokenSource)
         {
-            if (option is WorkOption<TResult> wor)
-            {
-                _workOptionResult = wor;
-            }
-            else
-            {
-                _workOption = option;
-            }
+            _workOption = option ?? WorkOption.DefaultInstance;
             PowerPool = powerPool;
             ID = id;
             ExecuteCount = 0;
             ShouldStop = false;
             IsPausing = false;
-            CancellationTokenSource = cancellationTokenSource;
+            if (cancellationTokenSource != null)
+            {
+                Extras._cancellationTokenSource = cancellationTokenSource;
+            }
             NeedsExecuteResult = TaskCompletionSource != null
                 || WorkOption.ShouldStoreResult || powerPool.PowerPoolOption.ShouldStoreResult
                 || WorkOption.Callback != null
@@ -93,19 +90,11 @@ namespace PowerThreadPool.Works
             return this;
         }
 
-        private void EnsureWaitSignalExists()
-        {
-            if (WaitSignal == null)
-            {
-                WaitSignal = new ManualResetEventSlim(false);
-            }
-        }
-
         internal override bool Stop(bool forceStop)
         {
             bool res = false;
 
-            CancellationTokenSource?.Cancel();
+            EnsureCancellationTokenSourceCanceled();
 
             if (forceStop)
             {
@@ -137,6 +126,31 @@ namespace PowerThreadPool.Works
             }
 
             return res;
+        }
+
+        /// <summary>
+        /// Cancels the work's cancellation token source, creating it first if the work was
+        /// queued without one. Creation and cancel are two separate steps, so a Stop racing
+        /// with Init's publication is resolved by cancelling after publishing: whoever
+        /// publishes the CTS re-checks ShouldStop, guaranteeing the token ends up canceled.
+        /// </summary>
+        private void EnsureCancellationTokenSourceCanceled()
+        {
+            WorkExtras e = _extras;
+            if (e != null)
+            {
+                e._cancellationTokenSource?.Cancel();
+                if (e._cancellationTokenSource != null)
+                {
+                    return;
+                }
+            }
+
+            CancellationTokenSource created = new CancellationTokenSource();
+            if (Interlocked.CompareExchange(ref Extras._cancellationTokenSource, created, null) == null && !ShouldStop)
+            {
+                created.Cancel();
+            }
         }
 
         internal override bool Cancel(bool needFreeze)
@@ -187,9 +201,11 @@ namespace PowerThreadPool.Works
 
         internal override void SetTaskCompletionSource(Status status, ExecuteResultBase executeResult)
         {
+            // InterlockedFlag is a struct: TrySet must run against the field inside WorkExtras,
+            // never against a property-returned copy, or the atomic transition would be lost.
             if (TaskCompletionSource == null
                 || (status == Status.Succeed && executeResult == null)
-                || !_canSetTaskCompletionSource.TrySet(CanSetTaskCompletionSource.NotAllowed, CanSetTaskCompletionSource.Allowed))
+                || !Extras._canSetTaskCompletionSource.TrySet(CanSetTaskCompletionSource.NotAllowed, CanSetTaskCompletionSource.Allowed))
             {
                 return;
             }
@@ -211,13 +227,15 @@ namespace PowerThreadPool.Works
         {
             HelpWhileWaiting(cancellationToken, helpWhileWaiting);
 
-            EnsureWaitSignalExists();
+            // The CAS inside EnsureWaitSignal is the acquire side of the IsDone/WaitSignal
+            // handshake; IsDone must be checked after it, not before.
+            ManualResetEventSlim waitSignal = EnsureWaitSignal();
 
             if (!IsDone)
             {
                 if (cancellationToken == default)
-                    WaitSignal.Wait();
-                else if (WaitHandle.WaitAny(new WaitHandle[] { WaitSignal.WaitHandle, cancellationToken.WaitHandle }) == 1)
+                    waitSignal.Wait();
+                else if (WaitHandle.WaitAny(new WaitHandle[] { waitSignal.WaitHandle, cancellationToken.WaitHandle }) == 1)
                     cancellationToken.ThrowIfCancellationRequested();
             }
 
@@ -253,8 +271,7 @@ namespace PowerThreadPool.Works
             }
 
             TaskCompletionSource<bool> tcs = PowerPool.NewTcs<bool>();
-            EnsureWaitSignalExists();
-            ManualResetEventSlim ev = WaitSignal;
+            ManualResetEventSlim ev = EnsureWaitSignal();
 
             RegisteredWaitHandle rwh = null;
             WaitOrTimerCallback cb = (state, timedOut) =>
@@ -375,19 +392,51 @@ namespace PowerThreadPool.Works
 
         internal override bool Pause()
         {
-            if (TaskCompletionSource == null && PauseSignal == null)
+            // Publish the signals first (CAS), then IsPausing, then Reset:
+            // the Worker that observes IsPausing is guaranteed to see a fully published signal.
+            if (TaskCompletionSource == null)
             {
-                PauseSignal = new ManualResetEvent(true);
+                EnsurePauseSignal()?.Reset();
             }
-            if (TaskCompletionSource != null && PauseAsyncSignal == null)
+            if (TaskCompletionSource != null)
             {
-                PauseAsyncSignal = new AsyncManualResetEvent(true);
+                EnsurePauseAsyncSignal()?.Reset();
             }
 
             IsPausing = true;
-            PauseSignal?.Reset();
-            PauseAsyncSignal?.Reset();
             return true;
+        }
+
+        private ManualResetEvent EnsurePauseSignal()
+        {
+            WorkExtras e = Extras;
+            ManualResetEvent s = e._pauseSignal;
+            if (s != null)
+            {
+                return s;
+            }
+
+            ManualResetEvent created = new ManualResetEvent(true);
+            s = Interlocked.CompareExchange(ref e._pauseSignal, created, null);
+            if (s == null)
+            {
+                return created;
+            }
+            created.Dispose(); // Lost the race: drop ours, use the winner's.
+            return s;
+        }
+
+        private AsyncManualResetEvent EnsurePauseAsyncSignal()
+        {
+            WorkExtras e = Extras;
+            AsyncManualResetEvent s = e._pauseAsyncSignal;
+            if (s != null)
+            {
+                return s;
+            }
+
+            AsyncManualResetEvent created = new AsyncManualResetEvent(true);
+            return Interlocked.CompareExchange(ref e._pauseAsyncSignal, created, null) ?? created;
         }
 
         internal override bool Resume()
@@ -475,18 +524,15 @@ namespace PowerThreadPool.Works
         public override void Dispose()
         {
             IsAlive = false;
-            if (PauseSignal != null)
+            WorkExtras e = _extras;
+            if (e == null)
             {
-                PauseSignal.Dispose();
+                // Default path: a single null check finishes the cleanup.
+                return;
             }
-            if (TimeoutTimer != null)
-            {
-                TimeoutTimer.Dispose();
-            }
-            if (CancellationTokenSource != null)
-            {
-                CancellationTokenSource.Dispose();
-            }
+            e._pauseSignal?.Dispose();
+            e._timeoutTimer?.Dispose();
+            e._cancellationTokenSource?.Dispose();
         }
     }
 }

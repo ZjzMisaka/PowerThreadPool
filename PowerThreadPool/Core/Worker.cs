@@ -253,7 +253,9 @@ namespace PowerThreadPool
             {
                 Work.Status = default;
                 Work.AllowEventsAndCallback = false;
-                Work._canSetTaskCompletionSource.InterlockedValue = CanSetTaskCompletionSource.Allowed;
+                // Guarded by TaskCompletionSource != null above, so the extras object
+                // is guaranteed to exist here.
+                Work.Extras._canSetTaskCompletionSource.InterlockedValue = CanSetTaskCompletionSource.Allowed;
             }
             Work._canCancel.InterlockedValue = CanCancel.Allowed;
         }
@@ -298,23 +300,34 @@ namespace PowerThreadPool
                 // the work status carries the outcome for the finalization callbacks.
                 _powerPool.WorkCallbackEnd(Work, executeResult != null ? executeResult.Status : Work.Status);
                 Work.IsDone = true;
+                // Store→load barrier: pairs with the CAS in Work.EnsureWaitSignal so that a
+                // waiter that misses this IsDone write is guaranteed to see the published signal
+                // (and vice versa), closing the lost-wakeup window of the Dekker-style handshake.
+                Thread.MemoryBarrier();
+                SetWaitSignalIfAny();
             }
 
             Work.IsCurrentDone = true;
 
-            if (Work.WaitSignal != null && Work.TaskCompletionSource == null)
+            if (Work.TaskCompletionSource == null)
             {
-                Work.WaitSignal.Set();
+                SetWaitSignalIfAny();
             }
 
             if (Work.TaskCompletionSource != null && finalizeWork)
             {
-                if (Work.WaitSignal != null)
-                {
-                    Work.WaitSignal.Set();
-                }
+                SetWaitSignalIfAny();
 
                 Interlocked.Decrement(ref _powerPool._asyncWorkCount);
+            }
+        }
+
+        private void SetWaitSignalIfAny()
+        {
+            WorkExtras e = Work._extras;
+            if (e != null)
+            {
+                e._waitSignal?.Set();
             }
         }
 
@@ -369,11 +382,8 @@ namespace PowerThreadPool
 
             bool hasWaitingWork = RequeueAllWaitingWork(null);
             Work.IsDone = true;
-
-            if (Work.WaitSignal != null)
-            {
-                Work.WaitSignal.Set();
-            }
+            Thread.MemoryBarrier();
+            SetWaitSignalIfAny();
 
             _powerPool.FillWorkerQueue();
 
@@ -463,6 +473,25 @@ namespace PowerThreadPool
                 hasWaitingWork = true;
             }
             return hasWaitingWork;
+        }
+
+        private static DeferredActionTimer EnsureTimeoutTimer(WorkBase work)
+        {
+            WorkExtras e = work.Extras;
+            DeferredActionTimer t = e._timeoutTimer;
+            if (t != null)
+            {
+                return t;
+            }
+
+            DeferredActionTimer created = new DeferredActionTimer();
+            t = Interlocked.CompareExchange(ref e._timeoutTimer, created, null);
+            if (t == null)
+            {
+                return created;
+            }
+            created.Dispose(); // Lost the race: drop ours, use the winner's.
+            return t;
         }
 
         private void SetKillTimer()
@@ -1068,21 +1097,15 @@ namespace PowerThreadPool
                 && (work.TaskCompletionSource == null || work.IsFirstAsyncWork)
                 && work.ExecuteCount == 0)
             {
-                if (work.TimeoutTimer == null)
+                DeferredActionTimer timeoutTimer = EnsureTimeoutTimer(work);
+                timeoutTimer.Set(workTimeoutOption.Duration, () =>
                 {
-                    work.TimeoutTimer = new DeferredActionTimer();
-                }
-                if (work.TimeoutTimer != null)
-                {
-                    work.TimeoutTimer.Set(workTimeoutOption.Duration, () =>
+                    _powerPool.OnWorkTimedOut(_powerPool, new WorkTimedOutEventArgs() { ID = work.ID });
+                    if (workTimeoutOption.ShouldStop)
                     {
-                        _powerPool.OnWorkTimedOut(_powerPool, new WorkTimedOutEventArgs() { ID = work.ID });
-                        if (workTimeoutOption.ShouldStop)
-                        {
-                            _powerPool.Stop(work.ID, workTimeoutOption.ForceStop);
-                        }
-                    });
-                }
+                        _powerPool.Stop(work.ID, workTimeoutOption.ForceStop);
+                    }
+                });
             }
 
             Work = work;

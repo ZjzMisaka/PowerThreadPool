@@ -100,9 +100,12 @@ namespace PowerThreadPool
 
                 if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
                 {
-                    if (work.WaitSignal != null)
+                    // Pairs with the CAS in Work.EnsureWaitSignal (store→load ordering).
+                    Thread.MemoryBarrier();
+                    WorkExtras e = work._extras;
+                    if (e != null)
                     {
-                        work.WaitSignal.Set();
+                        e._waitSignal?.Set();
                     }
                 }
 

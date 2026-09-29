@@ -10,6 +10,8 @@ namespace PowerThreadPool.Works
 {
     internal class WorkFunc<TResult> : Work<TResult>
     {
+        // Only written when an async continuation replaces the function (SetFunction with
+        // isFirst == false); stays null on the synchronous path.
         private Func<TResult> _baseFunction;
         private Func<TResult> _function;
 
@@ -19,11 +21,10 @@ namespace PowerThreadPool.Works
 
         internal WorkFunc(PowerPool powerPool, WorkID id, Func<TResult> function, WorkOption option, CancellationTokenSource cts) : base(powerPool, id, option, cts)
         {
-            _baseFunction = function;
             _function = function;
         }
 
-        internal override bool IsFirstAsyncWork => _baseFunction == _function;
+        internal override bool IsFirstAsyncWork => _baseFunction == null;
 
         internal override object Execute()
         {
@@ -33,7 +34,11 @@ namespace PowerThreadPool.Works
 
         internal override void ResetBase()
         {
-            _function = _baseFunction;
+            if (_baseFunction != null)
+            {
+                _function = _baseFunction;
+                _baseFunction = null;
+            }
         }
 
         [ExcludeFromCodeCoverage]
@@ -47,9 +52,9 @@ namespace PowerThreadPool.Works
 #else
             Func<TResult> func = function as Func<TResult>;
 #endif
-            if (isFirst)
+            if (!isFirst && _baseFunction == null)
             {
-                _baseFunction = func;
+                _baseFunction = _function;
             }
             _function = func;
         }

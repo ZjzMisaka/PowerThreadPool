@@ -162,9 +162,13 @@ namespace PowerThreadPool
                 {
                     _aliveWorkDic.TryRemove(work.ID, out _);
                 }
-                if (work.WaitSignal != null)
+                // Store→load barrier: pairs with the CAS in Work.EnsureWaitSignal so that a
+                // waiter that misses the IsDone write is guaranteed to see the published signal.
+                Thread.MemoryBarrier();
+                WorkExtras e = work._extras;
+                if (e != null)
                 {
-                    work.WaitSignal.Set();
+                    e._waitSignal?.Set();
                 }
                 work.Dispose();
             }

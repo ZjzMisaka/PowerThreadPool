@@ -7,6 +7,8 @@ namespace PowerThreadPool.Works
 {
     internal class WorkAction<TUseless> : Work<TUseless>
     {
+        // Only written when an async continuation replaces the action (SetAction with
+        // isFirst == false); stays null on the synchronous path.
         private Action _baseAction;
         private Action _action;
 
@@ -14,7 +16,7 @@ namespace PowerThreadPool.Works
         {
         }
 
-        internal override bool IsFirstAsyncWork => _baseAction == _action;
+        internal override bool IsFirstAsyncWork => _baseAction == null;
 
         internal override object Execute()
         {
@@ -25,14 +27,18 @@ namespace PowerThreadPool.Works
 
         internal override void ResetBase()
         {
-            _action = _baseAction;
+            if (_baseAction != null)
+            {
+                _action = _baseAction;
+                _baseAction = null;
+            }
         }
 
         internal override void SetAction(Action action, bool isFirst)
         {
-            if (isFirst)
+            if (!isFirst && _baseAction == null)
             {
-                _baseAction = action;
+                _baseAction = _action;
             }
             _action = action;
         }
