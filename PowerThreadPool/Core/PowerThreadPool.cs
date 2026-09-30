@@ -415,9 +415,10 @@ namespace PowerThreadPool
         /// <param name="isCoveredByAsyncCount"></param>
         internal void SetWork(WorkBase work, bool isCoveredByAsyncCount = false)
         {
-            int slot = Thread.CurrentThread.ManagedThreadId % _setWorkGate.Length;
+            int slot = default;
             if (!isCoveredByAsyncCount)
             {
+                slot = Thread.CurrentThread.ManagedThreadId % _setWorkGate.Length;
                 Interlocked.Increment(ref _setWorkGate[slot]);
             }
             try
