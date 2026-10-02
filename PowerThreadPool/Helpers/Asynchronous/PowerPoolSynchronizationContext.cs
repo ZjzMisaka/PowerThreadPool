@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers.LockFree;
 using PowerThreadPool.Works;
 
@@ -61,9 +62,18 @@ namespace PowerThreadPool.Helpers.Asynchronous
             if (Interlocked.CompareExchange(ref _drainScheduled, 1, 0) == 0)
             {
                 Worker worker = _workBase.Worker;
-                if (worker != null && worker._canGetWork.TrySet(Constants.CanGetWork.NotAllowed, Constants.CanGetWork.Allowed))
+                if (worker != null
+                    && worker._canGetWork.TrySet(Constants.CanGetWork.NotAllowed, Constants.CanGetWork.Allowed))
                 {
-                    worker.SetWork(_workBase, true);
+                    if (worker._workerState == WorkerStates.Running)
+                    {
+                        worker.SetWork(_workBase, true);
+                    }
+                    else
+                    {
+                        worker._canGetWork.InterlockedValue = Constants.CanGetWork.Allowed;
+                        _powerPool.SetWork(_workBase, true);
+                    }
                 }
                 else
                 {
