@@ -9,31 +9,6 @@ using Xunit.Abstractions;
 
 namespace UnitTest
 {
-    /// <summary>
-    /// Coverage for the continuation scheduling pipeline of PowerPoolSynchronizationContext:
-    /// how Post() schedules a drain onto a worker, and how posts are enqueued into the
-    /// slot/overflow queues. Includes the drain-scheduling fast path introduced by
-    /// "perf: Set Continuation work into local worker id possible" (9a7b980) and
-    /// "fix: Guard drain scheduling for running workers in fast path" (2f669b4).
-    ///
-    /// PowerPoolSynchronizationContext.Post() picks among these branches when scheduling a drain:
-    ///   A. worker != null + reserve OK + worker Running     -> worker.SetWork(...)        (fast path, guarded)
-    ///   B. worker != null + reserve OK + worker NOT Running -> release + pool.SetWork(...) (2f669b4 guard fallback)
-    ///   C. worker != null + reserve FAIL (flag not Allowed) -> pool.SetWork(...)           (contended / idle-transition)
-    ///   D. worker == null (work not bound to a worker)      -> pool.SetWork(...)           (pre-9a7b980 path)
-    ///
-    /// Branch A is the common case and is covered end-to-end by keeping the local worker busy
-    /// with a second work while the first work's continuation posts, and deterministically by
-    /// parking a blocker work on a real Running worker.
-    /// Branches B/C/D only occur inside narrow race windows of the real pipeline, so they are
-    /// exercised deterministically against real PowerPoolSynchronizationContext instances
-    /// (InternalsVisibleTo) whose worker-state input is prepared explicitly.
-    ///
-    /// Note on InterlockedFlag&lt;T&gt;.TrySet(value, comparand): it succeeds only when the CURRENT
-    /// flag value equals the comparand. The fast-path "reservation" in Post is
-    /// TrySet(NotAllowed, Allowed), i.e. it consumes an Allowed flag; Worker.SetWork(..., true)
-    /// later writes Allowed back, releasing the reservation.
-    /// </summary>
     public class ContinuationSchedulingTest
     {
         private readonly ITestOutputHelper _output;
@@ -314,6 +289,54 @@ namespace UnitTest
             for (int round = 0; round < rounds; ++round)
             {
                 PowerPoolSynchronizationContext ctx = (PowerPoolSynchronizationContext)CreateNonGenericCase(pool).Ctx;
+
+                using Barrier barrier = new Barrier(threads);
+
+                Task[] tasks = new Task[threads];
+                for (int t = 0; t < threads; ++t)
+                {
+                    tasks[t] = Task.Run(() =>
+                    {
+                        barrier.SignalAndWait(20_000);
+                        for (int i = 0; i < postsPerThread; ++i)
+                        {
+                            // The first post per thread claims the single _slot; every other
+                            // one goes to EnqueueOverflow, where concurrent first-callers
+                            // race the lazy queue initialization.
+                            ctx.EnqueuePost(_ => { }, null);
+                        }
+                    });
+                }
+
+                Assert.True(Task.WaitAll(tasks, 20_000), "enqueue threads did not finish");
+
+                // Nothing drains the queues (that is Post's job), so verify no post was lost
+                // by counting the enqueued items directly: slot (0 or 1) + overflow must hold
+                // every post.
+                int inSlot = ctx.GetType()
+                    .GetField("_slot", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetValue(ctx) != null ? 1 : 0;
+                int inOverflow = ((System.Collections.ICollection)ctx.GetType()
+                    .GetField("_overflow", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .GetValue(ctx)).Count;
+                Assert.Equal(threads * postsPerThread, inSlot + inOverflow);
+            }
+        }
+
+        [Fact]
+        public void TestEnqueueOverflowLazyInitRaceStormOfT()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            const int rounds = 500;
+            const int threads = 4;
+            const int postsPerThread = 4;
+
+            using PowerPool pool = new PowerPool(new PowerPoolOption { MaxThreads = 1 });
+
+            for (int round = 0; round < rounds; ++round)
+            {
+                PowerPoolSynchronizationContext<string> ctx = (PowerPoolSynchronizationContext<string>)CreateGenericCase(pool).Ctx;
 
                 using Barrier barrier = new Barrier(threads);
 
