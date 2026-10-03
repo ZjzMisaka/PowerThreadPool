@@ -82,7 +82,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
             }
         }
 
-        private void EnqueuePost(SendOrPostCallback d, object state)
+        internal void EnqueuePost(SendOrPostCallback d, object state)
         {
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
             ContinuationState slot = Volatile.Read(ref _slot);
@@ -106,7 +106,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
             }
         }
 
-        private void EnqueueOverflow(SendOrPostCallback d, object state)
+        internal void EnqueueOverflow(SendOrPostCallback d, object state)
         {
             ConcurrentQueue<ContinuationState> overflow = _overflow;
             if (overflow == null)

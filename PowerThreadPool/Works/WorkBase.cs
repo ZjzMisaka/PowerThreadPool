@@ -29,7 +29,12 @@ namespace PowerThreadPool.Works
     /// </summary>
     internal abstract class WorkBase : WorkItemBase, IDisposable
     {
-        internal Worker Worker { get; set; }
+        internal Worker _worker;
+        internal Worker Worker
+        {
+            get => _worker;
+            set => _worker = value;
+        }
         internal PowerPool PowerPool { get; set; }
         internal CancellationTokenSource CancellationTokenSource { get; set; }
         internal InterlockedFlag<CanSetTaskCompletionSource> _canSetTaskCompletionSource = CanSetTaskCompletionSource.Allowed;
