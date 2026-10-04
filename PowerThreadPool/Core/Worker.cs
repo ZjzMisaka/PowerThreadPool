@@ -934,7 +934,7 @@ namespace PowerThreadPool
                                 SetWork(workBase, true);
                             }
 
-                            _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
+                            _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.Disabled);
                         }
                         else
                         {
