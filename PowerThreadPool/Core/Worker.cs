@@ -322,8 +322,10 @@ namespace PowerThreadPool
         {
             _canGetWork.InterlockedValue = Constants.CanGetWork.Disabled;
 
-            WorkerStates origWorkState = _workerState.InterlockedValue;
-            _workerState.InterlockedValue = WorkerStates.ToBeDisposed;
+            if (_workerState.TrySet(WorkerStates.ToBeDisposed, WorkerStates.Idle, out WorkerStates origWorkState))
+            {
+                Interlocked.Decrement(ref _powerPool._idleWorkerCount);
+            }
 
             if (Work.LongRunning)
             {
@@ -340,10 +342,6 @@ namespace PowerThreadPool
             if (_powerPool._aliveWorkerDic.TryRemove(ID, out _))
             {
                 Interlocked.Decrement(ref _powerPool._aliveWorkerCount);
-            }
-            if (origWorkState == WorkerStates.Idle)
-            {
-                Interlocked.Decrement(ref _powerPool._idleWorkerCount);
             }
             if (Work.TaskCompletionSource != null)
             {
@@ -615,7 +613,10 @@ namespace PowerThreadPool
 
             work.Worker = this;
             Interlocked.Increment(ref _waitingWorkCount);
-            _workerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState);
+            if (_workerState.TrySet(WorkerStates.Running, WorkerStates.Idle, out WorkerStates originalWorkerState))
+            {
+                Interlocked.Decrement(ref _powerPool._idleWorkerCount);
+            }
 
             if (_killTimer != null)
             {
@@ -928,6 +929,7 @@ namespace PowerThreadPool
                         if (waitingWorkList != null)
                         {
                             _workerState.InterlockedValue = WorkerStates.Idle;
+                            Interlocked.Increment(ref _powerPool._idleWorkerCount);
 
                             foreach (WorkBase workBase in waitingWorkList)
                             {
@@ -950,6 +952,7 @@ namespace PowerThreadPool
                         }
 
                         _workerState.InterlockedValue = WorkerStates.Idle;
+                        Interlocked.Increment(ref _powerPool._idleWorkerCount);
 
                         List<WorkBase> waitingWorkList = ResetAllWaitingWorkWhenIdle();
 
@@ -966,7 +969,6 @@ namespace PowerThreadPool
                         {
                             _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
-                            Interlocked.Increment(ref _powerPool._idleWorkerCount);
                             _powerPool._idleWorkerQueue.Enqueue(this);
 
                             _lastIsBackground = true;
