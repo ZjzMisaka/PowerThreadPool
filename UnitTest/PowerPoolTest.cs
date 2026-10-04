@@ -10321,7 +10321,7 @@ namespace UnitTest
             Assert.Equal(10000, done);
             if (twiceTried)
             {
-                Console.WriteLine("TestWorkerCountOutOfRange1: Wait() was called twice due to done != 10000 after first Wait().");
+                Assert.Fail("TestWorkerCountOutOfRange1: Wait() was called twice due to done != 10000 after first Wait().");
             }
 
             powerPool.Dispose();
