@@ -628,7 +628,7 @@ namespace PowerThreadPool
 
                 Interlocked.Decrement(ref _idleWorkerCount);
 
-                if (worker._canGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed))
+                if (worker._canGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed, out CanGetWork orig))
                 {
                     if (longRunning)
                     {
@@ -637,7 +637,7 @@ namespace PowerThreadPool
 
                     return worker;
                 }
-                else
+                else if (orig != CanGetWork.Disabled)
                 {
                     Interlocked.Increment(ref _idleWorkerCount);
                     _idleWorkerQueue.Enqueue(worker);
