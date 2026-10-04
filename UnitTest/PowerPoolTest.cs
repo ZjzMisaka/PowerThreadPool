@@ -10315,6 +10315,7 @@ namespace UnitTest
             bool twiceTried = false;
             if (done != 10000)
             {
+                Thread.Sleep(1);
                 twiceTried = true;
                 powerPool.Wait();
             }
