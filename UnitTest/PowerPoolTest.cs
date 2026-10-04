@@ -10312,7 +10312,17 @@ namespace UnitTest
 
             powerPool.Wait();
 
+            bool twiceTried = false;
+            if (done != 10000)
+            {
+                twiceTried = true;
+                powerPool.Wait();
+            }
             Assert.Equal(10000, done);
+            if (twiceTried)
+            {
+                Assert.Fail("TestWorkerCountOutOfRange1: Wait() was called twice due to done != 10000 after first Wait().");
+            }
 
             powerPool.Dispose();
         }
