@@ -113,22 +113,12 @@ namespace PowerThreadPool.Collections
                     return;
                 }
 
-                // innerDict may gain entries between reading Count and enumerating, and
-                // enumerating ConcurrentDictionary is lock-free, so the actual number of
-                // values can differ from Count. CopyTo would throw when more values are
-                // enumerated than the array was sized for, so fill the array manually
-                // and grow/shrink it to match what was actually enumerated.
-                // Enumerating innerDict directly is cheaper than innerDict.Values,
-                // which allocates a wrapper collection plus an extra internal copy.
                 TValue[] snapshot = new TValue[innerDict.Count];
                 int count = 0;
                 foreach (KeyValuePair<TKey, TValue> kv in innerDict)
                 {
                     if (count == snapshot.Length)
                     {
-                        // + 1 guards against snapshot.Length == 0, possible when the
-                        // dictionary is emptied after the IsEmpty check and then
-                        // receives new entries while being enumerated.
                         Array.Resize(ref snapshot, snapshot.Length * 2 + 1);
                     }
                     snapshot[count++] = kv.Value;

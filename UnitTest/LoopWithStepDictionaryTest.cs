@@ -26,10 +26,6 @@ namespace UnitTest
                 }
             });
 
-            // Any failure inside the adder surfaces here; before the snapshot-rebuild fix,
-            // the adder (or the churn loop below) dies with
-            // ArgumentException: "Destination array was not long enough" thrown by
-            // ((ICollection<TValue>)innerDict.Values).CopyTo(snapshot, 0).
             try
             {
                 for (int i = 0; i < 300_000; i++)
