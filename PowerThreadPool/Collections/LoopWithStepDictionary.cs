@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using PowerThreadPool.Constants;
 using PowerThreadPool.Helpers.LockFree;
@@ -111,8 +112,21 @@ namespace PowerThreadPool.Collections
                     _canRebuildSnapshot.InterlockedValue = CanRebuildSnapshot.Allowed;
                     return;
                 }
+
                 TValue[] snapshot = new TValue[innerDict.Count];
-                ((ICollection<TValue>)innerDict.Values).CopyTo(snapshot, 0);
+                int count = 0;
+                foreach (KeyValuePair<TKey, TValue> kv in innerDict)
+                {
+                    if (count == snapshot.Length)
+                    {
+                        Array.Resize(ref snapshot, snapshot.Length * 2 + 1);
+                    }
+                    snapshot[count++] = kv.Value;
+                }
+                if (count < snapshot.Length)
+                {
+                    Array.Resize(ref snapshot, count);
+                }
                 _snapshot = snapshot;
 
                 _canRebuildSnapshot.InterlockedValue = CanRebuildSnapshot.Allowed;
