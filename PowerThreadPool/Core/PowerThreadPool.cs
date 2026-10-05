@@ -363,13 +363,14 @@ namespace PowerThreadPool
 
                     _canCreateNewWorker.InterlockedValue = CanCreateNewWorker.Allowed;
 
+                    Interlocked.Increment(ref _idleWorkerCount);
+
                     if (PoolRunning && WaitingWorkCount > 0 && worker.TryAssignWorkForNewWorker())
                     {
                         worker._canGetWork.InterlockedValue = CanGetWork.Allowed;
                         continue;
                     }
 
-                    Interlocked.Increment(ref _idleWorkerCount);
                     _idleWorkerQueue.Enqueue(worker);
 
                     worker._canGetWork.InterlockedValue = CanGetWork.Allowed;
@@ -626,8 +627,6 @@ namespace PowerThreadPool
                     continue;
                 }
 
-                Interlocked.Decrement(ref _idleWorkerCount);
-
                 if (worker._canGetWork.TrySet(CanGetWork.NotAllowed, CanGetWork.Allowed, out CanGetWork orig))
                 {
                     if (longRunning)
@@ -639,7 +638,6 @@ namespace PowerThreadPool
                 }
                 else if (orig != CanGetWork.Disabled)
                 {
-                    Interlocked.Increment(ref _idleWorkerCount);
                     _idleWorkerQueue.Enqueue(worker);
                 }
             }
@@ -668,6 +666,8 @@ namespace PowerThreadPool
                         {
                             Interlocked.Increment(ref _aliveWorkerCount);
                         }
+
+                        Interlocked.Increment(ref _idleWorkerCount);
 
                         if (longRunning)
                         {
