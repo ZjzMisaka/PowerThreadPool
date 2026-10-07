@@ -635,6 +635,7 @@ namespace PowerThreadPool
 
                 if (!work._canCancel.TrySet(CanCancel.NotAllowed, CanCancel.Allowed))
                 {
+                    Interlocked.Decrement(ref _waitingWorkCount);
                     work = null;
                 }
 
