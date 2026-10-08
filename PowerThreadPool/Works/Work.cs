@@ -365,7 +365,8 @@ namespace PowerThreadPool.Works
             }
             else
             {
-                if (ExecuteResult == null && IsDone)
+                Spinner.Start(() => IsDone, true);
+                if (ExecuteResult == null)
                 {
                     SetExecuteResult(_lastResult, null, Status.Succeed);
                 }
