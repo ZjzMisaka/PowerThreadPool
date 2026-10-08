@@ -2312,5 +2312,51 @@ namespace UnitTest
         private async Task DoSomething()
         {
         }
+
+        [Fact]
+        public void TestDemoParallelIoFanOut()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().Name}");
+
+            const int urlCount = 8;
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1 });
+
+            // Simulated remote endpoints with spread-out latencies, like a real
+            // fan-out: some respond fast, some slow, all within a bursty window.
+            List<(string Url, int LatencyMs)> requests = Enumerable
+                .Range(1, urlCount)
+                .Select(i => (Url: $"https://api.example.com/items/{i}", LatencyMs: 30 + (i % 4) * 10))
+                .ToList();
+
+            Dictionary<string, string> fetched = null;
+
+            powerPool.QueueWorkItem(async () =>
+            {
+                // Fan out: each FetchAsync started here captures this work's
+                // synchronization context, not a private one.
+                Task<(string Url, string Body)>[] fetches =
+                    requests.Select(r => FetchAsync(r.Url, r.LatencyMs)).ToArray();
+
+                (string Url, string Body)[] bodies = await Task.WhenAll(fetches);
+
+                return bodies.ToDictionary(b => b.Url, b => b.Body);
+            }, out _, res => fetched = res.Result);
+
+            powerPool.Wait();
+
+            Assert.Equal(urlCount, fetched.Count);
+            Assert.All(requests, r => Assert.Equal($"payload of {r.Url}", fetched[r.Url]));
+            Assert.Equal(0, powerPool.RunningWorkerCount);
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+            Assert.Equal(0, powerPool.AsyncWorkCount);
+        }
+
+        private static async Task<(string Url, string Body)> FetchAsync(string url, int latencyMs)
+        {
+            // In real code this would be e.g. await httpClient.GetStringAsync(url);
+            await Task.Delay(latencyMs);
+            return (url, $"payload of {url}");
+        }
     }
 }
