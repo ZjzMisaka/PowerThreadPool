@@ -53,14 +53,15 @@ namespace PowerThreadPool.Helpers.Asynchronous
             {
                 return;
             }
-            _workBase._canCancel.TrySet(Constants.CanCancel.Allowed, Constants.CanCancel.NotAllowed);
-            _workBase.IsCurrentDone = false;
-            _workBase.SetAction(_cachedContinuation, false);
 
             EnqueuePost(d, state);
 
             if (Interlocked.CompareExchange(ref _drainScheduled, 1, 0) == 0)
             {
+                _workBase.SetAction(_cachedContinuation, false);
+                _workBase.IsCurrentDone = false;
+                _workBase._canCancel.TrySet(Constants.CanCancel.Allowed, Constants.CanCancel.NotAllowed);
+
                 Worker worker = _workBase.Worker;
                 if (worker != null
                     && worker._canGetWork.TrySet(Constants.CanGetWork.NotAllowed, Constants.CanGetWork.Allowed))

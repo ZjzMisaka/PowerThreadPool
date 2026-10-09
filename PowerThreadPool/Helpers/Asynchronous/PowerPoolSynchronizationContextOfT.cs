@@ -53,14 +53,15 @@ namespace PowerThreadPool.Helpers.Asynchronous
             {
                 return;
             }
-            _work._canCancel.TrySet(Constants.CanCancel.Allowed, Constants.CanCancel.NotAllowed);
-            _work.IsCurrentDone = false;
-            _work.SetFunction(_cachedContinuation, false);
 
             EnqueuePost(d, state);
 
             if (Interlocked.CompareExchange(ref _drainScheduled, 1, 0) == 0)
             {
+                _work.SetFunction(_cachedContinuation, false);
+                _work.IsCurrentDone = false;
+                _work._canCancel.TrySet(Constants.CanCancel.Allowed, Constants.CanCancel.NotAllowed);
+
                 Worker worker = _work.Worker;
                 if (worker != null
                     && worker._canGetWork.TrySet(Constants.CanGetWork.NotAllowed, Constants.CanGetWork.Allowed))
@@ -163,7 +164,10 @@ namespace PowerThreadPool.Helpers.Asynchronous
                 ContinuationState item;
                 while (TryDequeuePost(out item))
                 {
-                    res = InvokeOne(item._callback, item._state);
+                    if (InvokeOne(item._callback, item._state, out TResult result))
+                    {
+                        res = result;
+                    }
                 }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
@@ -176,7 +180,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
             return res;
         }
 
-        private TResult InvokeOne(SendOrPostCallback d, object state)
+        private bool InvokeOne(SendOrPostCallback d, object state, out TResult res)
         {
             SetSynchronizationContext(this);
             if (_work.AutoCheckStopOnAsyncTask)
@@ -198,13 +202,14 @@ namespace PowerThreadPool.Helpers.Asynchronous
             {
                 throw originalTask.Exception.InnerException;
             }
-            TResult res = default;
+            res = default;
             if (originalTask.IsCompleted && Interlocked.Exchange(ref _done, 1) == 0)
             {
                 _work.AllowEventsAndCallback = true;
                 res = originalTask.Result;
+                return true;
             }
-            return res;
+            return false;
         }
     }
 }
