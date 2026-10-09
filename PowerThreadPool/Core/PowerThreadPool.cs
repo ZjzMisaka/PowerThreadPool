@@ -773,11 +773,6 @@ namespace PowerThreadPool
 
             if (_poolState == PoolStates.NotRunning && _poolState.TrySet(PoolStates.Running, PoolStates.NotRunning))
             {
-                if (PoolStarted != null)
-                {
-                    SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted, null);
-                }
-
                 if (PowerPoolOption.EnableStatisticsCollection)
                 {
                     _startCount = 0;
@@ -795,6 +790,11 @@ namespace PowerThreadPool
 
                 _waitAllSignal.Reset();
 
+                if (PoolStarted != null)
+                {
+                    SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted, null);
+                }
+
                 if (PowerPoolOption.RunningTimerOption != null)
                 {
                     _runningTimer.Set((int)PowerPoolOption.RunningTimerOption.Interval);
@@ -809,6 +809,19 @@ namespace PowerThreadPool
                     _timeoutTimer.Set(PowerPoolOption.TimeoutOption.Duration);
                 }
             }
+        }
+
+        private bool CountersDrained()
+        {
+#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
+            return (Volatile.Read(ref _runningWorkerCount) == 0 &&
+               Volatile.Read(ref _asyncWorkCount) == 0 &&
+               !HasInFlightSetWork());
+#else
+            return (Thread.VolatileRead(ref _runningWorkerCount) == 0 &&
+               Thread.VolatileRead(ref _asyncWorkCount) == 0 &&
+               !HasInFlightSetWork());
+#endif
         }
 
         /// <summary>
@@ -826,37 +839,19 @@ namespace PowerThreadPool
                 return;
             }
 
-#if (NET45_OR_GREATER || NET5_0_OR_GREATER)
-            if (Volatile.Read(ref _runningWorkerCount) != 0 ||
-               Volatile.Read(ref _asyncWorkCount) != 0 ||
-               HasInFlightSetWork())
-#else
-            if (Thread.VolatileRead(ref _runningWorkerCount) != 0 ||
-               Thread.VolatileRead(ref _asyncWorkCount) != 0 ||
-               HasInFlightSetWork())
-#endif
+            if (!CountersDrained())
             {
-                return;
-            }
-
-            if (_poolState.InterlockedValue == PoolStates.NotRunning)
-            {
-                // The pool already finished an idle transition, yet the wait all
-                // signal is not set. A waiter consumed a set signal between its
-                // ConfirmPoolIdle probe and the pool actually settling (the probe's
-                // counter reads can straddle a whole handover), or a round was
-                // restarted and drained again. The Running->IdleChecked CAS below
-                // cannot fire in this state, so without this branch no one would
-                // ever publish the signal again and Wait/WaitAsync would block
-                // forever. Republishing is safe: the counters are all drained and
-                // CheckPoolStart resets the signal before any new round's work
-                // becomes visible.
-                _waitAllSignal.Set();
                 return;
             }
 
             if (_poolState.TrySet(PoolStates.IdleChecked, PoolStates.Running))
             {
+                if (!CountersDrained())
+                {
+                    _poolState.InterlockedValue = PoolStates.Running;
+                    return;
+                }
+
                 if (PowerPoolOption.EnableStatisticsCollection)
                 {
                     _endDateTime = DateTime.UtcNow;
@@ -871,6 +866,14 @@ namespace PowerThreadPool
                     SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorFrom.PoolIdled, null);
                 }
                 IdleSetting();
+            }
+            else if (_poolState.TrySet(PoolStates.IdleChecked, PoolStates.NotRunning))
+            {
+                if (CountersDrained())
+                {
+                    _waitAllSignal.Set();
+                }
+                _poolState.InterlockedValue = PoolStates.NotRunning;
             }
         }
 
