@@ -848,7 +848,7 @@ namespace PowerThreadPool
             {
                 if (!CountersDrained())
                 {
-                    _poolState.InterlockedValue = PoolStates.Running;
+                    _poolState.TrySet(PoolStates.Running, PoolStates.IdleChecked);
                     return;
                 }
 
