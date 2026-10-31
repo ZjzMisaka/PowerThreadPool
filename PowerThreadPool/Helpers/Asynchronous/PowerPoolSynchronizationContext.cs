@@ -66,7 +66,7 @@ namespace PowerThreadPool.Helpers.Asynchronous
                 if (worker != null
                     && worker._canGetWork.TrySet(Constants.CanGetWork.NotAllowed, Constants.CanGetWork.Allowed))
                 {
-                    if (worker._workerState == WorkerStates.Running)
+                    if (worker._workerState == WorkerStates.Running && !_workBase.LongRunning)
                     {
                         worker.SetWork(_workBase, true);
                     }
