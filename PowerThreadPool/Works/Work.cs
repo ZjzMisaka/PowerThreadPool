@@ -359,9 +359,8 @@ namespace PowerThreadPool.Works
         {
             if (PowerPool._aliveWorkDic.TryGetValue(ID, out WorkBase work))
             {
-                Work<T> workT = work as Work<T>;
-                Spinner.Start(() => workT.ExecuteResult != null, true);
-                return workT.ExecuteResult.ToTypedResult<T>();
+                Spinner.Start(() => work.ExecuteResultBase != null, true);
+                return work.ExecuteResultBase.ToTypedResult<T>();
             }
             else
             {
