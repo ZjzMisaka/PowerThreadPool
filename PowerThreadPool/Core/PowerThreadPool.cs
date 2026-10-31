@@ -856,6 +856,7 @@ namespace PowerThreadPool
                 {
                     _endDateTime = DateTime.UtcNow;
                 }
+                IdleSetting();
                 if (PoolIdled != null)
                 {
                     PoolIdledEventArgs poolIdledEventArgs = new PoolIdledEventArgs
@@ -865,7 +866,6 @@ namespace PowerThreadPool
                     };
                     SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorFrom.PoolIdled, null);
                 }
-                IdleSetting();
             }
             else if (_poolState.TrySet(PoolStates.IdleChecked, PoolStates.NotRunning))
             {
