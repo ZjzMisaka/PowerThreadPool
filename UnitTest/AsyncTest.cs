@@ -2358,5 +2358,46 @@ namespace UnitTest
             await Task.Delay(latencyMs);
             return (url, $"payload of {url}");
         }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async Task TestLongRunningWorkAction()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1 });
+            int count = 0;
+            powerPool.QueueWorkItem(async () =>
+            {
+                await Task.Yield();
+                await Task.Yield();
+                await Task.Yield();
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                Interlocked.Increment(ref count);
+            }, new WorkOption { LongRunning = true });
+            powerPool.Wait();
+            Assert.Equal(1, count);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async Task TestLongRunningWorkFunc()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1 });
+            int count = 0;
+            powerPool.QueueWorkItem(async () =>
+            {
+                await Task.Yield();
+                await Task.Yield();
+                await Task.Yield();
+                await Task.Delay(100);
+                await Task.Delay(100);
+                await Task.Delay(100);
+                Interlocked.Increment(ref count);
+                return "";
+            }, new WorkOption { LongRunning = true });
+            powerPool.Wait();
+            Assert.Equal(1, count);
+        }
     }
 }
