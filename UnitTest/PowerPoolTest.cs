@@ -75,6 +75,7 @@ namespace UnitTest
             });
 
             powerPool.Wait();
+            Spinner.Start(() => logList.Count == 5);
 
             Assert.Collection<string>(logList,
                 item => Assert.Equal("PoolStart", item),
@@ -481,9 +482,43 @@ namespace UnitTest
             });
 
             powerPool.Wait();
+            Spinner.Start(() => inEvent != 0);
 
             Assert.Equal(1, count);
             Assert.Equal(1, inEvent);
+        }
+
+        [Fact]
+        public void TestQueueNewWorkPoolIdledEvent()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            int count = 0;
+            PowerPool powerPool = new PowerPool();
+
+            bool shouldQueue = true;
+
+            powerPool.PoolIdled += (s, e) =>
+            {
+                if (shouldQueue)
+                {
+                    powerPool.QueueWorkItem(() =>
+                    {
+                        shouldQueue = false;
+                        Interlocked.Increment(ref count);
+                    });
+                }
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref count);
+            });
+
+            Spinner.Start(() => !shouldQueue);
+            powerPool.Wait();
+
+            Assert.Equal(2, count);
         }
 
         [Fact]
@@ -568,6 +603,8 @@ namespace UnitTest
             );
 
             powerPool.Wait();
+
+            Spinner.Start(() => logList.Count == 8);
 
             Assert.Collection<string>(logList,
                 item => Assert.Equal("PoolStart", item),
@@ -2548,6 +2585,8 @@ namespace UnitTest
 
             powerPool.Wait();
 
+            Spinner.Start(() => idleCount != 0);
+
             Assert.Equal(1, idleCount);
             Assert.Equal(3, doneCount);
         }
@@ -3379,6 +3418,8 @@ namespace UnitTest
 
             powerPool.Wait();
 
+            Spinner.Start(() => startDateTime != DateTime.MinValue);
+
             Assert.NotEqual(startDateTime, DateTime.MinValue);
             Assert.NotEqual(endDateTime, DateTime.MinValue);
             Assert.NotEqual(runtimeDuration, TimeSpan.MinValue);
@@ -3537,6 +3578,7 @@ namespace UnitTest
             });
 
             powerPool.Wait();
+            Spinner.Start(() => errorFrom != ErrorFrom.WorkLogic);
 
             Assert.Equal(ErrorFrom.PoolIdled, errorFrom);
         }
