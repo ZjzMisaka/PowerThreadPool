@@ -15,12 +15,29 @@ namespace PowerThreadPool.Options
 
     public class WorkOption
     {
+        // An option flagged IsDefaultInstance is shared by multiple works
+        // (the library-wide WorkOption.DefaultInstance, per-batch Parallel options).
+        // Queue paths hand it out as-is to avoid per-work allocations; therefore any
+        // internal code that writes to a work's option must first clone it via Clone()
+        // (which resets the flag), so mutations cannot leak into sibling works.
         internal static WorkOption DefaultInstance { get; set; } = new WorkOption
         {
             IsDefaultInstance = true
         };
 
         internal bool IsDefaultInstance { get; set; } = false;
+
+        /// <summary>
+        /// Creates a shallow copy of this instance, preserving the runtime type.
+        /// The copy is never a default instance, so mutating it cannot affect
+        /// the shared DefaultInstance.
+        /// </summary>
+        internal WorkOption Clone()
+        {
+            WorkOption copy = (WorkOption)MemberwiseClone();
+            copy.IsDefaultInstance = false;
+            return copy;
+        }
 
         /// <summary>
         /// The custom work ID. If set to null, the thread pool will use a Guid as the work ID.
