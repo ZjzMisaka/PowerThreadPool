@@ -3419,6 +3419,8 @@ namespace UnitTest
             powerPool.Wait();
 
             Spinner.Start(() => startDateTime != DateTime.MinValue);
+            Spinner.Start(() => endDateTime != DateTime.MinValue);
+            Spinner.Start(() => runtimeDuration != TimeSpan.MinValue);
 
             Assert.NotEqual(startDateTime, DateTime.MinValue);
             Assert.NotEqual(endDateTime, DateTime.MinValue);
