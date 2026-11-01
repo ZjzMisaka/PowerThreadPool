@@ -42,7 +42,7 @@ namespace UnitTest
                             {
                             }, (res) =>
                             {
-                                if (res.Status == Status.Failed)
+                                if (res.Status == WorkStatus.Failed)
                                 {
                                     Interlocked.Increment(ref failedCount);
                                 }
@@ -62,7 +62,7 @@ namespace UnitTest
                     errLog = "doneCount: " + doneCount + "/" + totalTasks + " | failedCount: " + failedCount + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
                     if (totalTasks != doneCount || 0 != failedCount || 0 != powerPool.RunningWorkerCount || 0 != powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
                     {
-                        Assert.Fail(errLog + " | PoolRunning: " + powerPool.PoolRunning);
+                        Assert.Fail(errLog + " | IsRunning: " + powerPool.IsRunning);
                     }
                 }
 
@@ -119,7 +119,7 @@ namespace UnitTest
                             });
                             if (id == null)
                             {
-                                Assert.Fail("PoolStopping");
+                                Assert.Fail("IsStopping");
                             }
                         }
                         else if (r >= 95 && r <= 99)
@@ -135,7 +135,7 @@ namespace UnitTest
                             });
                             if (id == null)
                             {
-                                Assert.Fail("PoolStopping");
+                                Assert.Fail("IsStopping");
                             }
                         }
                         else if (r >= 94 && r <= 94)
@@ -151,7 +151,7 @@ namespace UnitTest
                             });
                             if (id == null)
                             {
-                                Assert.Fail("PoolStopping");
+                                Assert.Fail("IsStopping");
                             }
                         }
                         else if (r >= 70 && r <= 93)
@@ -169,7 +169,7 @@ namespace UnitTest
                             }, out _);
                             if (id == null)
                             {
-                                Assert.Fail("PoolStopping");
+                                Assert.Fail("IsStopping");
                             }
                         }
                         else
@@ -185,7 +185,7 @@ namespace UnitTest
                             });
                             if (id == null)
                             {
-                                Assert.Fail("PoolStopping");
+                                Assert.Fail("IsStopping");
                             }
                         }
                     }
@@ -266,7 +266,7 @@ namespace UnitTest
                 errLog = "doneCount: " + doneCount + "/" + 100 * 1000000 + " | powerPool.RunningWorkerCount: " + powerPool.RunningWorkerCount + " | powerPool.WaitingWorkCount: " + powerPool.WaitingWorkCount + " | powerPool.IdleWorkerCount: " + powerPool.IdleWorkerCount + " | powerPool.AliveWorkerCount: " + powerPool.AliveWorkerCount + " | powerPool.MaxThreads: " + powerPool.PowerPoolOption.MaxThreads;
                 if (100 * 1000000 != doneCount || 0 != powerPool.RunningWorkerCount || 0 != powerPool.WaitingWorkCount || powerPool.IdleWorkerCount == 0)
                 {
-                    Assert.Fail(errLog + " | PoolRunning: " + powerPool.PoolRunning);
+                    Assert.Fail(errLog + " | IsRunning: " + powerPool.IsRunning);
                 }
 
                 powerPool.Dispose();
@@ -294,7 +294,7 @@ namespace UnitTest
                     {
                         Interlocked.Increment(ref doneCount);
                     },
-                    QueueType = QueueType.LIFO
+                    QueueType = QueueType.Stack
                 };
 
                 long start = GetNowSs();
@@ -323,7 +323,7 @@ namespace UnitTest
                             });
                             if (id == null)
                             {
-                                Assert.Fail("PoolStopping");
+                                Assert.Fail("IsStopping");
                             }
                         }
                         else if (r >= 95 && r <= 99)
@@ -339,7 +339,7 @@ namespace UnitTest
                             });
                             if (id == null)
                             {
-                                Assert.Fail("PoolStopping");
+                                Assert.Fail("IsStopping");
                             }
                         }
                         else if (r >= 94 && r <= 94)
@@ -355,7 +355,7 @@ namespace UnitTest
                             });
                             if (id == null)
                             {
-                                Assert.Fail("PoolStopping");
+                                Assert.Fail("IsStopping");
                             }
                         }
                         else if (r >= 70 && r <= 93)
@@ -373,7 +373,7 @@ namespace UnitTest
                             }, out _);
                             if (id == null)
                             {
-                                Assert.Fail("PoolStopping");
+                                Assert.Fail("IsStopping");
                             }
                         }
                         else
@@ -389,7 +389,7 @@ namespace UnitTest
                             });
                             if (id == null)
                             {
-                                Assert.Fail("PoolStopping");
+                                Assert.Fail("IsStopping");
                             }
                         }
                     }

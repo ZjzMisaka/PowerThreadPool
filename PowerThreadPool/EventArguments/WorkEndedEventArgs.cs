@@ -15,7 +15,7 @@ namespace PowerThreadPool.EventArguments
         /// <summary>
         /// Indicates whether the work was successful.
         /// </summary>
-        public bool Succeed { get; internal set; }
+        public bool IsSucceeded { get; internal set; }
 
         /// <summary>
         /// The exception that occurred if the work failed due to an uncaught exception.

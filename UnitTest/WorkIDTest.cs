@@ -43,7 +43,7 @@ namespace UnitTest
             WorkID a = WorkID.FromLong(v);
             WorkID b = v;
 
-            Assert.Equal(WorkIdKind.Long, a.Kind);
+            Assert.Equal(WorkIDKind.Long, a.Kind);
             Assert.True(a.IsLong);
             Assert.False(a.IsGuid);
             Assert.False(a.IsString);
@@ -86,7 +86,7 @@ namespace UnitTest
             WorkID a = WorkID.FromGuid(id);
             WorkID b = id;
 
-            Assert.Equal(WorkIdKind.Guid, a.Kind);
+            Assert.Equal(WorkIDKind.Guid, a.Kind);
             Assert.True(a.IsGuid);
             Assert.False(a.IsLong);
             Assert.False(a.IsString);
@@ -138,7 +138,7 @@ namespace UnitTest
             WorkID a = WorkID.FromString(id);
             WorkID b = id;
 
-            Assert.Equal(WorkIdKind.String, a.Kind);
+            Assert.Equal(WorkIDKind.String, a.Kind);
             Assert.False(a.IsLong);
             Assert.False(a.IsGuid);
             Assert.True(a.IsString);
@@ -180,7 +180,7 @@ namespace UnitTest
             string txt = "hello";
             WorkID a = WorkID.FromString(txt);
 
-            Assert.Equal(WorkIdKind.String, a.Kind);
+            Assert.Equal(WorkIDKind.String, a.Kind);
             Assert.True(a.IsString);
             Assert.False(a.IsLong);
             Assert.False(a.IsGuid);

@@ -75,7 +75,7 @@ namespace PowerThreadPool.Works
             set => _isPausing = value;
         }
         internal InterlockedFlag<DependencyStatus> _dependencyStatus = DependencyStatus.Normal;
-        internal Status Status { get; set; }
+        internal WorkStatus Status { get; set; }
         internal volatile bool _resultRequested;
         internal volatile object _lastResult;
         internal bool NeedsExecuteResult { get; set; }
@@ -108,11 +108,11 @@ namespace PowerThreadPool.Works
         internal abstract bool Pause();
         internal abstract bool Resume();
         internal abstract void InvokeCallback(ExecuteResultBase executeResult, PowerPoolOption powerPoolOption);
-        internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status);
+        internal abstract ExecuteResultBase SetExecuteResult(object result, Exception exception, WorkStatus status);
         internal abstract bool ShouldRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldImmediateRetry(ExecuteResultBase executeResult);
         internal abstract bool ShouldRequeue(ExecuteResultBase executeResult);
-        internal abstract void SetTaskCompletionSource(Status status, ExecuteResultBase executeResult);
+        internal abstract void SetTaskCompletionSource(WorkStatus status, ExecuteResultBase executeResult);
         public abstract void Dispose();
         internal abstract string Group { get; set; }
         internal abstract ThreadPriority ThreadPriority { get; }
@@ -126,7 +126,7 @@ namespace PowerThreadPool.Works
         internal abstract bool AutoCheckStopOnAsyncTask { get; }
         internal abstract bool EnableWorkTracking { get; }
         internal abstract WorkPlacementPolicy WorkPlacementPolicy { get; }
-        internal abstract ConcurrentSet<WorkID> Dependents { get; }
+        internal abstract ConcurrentSet<WorkID> Dependencies { get; }
         internal abstract bool AllowEventsAndCallback { get; set; }
 
         internal abstract bool IsFirstAsyncWork { get; }

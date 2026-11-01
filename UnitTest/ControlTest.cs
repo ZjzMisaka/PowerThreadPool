@@ -1049,7 +1049,7 @@ namespace UnitTest
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     Interlocked.Increment(ref doneCount);
                 }
@@ -1059,7 +1059,7 @@ namespace UnitTest
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     Interlocked.Increment(ref doneCount);
                 }
@@ -1069,7 +1069,7 @@ namespace UnitTest
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     Interlocked.Increment(ref doneCount);
                 }
@@ -1079,7 +1079,7 @@ namespace UnitTest
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     Interlocked.Increment(ref doneCount);
                 }
@@ -1104,7 +1104,7 @@ namespace UnitTest
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     Interlocked.Increment(ref doneCount);
                 }
@@ -1114,7 +1114,7 @@ namespace UnitTest
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     Interlocked.Increment(ref doneCount);
                 }
@@ -1124,7 +1124,7 @@ namespace UnitTest
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     Interlocked.Increment(ref doneCount);
                 }
@@ -1134,7 +1134,7 @@ namespace UnitTest
                 Thread.Sleep(1000);
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     Interlocked.Increment(ref doneCount);
                 }
@@ -1156,7 +1156,7 @@ namespace UnitTest
             WorkID id = default;
             powerPool.WorkEnded += (s, e) =>
             {
-                if (e.Succeed)
+                if (e.IsSucceeded)
                 {
                     powerPool.ForceStop();
                 }
@@ -1172,7 +1172,7 @@ namespace UnitTest
             {
             }, (res) =>
             {
-                if (res.Status != Status.ForceStopped)
+                if (res.Status != WorkStatus.ForceStopped)
                 {
                     while (true)
                     {
@@ -1207,7 +1207,7 @@ namespace UnitTest
             {
             }, (res) =>
             {
-                if (res.Status == Status.ForceStopped)
+                if (res.Status == WorkStatus.ForceStopped)
                 {
                     return;
                 }
@@ -1648,7 +1648,7 @@ namespace UnitTest
                         }
                     }, (res) =>
                     {
-                        if (res.Status == Status.Succeed)
+                        if (res.Status == WorkStatus.Succeeded)
                         {
                             Interlocked.Increment(ref doneCount);
                         }
@@ -1697,7 +1697,7 @@ namespace UnitTest
                         }
                     }, (res) =>
                     {
-                        if (res.Status == Status.Succeed)
+                        if (res.Status == WorkStatus.Succeeded)
                         {
                             Interlocked.Increment(ref doneCount);
                         }
@@ -1746,7 +1746,7 @@ namespace UnitTest
                         }
                     }, (res) =>
                     {
-                        if (res.Status == Status.Succeed)
+                        if (res.Status == WorkStatus.Succeeded)
                         {
                             Interlocked.Increment(ref doneCount);
                         }
@@ -1939,7 +1939,7 @@ namespace UnitTest
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]
-        public async void TestStopByIDUseCheckIfRequestedStop()
+        public async void TestStopByIDUseIsStopRequested()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -1960,7 +1960,7 @@ namespace UnitTest
                 long start = GetNowSs();
                 while (true)
                 {
-                    if (powerPool.CheckIfRequestedStop())
+                    if (powerPool.IsStopRequested())
                     {
                         return;
                     }
@@ -2004,7 +2004,7 @@ namespace UnitTest
                 }
             }, (res) =>
             {
-                resID = res.Status == Status.Stopped ? WorkID.FromString("Stopped" + res.ID) : WorkID.FromString("Ended" + res.ID);
+                resID = res.Status == WorkStatus.Stopped ? WorkID.FromString("Stopped" + res.ID) : WorkID.FromString("Ended" + res.ID);
             });
 
             await powerPool.WaitAsync(id);
@@ -2040,7 +2040,7 @@ namespace UnitTest
                 }
             }, (res) =>
             {
-                resID = res.Status == Status.Stopped ? WorkID.FromString("Stopped" + res.ID) : WorkID.FromString("Ended" + res.ID);
+                resID = res.Status == WorkStatus.Stopped ? WorkID.FromString("Stopped" + res.ID) : WorkID.FromString("Ended" + res.ID);
             });
 
             await powerPool.WaitAsync(id);
@@ -2076,7 +2076,7 @@ namespace UnitTest
                 }
             }, (res) =>
             {
-                resID = res.Status == Status.Stopped ? WorkID.FromString("Stopped" + res.ID) : WorkID.FromString("Ended" + res.ID);
+                resID = res.Status == WorkStatus.Stopped ? WorkID.FromString("Stopped" + res.ID) : WorkID.FromString("Ended" + res.ID);
             });
 
             powerPool.Wait(id);
@@ -2112,7 +2112,7 @@ namespace UnitTest
                 }
             }, (res) =>
             {
-                resID = res.Status == Status.Stopped ? WorkID.FromString("Stopped" + res.ID) : WorkID.FromString("Ended" + res.ID);
+                resID = res.Status == WorkStatus.Stopped ? WorkID.FromString("Stopped" + res.ID) : WorkID.FromString("Ended" + res.ID);
             });
 
             await powerPool.WaitAsync(id);
@@ -2148,7 +2148,7 @@ namespace UnitTest
                 }
             }, (res) =>
             {
-                resID = res.Status == Status.Stopped ? WorkID.FromString("Stopped" + res.ID) : WorkID.FromString("Ended" + res.ID);
+                resID = res.Status == WorkStatus.Stopped ? WorkID.FromString("Stopped" + res.ID) : WorkID.FromString("Ended" + res.ID);
             });
 
             powerPool.Wait(id);
@@ -2223,11 +2223,11 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     logList.Add(res.Result);
                 }
-                else if (res.Status == Status.Canceled)
+                else if (res.Status == WorkStatus.Canceled)
                 {
                     cid = res.ID;
                 }
@@ -2244,11 +2244,11 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     logList.Add(res.Result);
                 }
-                else if (res.Status == Status.Canceled)
+                else if (res.Status == WorkStatus.Canceled)
                 {
                     cid = res.ID;
                 }
@@ -2265,11 +2265,11 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     logList.Add(res.Result);
                 }
-                else if (res.Status == Status.Canceled)
+                else if (res.Status == WorkStatus.Canceled)
                 {
                     cid = res.ID;
                 }
@@ -2315,11 +2315,11 @@ namespace UnitTest
                 ShouldStoreResult = true,
                 Callback = (res) =>
                 {
-                    if (res.Status == Status.Succeed)
+                    if (res.Status == WorkStatus.Succeeded)
                     {
                         logList.Add(res.Result);
                     }
-                    else if (res.Status == Status.Canceled)
+                    else if (res.Status == WorkStatus.Canceled)
                     {
                         cid = res.ID;
                     }
@@ -2409,7 +2409,7 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     logList.Add(res.Result);
                 }
@@ -2426,7 +2426,7 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     logList.Add(res.Result);
                 }
@@ -2443,7 +2443,7 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     logList.Add(res.Result);
                 }
@@ -2475,7 +2475,7 @@ namespace UnitTest
             {
                 Callback = (res) =>
                 {
-                    if (res.Status == Status.Succeed)
+                    if (res.Status == WorkStatus.Succeeded)
                     {
                         logList.Add(res.Result);
                     }
@@ -2495,7 +2495,7 @@ namespace UnitTest
             {
                 Callback = (res) =>
                 {
-                    if (res.Status == Status.Succeed)
+                    if (res.Status == WorkStatus.Succeeded)
                     {
                         logList.Add(res.Result);
                     }
@@ -2516,7 +2516,7 @@ namespace UnitTest
             {
                 Callback = (res) =>
                 {
-                    if (res.Status == Status.Succeed)
+                    if (res.Status == WorkStatus.Succeeded)
                     {
                         logList.Add(res.Result);
                     }
@@ -2550,7 +2550,7 @@ namespace UnitTest
             {
                 Callback = (res) =>
                 {
-                    if (res.Status == Status.Succeed)
+                    if (res.Status == WorkStatus.Succeeded)
                     {
                         logList.Add(res.Result);
                     }
@@ -2570,7 +2570,7 @@ namespace UnitTest
             {
                 Callback = (res) =>
                 {
-                    if (res.Status == Status.Succeed)
+                    if (res.Status == WorkStatus.Succeeded)
                     {
                         logList.Add(res.Result);
                     }
@@ -2591,7 +2591,7 @@ namespace UnitTest
             {
                 Callback = (res) =>
                 {
-                    if (res.Status == Status.Succeed)
+                    if (res.Status == WorkStatus.Succeeded)
                     {
                         logList.Add(res.Result);
                     }
@@ -2623,7 +2623,7 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     logList.Add(res.Result);
                 }
@@ -2640,7 +2640,7 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     logList.Add(res.Result);
                 }
@@ -2657,7 +2657,7 @@ namespace UnitTest
                 return GetNowSs() - start;
             }, (res) =>
             {
-                if (res.Status == Status.Succeed)
+                if (res.Status == WorkStatus.Succeeded)
                 {
                     logList.Add(res.Result);
                 }
@@ -2725,7 +2725,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
         }
 
         [Fact]
@@ -2751,11 +2751,11 @@ namespace UnitTest
             });
             Assert.Throws<OperationCanceledException>(() => powerPool.Wait(cts.Token));
 
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
 
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
         }
 
         [Fact]
@@ -2776,7 +2776,7 @@ namespace UnitTest
             CancellationTokenSource cts = new CancellationTokenSource();
             powerPool.Wait(cts.Token);
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]
@@ -2796,7 +2796,7 @@ namespace UnitTest
 
             await powerPool.WaitAsync();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]
@@ -2822,11 +2822,11 @@ namespace UnitTest
             });
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await powerPool.WaitAsync(cts.Token));
 
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
 
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
         }
 
         [Fact(Timeout = 5 * 60 * 1000)]
@@ -2848,7 +2848,7 @@ namespace UnitTest
             await powerPool.WaitAsync(cts.Token);
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
         }
 
         [Fact]
@@ -2889,7 +2889,7 @@ namespace UnitTest
             });
             Assert.Throws<OperationCanceledException>(() => powerPool.Wait(id, cts.Token));
 
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.True(GetNowSs() - start <= 400);
             Assert.True(GetNowSs() - start >= 100);
 
@@ -3113,13 +3113,13 @@ namespace UnitTest
             });
             Assert.Throws<OperationCanceledException>(() => powerPool.Wait(powerPool.GetGroupMemberSet("A"), cts.Token));
 
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.True(GetNowSs() - start <= 400);
             Assert.True(GetNowSs() - start >= 100);
 
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
 
             Assert.True(GetNowSs() - start >= 1000);
         }
@@ -3190,13 +3190,13 @@ namespace UnitTest
             });
             Assert.Throws<OperationCanceledException>(() => powerPool.GetGroup("A").Wait(cts.Token));
 
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.True(GetNowSs() - start <= 400);
             Assert.True(GetNowSs() - start >= 100);
 
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
 
             Assert.True(GetNowSs() - start >= 1000);
         }
@@ -3267,13 +3267,13 @@ namespace UnitTest
             });
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await powerPool.GetGroup("A").WaitAsync(cts.Token));
 
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.True(GetNowSs() - start <= 400);
             Assert.True(GetNowSs() - start >= 100);
 
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
 
             Assert.True(GetNowSs() - start >= 1000);
         }
@@ -3395,13 +3395,13 @@ namespace UnitTest
             });
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await powerPool.WaitAsync(id, cts.Token));
 
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.True(GetNowSs() - start <= 400);
             Assert.True(GetNowSs() - start >= 100);
 
             await powerPool.WaitAsync();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
 
             Assert.True(GetNowSs() - start >= 1000);
         }
@@ -3501,7 +3501,7 @@ namespace UnitTest
             });
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await powerPool.WaitAsync(new List<WorkID>() { id }, cts.Token));
 
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.True(GetNowSs() - start <= 400);
             Assert.True(GetNowSs() - start >= 100);
 
@@ -3559,7 +3559,7 @@ namespace UnitTest
             powerPool.Wait(true);
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
             Assert.True(GetNowSs() - start < 4000);
         }
 
@@ -3593,7 +3593,7 @@ namespace UnitTest
             powerPool.Wait(id, true);
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
             Assert.True(GetNowSs() - start < 4000);
         }
 
@@ -3629,12 +3629,12 @@ namespace UnitTest
             });
             Assert.Throws<OperationCanceledException>(() => powerPool.Wait(cts.Token, true));
 
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
 
             powerPool.Wait(true);
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
         }
 
         [Fact]
@@ -3666,7 +3666,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
         }
 
         [Fact]
@@ -3701,12 +3701,12 @@ namespace UnitTest
             });
             Assert.Throws<OperationCanceledException>(() => powerPool.Wait(id, cts.Token, true));
 
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
 
             powerPool.Wait(true);
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
         }
 
         [Fact]
@@ -3738,7 +3738,7 @@ namespace UnitTest
 
             powerPool.Wait();
 
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
         }
 
         [Fact]
@@ -3873,7 +3873,7 @@ namespace UnitTest
             });
             ExecuteResult<bool> res = null;
             Assert.Throws<OperationCanceledException>(() => res = powerPool.Fetch<bool>(id, cts.Token));
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.Null(res);
 
             res = powerPool.Fetch<bool>(id);
@@ -3941,7 +3941,7 @@ namespace UnitTest
             });
             ExecuteResult<bool> res = null;
             await Assert.ThrowsAsync<TaskCanceledException>(async () => res = await powerPool.FetchAsync<bool>(id, cts.Token));
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.Null(res);
 
             res = await powerPool.FetchAsync<bool>(id);
@@ -4078,7 +4078,7 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = false });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStarts = false });
             WorkID id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(10);
@@ -4096,11 +4096,11 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestFetchByIDClearResultStorageWhenPoolStart()
+        public void TestFetchByIDClearResultStorageWhenPoolStarts()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = true });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStarts = true });
             WorkID id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(10);
@@ -4129,7 +4129,7 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = true });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStarts = true });
             WorkID id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(10);
@@ -4156,7 +4156,7 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = true });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStarts = true });
             WorkID id = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(1000);
@@ -4213,7 +4213,7 @@ namespace UnitTest
             });
             ExecuteResult<object> resObj = null;
             Assert.Throws<OperationCanceledException>(() => resObj = powerPool.Fetch(id, cts.Token));
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.Null(resObj);
 
             resObj = powerPool.Fetch(id);
@@ -4279,7 +4279,7 @@ namespace UnitTest
             });
             ExecuteResult<object> resObj = null;
             await Assert.ThrowsAsync<TaskCanceledException>(async () => resObj = await powerPool.FetchAsync(id, cts.Token));
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.Null(resObj);
 
             resObj = await powerPool.FetchAsync(id);
@@ -4359,7 +4359,7 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = true });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStarts = true });
             WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 Thread.Sleep(10);
@@ -4454,7 +4454,7 @@ namespace UnitTest
             });
             List<ExecuteResult<object>> resList = null;
             Assert.Throws<OperationCanceledException>(() => resList = powerPool.Fetch(new List<WorkID>() { id0, id1, WorkID.FromString("id") }, cts.Token));
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.Null(resList);
 
             resList = powerPool.Fetch(new List<WorkID>() { id0, id1, WorkID.FromString("id") });
@@ -4577,7 +4577,7 @@ namespace UnitTest
             });
             List<ExecuteResult<object>> resList = null;
             await Assert.ThrowsAsync<TaskCanceledException>(async () => resList = await powerPool.FetchAsync(new List<WorkID>() { id0, id1, WorkID.FromString("id") }, cts.Token));
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.Null(resList);
 
             resList = await powerPool.FetchAsync(new List<WorkID>() { id0, id1, WorkID.FromString("id") });
@@ -4700,7 +4700,7 @@ namespace UnitTest
             });
             List<ExecuteResult<string>> resList = null;
             Assert.Throws<OperationCanceledException>(() => resList = powerPool.Fetch<string>(new List<WorkID>() { id0, id1, WorkID.FromString("id") }, cts.Token));
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.Null(resList);
 
             resList = powerPool.Fetch<string>(new List<WorkID>() { id0, id1, WorkID.FromString("id") });
@@ -4766,7 +4766,7 @@ namespace UnitTest
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStart = false });
+            PowerPool powerPool = new PowerPool(new PowerPoolOption() { ClearResultStorageWhenPoolStarts = false });
             WorkID id0 = powerPool.QueueWorkItem(() =>
             {
                 return "0";
@@ -4866,7 +4866,7 @@ namespace UnitTest
             });
             List<ExecuteResult<string>> resList = null;
             await Assert.ThrowsAsync<TaskCanceledException>(async () => resList = await powerPool.FetchAsync<string>(new List<WorkID>() { id0, id1, WorkID.FromString("id") }, cts.Token));
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.Null(resList);
 
             resList = await powerPool.FetchAsync<string>(new List<WorkID>() { id0, id1, WorkID.FromString("id") });
@@ -4974,7 +4974,7 @@ namespace UnitTest
 
             PowerPool powerPool = new PowerPool(new PowerPoolOption
             {
-                ClearResultStorageWhenPoolStart = false
+                ClearResultStorageWhenPoolStarts = false
             });
             WorkID id1 = powerPool.QueueWorkItem(() =>
             {
@@ -5094,7 +5094,7 @@ namespace UnitTest
             });
             List<ExecuteResult<object>> resList = null;
             Assert.Throws<OperationCanceledException>(() => resList = powerPool.GetGroup("A").Fetch(cts.Token));
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.Null(resList);
 
             resList = powerPool.GetGroup("A").Fetch();
@@ -5223,7 +5223,7 @@ namespace UnitTest
             });
             List<ExecuteResult<object>> resList = null;
             await Assert.ThrowsAsync<TaskCanceledException>(async () => resList = await powerPool.GetGroup("A").FetchAsync(cts.Token));
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.Null(resList);
 
             resList = await powerPool.GetGroup("A").FetchAsync();
@@ -5352,7 +5352,7 @@ namespace UnitTest
             });
             List<ExecuteResult<string>> resList = null;
             Assert.Throws<OperationCanceledException>(() => resList = powerPool.GetGroup("A").Fetch<string>(cts.Token));
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.Null(resList);
 
             resList = powerPool.GetGroup("A").Fetch<string>();
@@ -5481,7 +5481,7 @@ namespace UnitTest
             });
             List<ExecuteResult<string>> resList = null;
             await Assert.ThrowsAsync<TaskCanceledException>(async () => resList = await powerPool.GetGroup("A").FetchAsync<string>(cts.Token));
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
             Assert.Null(resList);
 
             resList = await powerPool.GetGroup("A").FetchAsync<string>();
@@ -5783,18 +5783,18 @@ namespace UnitTest
             });
 
             Assert.Equal(0, powerPool.RunningWorkerCount);
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
 
             powerPool.Start();
 
             Assert.Equal(1, powerPool.RunningWorkerCount);
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
 
             powerPool.Stop();
             powerPool.Wait();
 
             Assert.Equal(0, powerPool.RunningWorkerCount);
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
 
             powerPool.QueueWorkItem(() =>
             {
@@ -5810,18 +5810,18 @@ namespace UnitTest
             });
 
             Assert.Equal(0, powerPool.RunningWorkerCount);
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
 
             powerPool.Start();
 
             Assert.Equal(1, powerPool.RunningWorkerCount);
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
 
             powerPool.Stop();
             powerPool.Wait();
 
             Assert.Equal(0, powerPool.RunningWorkerCount);
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
         }
 
         [Fact]
@@ -5834,7 +5834,7 @@ namespace UnitTest
             {
                 while (true)
                 {
-                    if (powerPool.CheckIfRequestedStop())
+                    if (powerPool.IsStopRequested())
                     {
                         return;
                     }
@@ -5843,19 +5843,19 @@ namespace UnitTest
             });
 
             Assert.Equal(1, powerPool.RunningWorkerCount);
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
 
             powerPool.Start();
 
             Assert.Equal(1, powerPool.RunningWorkerCount);
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
 
             powerPool.Stop();
             powerPool.Wait();
         }
 
         [Fact]
-        public void TestStartSuspendedWithDependents()
+        public void TestStartSuspendedWithDependencies()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -5888,22 +5888,22 @@ namespace UnitTest
                 }
             }, new WorkOption()
             {
-                Dependents = new PowerThreadPool.Collections.ConcurrentSet<WorkID>() { id }
+                Dependencies = new PowerThreadPool.Collections.ConcurrentSet<WorkID>() { id }
             });
 
             Assert.Equal(0, powerPool.RunningWorkerCount);
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
 
             powerPool.Start();
 
             Assert.Equal(1, powerPool.RunningWorkerCount);
-            Assert.True(powerPool.PoolRunning);
+            Assert.True(powerPool.IsRunning);
 
             powerPool.Stop();
             powerPool.Wait();
 
             Assert.Equal(0, powerPool.RunningWorkerCount);
-            Assert.False(powerPool.PoolRunning);
+            Assert.False(powerPool.IsRunning);
         }
 
         [Fact]
@@ -6092,13 +6092,13 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestCallCheckIfRequestedStopNotOnPowerPoolWorkerThread()
+        public void TestCallIsStopRequestedNotOnPowerPoolWorkerThread()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
             PowerPool powerPool = new PowerPool();
 
-            Assert.Throws<InvalidOperationException>(() => powerPool.CheckIfRequestedStop());
+            Assert.Throws<InvalidOperationException>(() => powerPool.IsStopRequested());
         }
 
         [Fact]

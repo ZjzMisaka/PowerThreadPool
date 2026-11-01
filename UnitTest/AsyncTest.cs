@@ -426,7 +426,7 @@ namespace UnitTest
             object l = null;
             object c = null;
             object r = null;
-            Status s = Status.Succeed;
+            WorkStatus s = WorkStatus.Succeeded;
             PowerPool powerPool = new PowerPool();
             powerPool.QueueWorkItem<string>(async () =>
             {
@@ -448,7 +448,7 @@ namespace UnitTest
             Assert.Equal("2", l);
             Assert.Null(c);
             Assert.Null(r);
-            Assert.Equal(Status.Stopped, s);
+            Assert.Equal(WorkStatus.Stopped, s);
         }
 
         [Fact]
@@ -668,7 +668,7 @@ namespace UnitTest
             object p = null;
             object c = null;
             object r = null;
-            Status s = Status.Succeed;
+            WorkStatus s = WorkStatus.Succeeded;
             PowerPool powerPool = new PowerPool();
             WorkID id = powerPool.QueueWorkItem<string>(async () =>
             {
@@ -694,7 +694,7 @@ namespace UnitTest
             Assert.Equal("1", p);
             Assert.Null(c);
             Assert.Null(r);
-            Assert.Equal(Status.Stopped, s);
+            Assert.Equal(WorkStatus.Stopped, s);
         }
 
         [Fact]
@@ -799,7 +799,7 @@ namespace UnitTest
             object p = null;
             object c = null;
             object r = null;
-            Status s = Status.Succeed;
+            WorkStatus s = WorkStatus.Succeeded;
             PowerPool powerPool = new PowerPool();
             WorkID id = powerPool.QueueWorkItem<string>(async () =>
             {
@@ -838,7 +838,7 @@ namespace UnitTest
             object p = null;
             object c = null;
             object r = null;
-            Status s = Status.Succeed;
+            WorkStatus s = WorkStatus.Succeeded;
             PowerPool powerPool = new PowerPool();
             WorkID id = powerPool.QueueWorkItem<string>(async () =>
             {
@@ -1028,7 +1028,7 @@ namespace UnitTest
                     {
                         Interlocked.Increment(ref doneCount);
                     },
-                    QueueType = QueueType.LIFO
+                    QueueType = QueueType.Stack
                 };
 
                 int runCount = 10;
@@ -1046,7 +1046,7 @@ namespace UnitTest
                     }, out _);
                     if (id == null)
                     {
-                        Assert.Fail("PoolStopping");
+                        Assert.Fail("IsStopping");
                     }
                 }
 
@@ -1088,7 +1088,7 @@ namespace UnitTest
                     {
                         Interlocked.Increment(ref doneCount);
                     },
-                    QueueType = QueueType.LIFO
+                    QueueType = QueueType.Stack
                 };
 
                 int runCount = 10;
@@ -1112,7 +1112,7 @@ namespace UnitTest
                     }, out _);
                     if (id == null)
                     {
-                        Assert.Fail("PoolStopping");
+                        Assert.Fail("IsStopping");
                     }
                 }
 
@@ -1334,7 +1334,7 @@ namespace UnitTest
         }
 
         [Fact]
-        public void TestDependents()
+        public void TestDependencies()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
@@ -1376,7 +1376,7 @@ namespace UnitTest
                 return "200";
             }, out _, new WorkOption<string>
             {
-                Dependents = new PowerThreadPool.Collections.ConcurrentSet<WorkID> { id },
+                Dependencies = new PowerThreadPool.Collections.ConcurrentSet<WorkID> { id },
                 Callback = (res) =>
                 {
                     r2 = res.Result;
@@ -1632,7 +1632,7 @@ namespace UnitTest
                 throw new Exception();
             }, out _, new WorkOption<object>()
             {
-                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 }
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Immediate, MaxRetryCount = 5 }
             });
 
             powerPool.Wait();
@@ -1670,7 +1670,7 @@ namespace UnitTest
                 return 1;
             }, out _, new WorkOption<object>()
             {
-                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 }
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Immediate, MaxRetryCount = 5 }
             });
 
             powerPool.Wait();
@@ -1703,7 +1703,7 @@ namespace UnitTest
                 throw new Exception();
             }, out _, new WorkOption<object>()
             {
-                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, RetryPolicy = RetryPolicy.Unlimited }
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Immediate, RetryPolicy = RetryPolicy.Unlimited }
             });
 
             powerPool.Wait();
@@ -1732,10 +1732,10 @@ namespace UnitTest
                 throw new Exception();
             }, out _, new WorkOption<object>()
             {
-                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Immediate, MaxRetryCount = 5 },
                 Callback = (res) =>
                 {
-                    if (res.Status == Status.Failed)
+                    if (res.Status == WorkStatus.Failed)
                     {
                         if (res.RetryInfo.CurrentRetryCount == 2)
                         {
@@ -1762,7 +1762,7 @@ namespace UnitTest
             powerPool.WorkEnded += (s, e) =>
             {
                 Interlocked.Increment(ref runCount);
-                if (!e.Succeed)
+                if (!e.IsSucceeded)
                 {
                     if (e.RetryInfo.CurrentRetryCount == 2)
                     {
@@ -1778,7 +1778,7 @@ namespace UnitTest
                 throw new Exception();
             }, out _, new WorkOption<object>()
             {
-                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.ImmediateRetry, MaxRetryCount = 5 },
+                RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Immediate, MaxRetryCount = 5 },
             });
 
             powerPool.Wait();
@@ -1812,7 +1812,7 @@ namespace UnitTest
                 RetryOption = new RetryOption() { RetryBehavior = RetryBehavior.Requeue, MaxRetryCount = 5 },
                 Callback = (res) =>
                 {
-                    if (res.Status == Status.Failed)
+                    if (res.Status == WorkStatus.Failed)
                     {
                         if (res.RetryInfo.CurrentRetryCount == 2)
                         {
@@ -1868,7 +1868,7 @@ namespace UnitTest
             powerPool.WorkEnded += (s, e) =>
             {
                 Interlocked.Increment(ref runCount);
-                if (!e.Succeed)
+                if (!e.IsSucceeded)
                 {
                     if (e.RetryInfo.CurrentRetryCount == 2)
                     {

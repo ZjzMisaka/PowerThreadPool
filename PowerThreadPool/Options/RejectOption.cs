@@ -2,10 +2,10 @@
 {
     public enum RejectType
     {
-        AbortPolicy,
-        CallerRunsPolicy,
-        DiscardPolicy,
-        DiscardQueuedPolicy,
+        Abort,
+        CallerRuns,
+        Discard,
+        DiscardQueued,
     }
 
     public class RejectOption

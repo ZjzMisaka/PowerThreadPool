@@ -11,10 +11,10 @@ namespace PowerThreadPool.Works
         internal WorkIDString(string s)
         {
             _string = s;
-            _hash = ComputeHash(WorkIdKind.String, 0L, default, s);
+            _hash = ComputeHash(WorkIDKind.String, 0L, default, s);
         }
 
-        internal override WorkIdKind Kind => WorkIdKind.String;
+        internal override WorkIDKind Kind => WorkIDKind.String;
 
         internal override long Long => default;
 

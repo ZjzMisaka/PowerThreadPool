@@ -2,7 +2,7 @@
 {
     public enum RetryBehavior
     {
-        ImmediateRetry,
+        Immediate,
         Requeue
     }
 
@@ -15,9 +15,9 @@
     public class RetryOption
     {
         /// <summary>
-        /// ImmediateRetry or Requeue.
+        /// Immediate or Requeue.
         /// </summary>
-        public RetryBehavior RetryBehavior { get; set; } = RetryBehavior.ImmediateRetry;
+        public RetryBehavior RetryBehavior { get; set; } = RetryBehavior.Immediate;
 
         /// <summary>
         /// Unlimited or Limited.
