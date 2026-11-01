@@ -32,9 +32,13 @@ namespace PowerThreadPool.Works
             get => WorkOption.Group;
             set
             {
+                // Options flagged IsDefaultInstance are shared across works
+                // (WorkOption.DefaultInstance, Parallel batch options), so clone
+                // before writing: the copy keeps all fields, drops the flag, and
+                // mutations on it cannot leak into sibling works.
                 if (WorkOption.IsDefaultInstance)
                 {
-                    WorkOption = new WorkOption();
+                    WorkOption = WorkOption.Clone();
                 }
                 WorkOption.Group = value;
             }

@@ -158,6 +158,7 @@ namespace PowerThreadPool
             workOption = new WorkOption()
             {
                 Group = groupID,
+                IsDefaultInstance = true,
             };
             return step;
         }
@@ -251,6 +252,7 @@ namespace PowerThreadPool
             workOption = new WorkOption()
             {
                 Group = groupID,
+                IsDefaultInstance = true,
             };
         }
     }
