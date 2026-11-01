@@ -54,7 +54,7 @@ namespace PowerThreadPool.Works
         internal override bool AutoCheckStopOnAsyncTask => WorkOption.AutoCheckStopOnAsyncTask;
         internal override bool EnableWorkTracking => WorkOption.EnableWorkTracking;
         internal override WorkPlacementPolicy WorkPlacementPolicy => WorkOption.WorkPlacementPolicy;
-        internal override ConcurrentSet<WorkID> Dependents => WorkOption.Dependents;
+        internal override ConcurrentSet<WorkID> Dependencies => WorkOption.Dependencies;
         internal bool _allowEventsAndCallback;
         internal override bool AllowEventsAndCallback
         {
@@ -160,16 +160,16 @@ namespace PowerThreadPool.Works
                     if (TaskCompletionSource != null)
                     {
                         Interlocked.Decrement(ref PowerPool._asyncWorkCount);
-                        SetTaskCompletionSource(Status.Canceled, null);
+                        SetTaskCompletionSource(WorkStatus.Canceled, null);
                     }
 
-                    ExecuteResultBase executeResult = SetExecuteResult(null, null, Status.Canceled);
+                    ExecuteResultBase executeResult = SetExecuteResult(null, null, WorkStatus.Canceled);
                     executeResult.ID = ID;
                     executeResult.StartDateTime = StartDateTime;
 
                     PowerPool.InvokeWorkCanceledEvent(executeResult);
                     InvokeCallback(executeResult, PowerPool.PowerPoolOption);
-                    PowerPool.WorkCallbackEnd(this, Status.Canceled);
+                    PowerPool.WorkCallbackEnd(this, WorkStatus.Canceled);
 
                     int waitingWorkCount = Interlocked.Decrement(ref Worker._waitingWorkCount);
 
@@ -189,19 +189,19 @@ namespace PowerThreadPool.Works
             return res;
         }
 
-        internal override void SetTaskCompletionSource(Status status, ExecuteResultBase executeResult)
+        internal override void SetTaskCompletionSource(WorkStatus status, ExecuteResultBase executeResult)
         {
             if (TaskCompletionSource == null
-                || (status == Status.Succeed && executeResult == null)
+                || (status == WorkStatus.Succeeded && executeResult == null)
                 || !_canSetTaskCompletionSource.TrySet(CanSetTaskCompletionSource.NotAllowed, CanSetTaskCompletionSource.Allowed))
             {
                 return;
             }
-            if (status == Status.Stopped || status == Status.ForceStopped || status == Status.Canceled)
+            if (status == WorkStatus.Stopped || status == WorkStatus.ForceStopped || status == WorkStatus.Canceled)
             {
                 TaskCompletionSource.SetCanceled();
             }
-            else if (status == Status.Failed)
+            else if (status == WorkStatus.Failed)
             {
                 TaskCompletionSource.SetException(executeResult.Exception);
             }
@@ -371,7 +371,7 @@ namespace PowerThreadPool.Works
                 Spinner.Start(() => IsDone, true);
                 if (ExecuteResult == null)
                 {
-                    SetExecuteResult(_lastResult, null, Status.Succeed);
+                    SetExecuteResult(_lastResult, null, WorkStatus.Succeeded);
                 }
                 return ExecuteResult.ToTypedResult<T>();
             }
@@ -411,19 +411,19 @@ namespace PowerThreadPool.Works
         {
             if (WorkOption.Callback != null)
             {
-                PowerPool.SafeCallback<TResult>(WorkOption.Callback, EventArguments.ErrorFrom.Callback, executeResult);
+                PowerPool.SafeCallback<TResult>(WorkOption.Callback, EventArguments.ErrorSource.Callback, executeResult);
             }
             else if (WorkOption is WorkOption<TResult> wor && wor.Callback != null)
             {
-                PowerPool.SafeCallback<TResult>(wor.Callback, EventArguments.ErrorFrom.Callback, executeResult);
+                PowerPool.SafeCallback<TResult>(wor.Callback, EventArguments.ErrorSource.Callback, executeResult);
             }
             else if (powerPoolOption.DefaultCallback != null)
             {
-                PowerPool.SafeCallback(powerPoolOption.DefaultCallback, EventArguments.ErrorFrom.DefaultCallback, executeResult);
+                PowerPool.SafeCallback(powerPoolOption.DefaultCallback, EventArguments.ErrorSource.DefaultCallback, executeResult);
             }
         }
 
-        internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, Status status)
+        internal override ExecuteResultBase SetExecuteResult(object result, Exception exception, WorkStatus status)
         {
             Status = status;
             ExecuteResult<TResult> executeResult = ExecuteResult;
@@ -446,7 +446,7 @@ namespace PowerThreadPool.Works
             {
                 return false;
             }
-            else if (WorkOption.RetryOption != null && Status == Status.Failed && ((WorkOption.RetryOption.RetryPolicy == RetryPolicy.Limited && _retryCount < WorkOption.RetryOption.MaxRetryCount) || WorkOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
+            else if (WorkOption.RetryOption != null && Status == WorkStatus.Failed && ((WorkOption.RetryOption.RetryPolicy == RetryPolicy.Limited && _retryCount < WorkOption.RetryOption.MaxRetryCount) || WorkOption.RetryOption.RetryPolicy == RetryPolicy.Unlimited))
             {
                 return true;
             }
@@ -458,7 +458,7 @@ namespace PowerThreadPool.Works
 
         internal override bool ShouldImmediateRetry(ExecuteResultBase executeResult)
         {
-            bool res = ShouldRetry(executeResult) && WorkOption.RetryOption.RetryBehavior == RetryBehavior.ImmediateRetry;
+            bool res = ShouldRetry(executeResult) && WorkOption.RetryOption.RetryBehavior == RetryBehavior.Immediate;
             if (res)
             {
                 ExecuteResult = null;

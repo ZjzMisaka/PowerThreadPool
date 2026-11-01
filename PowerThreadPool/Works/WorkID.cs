@@ -2,7 +2,7 @@
 
 namespace PowerThreadPool.Works
 {
-    public enum WorkIdKind : byte
+    public enum WorkIDKind : byte
     {
         Long = 0,
         Guid = 1,
@@ -29,16 +29,16 @@ namespace PowerThreadPool.Works
         , ISpanFormattable
 #endif
     {
-        internal abstract WorkIdKind Kind { get; }
+        internal abstract WorkIDKind Kind { get; }
         internal abstract long Long { get; }
         internal abstract Guid Guid { get; }
         internal abstract string String { get; }
 
         internal abstract int Hash { get; }
 
-        public bool IsLong { get { return Kind == WorkIdKind.Long; } }
-        public bool IsGuid { get { return Kind == WorkIdKind.Guid; } }
-        public bool IsString { get { return Kind == WorkIdKind.String; } }
+        public bool IsLong { get { return Kind == WorkIDKind.Long; } }
+        public bool IsGuid { get { return Kind == WorkIDKind.Guid; } }
+        public bool IsString { get { return Kind == WorkIDKind.String; } }
 
         public static WorkID FromLong(long value)
         {
@@ -74,7 +74,7 @@ namespace PowerThreadPool.Works
         public static explicit operator long(WorkID id)
         {
             if (id == null) throw new InvalidCastException("WorkID is null.");
-            if (id.Kind != WorkIdKind.Long)
+            if (id.Kind != WorkIDKind.Long)
                 throw new InvalidCastException("WorkID is not of type long.");
             return id.Long;
         }
@@ -82,7 +82,7 @@ namespace PowerThreadPool.Works
         public static explicit operator Guid(WorkID id)
         {
             if (id == null) throw new InvalidCastException("WorkID is null.");
-            if (id.Kind != WorkIdKind.Guid)
+            if (id.Kind != WorkIDKind.Guid)
                 throw new InvalidCastException("WorkID is not of type Guid.");
             return id.Guid;
         }
@@ -90,7 +90,7 @@ namespace PowerThreadPool.Works
         public static explicit operator string(WorkID id)
         {
             if (id == null) throw new InvalidCastException("WorkID is null.");
-            if (id.Kind != WorkIdKind.String)
+            if (id.Kind != WorkIDKind.String)
                 throw new InvalidCastException("WorkID is not of type string.");
             return id.String;
         }
@@ -116,15 +116,15 @@ namespace PowerThreadPool.Works
         public override string ToString()
         {
             string res = null;
-            if (Kind == WorkIdKind.Long)
+            if (Kind == WorkIDKind.Long)
             {
                 res = Long.ToString();
             }
-            else if (Kind == WorkIdKind.Guid)
+            else if (Kind == WorkIDKind.Guid)
             {
                 res = Guid.ToString("D");
             }
-            else if (Kind == WorkIdKind.String)
+            else if (Kind == WorkIDKind.String)
             {
                 res = String;
             }
@@ -134,16 +134,16 @@ namespace PowerThreadPool.Works
         public string ToString(string format, IFormatProvider formatProvider)
         {
             string res = null;
-            if (Kind == WorkIdKind.Long)
+            if (Kind == WorkIDKind.Long)
             {
                 res = Long.ToString(format, formatProvider);
             }
-            else if (Kind == WorkIdKind.Guid)
+            else if (Kind == WorkIDKind.Guid)
             {
                 string f = string.IsNullOrEmpty(format) ? "D" : format;
                 res = Guid.ToString(f, formatProvider);
             }
-            else if (Kind == WorkIdKind.String)
+            else if (Kind == WorkIDKind.String)
             {
                 res = String;
             }
@@ -159,11 +159,11 @@ namespace PowerThreadPool.Works
         {
             bool res = true;
             charsWritten = default;
-            if (Kind == WorkIdKind.Long)
+            if (Kind == WorkIDKind.Long)
             {
                 res = Long.TryFormat(destination, out charsWritten, format, provider);
             }
-            else if (Kind == WorkIdKind.Guid)
+            else if (Kind == WorkIDKind.Guid)
             {
                 if (format.Length == 0)
                 {
@@ -174,7 +174,7 @@ namespace PowerThreadPool.Works
                     res = Guid.TryFormat(destination, out charsWritten, format);
                 }
             }
-            else if (Kind == WorkIdKind.String)
+            else if (Kind == WorkIDKind.String)
             {
                 ReadOnlySpan<char> s = String.AsSpan();
                 if (s.Length <= destination.Length)
@@ -205,15 +205,15 @@ namespace PowerThreadPool.Works
                 return false;
 
             bool res = false;
-            if (Kind == WorkIdKind.Long)
+            if (Kind == WorkIDKind.Long)
             {
                 res = Long == other.Long;
             }
-            else if (Kind == WorkIdKind.Guid)
+            else if (Kind == WorkIDKind.Guid)
             {
                 res = Guid.Equals(other.Guid);
             }
-            else if (Kind == WorkIdKind.String)
+            else if (Kind == WorkIDKind.String)
             {
                 res = string.Equals(String, other.String, StringComparison.Ordinal);
             }
@@ -243,7 +243,7 @@ namespace PowerThreadPool.Works
             return !(left == right);
         }
 
-        internal static int ComputeHash(WorkIdKind kind, long l, Guid g, string s)
+        internal static int ComputeHash(WorkIDKind kind, long l, Guid g, string s)
         {
             unchecked
             {
@@ -252,15 +252,15 @@ namespace PowerThreadPool.Works
 
                 switch (kind)
                 {
-                    case WorkIdKind.Long:
+                    case WorkIDKind.Long:
                         h = (h * 31) + l.GetHashCode();
                         break;
 
-                    case WorkIdKind.Guid:
+                    case WorkIDKind.Guid:
                         h = (h * 31) + g.GetHashCode();
                         break;
 
-                    case WorkIdKind.String:
+                    case WorkIDKind.String:
                         h = (h * 31) + StringComparer.Ordinal.GetHashCode(s);
                         break;
                 }

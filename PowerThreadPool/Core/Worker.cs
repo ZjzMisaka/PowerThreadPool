@@ -194,11 +194,11 @@ namespace PowerThreadPool
             {
                 return _powerPool.PowerPoolOption.CustomQueueFactory();
             }
-            else if (_powerPool.PowerPoolOption.QueueType == QueueType.FIFO)
+            else if (_powerPool.PowerPoolOption.QueueType == QueueType.Queue)
             {
                 return new ConcurrentStealablePriorityQueue<WorkItemBase>(false);
             }
-            else if (_powerPool.PowerPoolOption.QueueType == QueueType.LIFO)
+            else if (_powerPool.PowerPoolOption.QueueType == QueueType.Stack)
             {
                 return new ConcurrentStealablePriorityStack<WorkItemBase>(false);
             }
@@ -235,7 +235,7 @@ namespace PowerThreadPool
             }
             else
             {
-                Status status = Status.Succeed;
+                WorkStatus status = WorkStatus.Succeeded;
                 if (executeResult != null)
                 {
                     status = executeResult.Status;
@@ -265,7 +265,7 @@ namespace PowerThreadPool
                 // Work.AllowEventsAndCallback == false
                 return;
             }
-            if (executeResult.Status == Status.Stopped)
+            if (executeResult.Status == WorkStatus.Stopped)
             {
                 _powerPool.InvokeWorkStoppedEvent(executeResult);
             }
@@ -346,10 +346,10 @@ namespace PowerThreadPool
             if (Work.TaskCompletionSource != null)
             {
                 Interlocked.Decrement(ref _powerPool._asyncWorkCount);
-                Work.SetTaskCompletionSource(Status.ForceStopped, null);
+                Work.SetTaskCompletionSource(WorkStatus.ForceStopped, null);
             }
 
-            ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, Status.ForceStopped);
+            ExecuteResultBase executeResult = Work.SetExecuteResult(null, ex, WorkStatus.ForceStopped);
             executeResult.ID = Work.ID;
             if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
             {
@@ -363,7 +363,7 @@ namespace PowerThreadPool
             }
             Work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
 
-            _powerPool.WorkCallbackEnd(Work, Status.ForceStopped);
+            _powerPool.WorkCallbackEnd(Work, WorkStatus.ForceStopped);
 
             bool hasWaitingWork = RequeueAllWaitingWork(null);
             Work.IsDone = true;
@@ -510,13 +510,13 @@ namespace PowerThreadPool
                     }
                     else if (Work.NeedsExecuteResult || Work._resultRequested)
                     {
-                        executeResult = Work.SetExecuteResult(result, null, Status.Succeed);
+                        executeResult = Work.SetExecuteResult(result, null, WorkStatus.Succeeded);
                         SetStatisticsCollection(executeResult, Work.StartDateTime);
                     }
                     else
                     {
                         Work._lastResult = result;
-                        Work.Status = Status.Succeed;
+                        Work.Status = WorkStatus.Succeeded;
                     }
                 }
             }
@@ -535,7 +535,7 @@ namespace PowerThreadPool
                 // then AllowEventsAndCallback may not be set to true.
                 Work.AllowEventsAndCallback = true;
 
-                executeResult = Work.SetExecuteResult(null, ex, Status.Stopped);
+                executeResult = Work.SetExecuteResult(null, ex, WorkStatus.Stopped);
                 SetStatisticsCollection(executeResult, Work.StartDateTime);
             }
             catch (Exception ex)
@@ -545,9 +545,9 @@ namespace PowerThreadPool
                 // then AllowEventsAndCallback may not be set to true
                 Work.AllowEventsAndCallback = true;
 
-                executeResult = Work.SetExecuteResult(null, ex, Status.Failed);
+                executeResult = Work.SetExecuteResult(null, ex, WorkStatus.Failed);
                 executeResult.ID = Work.ID;
-                _powerPool.OnWorkErrorOccurred(ex, ErrorFrom.WorkLogic, executeResult);
+                _powerPool.OnWorkErrorOccurred(ex, ErrorSource.WorkLogic, executeResult);
             }
 #if DEBUG
             Spinner.Start(() => _workHeldState == WorkHeldStates.NotHeld, true);

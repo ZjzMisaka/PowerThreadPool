@@ -21,7 +21,7 @@ namespace Benchmark
             _powerPool = new PowerPool(new PowerPoolOption
             {
                 MaxThreads = Environment.ProcessorCount,
-                QueueType = QueueType.LIFO,
+                QueueType = QueueType.Stack,
             });
 
             _tpErrorCount = -1;

@@ -37,7 +37,7 @@ namespace PowerThreadPoolTest
             };
             _powerPool.WorkEnded += (s, e) =>
             {
-                if (!e.Succeed)
+                if (!e.IsSucceeded)
                 {
                     Interlocked.Increment(ref _failedCount);
                 }

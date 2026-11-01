@@ -2,7 +2,7 @@
 
 namespace PowerThreadPool.EventArguments
 {
-    public class RunningTimerElapsedEventArgs
+    public class RunningTimerElapsedEventArgs : EventArgs
     {
         public RunningTimerElapsedEventArgs() { }
 

@@ -3,7 +3,7 @@ using PowerThreadPool.Results;
 
 namespace PowerThreadPool.EventArguments
 {
-    public enum ErrorFrom
+    public enum ErrorSource
     {
         Callback,
         DefaultCallback,
@@ -31,14 +31,14 @@ namespace PowerThreadPool.EventArguments
         /// <summary>
         /// The location where the error occurred.
         /// </summary>
-        public ErrorFrom ErrorFrom { get; internal set; }
+        public ErrorSource ErrorSource { get; internal set; }
 
         /// <summary>
         /// The result of the work's execution.
         /// </summary>
         public ExecuteResultBase ExecuteResult { get; internal set; }
 
-        public ErrorOccurredEventArgs(Exception exception, ErrorFrom errorFrom, ExecuteResultBase executeResult)
+        public ErrorOccurredEventArgs(Exception exception, ErrorSource errorSource, ExecuteResultBase executeResult)
         {
             if (executeResult != null)
             {
@@ -49,7 +49,7 @@ namespace PowerThreadPool.EventArguments
                 Duration = executeResult.Duration;
             }
             Exception = exception;
-            ErrorFrom = errorFrom;
+            ErrorSource = errorSource;
             ExecuteResult = executeResult;
         }
     }

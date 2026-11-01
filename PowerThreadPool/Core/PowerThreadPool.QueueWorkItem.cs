@@ -827,7 +827,7 @@ namespace PowerThreadPool
             WorkID workID = CreateID(option);
             WorkBase work = InitWork(workID, action, function, option, cts, workBase);
 
-            bool registeredDependents = _workDependencyController.Register(work, option.Dependents);
+            bool registeredDependencies = _workDependencyController.Register(work, option.Dependencies);
             if (work._dependencyStatus.InterlockedValue == DependencyStatus.Failed)
             {
                 return workID;
@@ -838,14 +838,14 @@ namespace PowerThreadPool
                 _workGroupDic.AddOrUpdate(work.Group, new ConcurrentSet<WorkID>() { work.ID }, (key, oldValue) => { oldValue.Add(work.ID); return oldValue; });
             }
 
-            if (!PowerPoolOption.StartSuspended && PoolStopping)
+            if (!PowerPoolOption.StartSuspended && IsStopping)
             {
                 _stopSuspendedWork[workID] = work;
                 _stopSuspendedWorkQueue.Enqueue(workID);
                 return workID;
             }
 
-            SuspendOrSetWork(PowerPoolOption.StartSuspended, registeredDependents, workID, work);
+            SuspendOrSetWork(PowerPoolOption.StartSuspended, registeredDependencies, workID, work);
 
             return workID;
         }
@@ -866,7 +866,7 @@ namespace PowerThreadPool
             return work;
         }
 
-        private void SuspendOrSetWork(bool startSuspended, bool registeredDependents, WorkID workID, WorkBase work)
+        private void SuspendOrSetWork(bool startSuspended, bool registeredDependencies, WorkID workID, WorkBase work)
         {
             if (startSuspended)
             {
@@ -875,7 +875,7 @@ namespace PowerThreadPool
             }
             else
             {
-                if (!registeredDependents)
+                if (!registeredDependencies)
                 {
                     SetWork(work);
                 }
@@ -900,7 +900,7 @@ namespace PowerThreadPool
             }
             else
             {
-                if (PowerPoolOption.WorkIDType == WorkIDType.LongIncrement)
+                if (PowerPoolOption.WorkIDType == WorkIDType.Long)
                 {
                     workID = WorkID.FromLong(Interlocked.Increment(ref _workIDIncrement));
                 }

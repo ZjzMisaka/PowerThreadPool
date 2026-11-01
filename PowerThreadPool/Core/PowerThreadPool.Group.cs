@@ -123,7 +123,7 @@ namespace PowerThreadPool
         /// </summary>
         /// <param name="parentGroup">parent group</param>
         /// <param name="childGroup">child group</param>
-        /// <returns>is succeed</returns>
+        /// <returns>Whether the operation succeeded.</returns>
         public bool RemoveGroupRelation(string parentGroup, string childGroup = null)
         {
             bool res = false;

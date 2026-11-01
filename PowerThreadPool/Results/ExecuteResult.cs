@@ -14,7 +14,7 @@ namespace PowerThreadPool.Results
         {
         }
 
-        internal override void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime, RetryOption retryOption, int retryCount)
+        internal override void SetExecuteResult(object result, Exception exception, WorkStatus status, DateTime queueDateTime, RetryOption retryOption, int retryCount)
         {
             if (result != null)
             {
@@ -25,7 +25,7 @@ namespace PowerThreadPool.Results
             IsFound = true;
             QueueDateTime = queueDateTime;
 
-            if (status == Status.Failed && retryOption != null)
+            if (status == WorkStatus.Failed && retryOption != null)
             {
                 RetryInfo = new RetryInfo()
                 {

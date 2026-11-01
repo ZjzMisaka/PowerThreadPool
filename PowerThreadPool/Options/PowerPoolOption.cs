@@ -7,14 +7,17 @@ namespace PowerThreadPool.Options
 {
     public enum QueueType
     {
-        FIFO,
-        LIFO,
+        Queue,
+        Stack,
         Deque,
     }
 
+    /// <summary>
+    /// The strategy used by the pool to generate work IDs.
+    /// </summary>
     public enum WorkIDType
     {
-        LongIncrement,
+        Long,
         Guid,
     }
 
@@ -100,14 +103,14 @@ namespace PowerThreadPool.Options
         public bool ShouldStoreResult { get; set; } = false;
 
         /// <summary>
-        /// FIFO, LIFO or Deque.
+        /// Queue, Stack or Deque.
         /// </summary>
-        public QueueType QueueType { get; set; } = QueueType.FIFO;
+        public QueueType QueueType { get; set; } = QueueType.Queue;
 
         /// <summary>
         /// Determines whether to clear the result storage when the pool starts.
         /// </summary>
-        public bool ClearResultStorageWhenPoolStart { get; set; } = false;
+        public bool ClearResultStorageWhenPoolStarts { get; set; } = false;
 
         /// <summary>
         /// A factory function that creates instances of 
@@ -118,7 +121,7 @@ namespace PowerThreadPool.Options
         /// <summary>
         /// The type of work ID to be used.
         /// </summary>
-        public WorkIDType WorkIDType { get; set; } = WorkIDType.LongIncrement;
+        public WorkIDType WorkIDType { get; set; } = WorkIDType.Long;
 
         /// <summary>
         /// Reject policy.

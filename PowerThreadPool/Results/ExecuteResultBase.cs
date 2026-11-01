@@ -4,9 +4,9 @@ using PowerThreadPool.Works;
 
 namespace PowerThreadPool.Results
 {
-    public enum Status
+    public enum WorkStatus
     {
-        Succeed,
+        Succeeded,
         Failed,
         Canceled,
         Stopped,
@@ -25,7 +25,7 @@ namespace PowerThreadPool.Results
         /// <summary>
         /// Status of the work.
         /// </summary>
-        public Status Status { get; internal set; }
+        public WorkStatus Status { get; internal set; }
 
         /// <summary>
         /// Is result found.
@@ -81,7 +81,7 @@ namespace PowerThreadPool.Results
         /// </summary>
         public RetryInfo RetryInfo { get; internal set; }
 
-        internal abstract void SetExecuteResult(object result, Exception exception, Status status, DateTime queueDateTime, RetryOption retryOption, int executeCount);
+        internal abstract void SetExecuteResult(object result, Exception exception, WorkStatus status, DateTime queueDateTime, RetryOption retryOption, int executeCount);
         internal abstract object GetResult();
         internal abstract ExecuteResult<TResult> ToTypedResult<TResult>();
     }

@@ -116,10 +116,10 @@ namespace PowerThreadPool
             return false;
         }
 
-        public bool PoolRunning => _poolState == PoolStates.Running;
+        public bool IsRunning => _poolState == PoolStates.Running;
 
         private bool _poolStopping = false;
-        public bool PoolStopping { get => _poolStopping; }
+        public bool IsStopping { get => _poolStopping; }
 
         private volatile bool _enablePoolIdleCheck = true;
         /// <summary>
@@ -156,7 +156,7 @@ namespace PowerThreadPool
             }
         }
 
-        public IEnumerable<WorkID> WaitingWorkList
+        public IEnumerable<WorkID> WaitingWorkIds
         {
             get
             {
@@ -189,7 +189,7 @@ namespace PowerThreadPool
         /// The total time taken for execution (ms).
         /// Will be reset when the thread pool starts again.
         /// </summary>
-        public long TotalExecuteTime => _executeTime;
+        public long TotalExecutionTime => _executeTime;
 
         /// <summary>
         /// The average time spent in the queue (ms).
@@ -211,7 +211,7 @@ namespace PowerThreadPool
         /// The average time taken for execution (ms).
         /// Will be reset when the thread pool starts again.
         /// </summary>
-        public long AverageExecuteTime
+        public long AverageExecutionTime
         {
             get
             {
@@ -227,13 +227,13 @@ namespace PowerThreadPool
         /// The average elapsed time from start queue to finish (ms).
         /// Will be reset when the thread pool starts again.
         /// </summary>
-        public long AverageElapsedTime => AverageQueueTime + AverageExecuteTime;
+        public long AverageElapsedTime => AverageQueueTime + AverageExecutionTime;
 
         /// <summary>
         /// The total elapsed time from start queue to finish (ms).
         /// Will be reset when the thread pool starts again.
         /// </summary>
-        public long TotalElapsedTime => TotalQueueTime + TotalExecuteTime;
+        public long TotalElapsedTime => TotalQueueTime + TotalExecutionTime;
 
         /// <summary>
         /// Pool runtime duration.
@@ -275,7 +275,7 @@ namespace PowerThreadPool
             {
                 if (PoolTimedOut != null)
                 {
-                    SafeInvoke(PoolTimedOut, new EventArgs(), ErrorFrom.PoolTimedOut, null);
+                    SafeInvoke(PoolTimedOut, new EventArgs(), ErrorSource.PoolTimedOut, null);
                 }
                 if (PowerPoolOption.TimeoutOption.ShouldStop)
                 {
@@ -304,7 +304,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Start the pool, but only if PowerPoolOption.StartSuspended is set to true.
+        /// Starts the pool, but only if PowerPoolOption.StartSuspended is set to true.
         /// </summary>
         public void Start()
         {
@@ -314,10 +314,10 @@ namespace PowerThreadPool
             {
                 if (_suspendedWork.TryGetValue(key, out WorkBase work))
                 {
-                    ConcurrentSet<WorkID> dependents = work.Dependents;
-                    if (dependents == null || dependents.Count == 0)
+                    ConcurrentSet<WorkID> dependencies = work.Dependencies;
+                    if (dependencies == null || dependencies.Count == 0)
                     {
-                        if (PoolStopping)
+                        if (IsStopping)
                         {
                             _stopSuspendedWork[work.ID] = work;
                             _stopSuspendedWorkQueue.Enqueue(work.ID);
@@ -365,7 +365,7 @@ namespace PowerThreadPool
 
                     Interlocked.Increment(ref _idleWorkerCount);
 
-                    if (PoolRunning && WaitingWorkCount > 0 && worker.TryAssignWorkForNewWorker())
+                    if (IsRunning && WaitingWorkCount > 0 && worker.TryAssignWorkForNewWorker())
                     {
                         worker._canGetWork.InterlockedValue = CanGetWork.Allowed;
                         continue;
@@ -515,10 +515,10 @@ namespace PowerThreadPool
                 {
                     ID = rejectID,
                 };
-                SafeInvoke(WorkRejected, workRejectedEventArgs, ErrorFrom.WorkRejected, null);
+                SafeInvoke(WorkRejected, workRejectedEventArgs, ErrorSource.WorkRejected, null);
             }
 
-            if (rejectType == RejectType.AbortPolicy)
+            if (rejectType == RejectType.Abort)
             {
                 WorkRejectedException workRejectedException = new WorkRejectedException
                 {
@@ -527,7 +527,7 @@ namespace PowerThreadPool
 
                 throw workRejectedException;
             }
-            else if (rejectType == RejectType.CallerRunsPolicy)
+            else if (rejectType == RejectType.CallerRuns)
             {
                 HelpWhileWaitingCore(work);
 
@@ -535,7 +535,7 @@ namespace PowerThreadPool
 
                 return true;
             }
-            else if (rejectType == RejectType.DiscardPolicy)
+            else if (rejectType == RejectType.Discard)
             {
                 OnWorkDiscarded(work, rejectType);
 
@@ -543,12 +543,12 @@ namespace PowerThreadPool
 
                 return true;
             }
-            else if (rejectType == RejectType.DiscardQueuedPolicy)
+            else if (rejectType == RejectType.DiscardQueued)
             {
                 foreach (var kv in _aliveWorkerDic)
                 {
                     Worker workerDiscard = kv.Value;
-                    // When ThreadQueueLimit is 0 and the work rejection policy is set to "DiscardQueuedPolicy",
+                    // When ThreadQueueLimit is 0 and the work rejection policy is set to "DiscardQueued",
                     // since there are no works in the queue, the oldest work cannot be discarded.
                     // This may cause excessive spinning with no progress.
                     // However, this is due to an unreasonable user configuration, so no handling is implemented;
@@ -567,7 +567,7 @@ namespace PowerThreadPool
 
         private void OnWorkDiscarded(WorkBase work, RejectType rejectType)
         {
-            ExecuteResultBase executeResult = work.SetExecuteResult(null, null, Status.Canceled);
+            ExecuteResultBase executeResult = work.SetExecuteResult(null, null, WorkStatus.Canceled);
             WorkID idErr = work.ID;
             executeResult.ID = idErr;
 
@@ -579,7 +579,7 @@ namespace PowerThreadPool
                 {
                     ID = work.ID,
                 };
-                SafeInvoke(WorkDiscarded, workDiscardedEventArgs, ErrorFrom.WorkDiscarded, null);
+                SafeInvoke(WorkDiscarded, workDiscardedEventArgs, ErrorSource.WorkDiscarded, null);
             }
         }
 
@@ -783,7 +783,7 @@ namespace PowerThreadPool
                     _startDateTime = DateTime.UtcNow;
                 }
 
-                if (PowerPoolOption.ClearResultStorageWhenPoolStart)
+                if (PowerPoolOption.ClearResultStorageWhenPoolStarts)
                 {
                     _resultDic.Clear();
                 }
@@ -792,7 +792,7 @@ namespace PowerThreadPool
 
                 if (PoolStarted != null)
                 {
-                    SafeInvoke(PoolStarted, new EventArgs(), ErrorFrom.PoolStarted, null);
+                    SafeInvoke(PoolStarted, new EventArgs(), ErrorSource.PoolStarted, null);
                 }
 
                 if (PowerPoolOption.RunningTimerOption != null)
@@ -864,7 +864,7 @@ namespace PowerThreadPool
                         StartDateTime = _startDateTime,
                         EndDateTime = DateTime.UtcNow,
                     };
-                    SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorFrom.PoolIdled, null);
+                    SafeInvoke(PoolIdled, poolIdledEventArgs, ErrorSource.PoolIdled, null);
                 }
             }
             else if (_poolState.TrySet(PoolStates.IdleChecked, PoolStates.NotRunning))

@@ -73,7 +73,7 @@ namespace PowerThreadPool
                 // and successfully completes without failure or being stopped, this branch will be entered.
                 // Requires direct setting of AllowEventsAndCallback and ExecuteResult.
                 workDone.AllowEventsAndCallback = true;
-                workDone.SetExecuteResult(task.Result, task.Exception, Status.Succeed);
+                workDone.SetExecuteResult(task.Result, task.Exception, WorkStatus.Succeeded);
             }
 
             RegisterCompletion(task, prevCtx, id, true);
@@ -87,7 +87,7 @@ namespace PowerThreadPool
                 // and successfully completes without failure or being stopped, this branch will be entered.
                 // Requires direct setting of AllowEventsAndCallback and ExecuteResult.
                 workDone.AllowEventsAndCallback = true;
-                workDone.SetExecuteResult(null, task.Exception, Status.Succeed);
+                workDone.SetExecuteResult(null, task.Exception, WorkStatus.Succeeded);
             }
 
 #if (NET45_OR_GREATER || NET5_0_OR_GREATER)
@@ -111,7 +111,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="callBack"></param>
@@ -120,7 +120,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="callBack"></param>
@@ -129,7 +129,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="option"></param>
@@ -138,7 +138,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="option"></param>
@@ -146,7 +146,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="param"></param>
@@ -156,7 +156,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="param"></param>
@@ -166,7 +166,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="param"></param>
@@ -176,7 +176,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="param"></param>
@@ -186,7 +186,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -197,7 +197,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -208,7 +208,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -219,7 +219,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -230,7 +230,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -243,7 +243,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -256,7 +256,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -269,7 +269,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -282,7 +282,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -297,7 +297,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -312,7 +312,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -327,7 +327,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -342,7 +342,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -359,7 +359,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -376,7 +376,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -393,7 +393,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -410,7 +410,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -429,7 +429,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -448,7 +448,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -467,7 +467,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -486,7 +486,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -496,7 +496,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -506,7 +506,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -516,7 +516,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -526,7 +526,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -537,7 +537,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -548,7 +548,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -559,7 +559,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -570,7 +570,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -582,7 +582,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -594,7 +594,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -606,7 +606,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -618,7 +618,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -632,7 +632,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -646,7 +646,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -660,7 +660,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -674,7 +674,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -690,7 +690,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -706,7 +706,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -722,7 +722,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -738,7 +738,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -756,7 +756,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -774,7 +774,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -792,7 +792,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -810,7 +810,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -830,7 +830,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -850,7 +850,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, callBack);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -870,7 +870,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -890,7 +890,7 @@ namespace PowerThreadPool
             => QueueWorkItem(asyncFunc, param1, param2, param3, param4, param5, out _, option);
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="task"></param>
@@ -903,7 +903,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="task"></param>
@@ -916,7 +916,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="task"></param>
@@ -948,7 +948,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="task"></param>
@@ -982,7 +982,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="param"></param>
@@ -996,7 +996,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="param"></param>
@@ -1010,7 +1010,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="param"></param>
@@ -1023,7 +1023,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <param name="asyncFunc"></param>
         /// <param name="param"></param>
@@ -1036,7 +1036,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -1051,7 +1051,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -1066,7 +1066,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -1080,7 +1080,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -1094,7 +1094,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1111,7 +1111,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1128,7 +1128,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1144,7 +1144,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1160,7 +1160,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1179,7 +1179,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1198,7 +1198,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1216,7 +1216,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1234,7 +1234,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1255,7 +1255,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1276,7 +1276,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1296,7 +1296,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1316,7 +1316,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1339,7 +1339,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1362,7 +1362,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1384,7 +1384,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1406,7 +1406,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -1420,7 +1420,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -1434,7 +1434,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -1469,7 +1469,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -1506,7 +1506,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -1521,7 +1521,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -1536,7 +1536,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -1550,7 +1550,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="TResult"></typeparam>
         /// <param name="asyncFunc"></param>
@@ -1564,7 +1564,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -1580,7 +1580,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -1596,7 +1596,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -1611,7 +1611,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="TResult"></typeparam>
@@ -1626,7 +1626,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1644,7 +1644,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1662,7 +1662,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1679,7 +1679,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1696,7 +1696,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1716,7 +1716,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1736,7 +1736,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1755,7 +1755,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1774,7 +1774,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1796,7 +1796,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1818,7 +1818,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1839,7 +1839,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1860,7 +1860,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1884,7 +1884,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1908,7 +1908,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
@@ -1931,7 +1931,7 @@ namespace PowerThreadPool
         }
 
         /// <summary>
-        /// Queues a async work for execution. 
+        /// Queues an async work for execution. 
         /// </summary>
         /// <typeparam name="T1"></typeparam>
         /// <typeparam name="T2"></typeparam>
