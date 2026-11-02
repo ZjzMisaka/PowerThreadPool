@@ -96,8 +96,6 @@ namespace PowerThreadPool
             task.ContinueWith(_ =>
 #endif
             {
-                SynchronizationContext.SetSynchronizationContext(prevCtx);
-
                 if (_aliveWorkDic.TryGetValue(id, out WorkBase work))
                 {
                     if (work.WaitSignal != null)
@@ -936,12 +934,18 @@ namespace PowerThreadPool
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
                 PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, workBase);
                 SynchronizationContext.SetSynchronizationContext(ctx);
+                try
+                {
+                    Task taskFunc = asyncFunc();
+                    ThrowInnerIfNeeded(taskFunc);
 
-                Task taskFunc = asyncFunc();
-                ThrowInnerIfNeeded(taskFunc);
-
-                ctx.SetTask(taskFunc);
-                RegisterCompletion(taskFunc, prevCtx, workBase.ID);
+                    ctx.SetTask(taskFunc);
+                    RegisterCompletion(taskFunc, prevCtx, workBase.ID);
+                }
+                finally
+                {
+                    SynchronizationContext.SetSynchronizationContext(prevCtx);
+                }
             }, option, null, workBase);
 
             return id;
@@ -970,12 +974,18 @@ namespace PowerThreadPool
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
                 PowerPoolSynchronizationContext ctx = new PowerPoolSynchronizationContext(this, workBase);
                 SynchronizationContext.SetSynchronizationContext(ctx);
+                try
+                {
+                    Task taskFunc = asyncFunc(cts.Token);
+                    ThrowInnerIfNeeded(taskFunc);
 
-                Task taskFunc = asyncFunc(cts.Token);
-                ThrowInnerIfNeeded(taskFunc);
-
-                ctx.SetTask(taskFunc);
-                RegisterCompletion(taskFunc, prevCtx, workBase.ID);
+                    ctx.SetTask(taskFunc);
+                    RegisterCompletion(taskFunc, prevCtx, workBase.ID);
+                }
+                finally
+                {
+                    SynchronizationContext.SetSynchronizationContext(prevCtx);
+                }
             }, option, cts, workBase);
 
             return id;
@@ -1455,12 +1465,18 @@ namespace PowerThreadPool
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
                 PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, workBase);
                 SynchronizationContext.SetSynchronizationContext(ctx);
+                try
+                {
+                    Task<TResult> taskFunc = asyncFunc();
+                    ThrowInnerIfNeeded(taskFunc);
 
-                Task<TResult> taskFunc = asyncFunc();
-                ThrowInnerIfNeeded(taskFunc);
-
-                ctx.SetTask(taskFunc);
-                RegisterCompletionWithResult(taskFunc, prevCtx, workBase.ID);
+                    ctx.SetTask(taskFunc);
+                    RegisterCompletionWithResult(taskFunc, prevCtx, workBase.ID);
+                }
+                finally
+                {
+                    SynchronizationContext.SetSynchronizationContext(prevCtx);
+                }
 
                 return default;
             }, option, null, workBase);
@@ -1492,12 +1508,18 @@ namespace PowerThreadPool
                 SynchronizationContext prevCtx = SynchronizationContext.Current;
                 PowerPoolSynchronizationContext<TResult> ctx = new PowerPoolSynchronizationContext<TResult>(this, workBase);
                 SynchronizationContext.SetSynchronizationContext(ctx);
+                try
+                {
+                    Task<TResult> taskFunc = asyncFunc(cts.Token);
+                    ThrowInnerIfNeeded(taskFunc);
 
-                Task<TResult> taskFunc = asyncFunc(cts.Token);
-                ThrowInnerIfNeeded(taskFunc);
-
-                ctx.SetTask(taskFunc);
-                RegisterCompletionWithResult(taskFunc, prevCtx, workBase.ID);
+                    ctx.SetTask(taskFunc);
+                    RegisterCompletionWithResult(taskFunc, prevCtx, workBase.ID);
+                }
+                finally
+                {
+                    SynchronizationContext.SetSynchronizationContext(prevCtx);
+                }
 
                 return default;
             }, option, cts, workBase);
