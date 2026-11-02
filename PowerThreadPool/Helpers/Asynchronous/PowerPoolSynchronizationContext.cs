@@ -51,6 +51,11 @@ namespace PowerThreadPool.Helpers.Asynchronous
         {
             if (_workBase.ExecuteResultBase != null)
             {
+                // The work has already been finalized (e.g. stopped or force-stopped).
+                // The continuation must not be silently dropped: it may complete a Task
+                // that user code is waiting on. Run it on the CLR thread pool, detached
+                // from this pool's scheduling (which would no longer drain it).
+                ThreadPool.QueueUserWorkItem(_ => d(state));
                 return;
             }
 
@@ -177,30 +182,38 @@ namespace PowerThreadPool.Helpers.Asynchronous
 
         private void InvokeOne(SendOrPostCallback d, object state)
         {
+            SynchronizationContext prevCtx = SynchronizationContext.Current;
             SetSynchronizationContext(this);
-            if (_workBase.AutoCheckStopOnAsyncTask)
+            try
             {
-                _powerPool.StopIfRequested(_cachedBeforeStop);
+                if (_workBase.AutoCheckStopOnAsyncTask)
+                {
+                    _powerPool.StopIfRequested(_cachedBeforeStop);
+                }
+                d(state);
+                Task originalTask = _originalTask;
+                if (originalTask == null)
+                {
+                    // The continuation may start before SetTask publishes the task instance.
+                    // This race is more likely to surface with awaits that force the continuation to be
+                    // queued/post asynchronously (e.g., Task.Yield()), since a plain await often just
+                    // runs the continuation inline (synchronously) on the same thread.
+                    Spinner.Start(() =>
+                        (originalTask = _originalTask) != null, true);
+                }
+                if (originalTask.IsFaulted)
+                {
+                    throw originalTask.Exception.InnerException;
+                }
+                if (originalTask.IsCompleted &&
+                Interlocked.Exchange(ref _done, 1) == 0)
+                {
+                    _workBase.AllowEventsAndCallback = true;
+                }
             }
-            d(state);
-            Task originalTask = _originalTask;
-            if (originalTask == null)
+            finally
             {
-                // The continuation may start before SetTask publishes the task instance.
-                // This race is more likely to surface with awaits that force the continuation to be
-                // queued/posted asynchronously (e.g., Task.Yield()), since a plain await often just
-                // runs the continuation inline (synchronously) on the same thread.
-                Spinner.Start(() =>
-                    (originalTask = _originalTask) != null, true);
-            }
-            if (originalTask.IsFaulted)
-            {
-                throw originalTask.Exception.InnerException;
-            }
-            if (originalTask.IsCompleted &&
-            Interlocked.Exchange(ref _done, 1) == 0)
-            {
-                _workBase.AllowEventsAndCallback = true;
+                SetSynchronizationContext(prevCtx);
             }
         }
     }
