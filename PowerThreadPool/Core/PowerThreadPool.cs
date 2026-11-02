@@ -520,6 +520,11 @@ namespace PowerThreadPool
 
             if (rejectType == RejectType.Abort)
             {
+                if (work.TaskCompletionSource != null)
+                {
+                    Interlocked.Decrement(ref _asyncWorkCount);
+                }
+
                 WorkRejectedException workRejectedException = new WorkRejectedException
                 {
                     ID = rejectID,
@@ -572,6 +577,10 @@ namespace PowerThreadPool
             executeResult.ID = idErr;
 
             WorkCallbackEnd(work, executeResult.Status);
+            if (work.TaskCompletionSource != null)
+            {
+                Interlocked.Decrement(ref _asyncWorkCount);
+            }
 
             if (WorkDiscarded != null)
             {

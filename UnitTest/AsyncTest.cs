@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using PowerThreadPool;
+using PowerThreadPool.Exceptions;
 using PowerThreadPool.Options;
 using PowerThreadPool.Results;
 using PowerThreadPool.Works;
@@ -2398,6 +2399,68 @@ namespace UnitTest
             }, new WorkOption { LongRunning = true });
             powerPool.Wait();
             Assert.Equal(1, count);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async Task TestRejectTypeDiscard()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.Discard,
+                    ThreadQueueLimit = 1,
+                }
+            });
+            int count = 0;
+            powerPool.QueueWorkItem(async () =>
+            {
+                Thread.Sleep(1000);
+                ++count;
+            });
+            powerPool.QueueWorkItem(async () =>
+            {
+                ++count;
+            });
+            powerPool.QueueWorkItem(async () =>
+            {
+                ++count;
+            });
+            powerPool.Wait();
+            Assert.Equal(2, count);
+        }
+
+        [Fact(Timeout = 5 * 60 * 1000)]
+        public async Task TestRejectTypeAbort()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+            PowerPool powerPool = new PowerPool(new PowerPoolOption
+            {
+                MaxThreads = 1,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.Abort,
+                    ThreadQueueLimit = 1,
+                }
+            });
+            int count = 0;
+            powerPool.QueueWorkItem(async () =>
+            {
+                Thread.Sleep(1000);
+                ++count;
+            });
+            powerPool.QueueWorkItem(async () =>
+            {
+                ++count;
+            });
+            Assert.Throws<WorkRejectedException>(() => powerPool.QueueWorkItem(async () =>
+            {
+                ++count;
+            }));
+            powerPool.Wait();
+            Assert.Equal(2, count);
         }
     }
 }
