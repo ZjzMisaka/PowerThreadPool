@@ -29,7 +29,7 @@ namespace PowerThreadPool
         internal bool _disposed = false;
         internal bool _disposing = false;
 
-        private WorkDependencyController _workDependencyController;
+        internal WorkDependencyController _workDependencyController;
 
         private readonly ManualResetEventSlim _waitAllSignal = new ManualResetEventSlim(true);
         private readonly ManualResetEvent _pauseSignal = new ManualResetEvent(true);
@@ -314,8 +314,22 @@ namespace PowerThreadPool
             {
                 if (_suspendedWork.TryGetValue(key, out WorkBase work))
                 {
-                    ConcurrentSet<WorkID> dependencies = work.Dependencies;
-                    if (dependencies == null || dependencies.Count == 0)
+                    // Dependencies are tracked by the dependency controller from registration time;
+                    // the option's Dependencies collection is only a snapshot and is never mutated,
+                    // so resolve scheduling through the controller to keep a single source of truth.
+                    if (_workDependencyController.TryTakeResolvedWork(key, out WorkBase resolvedWork))
+                    {
+                        if (IsStopping)
+                        {
+                            _stopSuspendedWork[resolvedWork.ID] = resolvedWork;
+                            _stopSuspendedWorkQueue.Enqueue(resolvedWork.ID);
+                        }
+                        else
+                        {
+                            SetWork(resolvedWork);
+                        }
+                    }
+                    else if (!_workDependencyController._workDict.ContainsKey(key))
                     {
                         if (IsStopping)
                         {

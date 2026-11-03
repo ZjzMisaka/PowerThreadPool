@@ -594,7 +594,7 @@ namespace UnitTest
 
             powerPool.QueueWorkItem(() =>
             {
-                logList.Add("Work2 denpend on work0, work1 END");
+                logList.Add("Work2 depend on work0, work1 END");
             },
             new WorkOption()
             {
@@ -612,12 +612,231 @@ namespace UnitTest
                 item => Assert.Equal("Work1 END", item),
                 item => Assert.Equal("Work3 END", item),
                 item => Assert.Equal("Work0 callback END", item),
-                item => Assert.Equal("Work2 denpend on work0, work1 END", item),
+                item => Assert.Equal("Work2 depend on work0, work1 END", item),
                 item => Assert.Equal("Work3 callback END", item),
                 item => Assert.Equal("PoolIdle", item)
             );
 
             Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestDependenciesSameWorkOption()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool();
+            List<string> logList = new List<string>();
+            powerPool.PowerPoolOption = new PowerPoolOption()
+            {
+                MaxThreads = 8,
+                DestroyThreadOption = new DestroyThreadOption() { MinThreads = 4, KeepAliveTime = 3000 },
+                ShouldStoreResult = true,
+            };
+            powerPool.PoolStarted += (s, e) =>
+            {
+                logList.Add("PoolStart");
+            };
+            powerPool.PoolIdled += (s, e) =>
+            {
+                logList.Add("PoolIdle");
+            };
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1700);
+                logList.Add("Work3 END");
+            }, (res) =>
+            {
+                Thread.Sleep(1300);
+                logList.Add("Work3 callback END");
+            });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1000);
+                logList.Add("Work0 END");
+            }, (res) =>
+            {
+                Thread.Sleep(1000);
+                logList.Add("Work0 callback END");
+            });
+
+            WorkID id1 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(1500);
+                logList.Add("Work1 END");
+            });
+
+            WorkOption workOption = new WorkOption()
+            {
+                Dependencies = new ConcurrentSet<WorkID>() { id0, id1 }
+            };
+            powerPool.QueueWorkItem(() =>
+            {
+                logList.Add("Work2 depend on work0, work1 END");
+            },
+                workOption
+            );
+            powerPool.QueueWorkItem(() =>
+            {
+                logList.Add("Work2 depend on work0, work1 END");
+            },
+                workOption
+            );
+
+            powerPool.Wait();
+
+            Spinner.Start(() => logList.Count == 9);
+
+            Assert.Collection<string>(logList,
+                item => Assert.Equal("PoolStart", item),
+                item => Assert.Equal("Work0 END", item),
+                item => Assert.Equal("Work1 END", item),
+                item => Assert.Equal("Work3 END", item),
+                item => Assert.Equal("Work0 callback END", item),
+                item => Assert.Equal("Work2 depend on work0, work1 END", item),
+                item => Assert.Equal("Work2 depend on work0, work1 END", item),
+                item => Assert.Equal("Work3 callback END", item),
+                item => Assert.Equal("PoolIdle", item)
+            );
+
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestDependenciesSuspendedWithSucceededDependencies()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption()
+            {
+                StartSuspended = true,
+                ShouldStoreResult = true,
+            });
+            int doneCount = 0;
+
+            WorkID id0 = powerPool.QueueWorkItem(() => { });
+            WorkID id1 = powerPool.QueueWorkItem(() => { });
+
+            powerPool.Start();
+            powerPool.Wait();
+
+            // Both dependencies have already succeeded when the dependent work is queued,
+            // and the pool is suspended again, so the work must be scheduled by Start().
+            powerPool.PowerPoolOption.StartSuspended = true;
+            powerPool.QueueWorkItem(() => Interlocked.Increment(ref doneCount),
+                new WorkOption()
+                {
+                    Dependencies = new ConcurrentSet<WorkID>() { id0, id1 }
+                });
+
+            powerPool.Start();
+            powerPool.Wait();
+
+            Assert.Equal(1, doneCount);
+            Assert.Equal(0, powerPool.WaitingWorkCount);
+        }
+
+        [Fact]
+        public void TestDependenciesInternalStateCleanupAfterCancel()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                ShouldStoreResult = true,
+            });
+            ManualResetEvent started = new ManualResetEvent(false);
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                started.WaitOne();
+            });
+
+            WorkID id1 = powerPool.QueueWorkItem(() => { },
+                new WorkOption()
+                {
+                    Dependencies = new ConcurrentSet<WorkID>() { id0 }
+                });
+
+            // Cancel the waiting dependent work; the dependency controller must drop all of its state.
+            Assert.True(powerPool.Cancel(id1));
+            started.Set();
+            powerPool.Wait();
+
+            Assert.False(powerPool._workDependencyController._workDict.ContainsKey(id1));
+            Assert.False(powerPool._workDependencyController._workDependenciesDict.ContainsKey(id1));
+        }
+
+        [Fact]
+        public void TestDependenciesInternalStateCleanupAfterCycleException()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                ShouldStoreResult = true,
+            });
+
+            WorkID id0 = powerPool.QueueWorkItem(() => { });
+            WorkID id1 = powerPool.QueueWorkItem(() => { },
+                new WorkOption()
+                {
+                    CustomWorkID = "cycle-test-1",
+                    Dependencies = new ConcurrentSet<WorkID>() { id0 }
+                });
+
+            // Registering a cycle throws; the rejected work must not leave state behind.
+            Assert.Throws<CycleDetectedException>(() =>
+            {
+                powerPool.QueueWorkItem(() => { },
+                    new WorkOption()
+                    {
+                        CustomWorkID = "cycle-test-2",
+                        Dependencies = new ConcurrentSet<WorkID> { WorkID.FromString("cycle-test-1"), WorkID.FromString("cycle-test-2") }
+                    });
+            });
+
+            powerPool.Wait();
+
+            Assert.False(powerPool._workDependencyController._workDependenciesDict.ContainsKey(WorkID.FromString("cycle-test-2")));
+        }
+
+        [Fact]
+        public void TestDependenciesInternalStateCleanupAfterCascadeFailure()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPool powerPool = new PowerPool(new PowerPoolOption()
+            {
+                MaxThreads = 1,
+                ShouldStoreResult = true,
+            });
+
+            WorkID id0 = powerPool.QueueWorkItem(() =>
+            {
+                Thread.Sleep(100);
+                throw new Exception();
+#pragma warning disable CS0162
+                // Dummy return to ensure the lambda is inferred as an Action and binds to the correct QueueWorkItem overload.
+                return;
+#pragma warning restore CS0162
+            });
+
+            WorkID id1 = powerPool.QueueWorkItem(() => { },
+                new WorkOption()
+                {
+                    Dependencies = new ConcurrentSet<WorkID>() { id0 }
+                });
+
+            powerPool.Wait();
+
+            // The cascade-failed dependent work must be gone from the dependency controller.
+            Assert.False(powerPool._workDependencyController._workDict.ContainsKey(id1));
+            Assert.False(powerPool._workDependencyController._workDependenciesDict.ContainsKey(id1));
         }
 
         [Fact]

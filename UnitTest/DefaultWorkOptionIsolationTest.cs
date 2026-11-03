@@ -108,7 +108,7 @@ namespace UnitTest
             Assert.Equal(batchGroupName, sibling.Group);
 
             // Only the moved work was registered under the new group.
-            Assert.Equal(1, powerPool.GetGroupMemberSet("AAA").Count);
+            Assert.Single(powerPool.GetGroupMemberSet("AAA"));
 
             powerPool.Stop();
         }
