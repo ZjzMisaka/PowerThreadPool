@@ -474,7 +474,9 @@ namespace PowerThreadPool
                     break;
                 }
 
-                if ((worker = GetWorker(work.LongRunning, tryCount < 3 ? workPlacementPolicy : WorkPlacementPolicy.PreferIdleThenLeastLoaded, ref rejected)) != null)
+                WorkPlacementPolicy realWorkPlacementPolicy = tryCount < 3 ? workPlacementPolicy : WorkPlacementPolicy.PreferIdleThenLeastLoaded;
+
+                if ((worker = GetWorker(work.LongRunning, realWorkPlacementPolicy, ref rejected)) != null)
                 {
                     break;
                 }
@@ -492,7 +494,7 @@ namespace PowerThreadPool
                     }
                 }
 
-                if (rejected)
+                if (rejected && realWorkPlacementPolicy == WorkPlacementPolicy.PreferIdleThenLeastLoaded)
                 {
                     if (OnRejected(work, out worker))
                     {
