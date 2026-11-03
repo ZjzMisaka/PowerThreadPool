@@ -301,13 +301,13 @@ namespace PowerThreadPool.Helpers.Dependency
 
                 if (_workChildrenDict.TryGetValue(failedId, out ConcurrentSet<WorkID> failedChildWorkSet))
                 {
-                foreach (WorkID workID in failedChildWorkSet)
-                {
-                    if (_workDict.TryGetValue(workID, out WorkBase work) && work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
+                    foreach (WorkID workID in failedChildWorkSet)
                     {
-                        _workDependenciesDict.TryRemove(work.ID, out _);
-                        _workDict.TryRemove(work.ID, out _);
-                        newlyFailed.Add(work);
+                        if (_workDict.TryGetValue(workID, out WorkBase work) && work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
+                        {
+                            _workDependenciesDict.TryRemove(work.ID, out _);
+                            _workDict.TryRemove(work.ID, out _);
+                            newlyFailed.Add(work);
 
                             if (visited.Add(work.ID))
                             {

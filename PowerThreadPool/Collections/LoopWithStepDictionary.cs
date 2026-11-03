@@ -38,8 +38,7 @@ namespace PowerThreadPool.Collections
     //    The atomic state machine's Compare-And-Swap (CAS) operation will simply fail,
     //    preventing any invalid state transitions [①].
     // 3. Missing a newly created worker:
-    //    The snapshot is rebuilt synchronously when a worker is added,
-    //    so the next scan will find it.
+    //    The snapshot is rebuilt synchronously when a worker is added.
     // 
     // Since static analysis tools and single-file-level LLM analysis often lack
     // the broader context necessary to understand intentional design trade-offs,
