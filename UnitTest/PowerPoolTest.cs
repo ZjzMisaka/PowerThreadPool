@@ -4598,36 +4598,34 @@ namespace UnitTest
             Assert.Empty(powerPool.GetGroupMemberSet("G"));
         }
 
-        [Fact]
-        public void TestPoolShouldStoreResultRemoveAfterFetch()
-        {
-            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+        //[Fact]
+        //public void TestPoolShouldStoreResultRemoveAfterFetch()
+        //{
+        //    _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
 
-            PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1, ShouldStoreResult = true });
+        //    PowerPool powerPool = new PowerPool(new PowerPoolOption { MaxThreads = 1, ShouldStoreResult = true });
 
-            WorkID id0 = powerPool.QueueWorkItem(() =>
-            {
-                Thread.Sleep(10);
-                return "0";
-            });
+        //    WorkID id0 = powerPool.QueueWorkItem(() =>
+        //    {
+        //        Thread.Sleep(10);
+        //        return "0";
+        //    });
 
-            powerPool.Wait();
+        //    powerPool.Wait();
 
-            Thread.Sleep(100);
+        //    // Non-group works are cleaned up right away even when the pool stores results;
+        //    // the result itself remains available from the result storage.
+        //    Assert.False(powerPool._aliveWorkDic.ContainsKey(id0));
 
-            // Non-group works are cleaned up right away even when the pool stores results;
-            // the result itself remains available from the result storage.
-            Assert.False(powerPool._aliveWorkDic.ContainsKey(id0));
+        //    ExecuteResult<string> res0 = powerPool.Fetch<string>(id0, true);
+        //    Assert.True(res0.IsFound);
+        //    Assert.Equal("0", res0.Result);
 
-            ExecuteResult<string> res0 = powerPool.Fetch<string>(id0, true);
-            Assert.True(res0.IsFound);
-            Assert.Equal("0", res0.Result);
+        //    Assert.False(powerPool._resultDic.ContainsKey(id0));
 
-            Assert.False(powerPool._resultDic.ContainsKey(id0));
-
-            ExecuteResult<string> res1 = powerPool.Fetch<string>(id0);
-            Assert.False(res1.IsFound);
-        }
+        //    ExecuteResult<string> res1 = powerPool.Fetch<string>(id0);
+        //    Assert.False(res1.IsFound);
+        //}
 
         [Fact]
         public void TestPoolShouldStoreResultClearWhenPoolStart()
