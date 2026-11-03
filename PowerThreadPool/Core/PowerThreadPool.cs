@@ -118,7 +118,7 @@ namespace PowerThreadPool
 
         public bool IsRunning => _poolState == PoolStates.Running;
 
-        private bool _poolStopping = false;
+        internal bool _poolStopping = false;
         public bool IsStopping { get => _poolStopping; }
 
         private volatile bool _enablePoolIdleCheck = true;
