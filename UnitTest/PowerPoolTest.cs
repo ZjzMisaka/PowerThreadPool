@@ -872,7 +872,7 @@ namespace UnitTest
 
             // Sanity: the work is registered with empty runtime dependencies, unresolved, suspended.
             Assert.True(powerPool._workDependencyController._workDependenciesDict.ContainsKey(id1));
-            Assert.Equal(0, powerPool._workDependencyController._workDependenciesDict[id1].Count);
+            Assert.Empty(powerPool._workDependencyController._workDependenciesDict[id1]);
 
             // Start() must claim the resolved work through TryTakeResolvedWork and run it.
             powerPool.Start();
