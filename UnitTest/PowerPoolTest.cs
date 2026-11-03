@@ -4613,6 +4613,8 @@ namespace UnitTest
 
             powerPool.Wait();
 
+            Thread.Sleep(100);
+
             // Non-group works are cleaned up right away even when the pool stores results;
             // the result itself remains available from the result storage.
             Assert.False(powerPool._aliveWorkDic.ContainsKey(id0));
