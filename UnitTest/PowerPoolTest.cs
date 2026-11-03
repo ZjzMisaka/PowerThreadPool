@@ -9258,6 +9258,174 @@ namespace UnitTest
         }
 
         [Fact]
+        public void TestRejectPreferLocalWorker()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 1,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.Discard,
+                    ThreadQueueLimit = 100,
+                },
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            int doneCount = 0;
+            int discardedCount = 0;
+            powerPool.WorkDiscarded += (s, e) =>
+            {
+                Assert.Equal(RejectType.Discard, e.RejectType);
+                Interlocked.Increment(ref discardedCount);
+            };
+
+            ManualResetEventSlim firstWorkRunning = new ManualResetEventSlim(false);
+            ManualResetEventSlim secondWorkQueued = new ManualResetEventSlim(false);
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref doneCount);
+                firstWorkRunning.Set();
+                secondWorkQueued.Wait();
+            },
+            new WorkOption
+            {
+                WorkPlacementPolicy = WorkPlacementPolicy.PreferLocalWorker
+            });
+
+            Assert.True(firstWorkRunning.Wait(10000));
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref doneCount);
+            },
+            new WorkOption
+            {
+                WorkPlacementPolicy = WorkPlacementPolicy.PreferLocalWorker
+            });
+            secondWorkQueued.Set();
+
+            powerPool.Wait();
+
+            Assert.Equal(2, doneCount);
+            Assert.Equal(0, discardedCount);
+        }
+
+        [Fact]
+        public void TestRejectPreferIdleThenLocalWithAbortShouldNotThrowWhenPoolNotFull()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 2,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.Abort,
+                    ThreadQueueLimit = 100,
+                },
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            int doneCount = 0;
+            int rejectedCount = 0;
+            powerPool.WorkRejected += (s, e) =>
+            {
+                Assert.Equal(RejectType.Abort, e.RejectType);
+                Interlocked.Increment(ref rejectedCount);
+            };
+
+            ManualResetEventSlim firstWorkRunning = new ManualResetEventSlim(false);
+            ManualResetEventSlim secondWorkQueued = new ManualResetEventSlim(false);
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref doneCount);
+                firstWorkRunning.Set();
+                secondWorkQueued.Wait();
+            },
+            new WorkOption
+            {
+                WorkPlacementPolicy = WorkPlacementPolicy.PreferIdleThenLocal
+            });
+
+            Assert.True(firstWorkRunning.Wait(10000));
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref doneCount);
+            },
+            new WorkOption
+            {
+                WorkPlacementPolicy = WorkPlacementPolicy.PreferIdleThenLocal
+            });
+            secondWorkQueued.Set();
+
+            powerPool.Wait();
+
+            Assert.Equal(2, doneCount);
+            Assert.Equal(0, rejectedCount);
+        }
+
+        [Fact]
+        public void TestRejectPreferLocalWorkerStillRejectedWhenPoolReallyFull()
+        {
+            _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
+
+            PowerPoolOption powerPoolOption = new PowerPoolOption
+            {
+                MaxThreads = 1,
+                RejectOption = new RejectOption
+                {
+                    RejectType = RejectType.Discard,
+                    ThreadQueueLimit = 0,
+                },
+            };
+            PowerPool powerPool = new PowerPool(powerPoolOption);
+
+            int doneCount = 0;
+            int discardedCount = 0;
+            powerPool.WorkDiscarded += (s, e) =>
+            {
+                Assert.Equal(RejectType.Discard, e.RejectType);
+                Interlocked.Increment(ref discardedCount);
+            };
+
+            ManualResetEventSlim firstWorkRunning = new ManualResetEventSlim(false);
+            ManualResetEventSlim secondWorkQueued = new ManualResetEventSlim(false);
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref doneCount);
+                firstWorkRunning.Set();
+                secondWorkQueued.Wait();
+            },
+            new WorkOption
+            {
+                WorkPlacementPolicy = WorkPlacementPolicy.PreferLocalWorker
+            });
+
+            Assert.True(firstWorkRunning.Wait(10000));
+
+            powerPool.QueueWorkItem(() =>
+            {
+                Interlocked.Increment(ref doneCount);
+            },
+            new WorkOption
+            {
+                WorkPlacementPolicy = WorkPlacementPolicy.PreferLocalWorker
+            });
+            secondWorkQueued.Set();
+
+            powerPool.Wait();
+
+            Assert.Equal(1, doneCount);
+            Assert.Equal(1, discardedCount);
+        }
+
+        [Fact]
         public void TestNestedDependenciesFailed()
         {
             _output.WriteLine($"Testing {GetType().Name}.{MethodBase.GetCurrentMethod().ReflectedType.Name}");
