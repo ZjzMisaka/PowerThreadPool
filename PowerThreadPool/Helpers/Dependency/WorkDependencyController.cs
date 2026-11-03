@@ -16,6 +16,7 @@ namespace PowerThreadPool.Helpers.Dependency
     {
         internal ConcurrentDictionary<WorkID, WorkBase> _workDict = new ConcurrentDictionary<WorkID, WorkBase>();
         internal ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>> _workChildrenDict = new ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>>();
+        internal ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>> _workDependenciesDict = new ConcurrentDictionary<WorkID, ConcurrentSet<WorkID>>();
         private CallbackEndEventHandler _callbackEndHandler;
         private PowerPool _powerPool;
         private int _firstRegister = 0;
@@ -41,6 +42,8 @@ namespace PowerThreadPool.Helpers.Dependency
                         ID = work.ID,
                     };
                 }
+
+                _workDependenciesDict[work.ID] = dependencies;
 
                 if (Interlocked.CompareExchange(ref _firstRegister, 1, 0) == 0)
                 {
@@ -89,6 +92,7 @@ namespace PowerThreadPool.Helpers.Dependency
                 if (dependencies.Count == 0 &&
                     work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
                 {
+                    _workDependenciesDict.TryRemove(work.ID, out _);
                     _workDict.TryRemove(work.ID, out _);
                     return false;
                 }
@@ -104,6 +108,7 @@ namespace PowerThreadPool.Helpers.Dependency
         private void OnPrecedingWorkNotSuccessfullyCompletedWhenRegister(WorkBase work, WorkID dependedId)
         {
             work._dependencyStatus.InterlockedValue = DependencyStatus.Failed;
+            _workDependenciesDict.TryRemove(work.ID, out _);
             _workDict.TryRemove(work.ID, out _);
 
             if (_powerPool.PowerPoolOption.EnableStatisticsCollection)
@@ -135,6 +140,7 @@ namespace PowerThreadPool.Helpers.Dependency
             if (dependencies.Count == 0 &&
                 work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
             {
+                _workDependenciesDict.TryRemove(work.ID, out _);
                 _workDict.TryRemove(work.ID, out _);
                 _powerPool.SetWork(work);
             }
@@ -156,6 +162,10 @@ namespace PowerThreadPool.Helpers.Dependency
             {
                 _workDict.TryRemove(id, out _);
             }
+            foreach (WorkID id in idList)
+            {
+                _workDependenciesDict.TryRemove(id, out _);
+            }
             _powerPool.CheckPoolIdle();
         }
 
@@ -164,6 +174,7 @@ namespace PowerThreadPool.Helpers.Dependency
             bool res = false;
             if (_workDict.TryRemove(id, out work))
             {
+                _workDependenciesDict.TryRemove(id, out _);
                 _powerPool.CheckPoolIdle();
                 res = true;
             }
@@ -226,9 +237,9 @@ namespace PowerThreadPool.Helpers.Dependency
             {
                 foreach (WorkID workID in childWorkSet)
                 {
-                    if (_workDict.TryGetValue(workID, out WorkBase work) && work.Dependencies.Remove(id))
+                    if (_workDict.TryGetValue(workID, out WorkBase work) && _workDependenciesDict.TryGetValue(work.ID, out ConcurrentSet<WorkID> dependencies) && dependencies.Remove(id))
                     {
-                        SetWorkIfDependencySolved(work.Dependencies, work);
+                        SetWorkIfDependencySolved(dependencies, work);
                     }
                 }
             }
@@ -290,12 +301,13 @@ namespace PowerThreadPool.Helpers.Dependency
 
                 if (_workChildrenDict.TryGetValue(failedId, out ConcurrentSet<WorkID> failedChildWorkSet))
                 {
-                    foreach (WorkID workID in failedChildWorkSet)
+                foreach (WorkID workID in failedChildWorkSet)
+                {
+                    if (_workDict.TryGetValue(workID, out WorkBase work) && work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
                     {
-                        if (_workDict.TryGetValue(workID, out WorkBase work) && work._dependencyStatus.TrySet(DependencyStatus.Failed, DependencyStatus.Normal))
-                        {
-                            _workDict.TryRemove(work.ID, out _);
-                            newlyFailed.Add(work);
+                        _workDependenciesDict.TryRemove(work.ID, out _);
+                        _workDict.TryRemove(work.ID, out _);
+                        newlyFailed.Add(work);
 
                             if (visited.Add(work.ID))
                             {
@@ -311,6 +323,35 @@ namespace PowerThreadPool.Helpers.Dependency
         {
             return _powerPool._resultDic.TryGetValue(dependedId, out ExecuteResultBase result)
                 && result.Status != WorkStatus.Succeeded;
+        }
+
+        /// <summary>
+        /// Tries to claim a registered dependency work whose dependencies have all been resolved
+        /// (e.g. they had already succeeded when the work was queued).
+        /// The caller that wins the claim is responsible for scheduling the work via SetWork.
+        /// </summary>
+        internal bool TryTakeResolvedWork(WorkID id, out WorkBase work)
+        {
+            work = null;
+            if (!_workDict.TryGetValue(id, out work))
+            {
+                return false;
+            }
+
+            ConcurrentSet<WorkID> dependencies;
+            if (!_workDependenciesDict.TryGetValue(id, out dependencies) || dependencies.Count != 0)
+            {
+                return false;
+            }
+
+            if (!work._dependencyStatus.TrySet(DependencyStatus.Solved, DependencyStatus.Normal))
+            {
+                return false;
+            }
+
+            _workDependenciesDict.TryRemove(id, out _);
+            _workDict.TryRemove(id, out _);
+            return true;
         }
     }
 }

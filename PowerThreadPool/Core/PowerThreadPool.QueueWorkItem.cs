@@ -827,7 +827,7 @@ namespace PowerThreadPool
             WorkID workID = CreateID(option);
             WorkBase work = InitWork(workID, action, function, option, cts, workBase);
 
-            bool registeredDependencies = _workDependencyController.Register(work, option.Dependencies);
+            bool registeredDependencies = _workDependencyController.Register(work, option.Dependencies == null ? null : new ConcurrentSet<WorkID>(option.Dependencies));
             if (work._dependencyStatus.InterlockedValue == DependencyStatus.Failed)
             {
                 return workID;
