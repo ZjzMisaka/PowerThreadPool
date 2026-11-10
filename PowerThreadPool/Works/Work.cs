@@ -211,6 +211,30 @@ namespace PowerThreadPool.Works
             }
         }
 
+        internal override bool TryFinalizeUnscheduledAsyncWork(WorkStatus status, ExecuteResultBase executeResult)
+        {
+            if (TaskCompletionSource == null)
+            {
+                return false;
+            }
+
+            if (!_canFinalizeWork.TrySet(CanFinalizeWork.NotAllowed, CanFinalizeWork.Allowed))
+            {
+                return false;
+            }
+
+            SetTaskCompletionSource(status, executeResult);
+            Interlocked.Decrement(ref PowerPool._asyncWorkCount);
+
+            IsDone = true;
+            if (WaitSignal != null)
+            {
+                WaitSignal.Set();
+            }
+
+            return true;
+        }
+
         internal override bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
         {
             HelpWhileWaiting(cancellationToken, helpWhileWaiting);

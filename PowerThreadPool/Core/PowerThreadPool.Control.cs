@@ -1314,10 +1314,22 @@ namespace PowerThreadPool
 
             _workDependencyController.Cancel();
 
-            _stopSuspendedWork.Clear();
 #if NET5_0_OR_GREATER
+            while (_stopSuspendedWorkQueue.TryDequeue(out WorkID suspendedID))
+            {
+                if (_stopSuspendedWork.TryRemove(suspendedID, out WorkBase suspendedWork))
+                {
+                    suspendedWork.TryFinalizeUnscheduledAsyncWork(WorkStatus.Canceled, null);
+                }
+            }
+            _stopSuspendedWork.Clear();
             _stopSuspendedWorkQueue.Clear();
 #else
+            foreach (var kv in _stopSuspendedWork)
+            {
+                kv.Value.TryFinalizeUnscheduledAsyncWork(WorkStatus.Canceled, null);
+            }
+            _stopSuspendedWork.Clear();
             _stopSuspendedWorkQueue = new ConcurrentQueue<WorkID>();
 #endif
         }
@@ -1337,8 +1349,6 @@ namespace PowerThreadPool
             bool res = false;
             WorkBase work = default;
 
-            bool isQueuedAndDidNotDecreasedCountInside = false;
-
             if (_workDependencyController.Cancel(id, out work))
             {
                 res = true;
@@ -1346,17 +1356,16 @@ namespace PowerThreadPool
             else if (_suspendedWork.TryRemove(id, out work))
             {
                 res = true;
-                isQueuedAndDidNotDecreasedCountInside = true;
+                work.TryFinalizeUnscheduledAsyncWork(WorkStatus.Canceled, null);
             }
             else if (_stopSuspendedWork.TryRemove(id, out work))
             {
                 res = true;
-                isQueuedAndDidNotDecreasedCountInside = true;
+                work.TryFinalizeUnscheduledAsyncWork(WorkStatus.Canceled, null);
             }
             else if (_aliveWorkDic.TryGetValue(id, out work))
             {
                 res = work.Cancel(true);
-                isQueuedAndDidNotDecreasedCountInside = false;
                 if (res && _aliveWorkDic.TryRemove(id, out _))
                 {
                     work.Dispose();
@@ -1365,11 +1374,6 @@ namespace PowerThreadPool
             else
             {
                 res = false;
-            }
-
-            if (res && work.TaskCompletionSource != null && isQueuedAndDidNotDecreasedCountInside)
-            {
-                Interlocked.Decrement(ref _asyncWorkCount);
             }
 
             return res;
