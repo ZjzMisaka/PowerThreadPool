@@ -536,10 +536,7 @@ namespace PowerThreadPool
 
             if (rejectType == RejectType.Abort)
             {
-                if (work.TaskCompletionSource != null)
-                {
-                    Interlocked.Decrement(ref _asyncWorkCount);
-                }
+                work.TryFinalizeUnscheduledAsyncWork(WorkStatus.Canceled, null);
 
                 WorkRejectedException workRejectedException = new WorkRejectedException
                 {
@@ -593,10 +590,7 @@ namespace PowerThreadPool
             executeResult.ID = idErr;
 
             WorkCallbackEnd(work, executeResult.Status);
-            if (work.TaskCompletionSource != null)
-            {
-                Interlocked.Decrement(ref _asyncWorkCount);
-            }
+            work.TryFinalizeUnscheduledAsyncWork(WorkStatus.Canceled, executeResult);
 
             if (WorkDiscarded != null)
             {

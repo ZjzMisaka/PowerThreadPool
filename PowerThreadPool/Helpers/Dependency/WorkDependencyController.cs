@@ -130,6 +130,8 @@ namespace PowerThreadPool.Helpers.Dependency
 
             work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
 
+            work.TryFinalizeUnscheduledAsyncWork(WorkStatus.Failed, executeResult);
+
             _powerPool.WorkCallbackEnd(work, WorkStatus.Failed);
 
             _powerPool.CheckPoolIdle();
@@ -160,7 +162,11 @@ namespace PowerThreadPool.Helpers.Dependency
             List<WorkID> idList = _workDict.Keys.ToList();
             foreach (WorkID id in idList)
             {
-                _workDict.TryRemove(id, out _);
+                if (_workDict.TryRemove(id, out WorkBase work)
+                    && work._dependencyStatus.TrySet(DependencyStatus.Canceled, DependencyStatus.Normal))
+                {
+                    work.TryFinalizeUnscheduledAsyncWork(WorkStatus.Canceled, null);
+                }
             }
             foreach (WorkID id in idList)
             {
@@ -172,9 +178,14 @@ namespace PowerThreadPool.Helpers.Dependency
         internal bool Cancel(WorkID id, out WorkBase work)
         {
             bool res = false;
+            work = null;
             if (_workDict.TryRemove(id, out work))
             {
                 _workDependenciesDict.TryRemove(id, out _);
+                if (work._dependencyStatus.TrySet(DependencyStatus.Canceled, DependencyStatus.Normal))
+                {
+                    work.TryFinalizeUnscheduledAsyncWork(WorkStatus.Canceled, null);
+                }
                 _powerPool.CheckPoolIdle();
                 res = true;
             }
@@ -289,6 +300,7 @@ namespace PowerThreadPool.Helpers.Dependency
 
                 _powerPool.InvokeWorkEndedEvent(executeResult);
                 work.InvokeCallback(executeResult, _powerPool.PowerPoolOption);
+                work.TryFinalizeUnscheduledAsyncWork(WorkStatus.Failed, executeResult);
                 _powerPool.WorkCallbackEnd(work, WorkStatus.Failed);
             }
         }
