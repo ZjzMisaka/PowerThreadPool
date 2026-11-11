@@ -213,26 +213,24 @@ namespace PowerThreadPool.Works
 
         internal override bool TryFinalizeUnscheduledAsyncWork(WorkStatus status, ExecuteResultBase executeResult)
         {
-            if (TaskCompletionSource == null)
+            bool res = false;
+
+            if (TaskCompletionSource != null
+                && _canFinalizeWork.TrySet(CanFinalizeWork.NotAllowed, CanFinalizeWork.Allowed))
             {
-                return false;
+                SetTaskCompletionSource(status, executeResult);
+                Interlocked.Decrement(ref PowerPool._asyncWorkCount);
+
+                IsDone = true;
+                if (WaitSignal != null)
+                {
+                    WaitSignal.Set();
+                }
+
+                res = true;
             }
 
-            if (!_canFinalizeWork.TrySet(CanFinalizeWork.NotAllowed, CanFinalizeWork.Allowed))
-            {
-                return false;
-            }
-
-            SetTaskCompletionSource(status, executeResult);
-            Interlocked.Decrement(ref PowerPool._asyncWorkCount);
-
-            IsDone = true;
-            if (WaitSignal != null)
-            {
-                WaitSignal.Set();
-            }
-
-            return true;
+            return res;
         }
 
         internal override bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
