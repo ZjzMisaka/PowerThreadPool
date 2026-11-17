@@ -73,6 +73,15 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "phjnavy",
+      "name": "phjnavy",
+      "avatar_url": "https://avatars.githubusercontent.com/u/357653554?v=4",
+      "profile": "https://github.com/phjnavy",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
