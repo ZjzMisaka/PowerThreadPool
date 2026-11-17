@@ -39,7 +39,11 @@ Visit the [DeepWiki](https://deepwiki.com/ZjzMisaka/PowerThreadPool) for more in
 
 ## Installation
 If you want to include PowerThreadPool in your project, you can [install it directly from NuGet](https://www.nuget.org/packages/PowerThreadPool/).  
-Support: Net40+ | Net5.0+ | netstandard2.0+  
+Support: .NET Framework 4.0+ | .NET 5.0+ | .NET Standard 2.0+  
+
+```bash
+dotnet add package PowerThreadPool
+```
 
 ## Features
 - [Sync | Async](https://github.com/ZjzMisaka/PowerThreadPool/wiki/Sync-Async)
