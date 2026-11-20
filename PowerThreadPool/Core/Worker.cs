@@ -968,11 +968,15 @@ namespace PowerThreadPool
                         }
                         else
                         {
+                            if (_thread != null && !_lastIsBackground)
+                            {
+                                _thread.IsBackground = true;
+                            }
+                            _lastIsBackground = true;
+
                             _canGetWork.TrySet(Constants.CanGetWork.Allowed, Constants.CanGetWork.ToBeDisabled);
 
                             _powerPool._idleWorkerQueue.Enqueue(this);
-
-                            _lastIsBackground = true;
                         }
                     }
 
