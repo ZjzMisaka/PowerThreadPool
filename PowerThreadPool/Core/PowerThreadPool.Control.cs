@@ -29,9 +29,9 @@ namespace PowerThreadPool
 
             if (pauseWork != null)
             {
-                worker.PauseTimer();
+                pauseWork.PauseTimer();
                 pauseWork.PauseSignal.WaitOne();
-                worker.ResumeTimer();
+                pauseWork.ResumeTimer();
             }
         }
 
@@ -49,9 +49,9 @@ namespace PowerThreadPool
 
             if (pauseWork != null)
             {
-                worker.PauseTimer();
+                pauseWork.PauseTimer();
                 await pauseWork.PauseAsyncSignal.WaitAsync();
-                worker.ResumeTimer();
+                pauseWork.ResumeTimer();
             }
         }
 #else
@@ -70,9 +70,9 @@ namespace PowerThreadPool
 
                 if (pauseWork != null)
                 {
-                    worker.PauseTimer();
+                    pauseWork.PauseTimer();
                     pauseWork.PauseAsyncSignal.WaitAsync().Wait();
-                    worker.ResumeTimer();
+                    pauseWork.ResumeTimer();
                 }
             });
         }

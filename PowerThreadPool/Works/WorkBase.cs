@@ -114,6 +114,8 @@ namespace PowerThreadPool.Works
         internal abstract bool ShouldRequeue(ExecuteResultBase executeResult);
         internal abstract void SetTaskCompletionSource(WorkStatus status, ExecuteResultBase executeResult);
         internal abstract bool TryFinalizeUnscheduledAsyncWork(WorkStatus status, ExecuteResultBase executeResult);
+        internal abstract void PauseTimer();
+        internal abstract void ResumeTimer();
         public abstract void Dispose();
         internal abstract string Group { get; set; }
         internal abstract ThreadPriority ThreadPriority { get; }
@@ -129,7 +131,6 @@ namespace PowerThreadPool.Works
         internal abstract WorkPlacementPolicy WorkPlacementPolicy { get; }
         internal abstract ConcurrentSet<WorkID> Dependencies { get; }
         internal abstract bool AllowEventsAndCallback { get; set; }
-
         internal abstract bool IsFirstAsyncWork { get; }
     }
 }
