@@ -1175,22 +1175,6 @@ namespace PowerThreadPool
             _runSignal.Set();
         }
 
-        internal void PauseTimer()
-        {
-            if (Work.TimeoutTimer != null)
-            {
-                Work.TimeoutTimer.Pause();
-            }
-        }
-
-        internal void ResumeTimer()
-        {
-            if (Work.TimeoutTimer != null)
-            {
-                Work.TimeoutTimer.Resume();
-            }
-        }
-
         internal bool DiscardOneWork(out WorkBase discardWork)
         {
             discardWork = null;

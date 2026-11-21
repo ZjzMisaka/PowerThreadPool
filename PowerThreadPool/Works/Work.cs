@@ -233,6 +233,16 @@ namespace PowerThreadPool.Works
             return res;
         }
 
+        internal override void PauseTimer()
+        {
+            TimeoutTimer?.Pause();
+        }
+
+        internal override void ResumeTimer()
+        {
+            TimeoutTimer?.Resume();
+        }
+
         internal override bool Wait(CancellationToken cancellationToken, bool helpWhileWaiting = false)
         {
             HelpWhileWaiting(cancellationToken, helpWhileWaiting);
