@@ -79,11 +79,26 @@ namespace PowerThreadPool.Works
         internal volatile bool _resultRequested;
         internal volatile object _lastResult;
         internal bool NeedsExecuteResult { get; set; }
-        internal ManualResetEventSlim WaitSignal { get; set; }
+        internal ManualResetEventSlim _waitSignal;
+        internal ManualResetEventSlim WaitSignal
+        {
+            get => _waitSignal;
+            set => _waitSignal = value;
+        }
         internal bool ShouldStop { get; set; }
         internal InterlockedFlag<CanCancel> _canCancel = CanCancel.Allowed;
-        internal ManualResetEvent PauseSignal { get; set; }
-        internal AsyncManualResetEvent PauseAsyncSignal { get; set; }
+        internal ManualResetEvent _pauseSignal;
+        internal ManualResetEvent PauseSignal
+        {
+            get => _pauseSignal;
+            set => _pauseSignal = value;
+        }
+        internal AsyncManualResetEvent _pauseAsyncSignal;
+        internal AsyncManualResetEvent PauseAsyncSignal
+        {
+            get => _pauseAsyncSignal;
+            set => _pauseAsyncSignal = value;
+        }
         internal DeferredActionTimer TimeoutTimer { get; set; }
         /// <summary>
         /// Queue datetime (UTC).

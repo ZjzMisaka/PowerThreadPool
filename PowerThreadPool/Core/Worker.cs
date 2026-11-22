@@ -298,6 +298,11 @@ namespace PowerThreadPool
                 // the work status carries the outcome for the finalization callbacks.
                 _powerPool.WorkCallbackEnd(Work, executeResult != null ? executeResult.Status : Work.Status);
                 Work.IsDone = true;
+                // Pair with the publish-then-check in Work.Wait: the waiter publishes WaitSignal before
+                // it reads IsDone, so this side must make IsDone visible before it reads WaitSignal.
+                // Without it both sides can miss each other (store-buffering) and the waiter blocks
+                // forever on an event that will never be signaled, even though IsDone is true.
+                Thread.MemoryBarrier();
             }
 
             Work.IsCurrentDone = true;
@@ -367,6 +372,8 @@ namespace PowerThreadPool
 
             bool hasWaitingWork = RequeueAllWaitingWork(null);
             Work.IsDone = true;
+            // Pair with the publish-then-check in Work.Wait, see CleanUpAndSetSignalAfterExecute.
+            Thread.MemoryBarrier();
 
             if (Work.WaitSignal != null)
             {

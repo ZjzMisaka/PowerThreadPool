@@ -97,12 +97,19 @@ namespace PowerThreadPool.Works
             return this;
         }
 
-        private void EnsureWaitSignalExists()
+        /// <summary>
+        /// Returns the wait signal of this work, creating it on first use.
+        /// </summary>
+        private ManualResetEventSlim EnsureWaitSignalExists()
         {
-            if (WaitSignal == null)
+            ManualResetEventSlim signal = _waitSignal;
+            if (signal != null)
             {
-                WaitSignal = new ManualResetEventSlim(false);
+                return signal;
             }
+
+            signal = new ManualResetEventSlim(false);
+            return Interlocked.CompareExchange(ref _waitSignal, signal, null) ?? signal;
         }
 
         internal override bool Stop(bool forceStop)
@@ -222,6 +229,9 @@ namespace PowerThreadPool.Works
                 Interlocked.Decrement(ref PowerPool._asyncWorkCount);
 
                 IsDone = true;
+                // Pair with the publish-then-check in Wait: the waiter publishes WaitSignal before it
+                // reads IsDone, so this side must make IsDone visible before it reads WaitSignal.
+                Thread.MemoryBarrier();
                 if (WaitSignal != null)
                 {
                     WaitSignal.Set();
@@ -247,13 +257,13 @@ namespace PowerThreadPool.Works
         {
             HelpWhileWaiting(cancellationToken, helpWhileWaiting);
 
-            EnsureWaitSignalExists();
+            ManualResetEventSlim signal = EnsureWaitSignalExists();
 
             if (!IsDone)
             {
                 if (cancellationToken == default)
-                    WaitSignal.Wait();
-                else if (WaitHandle.WaitAny(new WaitHandle[] { WaitSignal.WaitHandle, cancellationToken.WaitHandle }) == 1)
+                    signal.Wait();
+                else if (WaitHandle.WaitAny(new WaitHandle[] { signal.WaitHandle, cancellationToken.WaitHandle }) == 1)
                     cancellationToken.ThrowIfCancellationRequested();
             }
 
@@ -289,8 +299,7 @@ namespace PowerThreadPool.Works
             }
 
             TaskCompletionSource<bool> tcs = PowerPool.NewTcs<bool>();
-            EnsureWaitSignalExists();
-            ManualResetEventSlim ev = WaitSignal;
+            ManualResetEventSlim ev = EnsureWaitSignalExists();
 
             RegisteredWaitHandle rwh = null;
             WaitOrTimerCallback cb = (state, timedOut) =>
@@ -409,20 +418,53 @@ namespace PowerThreadPool.Works
             }
         }
 
+        /// <summary>
+        /// Returns the synchronous pause signal, creating it on first use.
+        /// </summary>
+        private ManualResetEvent EnsurePauseSignalExists()
+        {
+            ManualResetEvent signal = _pauseSignal;
+            if (signal != null)
+            {
+                return signal;
+            }
+
+            signal = new ManualResetEvent(true);
+            return Interlocked.CompareExchange(ref _pauseSignal, signal, null) ?? signal;
+        }
+
+        /// <summary>
+        /// Returns the asynchronous pause signal, creating it on first use.
+        /// </summary>
+        private AsyncManualResetEvent EnsurePauseAsyncSignalExists()
+        {
+            AsyncManualResetEvent signal = _pauseAsyncSignal;
+            if (signal != null)
+            {
+                return signal;
+            }
+
+            signal = new AsyncManualResetEvent(true);
+            return Interlocked.CompareExchange(ref _pauseAsyncSignal, signal, null) ?? signal;
+        }
+
         internal override bool Pause()
         {
-            if (TaskCompletionSource == null && PauseSignal == null)
+            ManualResetEvent pauseSignal = null;
+            AsyncManualResetEvent pauseAsyncSignal = null;
+
+            if (TaskCompletionSource == null)
             {
-                PauseSignal = new ManualResetEvent(true);
+                pauseSignal = EnsurePauseSignalExists();
             }
-            if (TaskCompletionSource != null && PauseAsyncSignal == null)
+            else
             {
-                PauseAsyncSignal = new AsyncManualResetEvent(true);
+                pauseAsyncSignal = EnsurePauseAsyncSignalExists();
             }
 
             IsPausing = true;
-            PauseSignal?.Reset();
-            PauseAsyncSignal?.Reset();
+            pauseSignal?.Reset();
+            pauseAsyncSignal?.Reset();
             return true;
         }
 
