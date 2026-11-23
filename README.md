@@ -200,7 +200,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center" valign="top" width="14.28%"><a href="https://blog.lindexi.com/"><img src="https://avatars.githubusercontent.com/u/16054566?v=4&size=100" width="100px" height="100px" alt="lindexi"/><br /><sub><b>lindexi</b></sub></a><br /><a href="https://github.com/ZjzMisaka/PowerThreadPool/issues?q=author%3Alindexi" title="Bug reports">🐛</a></td>
     </tr>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.com/phjnavy"><img src="https://avatars.githubusercontent.com/u/357653554?v=4&size=100" width="100px" height="100px" alt="phjnavy"/><br /><sub><b>phjnavy</b></sub></a><br /><a href="https://github.com/ZjzMisaka/PowerThreadPool/commits?author=phjnavy" title="Documentation">📖</a></td>
+      <td align="center" valign="top" width="14.28%"><a href="https://github.com/PuNavy"><img src="https://avatars.githubusercontent.com/u/357653554?v=4&size=100" width="100px" height="100px" alt="PuNavy"/><br /><sub><b>PuNavy</b></sub></a><br /><a href="https://github.com/ZjzMisaka/PowerThreadPool/commits?author=PuNavy" title="Documentation">📖</a> <a href="https://github.com/ZjzMisaka/PowerThreadPool/commits?author=PuNavy" title="Code">💻</a></td>
     </tr>
   </tbody>
 </table>
